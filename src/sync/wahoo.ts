@@ -49,9 +49,14 @@ function translate(code: string): string {
   return ERROR_PL[code] ?? code
 }
 
+/** Żądanie do funkcji nie może wisieć w nieskończoność – bez tego interfejs zostaje „w toku”. */
+async function withTimeout<T>(p: Promise<T>, ms = 45_000): Promise<T> {
+  return Promise.race([p, new Promise<never>((_, reject) => setTimeout(() => reject(new Error(`Brak odpowiedzi serwera w ${ms / 1000} s.`)), ms))])
+}
+
 async function call<T>(fn: 'wahoo-oauth' | 'wahoo-push', body: Record<string, unknown>): Promise<T> {
   if (!supabase) throw new Error('Brak konfiguracji Supabase.')
-  const { data, error } = await supabase.functions.invoke(fn, { body })
+  const { data, error } = await withTimeout(supabase.functions.invoke(fn, { body }))
   if (error) {
     let detail = error.message
     try {

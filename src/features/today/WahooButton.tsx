@@ -1,3 +1,4 @@
+import { useState } from 'react'
 import { useEngine } from '@/app/useSettings'
 import type { DayPlan } from '@/engine/plan'
 import { isPushable } from '@/engine/wahoo'
@@ -9,11 +10,14 @@ import { Button } from '@/components/ui'
 /** „Wyślij na Wahoo” – jeden dzień na Bolta. */
 export function WahooButton({ day }: { day: DayPlan }) {
   const engine = useEngine()
-  const { run, busy } = useToast()
+  const { run } = useToast()
+  const [busy, setBusy] = useState(false)
   if (!day.bike || !isPushable(day.bike.workout_id)) return null
 
   async function send() {
-    await run(
+    setBusy(true)
+    try {
+      await run(
       'Wysyłam trening na Wahoo…',
       async () => {
         if (!supabase) throw new Error('Aplikacja działa lokalnie – wysyłka wymaga konfiguracji Supabase.')
@@ -25,8 +29,11 @@ export function WahooButton({ day }: { day: DayPlan }) {
         if (r.plan_linked === false) throw new Error('Trening utworzony, ale Wahoo nie podpięło do niego planu.')
         return r.status
       },
-      (status) => (status === 'updated' ? 'Zaktualizowano trening na Bolcie' : 'Wysłano na Bolta. Zsynchronizuj zegarek.'),
-    )
+        (status) => (status === 'updated' ? 'Zaktualizowano trening na Bolcie' : 'Wysłano na Bolta. Zsynchronizuj zegarek.'),
+      )
+    } finally {
+      setBusy(false)
+    }
   }
 
   return (

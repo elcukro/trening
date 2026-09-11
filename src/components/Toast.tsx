@@ -20,6 +20,7 @@ interface ToastApi {
   dismiss: (id: number) => void
   /** Wykonuje akcję, pokazując postęp i wynik. Zwraca wartość akcji albo `null` po błędzie. */
   run: <T>(pendingMessage: string, fn: () => Promise<T>, done?: (result: T) => string) => Promise<T | null>
+  /** true, gdy trwa jakakolwiek akcja – tylko do paska postępu, nie do blokowania przycisków */
   busy: boolean
 }
 
@@ -79,7 +80,10 @@ export function ToastProvider({ children }: { children: ReactNode }) {
       const id = notify(pendingMessage, 'pending')
       setBusy((n) => n + 1)
       try {
-        const result = await fn()
+        const result = await Promise.race([
+          fn(),
+          new Promise<never>((_, reject) => setTimeout(() => reject(new Error('Przekroczono czas oczekiwania (60 s). Sprawdź połączenie i spróbuj ponownie.')), 60_000)),
+        ])
         replace(id, done ? done(result) : 'Gotowe', 'success')
         return result
       } catch (e) {
@@ -142,11 +146,9 @@ function ToastRow({ toast, onDismiss }: { toast: Toast; onDismiss: () => void })
           )}
           {open && toast.detail && <p className="mt-1 break-words text-xs font-normal opacity-90">{toast.detail}</p>}
         </div>
-        {toast.kind !== 'pending' && (
-          <button onClick={onDismiss} aria-label="Zamknij" className="shrink-0 px-1 text-lg leading-none opacity-80">
-            ×
-          </button>
-        )}
+        <button onClick={onDismiss} aria-label="Zamknij" className="shrink-0 px-1 text-lg leading-none opacity-80">
+          ×
+        </button>
       </div>
     </div>
   )

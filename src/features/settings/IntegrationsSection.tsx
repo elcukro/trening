@@ -30,14 +30,20 @@ function useOAuthResult(key: 'strava' | 'wahoo'): string | null {
 function useRunner() {
   const toast = useToast()
   const [msg, setMsg] = useState<string | null>(null)
+  // zajętość liczona lokalnie: akcja w jednej karcie nie może blokować przycisków w innej
+  const [busy, setBusy] = useState(false)
   const run = useCallback(
     async (label: string, fn: () => Promise<string>) => {
-      const result = await toast.run(`${label}…`, fn, (text) => text)
-      setMsg(result)
+      setBusy(true)
+      try {
+        setMsg(await toast.run(`${label}…`, fn, (text) => text))
+      } finally {
+        setBusy(false)
+      }
     },
     [toast],
   )
-  return { busy: toast.busy, msg, setMsg, run }
+  return { busy, msg, setMsg, run }
 }
 
 export function IntegrationsSection() {
