@@ -52,8 +52,28 @@ export async function verify(token: string): Promise<string | null> {
   return ok ? payload : null
 }
 
+function hex(buf: ArrayBuffer, bytes: number): string {
+  return Array.from(new Uint8Array(buf).slice(0, bytes), (b) => b.toString(16).padStart(2, '0')).join('')
+}
+
 /** Deterministyczny sekret weryfikacji webhooka Stravy (nie wymaga osobnego sekretu). */
 export async function webhookVerifyToken(): Promise<string> {
-  const buf = await keyMaterial('strava-webhook-verify')
-  return Array.from(new Uint8Array(buf).slice(0, 16), (b) => b.toString(16).padStart(2, '0')).join('')
+  return hex(await keyMaterial('strava-webhook-verify'), 16)
+}
+
+/**
+ * Sekret w ścieżce webhooka. Strava nie podpisuje zdarzeń, a adres funkcji jest publiczny,
+ * więc bez tego każdy mógłby wysłać zdarzenie „delete” albo „authorized:false”.
+ * Znają go tylko Strava (z zarejestrowanego callback_url) i ta funkcja.
+ */
+export async function webhookPathSecret(): Promise<string> {
+  return hex(await keyMaterial('strava-webhook-path'), 24)
+}
+
+/** Porównanie w stałym czasie. */
+export function timingSafeEqual(a: string, b: string): boolean {
+  if (a.length !== b.length) return false
+  let diff = 0
+  for (let i = 0; i < a.length; i++) diff |= a.charCodeAt(i) ^ b.charCodeAt(i)
+  return diff === 0
 }

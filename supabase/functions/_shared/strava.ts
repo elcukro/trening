@@ -133,6 +133,21 @@ export async function listActivities(token: string, afterUnix: number): Promise<
   return out
 }
 
+/** Czy token nadal autoryzuje dostęp do konta (weryfikacja zdarzenia deauthoryzacji). */
+export async function athleteAuthorized(token: string): Promise<boolean> {
+  const res = await fetch(`${STRAVA_API}/athlete`, { headers: { authorization: `Bearer ${token}` } })
+  if (res.status === 401 || res.status === 403) return false
+  return res.ok
+}
+
+/** Czy aktywność nadal istnieje (weryfikacja zdarzenia usunięcia). */
+export async function activityExists(token: string, id: number): Promise<boolean> {
+  const res = await fetch(`${STRAVA_API}/activities/${id}`, { headers: { authorization: `Bearer ${token}` } })
+  if (res.status === 404) return false
+  if (res.status === 401 || res.status === 403) return false
+  return res.ok
+}
+
 export async function deauthorize(token: string): Promise<void> {
   await fetch('https://www.strava.com/oauth/deauthorize', { method: 'POST', headers: { authorization: `Bearer ${token}` } })
 }

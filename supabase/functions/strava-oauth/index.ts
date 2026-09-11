@@ -4,7 +4,7 @@
  *  POST /strava-oauth  {action}             – z JWT użytkownika: start | status | disconnect | sync | subscribe
  */
 import { APP_URL, CORS, env, json } from '../_shared/env.ts'
-import { sign, verify, webhookVerifyToken } from '../_shared/crypto.ts'
+import { sign, verify, webhookPathSecret, webhookVerifyToken } from '../_shared/crypto.ts'
 import { adminClient, userFromRequest } from '../_shared/supabase.ts'
 import { accessTokenFor, deauthorize, exchangeCode, fetchActivity, listActivities, RIDE_TYPES, saveTokens, upsertActivity } from '../_shared/strava.ts'
 
@@ -19,7 +19,7 @@ async function ensureSubscription(): Promise<{ ok: boolean; detail: string }> {
   const secret = env('STRAVA_CLIENT_SECRET')
   const list = await fetch(`https://www.strava.com/api/v3/push_subscriptions?client_id=${cid}&client_secret=${secret}`)
   const existing = list.ok ? ((await list.json()) as { id: number; callback_url: string }[]) : []
-  const callback = `${functionsBase()}/strava-webhook`
+  const callback = `${functionsBase()}/strava-webhook/${await webhookPathSecret()}`
   if (existing.some((s) => s.callback_url === callback)) return { ok: true, detail: 'istnieje' }
   for (const s of existing) {
     await fetch(`https://www.strava.com/api/v3/push_subscriptions/${s.id}?client_id=${cid}&client_secret=${secret}`, { method: 'DELETE' })
@@ -48,7 +48,14 @@ Deno.serve(async (req) => {
     try {
       const tokens = await exchangeCode(url.searchParams.get('code')!)
       tokens.scope = scope
-      await saveTokens(adminClient(), uid, tokens)
+      const admin = adminClient()
+      // jedno konto Stravy = jeden użytkownik aplikacji
+      const athleteId = tokens.athlete?.id ? String(tokens.athlete.id) : null
+      if (athleteId) {
+        const { data: taken } = await admin.from('integration_tokens').select('user_id').eq('provider', 'strava').eq('athlete_id', athleteId).maybeSingle()
+        if (taken && taken.user_id !== uid) return back('strava=error&reason=athlete_taken')
+      }
+      await saveTokens(admin, uid, tokens)
       const sub = await ensureSubscription()
       return back(`strava=ok&webhook=${encodeURIComponent(sub.detail)}`)
     } catch (e) {
@@ -92,6 +99,7 @@ Deno.serve(async (req) => {
     case 'sync': {
       const token = await accessTokenFor(admin, user.id)
       if (!token) return json({ error: 'not_connected' }, 400)
+      await ensureSubscription().catch((e) => console.warn('subscription', e)) // samonaprawa po zmianie adresu webhooka
       const days = Math.min(90, Math.max(1, body.days ?? 14))
       const after = Math.floor(Date.now() / 1000) - days * 86400
       const list = await listActivities(token, after)
