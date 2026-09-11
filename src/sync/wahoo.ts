@@ -19,6 +19,9 @@ export interface WahooStatus {
   wahoo_user_id: string | null
   expires_at: string | null
   redirect_uri: string
+  scope?: string
+  /** uprawnienia, których brakuje w obecnym połączeniu (trzeba połączyć ponownie) */
+  missing_scopes?: string[]
   pushes: WahooPush[]
 }
 

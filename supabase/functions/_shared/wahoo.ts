@@ -3,7 +3,8 @@ import { env } from './env.ts'
 import { decrypt, encrypt } from './crypto.ts'
 
 export const WAHOO_API = 'https://api.wahooligan.com'
-export const WAHOO_SCOPES = 'user_read workouts_write plans_write offline_data'
+// odczyt planów i treningów potrzebny, żeby sprawdzić, co Wahoo naprawdę zapisało
+export const WAHOO_SCOPES = 'user_read workouts_read workouts_write plans_read plans_write offline_data'
 
 export interface WahooTokenResponse {
   access_token: string
@@ -221,7 +222,9 @@ export async function diagnose(token: string, item: PushItem): Promise<Record<st
   const now = new Date().toISOString()
   const out: Record<string, unknown>[] = []
   for (const variant of VARIANTS) {
-    const post = await api(token, '/v1/plans', 'POST', planBody(item, variant, now))
+    // Wahoo wymusza unikalność external_id – plan próbny musi mieć własny
+    const probe: PushItem = { ...item, external_id: `diag-${variant}-${Date.now()}` }
+    const post = await api(token, '/v1/plans', 'POST', planBody(probe, variant, now))
     const id = post.ok ? Number(post.json?.id) : null
     let readBack: { status: number; body: string } | null = null
     if (id) readBack = await getPlan(token, id)

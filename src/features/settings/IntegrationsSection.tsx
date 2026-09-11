@@ -166,10 +166,15 @@ function WahooCard() {
     <Card>
       <CardTitle icon="⌚">Wahoo ELEMNT Bolt</CardTitle>
       <Row label="Stan">{status ? (status.connected ? 'połączone' : 'niepołączone') : '…'}</Row>
+      {status?.connected && (status.missing_scopes?.length ?? 0) > 0 && (
+        <p className="mt-1 rounded-lg bg-amber-100 px-3 py-2 text-xs text-amber-900 dark:bg-amber-950/40 dark:text-amber-200">
+          Brakuje uprawnień: {status!.missing_scopes!.join(', ')}. Kliknij „Rozłącz”, a potem „Połącz z Wahoo”, żeby je nadać.
+        </p>
+      )}
       {status?.connected && <Row label="Wysłane treningi">{sent.length > 0 ? sent.map((p) => fmtDayMonth(p.date)).join(', ') : 'brak'}</Row>}
       {failed.length > 0 && <p className="text-xs text-red-600">Błędy: {failed.map((p) => `${fmtDayMonth(p.date)} – ${p.error}`).join('; ')}</p>}
       <div className="mt-2 flex flex-wrap gap-2">
-        {status && !status.connected && (
+        {status && (!status.connected || (status.missing_scopes?.length ?? 0) > 0) && (
           <Button
             disabled={busy}
             onClick={() =>
@@ -179,7 +184,7 @@ function WahooCard() {
               })
             }
           >
-            Połącz z Wahoo
+            {status?.connected ? 'Połącz ponownie' : 'Połącz z Wahoo'}
           </Button>
         )}
         {status?.connected && (

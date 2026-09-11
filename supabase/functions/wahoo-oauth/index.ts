@@ -49,7 +49,9 @@ Deno.serve(async (req) => {
     case 'status': {
       const { data } = await admin.from('integration_tokens').select('athlete_id, expires_at, scope, updated_at').eq('user_id', user.id).eq('provider', 'wahoo').maybeSingle()
       const { data: pushes } = await admin.from('wahoo_pushes').select('date, workout_id, status, error, updated_at').eq('user_id', user.id).gte('date', new Date(Date.now() - 86400000).toISOString().slice(0, 10)).order('date').limit(10)
-      return json({ connected: !!data, wahoo_user_id: data?.athlete_id ?? null, expires_at: data?.expires_at ?? null, redirect_uri: redirectUri(), pushes: pushes ?? [] })
+      const scope = (data?.scope as string | undefined) ?? ''
+      const missing = WAHOO_SCOPES.split(' ').filter((s) => !scope.includes(s))
+      return json({ connected: !!data, wahoo_user_id: data?.athlete_id ?? null, expires_at: data?.expires_at ?? null, redirect_uri: redirectUri(), scope, missing_scopes: missing, pushes: pushes ?? [] })
     }
     case 'disconnect': {
       await accessTokenFor(admin, user.id).catch(() => null)
