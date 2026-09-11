@@ -27,7 +27,7 @@ Trigger `check_allowed_email` odrzuci każdą inną rejestrację. Dodatkowo, dla
 - **Site URL**: adres z Vercel, np. `https://trening-inky.vercel.app`
 - **Redirect URLs**: `https://trening-inky.vercel.app/**`, `http://localhost:5173/**`, `http://localhost:4173/**`
 
-Magic link wraca na `/wiecej/ustawienia`. Na iPhonie otwórz link z maila w Safari – sesja zapisze się w PWA (ten sam origin).
+Magic link wraca na `/wiecej/ustawienia`. **Uwaga iOS:** aplikacja na ekranie początkowym ma osobną pamięć niż Safari, więc link kliknięty w Mailu zaloguje Safari, a nie PWA. W PWA: przytrzymaj link w Mailu → Kopiuj → Ustawienia → Konto → „Mam link z maila – wklej go tutaj”. Link działa tylko raz.
 
 ## 5. Zmienne środowiskowe
 Lokalnie – plik `.env.local` (jest w `.gitignore`):
@@ -51,6 +51,7 @@ Wartości Wahoo są w `~/code/wahoo-routes/.env` (`WAHOO_CLIENT_ID`, `WAHOO_CLIE
 
 ## 8. Rozwiązywanie problemów
 - **„Ten adres e-mail nie ma dostępu”** – brak wpisu w `private.allowed_emails` (małe litery!).
-- **Link z maila otwiera Safari zamiast PWA** – to normalne na iOS; po zalogowaniu w Safari otwórz ikonę z ekranu początkowego – sesja jest wspólna dla tego samego adresu.
+- **Link z maila otwiera Safari zamiast PWA** – normalne na iOS, ale sesja NIE jest wspólna. Wyślij nowy link i wklej go w PWA (sekcja Konto), nie klikaj go.
+- **Zalogowałem się, ale po powrocie nadal widzę formularz** – link został otwarty w innej przeglądarce niż ta, z której wysłałeś prośbę, albo wygasł (ważny 1 h, jednorazowy). Wyślij nowy i użyj wklejania.
 - **Stan „Błąd” w Ustawieniach** – komunikat pod spodem podaje tabelę i przyczynę (najczęściej brak migracji lub RLS). Logi: Dashboard → Logs → Postgres / Auth.
 - **Projekt uśpiony po urlopie** – Dashboard → Restore project; dane zostają.
