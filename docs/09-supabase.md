@@ -44,7 +44,7 @@ VITE_SUPABASE_PUBLISHABLE_KEY=sb_publishable_...
 ```
 Vercel – **Settings → Environment Variables**: te same dwie zmienne (Production + Preview), potem **Redeploy**.
 
-## 6. Pierwsze logowanie i test synchronizacji
+## 6. Pierwsze logowanie i test synchronizacji – zrobione 11.09.2026 (sesja + profil w bazie); rejestracja nowych użytkowników wyłączona przez `config push` (`enable_signup = false`)
 1. Aplikacja → **Więcej → Ustawienia → Konto**: wpisz e-mail, „Wyślij link logowania”, otwórz link z maila.
 2. Stan powinien pokazać „Zsynchronizowano”. Dotychczasowe dane lokalne (ustawienia, check-iny, logi) wypchną się automatycznie – identyfikatory UUID są generowane na telefonie, więc nie ma duplikatów.
 3. Scenariusz 15 ze specyfikacji: tryb samolotowy → zapisz kilka serii w trybie siłowni → wyłącz tryb samolotowy → w **Table Editor → set_logs** pojawią się wiersze, po jednym na serię. Ponowna synchronizacja nic nie dubluje (upsert po `id`).
