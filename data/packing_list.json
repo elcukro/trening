@@ -1,0 +1,138 @@
+{
+ "system": "Jeden kolor worka = jedna kategoria, zawsze w tym samym miejscu. Im rzadziej czegoś potrzebujesz, tym głębiej leży.",
+ "bags": [
+  {
+   "id": "seatpack",
+   "name": "Podsiodłówka Ortlieb",
+   "content": "Na dno: śpiwór w worku kompresyjnym (biwak) lub ubranie zapasowe; potem worek „wieczór” (bielizna, skarpety, koszulka, lekkie spodnie); najbliżej rolki: kosmetyczka i ręcznik."
+  },
+  {
+   "id": "framepack",
+   "name": "Torba na ramę (wisząca)",
+   "content": "Na dnie rolka z narzędziami i dętką; wyżej powerbank i elektronika w małym worku; na górze jedzenie na dzień."
+  },
+  {
+   "id": "toptube",
+   "name": "Mała torba na górną rurę",
+   "content": "Telefon, żele i batony, portfel, klucze, krem z filtrem."
+  }
+ ],
+ "items": [
+  {
+   "cat": "Organizacja",
+   "name": "Worki Ortlieb PS10 1,5 l × 2 (różne kolory)",
+   "price_pln": 59,
+   "url": "https://e-velomania.pl/worek-ortlieb-dry-bag-ps10-1.5l-czarny"
+  },
+  {
+   "cat": "Organizacja",
+   "name": "Exped Fold Drybag UL XS 3 l",
+   "price_pln": 50,
+   "url": "https://cragstore.pl/worek-wodoodporny-exped-drybag-ul-xs"
+  },
+  {
+   "cat": "Organizacja",
+   "name": "Sea to Summit Ultra-Sil Garment Mesh Bag S (wilgotne ubrania)",
+   "price_pln": 82,
+   "url": "https://www.wypad.com.pl/pl/p/Worek-bagazowy-Sea-To-Summit-Ultra-Sil-Garment-Mesh-Bag-Small-Blue-Atoll/9402"
+  },
+  {
+   "cat": "Organizacja",
+   "name": "Sea to Summit Ultra-Sil eVent Compression XS 6 l (śpiwór)",
+   "price_pln": 70,
+   "url": "https://www.campingshop.pl/worek-kompresyjny-ultra-sil-event-dry-6l-sea-to-summit",
+   "only": "biwak"
+  },
+  {
+   "cat": "Organizacja",
+   "name": "Paski Voile 2 szt. (mokre buty, kurtka na zewnątrz)",
+   "price_pln": 60,
+   "url": "https://www.splitboards.eu/english/touring-equipment/voile-straps/sortiment/1363/voile-strap-nano-9-23cm"
+  },
+  {
+   "cat": "Organizacja",
+   "name": "Składany plecak Sea to Summit Ultra-Sil 20 l (sklep, miasto)",
+   "price_pln": 80,
+   "url": "https://www.campingshop.pl/plecak-turystyczny-ultra-sil-daypack-20l-sea-to-summit"
+  },
+  {
+   "cat": "Kosmetyczka",
+   "name": "Matador FlatPak Waterproof Toiletry Case",
+   "price_pln": 98,
+   "url": "https://www.campingshop.pl/kosmetyczka-turystyczna-flatpak-waterproof-toiletry-case-matador"
+  },
+  {
+   "cat": "Kosmetyczka",
+   "name": "Buteleczki GoToob+ S 53 ml × 3 (krem z filtrem, krem na siodło, płyn do prania)",
+   "price_pln": 66,
+   "url": "https://www.campingshop.pl/zestaw-pojemnikow-na-plyny-gotoob-s-3-pack-redorangeclear-humangear"
+  },
+  {
+   "cat": "Kosmetyczka",
+   "name": "Szampon w kostce, pasta w tabletkach, składana szczoteczka, mini dezodorant",
+   "price_pln": null,
+   "url": null
+  },
+  {
+   "cat": "Kosmetyczka",
+   "name": "Ręcznik PackTowl Personal Face",
+   "price_pln": 53,
+   "url": "https://taternik-sklep.pl/recznik-szybkoschnacy-packtowl-personal-face-midnight"
+  },
+  {
+   "cat": "Narzędzia",
+   "name": "Rolka Lezyne Roll Caddy: dętka ×2, łyżki, multitool z skuwaczem, łatki, spinka 11s, trytytki, taśma",
+   "price_pln": 80,
+   "url": "https://www.centrumrowerowe.pl/torba-podsiodlowa-lezyne-roll-caddy-pd32019/"
+  },
+  {
+   "cat": "Narzędzia",
+   "name": "Zapasowy hak przerzutki (Checkpoint), zapasowe klocki, pompka / CO2, mleko do opon (jeśli tubeless)",
+   "price_pln": null,
+   "url": null
+  },
+  {
+   "cat": "Ubranie – Alpy",
+   "name": "Kurtka przeciwdeszczowa, kamizelka wiatrowa, rękawki i nogawki, długie rękawiczki na zjazdy, czapka pod kask, buff",
+   "price_pln": null,
+   "url": null
+  },
+  {
+   "cat": "Ubranie – Alpy",
+   "name": "2 komplety stroju kolarskiego, krem na siodło, okulary z jasnymi szkłami",
+   "price_pln": null,
+   "url": null
+  },
+  {
+   "cat": "Wieczór",
+   "name": "Lekkie spodnie, koszulka, bielizna, skarpety, klapki/lekkie buty",
+   "price_pln": null,
+   "url": null
+  },
+  {
+   "cat": "Elektronika",
+   "name": "Wahoo Bolt + ładowarka, telefon, powerbank 10 000 mAh, lampki przód/tył, kable, pas tętna",
+   "price_pln": null,
+   "url": null
+  },
+  {
+   "cat": "Jedzenie",
+   "name": "Żele/batony na 1. dzień, elektrolity (tabletki), bidony ×2",
+   "price_pln": null,
+   "url": null
+  },
+  {
+   "cat": "Dokumenty",
+   "name": "Dowód, karta EKUZ, ubezpieczenie z ratownictwem w górach, gotówka EUR/CHF, karta",
+   "price_pln": null,
+   "url": null
+  },
+  {
+   "cat": "Biwak",
+   "name": "Śpiwór, mata, namiot/bivy, czołówka, sztućce, zapalniczka",
+   "price_pln": null,
+   "url": null,
+   "only": "biwak"
+  }
+ ]
+}

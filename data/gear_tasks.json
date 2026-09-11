@@ -1,0 +1,111 @@
+[
+ {
+  "id": "drivetrain_install",
+  "week": 0,
+  "due": "2026-09-13",
+  "bike": "checkpoint",
+  "title": "Montaż napędu 40/50",
+  "details": "Wózek Garbaruk SRAM 11/12s (fabryczne kółka i śruby), kaseta SunRace CSMX80 11-50 (zostaw podkładkę 1,85 mm), łańcuch SRAM PC-1130 – długość: na 40T i 50T z pominięciem przerzutki + 2 ogniwa, spinka PowerLock. Ustaw śrubę B: górne kółko ok. 5–6 mm od zębów 50T na najlżejszym biegu. Sprawdź zmiany na całej kasecie.",
+  "cost_pln": 737
+ },
+ {
+  "id": "check_brakes_type",
+  "week": 1,
+  "due": "2026-09-20",
+  "bike": "checkpoint",
+  "title": "Sprawdź typ hamulców Checkpointa",
+  "details": "SRAM HRD (hydrauliczne) czy Tektro (mechaniczne)? Od tego zależy wybór klocków spiekanych na wiosnę."
+ },
+ {
+  "id": "check_dogma_limits",
+  "week": 1,
+  "due": "2026-09-20",
+  "bike": "dogma",
+  "title": "Dogma: limit wagowy kół i największa zębatka",
+  "details": "Sprawdź limit wagi systemu dla kół karbonowych (instrukcja/producent). Sprawdź największą zębatkę kasety; opcjonalnie kaseta 12-30 Shimano 105 10s (~150 zł) na podjazdy."
+ },
+ {
+  "id": "elemnt_zones",
+  "week": 1,
+  "due": "2026-09-16",
+  "bike": null,
+  "title": "Ustaw strefy tętna w aplikacji ELEMNT",
+  "details": "Po teście progowym wpisz LTHR i strefy (lub zsynchronizuj z aplikacji treningowej). Powtarzaj po każdym teście."
+ },
+ {
+  "id": "spare_chain_links",
+  "week": 2,
+  "due": "2026-09-27",
+  "bike": "checkpoint",
+  "title": "Zapas spinek 11s",
+  "details": "PowerLock jest jednorazowy – kup 2–3 spinki 11s lub jedną wielorazową (KMC MissingLink 11s)."
+ },
+ {
+  "id": "chain_wear_monthly",
+  "week": null,
+  "due": null,
+  "recurring": "monthly",
+  "bike": "both",
+  "title": "Kontrola zużycia łańcucha",
+  "details": "Miernik łańcucha co miesiąc / ok. 1000 km. Wymiana przy 0,5% (11s) – chroni kasetę 11-50 (duża zębatka aluminiowa)."
+ },
+ {
+  "id": "winter_kit",
+  "week": 10,
+  "due": "2026-11-22",
+  "bike": "checkpoint",
+  "title": "Pakiet zimowy",
+  "details": "Pełne błotniki SKS Bluemels Basic 28\" 45 mm (~120 zł) na otwory w ramie; światło przód ≥ 800 lm + tył z radarem; odzież: merino, roubaix, kurtka z membraną, ochraniacze na buty, rękawice typu lobster.",
+  "cost_pln": 120
+ },
+ {
+  "id": "power_meter_decision",
+  "week": 15,
+  "due": "2026-12-27",
+  "bike": null,
+  "title": "Decyzja: miernik mocy?",
+  "details": "Jeśli przez 3 miesiące plan jest realizowany – rozważ pedały Favero Assioma (~1900–2200 zł, ten sam system bloków na oba rowery). Najbardziej precyzyjne prowadzenie interwałów."
+ },
+ {
+  "id": "spring_service",
+  "week": 30,
+  "due": "2027-04-11",
+  "bike": "both",
+  "title": "Serwis wiosenny",
+  "details": "Checkpoint: klocki spiekane SRAM Road 00.5318.010.004 (jeśli SRAM HRD; 2 kpl. ~190 zł), płyn hamulcowy DOT (co 12 mies.), łańcuch, linki. Dogma: przegląd, klocki do obręczy karbonowych.",
+  "cost_pln": 190
+ },
+ {
+  "id": "summer_tyres",
+  "week": 33,
+  "due": "2027-05-02",
+  "bike": "checkpoint",
+  "title": "Opony na lato i Alpy",
+  "details": "Decyzja: GP 5000 S TR 32c z dętkami (szybkie, ~520 zł/para) lub GP 5000 AS TR 35c (tubeless, więcej komfortu). Założyć przed pierwszym weekendem w górach.",
+  "cost_pln": 520
+ },
+ {
+  "id": "gearing_review",
+  "week": 36,
+  "due": "2027-05-23",
+  "bike": "checkpoint",
+  "title": "Ocena przełożenia po Karkonoszach",
+  "details": "Czy 40/50 wystarczało na najbardziej stromych odcinkach przy kadencji ≥ 70 rpm? Jeśli nie – blat Garbaruk DM 8-bolt 38T (~300–360 zł)."
+ },
+ {
+  "id": "pre_trip_service",
+  "week": 48,
+  "due": "2027-08-15",
+  "bike": "checkpoint",
+  "title": "Serwis przedwyjazdowy",
+  "details": "Nowy łańcuch (jeśli zużycie ≥ 0,4%), klocki (zapasowy komplet do sakwy), opony (stan, przecięcia), płyn/linki, dokręcenie śrub, hak przerzutki na zapas, mleko/dętki, test na 100 km przed blokiem 3-dniowym."
+ },
+ {
+  "id": "packing",
+  "week": 52,
+  "due": "2027-09-09",
+  "bike": null,
+  "title": "Pakowanie na wyjazd",
+  "details": "Wg checklisty w aplikacji (moduł Wyjazd)."
+ }
+]
