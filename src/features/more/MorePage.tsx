@@ -4,16 +4,14 @@ import { PageTitle } from '@/components/ui'
 
 const ITEMS = [
   { to: '/wiecej/sezon', icon: '🗺️', label: 'Sezon', sub: 'Fazy, tabela 53 tygodni, wydarzenia' },
-  { to: '/wiecej/ustawienia', icon: '⚙️', label: 'Ustawienia', sub: 'Profil, LTHR, daty, dni siłowni, objętość' },
+  { to: '/wiecej/sprzet', icon: '🔧', label: 'Sprzęt', sub: 'Zadania serwisowe, terminy, dziennik' },
+  { to: '/wiecej/wyjazd', icon: '🎒', label: 'Wyjazd', sub: 'Checklista, torby, strategia na przełęcz' },
+  { to: '/wiecej/ustawienia', icon: '⚙️', label: 'Ustawienia', sub: 'Profil, LTHR, daty, integracje, kopia' },
   { to: '/biblioteka/strefy', icon: '❤️', label: 'Strefy tętna', sub: 'Tabela bpm dla aktualnego LTHR' },
   { to: '/biblioteka/zasady', icon: '📜', label: 'Zasady R1–R16', sub: 'Co robić, gdy plan się sypie' },
 ]
 
-const LATER = [
-  { icon: '🔧', label: 'Sprzęt', sub: 'Etap 5' },
-  { icon: '🎒', label: 'Wyjazd', sub: 'Etap 5' },
-  { icon: '🔗', label: 'Integracje: Strava, Wahoo', sub: 'Etapy 3–4' },
-]
+const LATER: { icon: string; label: string; sub: string }[] = []
 
 export function MorePage() {
   const engine = useEngine()

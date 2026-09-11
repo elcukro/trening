@@ -11,6 +11,8 @@ import { ZonesPage } from '@/features/library/ZonesPage'
 import { RulesPage } from '@/features/library/RulesPage'
 import { SettingsPage } from '@/features/settings/SettingsPage'
 import { MorePage } from '@/features/more/MorePage'
+import { GearPage } from '@/features/gear/GearPage'
+import { TripPage } from '@/features/trip/TripPage'
 import { GymModePage } from '@/features/gym/GymModePage'
 import { useSyncRunner } from '@/sync/useSync'
 import { useWahooAutoPush } from '@/sync/useWahoo'
@@ -102,6 +104,8 @@ export function App() {
             <Route path="biblioteka/zasady" element={<RulesPage />} />
             <Route path="wiecej" element={<MorePage />} />
             <Route path="wiecej/sezon" element={<SeasonPage />} />
+            <Route path="wiecej/sprzet" element={<GearPage />} />
+            <Route path="wiecej/wyjazd" element={<TripPage />} />
             <Route path="wiecej/ustawienia" element={<SettingsPage />} />
             <Route path="*" element={<Navigate to="/" replace />} />
           </Route>

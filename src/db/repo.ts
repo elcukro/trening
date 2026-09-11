@@ -1,4 +1,4 @@
-import { db, newId, nowISO, type Checkin, type SessionLog, type SetLog, type SyncTable, type SyncedRow, type TestResult } from './index'
+import { db, newId, nowISO, type Checkin, type GearTaskState, type PackingState, type PlanOverrideRow, type ServiceLogRow, type SessionLog, type SetLog, type SyncTable, type SyncedRow, type TestResult } from './index'
 
 /** Zapis lokalny + wpis do outboxa (jedna transakcja). */
 export async function putSynced<T extends SyncedRow>(table: SyncTable, row: T): Promise<T> {
@@ -93,4 +93,47 @@ export async function saveTestResult(row: Omit<TestResult, 'id' | 'updated_at'> 
 export async function activeRows<T extends SyncedRow>(table: SyncTable): Promise<T[]> {
   const rows = (await db.table(table).toArray()) as T[]
   return rows.filter((r) => !r.deleted_at)
+}
+
+// ---------------------------------------------------------------- nadpisania planu (R1–R15)
+export async function addOverride(date: string, kind: PlanOverrideRow['kind'], payload: Record<string, unknown> = {}): Promise<PlanOverrideRow> {
+  // jeden aktywny wpis danego rodzaju na dzień – ponowne kliknięcie zastępuje poprzedni
+  const same = (await db.plan_overrides.where('date').equals(date).toArray()).filter((o) => !o.deleted_at && o.kind === kind)
+  for (const o of same) await softDelete('plan_overrides', o.id)
+  return putSynced('plan_overrides', { id: newId(), date, kind, payload, updated_at: nowISO() })
+}
+
+export async function removeOverride(id: string): Promise<void> {
+  await softDelete('plan_overrides', id)
+}
+
+export async function overridesFor(dates: string[]): Promise<PlanOverrideRow[]> {
+  const rows = await db.plan_overrides.where('date').anyOf(dates).toArray()
+  return rows.filter((o) => !o.deleted_at)
+}
+
+// ---------------------------------------------------------------- sprzęt i wyjazd
+export async function setGearStatus(taskId: string, status: GearTaskState['status'], notes?: string | null): Promise<GearTaskState> {
+  const existing = await db.gear_task_state.get(taskId)
+  return putSynced('gear_task_state', {
+    id: taskId,
+    task_id: taskId,
+    status,
+    done_at: status === 'done' ? (existing?.done_at ?? nowISO().slice(0, 10)) : null,
+    notes: notes ?? existing?.notes ?? null,
+    updated_at: nowISO(),
+  })
+}
+
+export async function addServiceEntry(entry: Omit<ServiceLogRow, 'id' | 'updated_at'>): Promise<ServiceLogRow> {
+  return putSynced('service_log', { ...entry, id: newId(), updated_at: nowISO() })
+}
+
+export async function setPacked(tripKey: string, itemKey: string, checked: boolean): Promise<PackingState> {
+  return putSynced('packing_state', { id: `${tripKey}:${itemKey}`, trip_key: tripKey, item_key: itemKey, checked, updated_at: nowISO() })
+}
+
+export async function resetPacking(tripKey: string): Promise<void> {
+  const rows = (await db.packing_state.where('trip_key').equals(tripKey).toArray()).filter((r) => r.checked)
+  for (const r of rows) await putSynced('packing_state', { ...r, checked: false })
 }

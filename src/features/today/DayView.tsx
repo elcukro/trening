@@ -11,6 +11,9 @@ import { CheckinCard } from './CheckinCard'
 import { BikeLogCard, StatusBadge } from './BikeLogCard'
 import { TestResultCard } from './TestResultCard'
 import { StravaActivities } from './StravaCard'
+import { RulesCard } from './RulesCard'
+import type { PlanOverrideRow } from '@/db'
+import type { RuleAction, RuleWarning } from '@/engine/rules'
 import { WahooButton } from './WahooButton'
 import { useLiveQuery } from 'dexie-react-hooks'
 import { db } from '@/db'
@@ -46,7 +49,7 @@ export function DayHeader({ day }: { day: DayPlan }) {
   )
 }
 
-export function BikeCard({ day, engine }: { day: DayPlan; engine: Engine }) {
+export function BikeCard({ day, engine, onAction }: { day: DayPlan; engine: Engine; onAction?: (a: RuleAction) => void }) {
   const w = day.workout
   const program = engine.ctx.program
   if (!day.bike || !w) {
@@ -102,13 +105,22 @@ export function BikeCard({ day, engine }: { day: DayPlan; engine: Engine }) {
       </div>
       {day.fallback_workout && (
         <details className="mt-3 rounded-lg bg-slate-100 p-3 text-sm dark:bg-slate-700/50">
-          <summary className="cursor-pointer font-medium">🧊 Gołoledź / pod dachem: {day.fallback_workout.name}</summary>
+          <summary className="cursor-pointer font-medium">🧊 Wersja pod dachem: {day.fallback_workout.name}</summary>
           <div className="mt-2">
             <TimelineBar steps={day.fallback_workout.steps} />
             <StepList workout={day.fallback_workout} compact />
-            <p className="mt-2 text-xs text-slate-500">Przycisk podmiany treningu (R4) pojawi się w Etapie 5. Na Bolcie wybierz „Wersja pod dachem”.</p>
           </div>
         </details>
+      )}
+      {onAction && (
+        <div className="mt-3 grid grid-cols-2 gap-2">
+          <button onClick={() => onAction({ kind: 'indoor', date: day.date, label: '', payload: {} })} className="min-h-11 rounded-xl bg-slate-200 text-sm font-semibold dark:bg-slate-700">
+            🧊 Gołoledź / pod dachem
+          </button>
+          <button onClick={() => onAction({ kind: 'sick', date: day.date, label: '', payload: { level: 'cold' } })} className="min-h-11 rounded-xl bg-slate-200 text-sm font-semibold dark:bg-slate-700">
+            🤒 Choroba
+          </button>
+        </div>
       )}
       <WahooButton day={day} />
       <StravaActivities date={day.date} zones={program.hr_zones_lthr_fraction} lthr={day.lthr} />
@@ -171,14 +183,15 @@ export function NotesCard({ day }: { day: DayPlan }) {
   )
 }
 
-export function DayView({ day, engine }: { day: DayPlan; engine: Engine }) {
+export function DayView({ day, engine, warnings = [], overrides = [], onAction, onUndo }: { day: DayPlan; engine: Engine; warnings?: RuleWarning[]; overrides?: PlanOverrideRow[]; onAction?: (a: RuleAction) => void; onUndo?: (id: string) => void }) {
   const testProtocol = day.bike?.workout_id === 'TEST_LTHR' || day.bike?.workout_id === 'WATTBIKE_TEST' ? day.bike.workout_id : null
   return (
     <div className="space-y-3">
       <DayHeader day={day} />
       <CheckinCard date={day.date} />
+      {onAction && onUndo && <RulesCard warnings={warnings} overrides={overrides} onAction={onAction} onUndo={onUndo} />}
       <NotesCard day={day} />
-      <BikeCard day={day} engine={engine} />
+      <BikeCard day={day} engine={engine} onAction={onAction} />
       {testProtocol && <TestResultCard date={day.date} protocol={testProtocol} program={engine.ctx.program} previousLthr={day.lthr} />}
       <GymCard day={day} engine={engine} />
       <NutritionCard day={day} engine={engine} />

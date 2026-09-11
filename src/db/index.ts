@@ -102,6 +102,34 @@ export interface StravaActivity extends SyncedRow {
   is_ride: boolean
 }
 
+export interface PlanOverrideRow extends SyncedRow {
+  date: string
+  kind: 'swap' | 'move' | 'skip' | 'indoor' | 'sick' | 'downgrade'
+  payload: Record<string, unknown>
+}
+
+export interface GearTaskState extends SyncedRow {
+  id: string // = task_id
+  task_id: string
+  status: 'todo' | 'done' | 'skipped'
+  done_at: string | null
+  notes: string | null
+}
+
+export interface ServiceLogRow extends SyncedRow {
+  date: string
+  bike: string
+  km: number | null
+  description: string
+}
+
+export interface PackingState extends SyncedRow {
+  id: string // = `${trip_key}:${item_key}`
+  trip_key: string
+  item_key: string
+  checked: boolean
+}
+
 export interface OutboxItem {
   seq?: number
   table: SyncTable
@@ -109,7 +137,7 @@ export interface OutboxItem {
   ts: string
 }
 
-export const SYNC_TABLES = ['checkins', 'session_logs', 'set_logs', 'test_results', 'strava_activities'] as const
+export const SYNC_TABLES = ['checkins', 'session_logs', 'set_logs', 'test_results', 'plan_overrides', 'gear_task_state', 'service_log', 'packing_state', 'strava_activities'] as const
 /** Tabele, do których klient nie wstawia wierszy – tylko aktualizuje wybrane pola (RLS: update own). */
 export const UPDATE_ONLY_TABLES: Record<string, string[]> = { strava_activities: ['date', 'is_ride', 'updated_at'] }
 export type SyncTable = (typeof SYNC_TABLES)[number]
@@ -121,6 +149,10 @@ export class TreningDB extends Dexie {
   session_logs!: EntityTable<SessionLog, 'id'>
   set_logs!: EntityTable<SetLog, 'id'>
   test_results!: EntityTable<TestResult, 'id'>
+  plan_overrides!: EntityTable<PlanOverrideRow, 'id'>
+  gear_task_state!: EntityTable<GearTaskState, 'id'>
+  service_log!: EntityTable<ServiceLogRow, 'id'>
+  packing_state!: EntityTable<PackingState, 'id'>
   strava_activities!: EntityTable<StravaActivity, 'id'>
   outbox!: EntityTable<OutboxItem, 'seq'>
 
@@ -138,6 +170,14 @@ export class TreningDB extends Dexie {
     })
     this.version(3).stores({
       strava_activities: 'id, date, updated_at',
+    })
+    this.version(4).stores({
+      plan_overrides: 'id, date, kind, updated_at',
+    })
+    this.version(5).stores({
+      gear_task_state: 'id, status, updated_at',
+      service_log: 'id, date, updated_at',
+      packing_state: 'id, trip_key, updated_at',
     })
   }
 }

@@ -109,3 +109,40 @@ test('Wahoo: przycisk wysyłki na dniu z treningiem, sekcja w Integracjach', asy
   await page.goto('/wiecej/ustawienia')
   await expect(page.getByText(/Zaloguj się, żeby połączyć Stravę i Wahoo/)).toBeVisible()
 })
+
+test('Etap 5: gołoledź podmienia trening, cofnięcie wraca do planu', async ({ page }) => {
+  await page.goto('/?today=2027-01-13')
+  await expect(page.getByRole('heading', { name: 'Sweet spot 2×20 min' })).toBeVisible()
+  await page.getByRole('button', { name: /Gołoledź/ }).click()
+  await expect(page.getByRole('heading', { name: /4×4 min/ })).toBeVisible()
+  await expect(page.getByText('Pod dachem', { exact: true })).toBeVisible()
+  await page.reload()
+  await expect(page.getByRole('heading', { name: /4×4 min/ })).toBeVisible()
+  await page.getByRole('button', { name: 'cofnij' }).click()
+  await expect(page.getByRole('heading', { name: 'Sweet spot 2×20 min' })).toBeVisible()
+})
+
+test('Etap 5: zamiana dni pilnuje reguły 48 godzin (R9)', async ({ page }) => {
+  await page.goto('/tydzien/2027-05-12?today=2027-05-12')
+  await expect(page.getByRole('heading', { name: 'Tydzień 35' })).toBeVisible()
+  await page.getByRole('button', { name: 'Zamień dzień 2027-05-12' }).click()
+  await page.getByRole('button', { name: 'Tu' }).nth(2).click()
+  await expect(page.getByText(/48 h przed ciężkim dniem/)).toBeVisible()
+})
+
+test('Etap 5: sprzęt i wyjazd', async ({ page }) => {
+  await page.goto('/wiecej/sprzet')
+  await expect(page.getByText('Montaż napędu 40/50')).toBeVisible()
+  await page.getByRole('button', { name: 'Odhacz zadanie' }).first().click()
+  await expect(page.getByRole('button', { name: 'Cofnij odhaczenie' }).first()).toBeVisible()
+  await page.reload()
+  await expect(page.getByRole('button', { name: 'Cofnij odhaczenie' }).first()).toBeVisible()
+  await page.goto('/wiecej/wyjazd')
+  await expect(page.getByRole('heading', { name: 'Checklista' })).toBeVisible()
+  await expect(page.getByRole('heading', { name: 'Podział na torby' })).toBeVisible()
+  await expect(page.getByText('0/17')).toBeVisible() // wariant hotelowy: bez dwóch pozycji biwakowych
+  await page.getByRole('checkbox').first().click() // pole sterowane z bazy: check() sprawdza stan zanim zapis wróci
+  await expect(page.getByText('1/17')).toBeVisible()
+  await page.getByRole('button', { name: 'Biwak' }).click()
+  await expect(page.getByText('0/19')).toBeVisible()
+})
