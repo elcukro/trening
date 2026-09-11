@@ -10,12 +10,13 @@ import { Button } from '@/components/ui'
 export function WahooButton({ day }: { day: DayPlan }) {
   const engine = useEngine()
   const { run, busy } = useToast()
-  if (!supabase || !day.bike || !isPushable(day.bike.workout_id)) return null
+  if (!day.bike || !isPushable(day.bike.workout_id)) return null
 
   async function send() {
     await run(
       'Wysyłam trening na Wahoo…',
       async () => {
+        if (!supabase) throw new Error('Aplikacja działa lokalnie – wysyłka wymaga konfiguracji Supabase.')
         const item = pushItemFor(day.date, engine.ctx, engine.weeks)
         if (!item) throw new Error('Tego dnia nie ma czego wysłać.')
         const res = await wahoo.push([item])

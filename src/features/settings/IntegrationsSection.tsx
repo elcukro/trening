@@ -200,6 +200,22 @@ function WahooCard() {
               Wyślij 7 dni
             </Button>
             <Button
+              variant="secondary"
+              disabled={busy}
+              onClick={() =>
+                run('Wysyłam od zera', async () => {
+                  const items = pushItemsFrom(today, 7, engine.ctx, engine.weeks)
+                  if (items.length === 0) return 'Na najbliższy tydzień nie ma treningów do wysłania.'
+                  const r = await wahoo.push(items, 'replace')
+                  const err = r.results.filter((x) => x.status === 'error')
+                  if (err.length) throw new Error(`Wysłano ${r.pushed} z ${items.length}. ${err.map((x) => `${x.date}: ${x.error}`).join('; ')}`)
+                  return `Utworzono od nowa ${r.pushed} treningów`
+                })
+              }
+            >
+              Wyślij od zera
+            </Button>
+            <Button
               variant="ghost"
               disabled={busy}
               onClick={() =>
@@ -230,7 +246,7 @@ function WahooCard() {
       )}
       {msg && <p className="mt-2 text-sm">{msg}</p>}
       {status && !status.connected && <p className="mt-2 text-xs text-slate-500">W portalu Wahoo dodaj adres zwrotny: <code className="break-all">{status.redirect_uri}</code></p>}
-      <p className="mt-2 text-xs text-slate-500">Treningi trafiają do „Planned Workouts” na Bolcie po synchronizacji zegarka (Wi-Fi lub aplikacja ELEMNT).</p>
+      <p className="mt-2 text-xs text-slate-500">Treningi trafiają do „Planned Workouts” na Bolcie po synchronizacji zegarka (Wi-Fi lub aplikacja ELEMNT). „Wyślij od zera” kasuje treningi z Wahoo i tworzy je na nowo – użyj, gdy aplikacja ELEMNT pokazuje nieaktualne dane treningu.</p>
     </Card>
   )
 }

@@ -5,7 +5,7 @@
  */
 import { CORS, json } from '../_shared/env.ts'
 import { adminClient, userFromRequest } from '../_shared/supabase.ts'
-import { accessTokenFor, pushDay, type PushItem, type PushResult } from '../_shared/wahoo.ts'
+import { accessTokenFor, pushDay, removeDay, type PushItem, type PushResult } from '../_shared/wahoo.ts'
 
 const MAX_ITEMS = 10
 
@@ -15,7 +15,7 @@ Deno.serve(async (req) => {
   const user = await userFromRequest(req)
   if (!user) return json({ error: 'unauthorized' }, 401)
 
-  const body = (await req.json().catch(() => ({}))) as { items?: PushItem[] }
+  const body = (await req.json().catch(() => ({}))) as { items?: PushItem[]; mode?: 'update' | 'replace' }
   const items = (body.items ?? []).slice(0, MAX_ITEMS)
   if (items.length === 0) return json({ error: 'no_items' }, 400)
 
@@ -27,6 +27,14 @@ Deno.serve(async (req) => {
 
   const { data: existing } = await admin.from('wahoo_pushes').select('date, wahoo_plan_id, wahoo_workout_id').eq('user_id', user.id).in('date', items.map((i) => i.date))
   const byDate = new Map((existing ?? []).map((r) => [r.date as string, r]))
+
+  // tryb „od zera”: kasujemy to, co jest w Wahoo, i tworzymy na nowo
+  if (body.mode === 'replace') {
+    for (const [, row] of byDate) {
+      await removeDay(token, { wahoo_plan_id: row.wahoo_plan_id as number | null, wahoo_workout_id: row.wahoo_workout_id as number | null }).catch((e) => console.warn('usuwanie', e))
+    }
+    byDate.clear()
+  }
 
   const results: PushResult[] = []
   for (const item of items) {

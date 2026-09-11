@@ -201,3 +201,16 @@ export async function pushDay(token: string, item: PushItem, existing: { wahoo_p
 export async function deleteWorkout(token: string, workoutId: number): Promise<void> {
   await api(token, `/v1/workouts/${workoutId}`, 'DELETE')
 }
+
+export async function deletePlan(token: string, planId: number): Promise<void> {
+  await api(token, `/v1/plans/${planId}`, 'DELETE')
+}
+
+/**
+ * Usuwa trening i plan danego dnia. Potrzebne, gdy Wahoo trzyma policzone przy tworzeniu podsumowanie
+ * (TSS, IF) i aktualizacja pliku planu go nie odświeża – wtedy trzeba utworzyć wszystko od nowa.
+ */
+export async function removeDay(token: string, existing: { wahoo_plan_id: number | null; wahoo_workout_id: number | null }): Promise<void> {
+  if (existing.wahoo_workout_id) await deleteWorkout(token, existing.wahoo_workout_id)
+  if (existing.wahoo_plan_id) await deletePlan(token, existing.wahoo_plan_id)
+}
