@@ -108,6 +108,7 @@ export const wahoo = {
   startUrl: () => call<{ url: string }>('wahoo-oauth', { action: 'start' }),
   disconnect: () => call<{ ok: boolean }>('wahoo-oauth', { action: 'disconnect' }),
   push: (items: PushItem[], mode: 'update' | 'replace' = 'update') => call<PushResponse>('wahoo-push', { items, mode }),
+  diagnose: (items: PushItem[]) => call<Record<string, unknown>>('wahoo-push', { items, mode: 'diagnose' }),
 }
 
 const AUTO_KEY = 'wahoo_auto_push'

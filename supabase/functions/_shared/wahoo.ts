@@ -202,6 +202,35 @@ export async function deleteWorkout(token: string, workoutId: number): Promise<v
   await api(token, `/v1/workouts/${workoutId}`, 'DELETE')
 }
 
+/** Odczyt planu z Wahoo – sprawdza, czy zapisana struktura ma interwały. */
+export async function getPlan(token: string, planId: number): Promise<{ status: number; body: string }> {
+  const res = await fetch(`${WAHOO_API}/v1/plans/${planId}`, { headers: { authorization: `Bearer ${token}` } })
+  return { status: res.status, body: (await res.text()).slice(0, 400) }
+}
+
+export async function getWorkout(token: string, workoutId: number): Promise<{ status: number; body: string }> {
+  const res = await fetch(`${WAHOO_API}/v1/workouts/${workoutId}`, { headers: { authorization: `Bearer ${token}` } })
+  return { status: res.status, body: (await res.text()).slice(0, 600) }
+}
+
+/**
+ * Sprawdza po kolei każdy sposób przesłania pliku: tworzy plan, odczytuje go z powrotem i kasuje.
+ * Dzięki temu wiadomo, który wariant Wahoo naprawdę rozumie, a nie tylko przyjmuje.
+ */
+export async function diagnose(token: string, item: PushItem): Promise<Record<string, unknown>[]> {
+  const now = new Date().toISOString()
+  const out: Record<string, unknown>[] = []
+  for (const variant of VARIANTS) {
+    const post = await api(token, '/v1/plans', 'POST', planBody(item, variant, now))
+    const id = post.ok ? Number(post.json?.id) : null
+    let readBack: { status: number; body: string } | null = null
+    if (id) readBack = await getPlan(token, id)
+    out.push({ variant, post_status: post.status, post_body: post.text.slice(0, 200), plan_id: id, read_status: readBack?.status ?? null, read_body: readBack?.body ?? null })
+    if (id) await deletePlan(token, id).catch(() => undefined)
+  }
+  return out
+}
+
 export async function deletePlan(token: string, planId: number): Promise<void> {
   await api(token, `/v1/plans/${planId}`, 'DELETE')
 }

@@ -141,6 +141,7 @@ function WahooCard() {
   const [status, setStatus] = useState<WahooStatus | null>(null)
   const [auto, setAuto] = useState(true)
   const [last, setLast] = useState<string | null>(null)
+  const [report, setReport] = useState<string | null>(null)
   useEffect(() => {
     if (initial) setMsg(initial)
   }, [initial, setMsg])
@@ -219,6 +220,21 @@ function WahooCard() {
               variant="ghost"
               disabled={busy}
               onClick={() =>
+                run('Sprawdzam format planu', async () => {
+                  const items = pushItemsFrom(today, 7, engine.ctx, engine.weeks)
+                  if (items.length === 0) throw new Error('Brak treningu do sprawdzenia.')
+                  const r = await wahoo.diagnose(items.slice(0, 1))
+                  setReport(JSON.stringify(r, null, 1))
+                  return 'Raport gotowy – poniżej'
+                })
+              }
+            >
+              Diagnostyka
+            </Button>
+            <Button
+              variant="ghost"
+              disabled={busy}
+              onClick={() =>
                 run('Rozłączam Wahoo', async () => {
                   await wahoo.disconnect()
                   return 'Wahoo rozłączone'
@@ -245,6 +261,17 @@ function WahooCard() {
         </label>
       )}
       {msg && <p className="mt-2 text-sm">{msg}</p>}
+      {report && (
+        <div className="mt-2">
+          <div className="flex items-center justify-between">
+            <span className="text-xs font-semibold text-slate-500">Raport diagnostyczny</span>
+            <button className="min-h-9 text-xs underline" onClick={() => navigator.clipboard?.writeText(report)}>
+              kopiuj
+            </button>
+          </div>
+          <pre className="mt-1 max-h-72 overflow-auto rounded-lg bg-slate-900 p-2 text-[10px] leading-tight text-slate-100">{report}</pre>
+        </div>
+      )}
       {status && !status.connected && <p className="mt-2 text-xs text-slate-500">W portalu Wahoo dodaj adres zwrotny: <code className="break-all">{status.redirect_uri}</code></p>}
       <p className="mt-2 text-xs text-slate-500">Treningi trafiają do „Planned Workouts” na Bolcie po synchronizacji zegarka (Wi-Fi lub aplikacja ELEMNT). „Wyślij od zera” kasuje treningi z Wahoo i tworzy je na nowo – użyj, gdy aplikacja ELEMNT pokazuje nieaktualne dane treningu.</p>
     </Card>

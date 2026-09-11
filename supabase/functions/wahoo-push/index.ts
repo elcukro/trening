@@ -5,7 +5,7 @@
  */
 import { CORS, json } from '../_shared/env.ts'
 import { adminClient, userFromRequest } from '../_shared/supabase.ts'
-import { accessTokenFor, pushDay, removeDay, type PushItem, type PushResult } from '../_shared/wahoo.ts'
+import { accessTokenFor, diagnose, getWorkout, pushDay, removeDay, type PushItem, type PushResult } from '../_shared/wahoo.ts'
 
 const MAX_ITEMS = 10
 
@@ -15,7 +15,7 @@ Deno.serve(async (req) => {
   const user = await userFromRequest(req)
   if (!user) return json({ error: 'unauthorized' }, 401)
 
-  const body = (await req.json().catch(() => ({}))) as { items?: PushItem[]; mode?: 'update' | 'replace' }
+  const body = (await req.json().catch(() => ({}))) as { items?: PushItem[]; mode?: 'update' | 'replace' | 'diagnose' }
   const items = (body.items ?? []).slice(0, MAX_ITEMS)
   if (items.length === 0) return json({ error: 'no_items' }, 400)
 
@@ -27,6 +27,13 @@ Deno.serve(async (req) => {
 
   const { data: existing } = await admin.from('wahoo_pushes').select('date, wahoo_plan_id, wahoo_workout_id').eq('user_id', user.id).in('date', items.map((i) => i.date))
   const byDate = new Map((existing ?? []).map((r) => [r.date as string, r]))
+
+  if (body.mode === 'diagnose') {
+    const first = items[0]!
+    const { data: row } = await admin.from('wahoo_pushes').select('wahoo_workout_id').eq('user_id', user.id).eq('date', first.date).maybeSingle()
+    const workout = row?.wahoo_workout_id ? await getWorkout(token, row.wahoo_workout_id as number) : null
+    return json({ ok: true, date: first.date, variants: await diagnose(token, first), workout })
+  }
 
   // tryb „od zera”: kasujemy to, co jest w Wahoo, i tworzymy na nowo
   if (body.mode === 'replace') {
@@ -56,6 +63,7 @@ Deno.serve(async (req) => {
         wahoo_plan_id: result.wahoo_plan_id ?? byDate.get(item.date)?.wahoo_plan_id ?? null,
         wahoo_workout_id: result.wahoo_workout_id ?? byDate.get(item.date)?.wahoo_workout_id ?? null,
         status: result.status,
+        variant: result.variant ?? null,
         error: result.error ?? null,
         updated_at: new Date().toISOString(),
       },
