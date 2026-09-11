@@ -7,6 +7,7 @@ import { Button, Card, CardTitle, PageTitle } from '@/components/ui'
 import { fmtDate } from '@/lib/dates'
 import { PHASE_SHORT } from '@/lib/labels'
 import type { LayoutWeek, PhaseId } from '@/engine/types'
+import { AccountSection, BackupSection } from './AccountSection'
 
 type Form = {
   athlete_name: string
@@ -142,7 +143,8 @@ function SettingsForm({ engine, saved, setSaved }: { engine: ReturnType<typeof u
 
   return (
     <div className="space-y-3">
-      <PageTitle sub="Zapisywane lokalnie na tym urządzeniu (synchronizacja w Etapie 2)">Ustawienia</PageTitle>
+      <PageTitle sub="Profil, daty, siłownia, konto">Ustawienia</PageTitle>
+      <AccountSection />
       <Card>
         <CardTitle icon="👤">Profil</CardTitle>
         <Field label="Imię">
@@ -155,7 +157,7 @@ function SettingsForm({ engine, saved, setSaved }: { engine: ReturnType<typeof u
           <Field label="Masa docelowa (kg)">
             <input className={inputCls} inputMode="decimal" value={form.body_weight_target_kg} onChange={set('body_weight_target_kg')} />
           </Field>
-          <Field label="LTHR (bpm)" hint="z testu progowego">
+          <Field label="LTHR (bpm)" hint={engine.ctx.tests?.length ? `ręcznie; testy mają pierwszeństwo (ostatni: ${engine.ctx.tests.at(-1)!.lthr_bpm} bpm)` : 'ręcznie – albo zapisz wynik testu'}>
             <input className={inputCls} inputMode="numeric" placeholder="np. 160" value={form.lthr_bpm} onChange={set('lthr_bpm')} />
           </Field>
           <Field label="HRmax (bpm)" hint="opcjonalnie">
@@ -238,7 +240,8 @@ function SettingsForm({ engine, saved, setSaved }: { engine: ReturnType<typeof u
           Przywróć domyślne
         </Button>
       </div>
-      <p className="text-xs text-slate-400">Wersja programu {engine.ctx.program.version}. Integracje (Strava, Wahoo) i eksport kopii pojawią się w kolejnych etapach.</p>
+      <BackupSection />
+      <p className="text-xs text-slate-400">Wersja programu {engine.ctx.program.version}. Integracje (Strava, Wahoo) pojawią się w Etapach 3–4.</p>
     </div>
   )
 }

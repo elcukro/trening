@@ -1,4 +1,4 @@
-import { Component, type ReactNode } from 'react'
+import { Component, Suspense, lazy, type ReactNode } from 'react'
 import { BrowserRouter, NavLink, Navigate, Outlet, Route, Routes } from 'react-router'
 import { TodayPage } from '@/features/today/TodayPage'
 import { DayPage } from '@/features/today/DayPage'
@@ -11,6 +11,10 @@ import { ZonesPage } from '@/features/library/ZonesPage'
 import { RulesPage } from '@/features/library/RulesPage'
 import { SettingsPage } from '@/features/settings/SettingsPage'
 import { MorePage } from '@/features/more/MorePage'
+import { GymModePage } from '@/features/gym/GymModePage'
+import { useSyncRunner } from '@/sync/useSync'
+
+const ProgressPage = lazy(() => import('@/features/progress/ProgressPage').then((m) => ({ default: m.ProgressPage })))
 
 const TABS = [
   { to: '/', label: 'Dziś', icon: '📅', end: true },
@@ -46,6 +50,7 @@ function BottomNav() {
 }
 
 function Layout() {
+  useSyncRunner()
   return (
     <div className="safe-top mx-auto w-full max-w-lg flex-1">
       <main className="pb-nav px-4 pt-3">
@@ -77,15 +82,6 @@ class ErrorBoundary extends Component<{ children: ReactNode }, { error: Error | 
   }
 }
 
-function ComingSoon({ title }: { title: string }) {
-  return (
-    <div className="py-16 text-center">
-      <h1 className="text-xl font-bold">{title}</h1>
-      <p className="mt-2 text-sm text-slate-500">Ten ekran pojawi się w Etapie 2.</p>
-    </div>
-  )
-}
-
 export function App() {
   return (
     <ErrorBoundary>
@@ -96,7 +92,7 @@ export function App() {
             <Route path="dzien/:date" element={<DayPage />} />
             <Route path="tydzien" element={<WeekPage />} />
             <Route path="tydzien/:date" element={<WeekPage />} />
-            <Route path="postep" element={<ComingSoon title="Postęp" />} />
+            <Route path="postep" element={<Suspense fallback={<p className="py-8 text-center text-sm text-slate-500">Ładowanie…</p>}><ProgressPage /></Suspense>} />
             <Route path="biblioteka" element={<LibraryPage />} />
             <Route path="biblioteka/trening/:id" element={<WorkoutPage />} />
             <Route path="biblioteka/cwiczenie/:id" element={<ExercisePage />} />
@@ -107,6 +103,7 @@ export function App() {
             <Route path="wiecej/ustawienia" element={<SettingsPage />} />
             <Route path="*" element={<Navigate to="/" replace />} />
           </Route>
+          <Route path="silownia/:date" element={<GymModePage />} />
         </Routes>
       </BrowserRouter>
     </ErrorBoundary>

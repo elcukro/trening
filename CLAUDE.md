@@ -21,18 +21,25 @@ Osobisty asystent treningowy (PWA na iPhone) dla jednego użytkownika przygotowu
 - `npm run e2e` – Playwright, Chromium z viewportem iPhone 14 (buduje i uruchamia `vite preview` na porcie 4173); zrzuty w `test-results/`
 - `npm run data:generate` – `python3 data/reference_generator.py`
 - `node scripts/icons.mjs` – regeneracja ikon PNG z `public/icon.svg`
+- `supabase db push` – wgranie migracji do podlinkowanego projektu (`supabase link --project-ref …`); `supabase migration new` może zawisnąć w tej sesji – twórz plik ręcznie z tym samym formatem nazwy
 
 ## Struktura
 ```
 data/                 program.json (źródło prawdy), calendar.json (golden), generator, sprzęt, checklista
 docs/                 dokumentacja 00–07 + OPEN_QUESTIONS.md
 src/engine/           silnik: schema.ts (Zod), dates.ts, layout.ts (R14), calendar.ts (dni, R16, tabela sezonu),
-                      zones.ts (strefy, resolveWorkout), nutrition.ts, load.ts (R8, e1RM), climb.ts, plan.ts (DayPlan dla UI)
+                      zones.ts (strefy, resolveWorkout), nutrition.ts, load.ts (R8, e1RM), climb.ts, progress.ts (R11 effectiveLthr,
+                      masa/trend R10, e1RM, objętość), plan.ts (DayPlan dla UI)
 src/engine/__tests__/ golden.test.ts, scenarios.test.ts (scenariusze §10 specyfikacji)
 src/data/             program.ts (import + walidacja Zod), rules.ts (zasady R1–R16 dla ludzi)
-src/db/               Dexie (IndexedDB): settings, kv – etap 2 doda logi/serie/check-iny/outbox
-src/app/              App.tsx (router, dolna nawigacja), useSettings.ts (ustawienia + kontekst silnika)
-src/features/         today, week, season, library, settings, more (ekrany)
+src/db/               Dexie (IndexedDB): index.ts (schemat v2: settings, kv, checkins, session_logs, set_logs, test_results, outbox),
+                      repo.ts (zapisy z outboxem: check-in, logi, serie, testy, historia ćwiczeń)
+src/sync/             supabase.ts (klient lub null bez env), auth.ts (magic link), sync.ts (push outbox → pull po server_updated_at, LWW),
+                      useSync.ts (start, online, visibility, zmiany outboxa)
+src/app/              App.tsx (router, dolna nawigacja, lazy Postęp), useSettings.ts (ustawienia + kontekst silnika + testy → R11)
+src/features/         today (Dziś: check-in, karta roweru + log, test, siłownia), week, season, library, settings (+ konto, kopia),
+                      more, progress (masa, testy, kalkulator, objętość, siła), gym (tryb siłowni: sequence.ts, useRestTimer.ts, GymModePage.tsx)
+supabase/             config.toml, migrations/…_init.sql (tabele, RLS, trigger allowed_emails, lww_guard) – instrukcja: docs/09-supabase.md
 src/components/       ui.tsx (Card, Badge, Button…), StepTimeline.tsx (oś czasu stref)
 src/lib/              dates.ts (Europe/Warsaw, formaty pl), format.ts, labels.ts, zones.ts (kolory)
 e2e/                  Playwright smoke (viewport iPhone)
@@ -41,5 +48,7 @@ public/               ikony PWA
 
 ## Stan etapów
 - Etap 1 (plan offline): gotowy – silnik + testy golden, ekrany Dziś / Tydzień / Sezon / Biblioteka / Ustawienia, PWA.
-- Etap 2 (logi, Supabase, tryb siłowni, Postęp): do zrobienia. Model danych w `docs/07` §6; dozwolony e-mail: w sekretach Supabase (`ALLOWED_EMAIL`), nie w repo.
+- Etap 2 (logi, Supabase, tryb siłowni, Postęp): gotowy w kodzie. Projekt w chmurze zakłada użytkownik wg `docs/09-supabase.md`; dozwolony e-mail wpisuje się do `private.allowed_emails` przez SQL Editor (nie w repo). Bez env `VITE_SUPABASE_*` aplikacja działa lokalnie.
+- Synchronizacja: rekordy mają UUID z klienta i `updated_at` (zegar klienta); serwer odrzuca starsze zapisy (trigger `lww_guard`) i stempluje `server_updated_at`, po którym klient pobiera zmiany. Soft delete przez `deleted_at`.
+- Lokalna weryfikacja SQL bez Dockera: `createdb trening_test` + stub schematu `auth` (patrz historia commitów), potem `psql -f supabase/migrations/…`.
 - Etapy 3–5 (Strava, Wahoo, adaptacja R1–R15 w UI, sprzęt, wyjazd, push): później. Typ `PlanOverride` w `src/engine/types.ts` jest już przygotowany.

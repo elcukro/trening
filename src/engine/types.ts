@@ -72,6 +72,8 @@ export interface EngineContext {
   program: Program
   settings: Settings
   overrides?: PlanOverride[]
+  /** wyniki testów z LTHR – R11: strefy od następnego dnia po teście */
+  tests?: { date: ISODate; lthr_bpm: number }[]
 }
 
 export interface ZoneBpm {

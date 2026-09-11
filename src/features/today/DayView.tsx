@@ -7,6 +7,11 @@ import { fmtLong } from '@/lib/dates'
 import { days, minutes, num } from '@/lib/format'
 import { FLAG_LABEL, PHASE_COLOR, WEEK_TYPE_LABEL } from '@/lib/labels'
 import { GymItems } from './GymItems'
+import { CheckinCard } from './CheckinCard'
+import { BikeLogCard, StatusBadge } from './BikeLogCard'
+import { TestResultCard } from './TestResultCard'
+import { useLiveQuery } from 'dexie-react-hooks'
+import { db } from '@/db'
 
 function typeBadges(day: DayPlan) {
   const out: { label: string; color: string }[] = []
@@ -39,7 +44,7 @@ export function DayHeader({ day }: { day: DayPlan }) {
   )
 }
 
-export function BikeCard({ day, engine }: { day: DayPlan; engine: Engine }) {
+export function BikeCard({ day }: { day: DayPlan }) {
   const w = day.workout
   if (!day.bike || !w) {
     return (
@@ -67,7 +72,7 @@ export function BikeCard({ day, engine }: { day: DayPlan; engine: Engine }) {
       </Card>
     )
   }
-  const lthr = engine.ctx.settings.lthr_bpm
+  const lthr = day.lthr
   const carbs = day.nutrition.on_bike_carbs_g_per_h
   return (
     <Card>
@@ -99,11 +104,13 @@ export function BikeCard({ day, engine }: { day: DayPlan; engine: Engine }) {
           </div>
         </details>
       )}
+      <BikeLogCard day={day} />
     </Card>
   )
 }
 
 export function GymCard({ day, engine }: { day: DayPlan; engine: Engine }) {
+  const log = useLiveQuery(async () => (await db.session_logs.where('[date+kind]').equals([day.date, 'gym']).toArray()).find((r) => !r.deleted_at), [day.date])
   if (!day.gym) return null
   return (
     <Card>
@@ -111,7 +118,12 @@ export function GymCard({ day, engine }: { day: DayPlan; engine: Engine }) {
         {day.gym.name}
       </CardTitle>
       <GymItems session={day.gym} program={engine.ctx.program} />
-      <p className="mt-3 text-xs text-slate-500">Tryb siłowni (odhaczanie serii, timer przerwy, sugestia ciężaru) pojawi się w Etapie 2.</p>
+      <div className="mt-3 flex items-center gap-3">
+        <Link to={`/silownia/${day.date}`} className="flex min-h-12 flex-1 items-center justify-center rounded-xl bg-sky-600 text-sm font-semibold text-white">
+          {log && log.status !== 'planned' && log.status !== 'skipped' ? (log.status === 'in_progress' ? 'Kontynuuj sesję' : 'Otwórz sesję') : 'Start sesji'}
+        </Link>
+        {log && log.status !== 'planned' && <StatusBadge status={log.status} />}
+      </div>
     </Card>
   )
 }
@@ -152,11 +164,14 @@ export function NotesCard({ day }: { day: DayPlan }) {
 }
 
 export function DayView({ day, engine }: { day: DayPlan; engine: Engine }) {
+  const testProtocol = day.bike?.workout_id === 'TEST_LTHR' || day.bike?.workout_id === 'WATTBIKE_TEST' ? day.bike.workout_id : null
   return (
     <div className="space-y-3">
       <DayHeader day={day} />
+      <CheckinCard date={day.date} />
       <NotesCard day={day} />
-      <BikeCard day={day} engine={engine} />
+      <BikeCard day={day} />
+      {testProtocol && <TestResultCard date={day.date} protocol={testProtocol} program={engine.ctx.program} previousLthr={day.lthr} />}
       <GymCard day={day} engine={engine} />
       <NutritionCard day={day} engine={engine} />
     </div>

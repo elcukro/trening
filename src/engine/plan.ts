@@ -5,6 +5,7 @@ import { buildCalendar, getCalendarDay, getCalendarWeek } from './calendar'
 import { layoutWeeks } from './layout'
 import { computeZones, resolveWorkout } from './zones'
 import { proteinGrams } from './nutrition'
+import { effectiveLthr } from './progress'
 
 export interface DayPlan extends CalendarDay {
   /** dni do wyjazdu (0 = dzień wyjazdu, ujemne po wyjeździe) */
@@ -13,6 +14,8 @@ export interface DayPlan extends CalendarDay {
   workout: ResolvedWorkout | null
   fallback_workout: ResolvedWorkout | null
   zones: ZoneBpm[] | null
+  lthr: number | null
+  lthr_source: 'test' | 'manual' | null
   protein_g: number
   /** ostrzeżenia z reguł (R1–R16) – etap 5; teraz tylko brak LTHR */
   warnings: PlanWarning[]
@@ -36,7 +39,8 @@ export function getDayPlan(date: ISODate, ctx: EngineContext, weeks?: LayoutWeek
 
 export function enrichDay(day: CalendarDay, ctx: EngineContext): DayPlan {
   const { program, settings } = ctx
-  const lthr = settings.lthr_bpm
+  const eff = effectiveLthr(day.date, settings.lthr_bpm, ctx.tests ?? [])
+  const lthr = eff.lthr
   const heat = day.flags.includes('heat') ? 4 : 0
   const w: BikeWorkout | undefined = day.bike ? program.bike_workouts[day.bike.workout_id] : undefined
   const fb: BikeWorkout | undefined = day.bike?.fallback_workout_id ? program.bike_workouts[day.bike.fallback_workout_id] : undefined
@@ -51,6 +55,8 @@ export function enrichDay(day: CalendarDay, ctx: EngineContext): DayPlan {
     workout: w && day.bike ? resolveWorkout(w, day.bike.duration_min, lthr, { heatOffsetBpm: heat }) : null,
     fallback_workout: fb ? resolveWorkout(fb, fb.duration_min, lthr) : null,
     zones: lthr ? computeZones(program.hr_zones_lthr_fraction, lthr) : null,
+    lthr,
+    lthr_source: eff.source,
     protein_g: proteinGrams(day.nutrition, settings.body_weight_target_kg),
     warnings,
   }
