@@ -76,17 +76,16 @@ export function AccountSection() {
             Wyślij link logowania
           </Button>
           {msg && <p className="mt-2 text-sm">{msg}</p>}
-          {sent && (
-            <div className="mt-3 rounded-xl bg-sky-50 p-3 dark:bg-sky-950/40">
+          <div className={`mt-3 rounded-xl p-3 ${sent ? 'bg-sky-50 dark:bg-sky-950/40' : 'bg-slate-100 dark:bg-slate-700/40'}`}>
               <label className="block">
                 <span className="text-xs text-slate-500">Kod z maila (8 cyfr)</span>
                 <input className={`${inputCls} text-center text-2xl tracking-[0.3em]`} inputMode="numeric" autoComplete="one-time-code" maxLength={8} value={code} onChange={(e) => setCode(e.target.value)} placeholder="········" />
               </label>
-              <Button onClick={useCode} disabled={code.replace(/\D/g, '').length < 6} className="mt-2 w-full">
+              <Button onClick={useCode} disabled={code.replace(/\D/g, '').length < 6 || !email.includes('@')} className="mt-2 w-full">
                 Zaloguj kodem
               </Button>
-            </div>
-          )}
+              {!sent && <p className="mt-1 text-xs text-slate-500">Najpierw wyślij mail przyciskiem wyżej, potem przepisz kod z maila. E-mail musi być wpisany.</p>}
+          </div>
           <details className="mt-3">
             <summary className="min-h-11 cursor-pointer py-2 text-sm font-medium">Mam link z maila – wklej go tutaj</summary>
             <textarea className={`${inputCls} min-h-20 text-xs`} value={link} onChange={(e) => setLink(e.target.value)} placeholder="https://kgllegvlnmchdvkkbitt.supabase.co/auth/v1/verify?token=…" />

@@ -241,7 +241,7 @@ function SettingsForm({ engine, saved, setSaved }: { engine: ReturnType<typeof u
         </Button>
       </div>
       <BackupSection />
-      <p className="text-xs text-slate-400">Wersja programu {engine.ctx.program.version}. Integracje (Strava, Wahoo) pojawią się w Etapach 3–4.</p>
+      <p className="text-xs text-slate-400">Wersja programu {engine.ctx.program.version} · build {__BUILD_ID__}. Integracje (Strava, Wahoo) pojawią się w Etapach 3–4.</p>
     </div>
   )
 }
