@@ -23,7 +23,7 @@ insert into private.allowed_emails (email) values ('elcukro@gmail.com');
 ```
 Trigger `check_allowed_email` odrzuci każdą inną rejestrację. Dodatkowo, dla pewności: **Authentication → Sign In / Providers → Email**: zostaw włączone, a w **Authentication → Settings** ustaw **Allow new users to sign up = OFF** *dopiero po pierwszym zalogowaniu* (pierwsze logowanie tworzy konto).
 
-## 4. Adresy przekierowań (Authentication → URL Configuration)
+## 4. Adresy przekierowań (Authentication → URL Configuration) – zrobione 11.09.2026 przez `supabase config push`
 - **Site URL**: adres z Vercel, np. `https://trening-inky.vercel.app`
 - **Redirect URLs**: `https://trening-inky.vercel.app/**`, `http://localhost:5173/**`, `http://localhost:4173/**`
 
