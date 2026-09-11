@@ -5,7 +5,7 @@
  */
 import { CORS, json } from '../_shared/env.ts'
 import { adminClient, userFromRequest } from '../_shared/supabase.ts'
-import { accessTokenFor, diagnose, getWorkout, pushDay, removeDay, type PushItem, type PushResult } from '../_shared/wahoo.ts'
+import { accessTokenFor, diagnose, getWorkout, pushDay, removeDay, type PlanIndex, type PushItem, type PushResult } from '../_shared/wahoo.ts'
 
 const MAX_ITEMS = 10
 
@@ -27,6 +27,8 @@ Deno.serve(async (req) => {
 
   const { data: existing } = await admin.from('wahoo_pushes').select('date, wahoo_plan_id, wahoo_workout_id').eq('user_id', user.id).in('date', items.map((i) => i.date))
   const byDate = new Map((existing ?? []).map((r) => [r.date as string, r]))
+  // kopia na potrzeby zapisu – `byDate` bywa modyfikowane przez tryb „od zera”
+  const existingIds = new Map((existing ?? []).map((r) => [r.date as string, { plan: r.wahoo_plan_id as number | null, workout: r.wahoo_workout_id as number | null }]))
 
   if (body.mode === 'diagnose') {
     const first = items[0]!
@@ -46,6 +48,7 @@ Deno.serve(async (req) => {
   }
 
   const results: PushResult[] = []
+  const planIndex: PlanIndex = { map: null } // lista planów z Wahoo pobierana najwyżej raz
   let rateLimited = false
   for (const [index, item] of items.entries()) {
     if (rateLimited) {
@@ -55,7 +58,7 @@ Deno.serve(async (req) => {
     let result: PushResult
     try {
       // weryfikujemy powiązanie planu tylko przy pierwszym dniu – to dodatkowe zapytanie
-      result = await pushDay(token, item, byDate.get(item.date) ?? null, { verify: index === 0 })
+      result = await pushDay(token, item, byDate.get(item.date) ?? null, { verify: index === 0, planIndex })
     } catch (e) {
       result = { date: item.date, status: 'error', error: String(e instanceof Error ? e.message : e).slice(0, 200) }
     }
@@ -70,8 +73,10 @@ Deno.serve(async (req) => {
         external_id: item.external_id,
         name: item.name,
         minutes: item.minutes,
-        wahoo_plan_id: result.wahoo_plan_id ?? byDate.get(item.date)?.wahoo_plan_id ?? null,
-        wahoo_workout_id: result.wahoo_workout_id ?? byDate.get(item.date)?.wahoo_workout_id ?? null,
+        // przy błędzie zachowujemy to, co już znamy – wyzerowanie identyfikatorów zmusza do tworzenia
+        // od nowa, a Wahoo odrzuca duplikaty external_id
+        wahoo_plan_id: result.wahoo_plan_id ?? byDate.get(item.date)?.wahoo_plan_id ?? existingIds.get(item.date)?.plan ?? null,
+        wahoo_workout_id: result.wahoo_workout_id ?? byDate.get(item.date)?.wahoo_workout_id ?? existingIds.get(item.date)?.workout ?? null,
         status: result.status,
         variant: result.variant ?? null,
         error: result.error ?? null,

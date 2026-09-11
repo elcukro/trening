@@ -144,7 +144,31 @@ function planBody(item: PushItem, variant: Variant, now: string): BodyInit {
   return fd
 }
 
-async function sendPlan(token: string, item: PushItem, planId: number | null, now: string): Promise<{ ok: boolean; id?: number; status: number; text: string; variant?: Variant }> {
+/**
+ * Odnajduje plan po `external_id`. Potrzebne, gdy nasza baza zgubi identyfikator (np. po nieudanej
+ * wysyłce), a plan po stronie Wahoo nadal istnieje – wtedy POST odbija się o wymóg unikalności.
+ * Listę pobieramy raz na całą wysyłkę i trzymamy w podanym indeksie.
+ */
+export interface PlanIndex {
+  map: Map<string, number> | null
+}
+
+async function loadPlanIndex(token: string, index: PlanIndex): Promise<Map<string, number>> {
+  if (index.map) return index.map
+  const map = new Map<string, number>()
+  for (let page = 1; page <= 3; page++) {
+    const res = await fetch(`${WAHOO_API}/v1/plans?page=${page}&per_page=50`, { headers: { authorization: `Bearer ${token}` } })
+    if (!res.ok) break
+    const body = (await res.json()) as { plans?: unknown[] } | unknown[]
+    const list = (Array.isArray(body) ? body : (body.plans ?? [])) as { id?: number; external_id?: string }[]
+    for (const p of list) if (p.external_id && p.id) map.set(p.external_id, p.id)
+    if (list.length < 50) break
+  }
+  index.map = map
+  return map
+}
+
+async function sendPlan(token: string, item: PushItem, planId: number | null, now: string, index?: PlanIndex): Promise<{ ok: boolean; id?: number; status: number; text: string; variant?: Variant }> {
   const order = preferred ? [preferred, ...VARIANTS.filter((v) => v !== preferred)] : VARIANTS
   let last = { ok: false, status: 0, text: 'brak próby' }
   for (const variant of order) {
@@ -155,6 +179,19 @@ async function sendPlan(token: string, item: PushItem, planId: number | null, no
       return { ok: true, id: planId ?? Number(res.json?.id), status: res.status, text: res.text, variant }
     }
     last = { ok: false, status: res.status, text: res.text }
+    // plan już istnieje po stronie Wahoo, a my zgubiliśmy jego identyfikator – odszukaj i zaktualizuj
+    if (res.status === 422 && res.text.includes('already exists') && index && !planId) {
+      const found = (await loadPlanIndex(token, index)).get(item.external_id)
+      if (found) {
+        const put = await api(token, `/v1/plans/${found}`, 'PUT', () => planBody(item, variant, now))
+        if (put.ok) {
+          preferred = variant
+          return { ok: true, id: found, status: put.status, text: put.text, variant }
+        }
+        return { ok: false, status: put.status, text: put.text }
+      }
+      return { ok: false, status: res.status, text: `${res.text} (nie znaleziono planu o tym external_id na liście)` }
+    }
     // 422/400 to odrzucenie formatu – warto spróbować innego wariantu; reszta to prawdziwy błąd
     if (res.status !== 422 && res.status !== 400) break
   }
@@ -189,7 +226,7 @@ export async function pushDay(
   token: string,
   item: PushItem,
   existing: { wahoo_plan_id: number | null; wahoo_workout_id: number | null } | null,
-  opts: { verify?: boolean } = {},
+  opts: { verify?: boolean; planIndex?: PlanIndex } = {},
 ): Promise<PushResult> {
   const now = new Date().toISOString()
 
@@ -202,7 +239,7 @@ export async function pushDay(
     else return { date: item.date, status: 'error', error: `plan PUT ${put.status}: ${put.text.slice(0, 160)}` }
   }
   if (!planId) {
-    const post = await sendPlan(token, item, null, now)
+    const post = await sendPlan(token, item, null, now, opts.planIndex)
     if (!post.ok) return { date: item.date, status: 'error', error: `plan POST ${post.status}: ${post.text.slice(0, 160)}` }
     planId = post.id ?? null
     if (!planId) return { date: item.date, status: 'error', error: 'plan bez id' }
