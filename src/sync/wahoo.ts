@@ -79,6 +79,7 @@ export function pushItemFor(date: ISODate, ctx: EngineContext, weeks?: LayoutWee
   const plan = buildWahooPlan(workout, {
     durationMin: day.bike.duration_min,
     lthr: day.lthr,
+    heatOffsetBpm: day.flags.includes('heat') ? 4 : 0,
     programVersion: ctx.program.version,
   })
   return {

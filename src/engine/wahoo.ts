@@ -63,6 +63,22 @@ function isRepeat(b: StepBlock): b is { repeat: number; steps: StepBlock[] } {
   return 'repeat' in b
 }
 
+/**
+ * Cele tętna w nazwie interwału. ELEMNT nie obsługuje celów `threshold_hr` w plikach planu
+ * (przypis 1 w dokumentacji formatu: „Currently not supported on ELEMNT Bike Computers or RIVAL”),
+ * a licznik po prostu je pomija. Nazwa interwału jest widoczna na ekranie w trakcie jazdy,
+ * więc zakres bpm wchodzi na jej początek – nawet po obcięciu zostaje to, co najważniejsze.
+ */
+export function intervalLabel(name: string, target: { low: number; high: number }, lthr: number | null, heatOffset = 0, max = 44): string {
+  if (!lthr) return name
+  const lo = Math.max(0, Math.round(target.low * lthr) - heatOffset)
+  const hi = Math.max(0, Math.round(target.high * lthr) - heatOffset)
+  const range = target.low <= 0 ? `<${hi}` : `${lo}-${hi}`
+  const room = max - range.length - 3
+  const short = name.length > room ? `${name.slice(0, Math.max(0, room - 1)).trimEnd()}…` : name
+  return `${range} · ${short}`
+}
+
 function targetsFor(step: Exclude<StepBlock, { repeat: number; steps: StepBlock[] }>, hasLthr: boolean): WahooTarget[] {
   const out: WahooTarget[] = []
   if (hasLthr) {
@@ -79,7 +95,7 @@ function round2(v: number): number {
   return Math.round(v * 100) / 100
 }
 
-function convert(blocks: StepBlock[], hasLthr: boolean): WahooInterval[] {
+function convert(blocks: StepBlock[], lthr: number | null, heatOffset: number): WahooInterval[] {
   return blocks.map((b) => {
     if (isRepeat(b)) {
       return {
@@ -87,15 +103,15 @@ function convert(blocks: StepBlock[], hasLthr: boolean): WahooInterval[] {
         exit_trigger_type: 'repeat' as const,
         // Wahoo liczy powtórzenia PO pierwszym przejściu: 0 = raz, 1 = dwa razy
         exit_trigger_value: Math.max(0, b.repeat - 1),
-        intervals: convert(b.steps, hasLthr),
+        intervals: convert(b.steps, lthr, heatOffset),
       }
     }
     return {
-      name: b.name,
+      name: intervalLabel(b.name, b.target, lthr, heatOffset),
       exit_trigger_type: 'time' as const,
       exit_trigger_value: b.duration_s,
       intensity_type: intensity(b.intensity_type),
-      targets: targetsFor(b, hasLthr),
+      targets: targetsFor(b, !!lthr),
     }
   })
 }
@@ -130,6 +146,8 @@ export interface BuildPlanOptions {
    */
   ftp?: number | null
   usePowerTargets?: boolean
+  /** obniżenie celów tętna w upale (R13) */
+  heatOffsetBpm?: number
   /** nazwa widoczna na Bolcie (domyślnie nazwa treningu) */
   name?: string
   programVersion: string
@@ -137,17 +155,16 @@ export interface BuildPlanOptions {
 
 export function buildWahooPlan(workout: BikeWorkout, opts: BuildPlanOptions): WahooPlan {
   const blocks = planBlocks(workout, opts.durationMin)
-  const hasLthr = !!opts.lthr
   const header: WahooPlan['header'] = {
     name: (opts.name ?? workout.name).slice(0, 80),
     version: '1.0.0',
-    description: workout.description.slice(0, 500),
+    description: (opts.lthr ? `Cele tętna są w nazwach interwałów (ELEMNT nie obsługuje celów HR w planach). ${workout.description}` : workout.description).slice(0, 500),
     workout_type_family: WORKOUT_TYPE_FAMILY_CYCLING,
     workout_type_location: isIndoor(workout.id) ? LOCATION_INDOOR : LOCATION_OUTDOOR,
   }
   if (opts.lthr) header.threshold_hr = opts.lthr
   if (opts.ftp && opts.usePowerTargets) header.ftp = opts.ftp
-  return { header, intervals: convert(blocks, hasLthr) }
+  return { header, intervals: convert(blocks, opts.lthr, opts.heatOffsetBpm ?? 0) }
 }
 
 /** Identyfikator w Wahoo – pozwala aktualizować zamiast duplikować. */

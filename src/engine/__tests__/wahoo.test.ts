@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import programJson from '../../../data/program.json'
 import { parseProgram } from '../schema'
-import { buildWahooPlan, externalId, isIndoor, isPushable, planMinutes, type WahooInterval } from '../wahoo'
+import { buildWahooPlan, externalId, intervalLabel, isIndoor, isPushable, planMinutes, type WahooInterval } from '../wahoo'
 
 const program = parseProgram(programJson)
 const V = program.version
@@ -12,7 +12,8 @@ describe('plan.json dla Wahoo', () => {
     expect(plan.header).toMatchObject({ name: expect.stringContaining('4×6'), version: '1.0.0', workout_type_family: 0, workout_type_location: 1, threshold_hr: 160 })
     // bez celów mocy nie podajemy FTP – inaczej Wahoo liczy z niego bezsensowne TSS i IF
     expect(plan.header.ftp).toBeUndefined()
-    expect(plan.intervals[0]).toMatchObject({ name: 'Rozgrzewka', exit_trigger_type: 'time', exit_trigger_value: 900, intensity_type: 'wu' })
+    // ELEMNT ignoruje cele tętna w planach, więc zakres bpm wchodzi na początek nazwy interwału
+    expect(plan.intervals[0]).toMatchObject({ name: '130-142 · Rozgrzewka', exit_trigger_type: 'time', exit_trigger_value: 900, intensity_type: 'wu' })
     expect(plan.intervals[0]!.targets).toEqual([
       { type: 'threshold_hr', low: 0.81, high: 0.89 },
       { type: 'rpm', low: 85, high: 95 },
@@ -23,7 +24,7 @@ describe('plan.json dla Wahoo', () => {
     expect(rep.intervals![0]).toMatchObject({ exit_trigger_value: 360, intensity_type: 'lt' })
     expect(rep.intervals![0]!.targets![0]).toEqual({ type: 'threshold_hr', low: 0.95, high: 1 })
     expect(rep.intervals![1]).toMatchObject({ intensity_type: 'recover' })
-    expect(plan.intervals.at(-1)).toMatchObject({ name: 'Schłodzenie', intensity_type: 'cd' })
+    expect(plan.intervals.at(-1)).toMatchObject({ name: '<130 · Schłodzenie', intensity_type: 'cd' })
     expect(planMinutes(plan)).toBe(program.bike_workouts.THR_4x6!.duration_min)
   })
 
@@ -89,5 +90,28 @@ describe('plan.json dla Wahoo', () => {
     expect(isPushable(null)).toBe(false)
     expect(isPushable('SS_2x20')).toBe(true)
     expect(externalId('2027-01-13', 'SS_2x20', V)).toBe(`2027-01-13:SS_2x20:${V}`)
+  })
+})
+
+describe('cele tętna w nazwach interwałów', () => {
+  it('zakres na początku, nazwa skracana, bez LTHR bez zmian', () => {
+    expect(intervalLabel('Rozgrzewka', { low: 0.81, high: 0.89 }, 160)).toBe('130-142 · Rozgrzewka')
+    expect(intervalLabel('Przerwa', { low: 0, high: 0.81 }, 160)).toBe('<130 · Przerwa')
+    expect(intervalLabel('Rozgrzewka', { low: 0.81, high: 0.89 }, null)).toBe('Rozgrzewka')
+    const long = intervalLabel('TEST 30 min – maksymalny równy wysiłek', { low: 0.95, high: 1 }, 160)
+    expect(long.startsWith('152-160 · ')).toBe(true)
+    expect(long.length).toBeLessThanOrEqual(44)
+    expect(long.endsWith('…')).toBe(true)
+  })
+  it('upał obniża wartości w nazwie (R13)', () => {
+    expect(intervalLabel('Z2', { low: 0.81, high: 0.89 }, 160, 4)).toBe('126-138 · Z2')
+    const plan = buildWahooPlan(program.bike_workouts.Z2_HEAT!, { durationMin: 90, lthr: 160, heatOffsetBpm: 4, programVersion: V })
+    expect(plan.intervals[0]!.name.startsWith('126-138 · ')).toBe(true)
+  })
+  it('opis uprzedza, gdzie szukać celów tętna', () => {
+    const plan = buildWahooPlan(program.bike_workouts.Z2!, { durationMin: 60, lthr: 160, programVersion: V })
+    expect(plan.header.description).toContain('w nazwach interwałów')
+    const bez = buildWahooPlan(program.bike_workouts.Z2!, { durationMin: 60, lthr: null, programVersion: V })
+    expect(bez.header.description).not.toContain('w nazwach interwałów')
   })
 })

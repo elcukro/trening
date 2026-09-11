@@ -24,6 +24,22 @@
 ## Dlaczego bez crona
 Specyfikacja przewidywała dzienny cron po stronie Supabase. Plan budowany jest jednak z `program.json` i silnika, a wstawienie ich do Edge Function oznaczałoby drugą kopię logiki planu w Deno i złamanie zasady „treść planu pochodzi z `data/`”. Zamiast tego wysyła aplikacja, raz dziennie przy starcie, zawsze na tydzień do przodu. Przy codziennym zaglądaniu do aplikacji efekt jest ten sam, a źródło prawdy zostaje jedno. Gdyby okazało się to za mało (dłuższa przerwa od aplikacji), wracamy do crona i portujemy silnik do Deno.
 
+## ELEMNT nie obsługuje celów tętna w planach
+To najważniejsze ograniczenie całej integracji i wynika wprost z dokumentacji formatu: przy polach `threshold_hr`, `max_hr` i `threshold_speed` stoi przypis „Currently **not** supported on ELEMNT Bike Computers or RIVAL”. Potwierdzone na urządzeniu: plik planu po konwersji (`/data/data/com.wahoofitness.bolt/files/plans/FID<id aplikacji>/<plan>_WKT<trening>.plan`) zawiera nazwy interwałów, czasy i kadencję (`CAD_LO`, `CAD_HI`), ale **żadnego celu tętna**. Licznik po prostu je pomija.
+
+Ponieważ plan jest w całości oparty na tętnie (brak miernika mocy), obejście wygląda tak: **zakres bpm wchodzi na początek nazwy interwału**, np. `152-160 · TEST 30 min…`. Nazwa jest widoczna na ekranie w trakcie jazdy, a umieszczenie liczb na początku sprawia, że przetrwają obcięcie na wąskim ekranie. Opis planu uprzedza, gdzie szukać celów. Cele `threshold_hr` zostają w pliku – nic nie kosztują, a zadziałają, jeśli Wahoo kiedyś doda ich obsługę.
+
+Kadencja działa, więc bloki kadencyjne (Z2_CADENCE) prowadzą się na liczniku normalnie.
+
+## Podgląd na urządzeniu (adb)
+Bolt to Android, więc przez USB można sprawdzić, co naprawdę dotarło:
+```bash
+adb devices                       # po podłączeniu zatwierdź autoryzację na ekranie licznika
+adb shell 'ls /data/data/com.wahoofitness.bolt/files/plans/FID3830/'
+adb shell 'cat /data/data/com.wahoofitness.bolt/files/plans/FID3830/<plik>.plan'
+```
+`FID3830` to identyfikator naszej aplikacji w Wahoo (pole `fitness_app_id` w odpowiedzi treningu). Po sprawdzeniu warto wyłączyć debugowanie USB na liczniku.
+
 ## Zakresy uprawnień
 `user_read workouts_read workouts_write plans_read plans_write offline_data`. Odczyt (`*_read`) jest potrzebny, żeby po zapisie sprawdzić, co Wahoo naprawdę przechowuje. Po rozszerzeniu listy trzeba połączyć konto ponownie – sekcja Integracje pokazuje wtedy brakujące uprawnienia i przycisk „Połącz ponownie”.
 
