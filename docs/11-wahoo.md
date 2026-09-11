@@ -22,6 +22,9 @@
 ## Dlaczego bez crona
 Specyfikacja przewidywała dzienny cron po stronie Supabase. Plan budowany jest jednak z `program.json` i silnika, a wstawienie ich do Edge Function oznaczałoby drugą kopię logiki planu w Deno i złamanie zasady „treść planu pochodzi z `data/`”. Zamiast tego wysyła aplikacja, raz dziennie przy starcie, zawsze na tydzień do przodu. Przy codziennym zaglądaniu do aplikacji efekt jest ten sam, a źródło prawdy zostaje jedno. Gdyby okazało się to za mało (dłuższa przerwa od aplikacji), wracamy do crona i portujemy silnik do Deno.
 
+## FTP w nagłówku: świadomie pomijane
+Nagłówek planu przyjmuje `ftp`, ale go nie wysyłamy, dopóki plan nie ma celów mocy. Użytkownik nie ma miernika mocy, więc wszystkie cele są tętnem. Gdy `ftp` trafiło do nagłówka, aplikacja ELEMNT policzyła z niego obciążenie treningowe i pokazała dla testu progowego TSS 16 przy IF 0,41, czyli wartości oderwane od rzeczywistości (godzina z trzydziestoma minutami na progu to raczej TSS rzędu 70–80). Bez `ftp` Wahoo albo nie pokazuje tych wskaźników, albo liczy je z tętna. Gdy pojawi się miernik mocy, wystarczy ustawić `usePowerTargets` i dodać cele typu `ftp`.
+
 ## Sprawdzenie (scenariusz 17)
 1. Ustawienia → Integracje → „Połącz z Wahoo”, zatwierdź dostęp.
 2. Wejdź na dzień z akcentem (np. środa z `THR_4x6`) i kliknij **„Wyślij na Wahoo”**. Powinno pokazać „Wysłano na Bolta”.

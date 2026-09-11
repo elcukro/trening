@@ -9,7 +9,9 @@ const V = program.version
 describe('plan.json dla Wahoo', () => {
   it('17. THR_4x6: nagłówek, rozgrzewka, blok powtórzeń, schłodzenie', () => {
     const plan = buildWahooPlan(program.bike_workouts.THR_4x6!, { durationMin: 0, lthr: 160, ftp: 220, programVersion: V })
-    expect(plan.header).toMatchObject({ name: expect.stringContaining('4×6'), version: '1.0.0', workout_type_family: 0, workout_type_location: 1, threshold_hr: 160, ftp: 220 })
+    expect(plan.header).toMatchObject({ name: expect.stringContaining('4×6'), version: '1.0.0', workout_type_family: 0, workout_type_location: 1, threshold_hr: 160 })
+    // bez celów mocy nie podajemy FTP – inaczej Wahoo liczy z niego bezsensowne TSS i IF
+    expect(plan.header.ftp).toBeUndefined()
     expect(plan.intervals[0]).toMatchObject({ name: 'Rozgrzewka', exit_trigger_type: 'time', exit_trigger_value: 900, intensity_type: 'wu' })
     expect(plan.intervals[0]!.targets).toEqual([
       { type: 'threshold_hr', low: 0.81, high: 0.89 },

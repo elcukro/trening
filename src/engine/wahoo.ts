@@ -123,7 +123,13 @@ export function planBlocks(workout: BikeWorkout, durationMin: number): StepBlock
 export interface BuildPlanOptions {
   durationMin: number
   lthr: number | null
+  /**
+   * FTP trafia do nagłówka tylko wtedy, gdy plan naprawdę używa celów mocy. Bez miernika mocy
+   * prowadzimy trening po tętnie, a samo podanie FTP sprawia, że Wahoo liczy z niego TSS i IF
+   * (przy braku celów mocy wychodzą absurdalnie niskie wartości, np. 0,41 dla testu progowego).
+   */
   ftp?: number | null
+  usePowerTargets?: boolean
   /** nazwa widoczna na Bolcie (domyślnie nazwa treningu) */
   name?: string
   programVersion: string
@@ -140,7 +146,7 @@ export function buildWahooPlan(workout: BikeWorkout, opts: BuildPlanOptions): Wa
     workout_type_location: isIndoor(workout.id) ? LOCATION_INDOOR : LOCATION_OUTDOOR,
   }
   if (opts.lthr) header.threshold_hr = opts.lthr
-  if (opts.ftp) header.ftp = opts.ftp
+  if (opts.ftp && opts.usePowerTargets) header.ftp = opts.ftp
   return { header, intervals: convert(blocks, hasLthr) }
 }
 

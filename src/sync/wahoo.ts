@@ -71,7 +71,6 @@ export function pushItemFor(date: ISODate, ctx: EngineContext, weeks?: LayoutWee
   const plan = buildWahooPlan(workout, {
     durationMin: day.bike.duration_min,
     lthr: day.lthr,
-    ftp: ctx.settings.ftp_w_estimate,
     programVersion: ctx.program.version,
   })
   return {
