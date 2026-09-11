@@ -26,6 +26,10 @@ Dokumentacja i dane dla aplikacji webowej (PWA na iPhone), która **każdego dni
 | `data/gear_tasks.json` | zadania sprzętowe z terminami |
 | `data/packing_list.json` | checklista wyjazdowa |
 
+## Aplikacja
+
+Kod aplikacji (Vite + React + TypeScript, PWA) jest w `src/`. Komendy i struktura: `CLAUDE.md`. Instrukcja wdrożenia: `docs/08-wdrozenie.md`.
+
 ## Źródła
 
 Rozmowy z Claude z 10–11.09.2026 oraz dokument „Plan Przygotowań Alpejskich 2026/2027 – Trek Checkpoint ALR 4 (v3)” w Google Docs.

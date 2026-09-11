@@ -185,5 +185,5 @@ export function seasonSummary(ctx: EngineContext, days = buildCalendar(ctx)): We
     w.event = lw.cloned ? null : (t.event ?? null)
     w.notes = t.notes ?? null
   }
-  return [...weeks.values()].sort((a, b) => a.week - b.week)
+  return [...weeks.values()].toSorted((a, b) => a.week - b.week)
 }

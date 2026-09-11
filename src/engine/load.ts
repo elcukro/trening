@@ -60,7 +60,7 @@ export function suggestLoad(
   rx: { sets: number; reps: number; rir: number | null },
   opts: { deload?: boolean; intro?: boolean } = {},
 ): LoadSuggestion {
-  const sorted = [...history].sort((a, b) => (a.date < b.date ? -1 : 1))
+  const sorted = history.toSorted((a, b) => (a.date < b.date ? -1 : 1))
   const last = sorted.at(-1)
   if (!last || last.sets.filter((s) => !s.is_warmup).length === 0) {
     return { weight_kg: null, delta_kg: 0, reason: 'Brak historii – wpisz ciężar, który zrobisz 8× z zapasem 3–4 powtórzeń.', needs_start_weight: true }

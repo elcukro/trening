@@ -39,7 +39,7 @@ function tpl(program: Program, n: number): WeekTemplate {
 
 /** Kolejność usuwania tygodni fazy IV przy skracaniu (od najmniej ważnych). */
 function phaseIVRemovalOrder(program: Program): number[] {
-  const rev = [...PHASE_IV_TEMPLATES].reverse()
+  const rev = PHASE_IV_TEMPLATES.toReversed()
   const isBuildNoEvent = (n: number) => tpl(program, n).type === 'build' && !tpl(program, n).event
   const isEvent = (n: number) => tpl(program, n).type === 'build' && !!tpl(program, n).event
   const isDeload = (n: number) => tpl(program, n).type === 'deload'
@@ -72,7 +72,7 @@ function phaseIVTemplates(program: Program, count: number): number[] {
 
 function phaseIIITemplates(count: number): number[] {
   if (count >= PHASE_III_TEMPLATES.length) return [...PHASE_III_TEMPLATES]
-  const order = [...PHASE_III_TEMPLATES].reverse().filter((n) => n !== PHASE_III_TEST_WEEK)
+  const order = PHASE_III_TEMPLATES.toReversed().filter((n) => n !== PHASE_III_TEST_WEEK)
   const remove = new Set(order.slice(0, PHASE_III_TEMPLATES.length - count))
   return PHASE_III_TEMPLATES.filter((n) => !remove.has(n))
 }

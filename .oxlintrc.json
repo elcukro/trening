@@ -1,10 +1,24 @@
 {
   "$schema": "./node_modules/oxlint/configuration_schema.json",
-  "plugins": ["react", "typescript", "unicorn", "oxc"],
-  "categories": { "correctness": "error", "suspicious": "warn" },
+  "plugins": [
+    "react",
+    "typescript",
+    "unicorn",
+    "oxc"
+  ],
+  "categories": {
+    "correctness": "error",
+    "suspicious": "warn"
+  },
   "rules": {
     "no-unused-vars": "error",
-    "react/exhaustive-deps": "warn"
+    "react/exhaustive-deps": "warn",
+    "react/react-in-jsx-scope": "off"
   },
-  "ignorePatterns": ["dist", "dev-dist", "node_modules", "coverage"]
+  "ignorePatterns": [
+    "dist",
+    "dev-dist",
+    "node_modules",
+    "coverage"
+  ]
 }
