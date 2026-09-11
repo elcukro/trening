@@ -244,6 +244,18 @@ function WahooCard() {
               Wyślij od zera
             </Button>
             <Button
+              variant="secondary"
+              disabled={busy}
+              onClick={() =>
+                run('Usuwam duplikaty', async () => {
+                  const r = await wahoo.cleanup()
+                  return r.removed.length ? `Usunięto ${r.removed.length} zduplikowanych treningów z ${r.scanned}. Zsynchronizuj Bolta.` : `Brak duplikatów (sprawdzono ${r.scanned} treningów).`
+                })
+              }
+            >
+              Usuń duplikaty
+            </Button>
+            <Button
               variant="ghost"
               disabled={busy}
               onClick={() =>

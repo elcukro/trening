@@ -329,6 +329,37 @@ export async function diagnose(token: string, item: PushItem): Promise<Record<st
   return out
 }
 
+/**
+ * Treningi osierocone: utworzone przez tę aplikację (rozpoznajemy po `workout_token` w formacie
+ * `data:trening:wersja`), ale nieznane naszej bazie. Powstają, gdy wysyłka nie zdąży zapisać
+ * identyfikatora – na liczniku widać je wtedy jako duplikaty.
+ */
+export async function listWorkouts(token: string, pages = 3): Promise<{ id: number; workout_token?: string; name?: string; starts?: string }[]> {
+  const out: { id: number; workout_token?: string; name?: string; starts?: string }[] = []
+  for (let page = 1; page <= pages; page++) {
+    const res = await fetch(`${WAHOO_API}/v1/workouts?page=${page}&per_page=50`, { headers: { authorization: `Bearer ${token}` } })
+    if (!res.ok) break
+    const body = (await res.json()) as { workouts?: unknown[] } | unknown[]
+    const list = (Array.isArray(body) ? body : (body.workouts ?? [])) as typeof out
+    out.push(...list)
+    if (list.length < 50) break
+  }
+  return out
+}
+
+const OUR_TOKEN = /^\d{4}-\d{2}-\d{2}:[A-Za-z0-9_]+:/
+
+export async function cleanupOrphans(token: string, keepIds: Set<number>): Promise<{ removed: { id: number; name?: string; starts?: string }[]; scanned: number }> {
+  const all = await listWorkouts(token)
+  const orphans = all.filter((w) => w.workout_token && OUR_TOKEN.test(w.workout_token) && !keepIds.has(w.id))
+  const removed: { id: number; name?: string; starts?: string }[] = []
+  for (const w of orphans) {
+    const res = await api(token, `/v1/workouts/${w.id}`, 'DELETE')
+    if (res.ok || res.status === 404) removed.push({ id: w.id, name: w.name, starts: w.starts })
+  }
+  return { removed, scanned: all.length }
+}
+
 export async function deletePlan(token: string, planId: number): Promise<void> {
   await api(token, `/v1/plans/${planId}`, 'DELETE')
 }

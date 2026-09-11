@@ -5,7 +5,7 @@
  */
 import { CORS, json } from '../_shared/env.ts'
 import { adminClient, userFromRequest } from '../_shared/supabase.ts'
-import { accessTokenFor, diagnose, getWorkout, pushDay, removeDay, type PlanIndex, type PushItem, type PushResult } from '../_shared/wahoo.ts'
+import { accessTokenFor, cleanupOrphans, diagnose, getWorkout, pushDay, removeDay, type PlanIndex, type PushItem, type PushResult } from '../_shared/wahoo.ts'
 
 const MAX_ITEMS = 10
 
@@ -15,15 +15,25 @@ Deno.serve(async (req) => {
   const user = await userFromRequest(req)
   if (!user) return json({ error: 'unauthorized' }, 401)
 
-  const body = (await req.json().catch(() => ({}))) as { items?: PushItem[]; mode?: 'update' | 'replace' | 'diagnose' }
+  const body = (await req.json().catch(() => ({}))) as { items?: PushItem[]; mode?: 'update' | 'replace' | 'diagnose' | 'cleanup' }
   const items = (body.items ?? []).slice(0, MAX_ITEMS)
-  if (items.length === 0) return json({ error: 'no_items' }, 400)
+  // porządkowanie nie potrzebuje listy treningów do wysłania
+  if (items.length === 0 && body.mode !== 'cleanup') return json({ error: 'no_items' }, 400)
 
   const admin = adminClient()
-  const token = await accessTokenFor(admin, user.id).catch((e) => {
+  const token0 = await accessTokenFor(admin, user.id).catch((e) => {
     throw new Error(`token: ${e instanceof Error ? e.message : e}`)
   })
-  if (!token) return json({ error: 'not_connected' }, 400)
+  if (!token0) return json({ error: 'not_connected' }, 400)
+  const token = token0
+
+  // porządkowanie: kasuje treningi tej aplikacji, których nie ma w naszej bazie (duplikaty na liczniku)
+  if (body.mode === 'cleanup') {
+    const { data: known } = await admin.from('wahoo_pushes').select('wahoo_workout_id').eq('user_id', user.id)
+    const keep = new Set((known ?? []).map((r) => r.wahoo_workout_id as number).filter(Boolean))
+    const res = await cleanupOrphans(token, keep)
+    return json({ ok: true, ...res })
+  }
 
   const { data: existing } = await admin.from('wahoo_pushes').select('date, wahoo_plan_id, wahoo_workout_id').eq('user_id', user.id).in('date', items.map((i) => i.date))
   const byDate = new Map((existing ?? []).map((r) => [r.date as string, r]))

@@ -132,6 +132,7 @@ export const wahoo = {
     }
   },
   diagnose: (items: PushItem[]) => call<Record<string, unknown>>('wahoo-push', { items, mode: 'diagnose' }),
+  cleanup: () => call<{ ok: boolean; removed: { id: number; name?: string; starts?: string }[]; scanned: number }>('wahoo-push', { items: [], mode: 'cleanup' }),
 }
 
 const ATTEMPT_KEY = 'wahoo_last_attempt'
