@@ -11,6 +11,7 @@ import { CheckinCard } from './CheckinCard'
 import { BikeLogCard, StatusBadge } from './BikeLogCard'
 import { TestResultCard } from './TestResultCard'
 import { StravaActivities } from './StravaCard'
+import { WahooButton } from './WahooButton'
 import { useLiveQuery } from 'dexie-react-hooks'
 import { db } from '@/db'
 
@@ -109,6 +110,7 @@ export function BikeCard({ day, engine }: { day: DayPlan; engine: Engine }) {
           </div>
         </details>
       )}
+      <WahooButton day={day} />
       <StravaActivities date={day.date} zones={program.hr_zones_lthr_fraction} lthr={day.lthr} />
       <BikeLogCard day={day} />
     </Card>

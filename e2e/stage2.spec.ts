@@ -99,3 +99,13 @@ test('kalkulator podjazdu i konto bez konfiguracji', async ({ page }) => {
   await expect(page.getByText(/Brak konfiguracji Supabase/).or(page.getByRole('button', { name: 'Wyślij link logowania' }))).toBeVisible()
   await expect(page.getByRole('button', { name: 'Eksport JSON' })).toBeVisible()
 })
+
+test('Wahoo: przycisk wysyłki na dniu z treningiem, sekcja w Integracjach', async ({ page }) => {
+  await page.goto('/?today=2026-09-16')
+  await expect(page.getByRole('button', { name: /Wyślij na Wahoo/ })).toBeVisible()
+  // dzień bez jazdy – bez przycisku
+  await page.goto('/?today=2026-09-18')
+  await expect(page.getByRole('button', { name: /Wyślij na Wahoo/ })).toHaveCount(0)
+  await page.goto('/wiecej/ustawienia')
+  await expect(page.getByText(/Zaloguj się, żeby połączyć Stravę i Wahoo/)).toBeVisible()
+})

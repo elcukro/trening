@@ -35,8 +35,8 @@ src/engine/__tests__/ golden.test.ts, scenarios.test.ts (scenariusze §10 specyf
 src/data/             program.ts (import + walidacja Zod), rules.ts (zasady R1–R16 dla ludzi)
 src/db/               Dexie (IndexedDB): index.ts (schemat v2: settings, kv, checkins, session_logs, set_logs, test_results, outbox),
                       repo.ts (zapisy z outboxem: check-in, logi, serie, testy, historia ćwiczeń)
-src/sync/             supabase.ts (klient lub null bez env), auth.ts (magic link), sync.ts (push outbox → pull po server_updated_at, LWW),
-                      useSync.ts (start, online, visibility, zmiany outboxa)
+src/sync/             supabase.ts (klient lub null bez env), auth.ts (magic link + kod OTP), sync.ts (push outbox → pull po server_updated_at, LWW),
+                      useSync.ts (start, online, visibility, zmiany outboxa), strava.ts, wahoo.ts + useWahoo.ts (automatyczna wysyłka 7 dni)
 src/app/              App.tsx (router, dolna nawigacja, lazy Postęp), useSettings.ts (ustawienia + kontekst silnika + testy → R11)
 src/features/         today (Dziś: check-in, karta roweru + log, test, siłownia), week, season, library, settings (+ konto, kopia),
                       more, progress (masa, testy, kalkulator, objętość, siła), gym (tryb siłowni: sequence.ts, useRestTimer.ts, GymModePage.tsx)
@@ -53,4 +53,5 @@ public/               ikony PWA
 - Synchronizacja: rekordy mają UUID z klienta i `updated_at` (zegar klienta); serwer odrzuca starsze zapisy (trigger `lww_guard`) i stempluje `server_updated_at`, po którym klient pobiera zmiany. Soft delete przez `deleted_at`.
 - Lokalna weryfikacja SQL bez Dockera: `createdb trening_test` + stub schematu `auth` (patrz historia commitów), potem `psql -f supabase/migrations/…`.
 - Etap 3 (Strava): gotowy i wdrożony 11.09.2026 – `supabase/functions/strava-oauth` (OAuth, status, sync, subscribe; callback publiczny ze stanem HMAC) i `strava-webhook` (GET challenge, POST zdarzenia, import w tle; **sekret w ścieżce** `/<webhookPathSecret>` zamiast publicznego adresu, zdarzenia `delete`/`deauthorized` potwierdzane w API Stravy), moduły `_shared/` (crypto AES-GCM/HMAC z service role, klient Strava). Migracja `20260911140000_strava.sql`: `strava_activities` + trigger agregujący jazdy dnia do `session_logs`. Klient: `src/sync/strava.ts`, sekcja Integracje, `StravaCard.tsx` (strefy z histogramu, przenoszenie na inny dzień). Deploy: `supabase functions deploy <nazwa> --no-verify-jwt --use-api`; typecheck: `deno check supabase/functions/*/index.ts`. Opis: `docs/10-strava.md`.
-- Etapy 4–5 (Wahoo, adaptacja R1–R15 w UI, sprzęt, wyjazd, push): później. Typ `PlanOverride` w `src/engine/types.ts` jest już przygotowany.
+- Etap 4 (Wahoo): kod gotowy i wdrożony 11.09.2026 – `src/engine/wahoo.ts` (generator `plan.json`, czysty TS z testami), `supabase/functions/wahoo-oauth` i `wahoo-push`, migracja `20260911160000_wahoo.sql` (jedna wysyłka na dzień: unikat `wahoo_pushes(user_id, date)`), klient `src/sync/wahoo.ts` + `useWahoo.ts` (automat raz dziennie, dziś + 6 dni), przycisk „Wyślij na Wahoo” na ekranie Dziś. **Plan JSON buduje aplikacja, nie serwer** – żeby nie dublować silnika w Deno; uzasadnienie w `docs/11-wahoo.md`. Do uruchomienia brakuje sekretów `WAHOO_CLIENT_ID/SECRET` i adresu zwrotnego w portalu Wahoo.
+- Etap 5 (adaptacja R1–R15 w UI, sprzęt, wyjazd, powiadomienia): później. Typ `PlanOverride` w `src/engine/types.ts` jest już przygotowany.

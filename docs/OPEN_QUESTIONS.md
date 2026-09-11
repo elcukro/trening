@@ -34,3 +34,6 @@ Nie ma `supabase` w PATH. Instrukcja: `brew install supabase/tap/supabase`. Migr
 
 ## 9. INDOOR_4x4: 35 min w specyfikacji, 43 min w danych
 Scenariusz 4 w `07-specyfikacja-aplikacji.md` mówi o „4×4 (35 min)”, a `program.json` definiuje `INDOOR_4x4` na 43 min (10 min rozgrzewki + 4×(4+3) min + 5 min schłodzenia). **[decyzja]** Dane są źródłem prawdy – test używa wartości z `program.json`. Jeśli chcesz 35 min, zmień generator (np. przerwy 2 min) i podbij wersję.
+
+## 10. Wysyłka na Wahoo: aplikacja zamiast crona
+Specyfikacja (§7.2) przewidywała dzienny cron w Supabase. Wymagałby on drugiej kopii silnika planu i `program.json` w Edge Function (Deno), co łamie zasadę jednego źródła prawdy. **[decyzja]** Plan JSON buduje aplikacja i wysyła raz dziennie przy starcie (dziś + 6 dni) oraz na żądanie. Jeśli okaże się, że zdarzają się dłuższe przerwy bez otwierania aplikacji, wracamy do crona.

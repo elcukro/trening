@@ -13,6 +13,7 @@ import { SettingsPage } from '@/features/settings/SettingsPage'
 import { MorePage } from '@/features/more/MorePage'
 import { GymModePage } from '@/features/gym/GymModePage'
 import { useSyncRunner } from '@/sync/useSync'
+import { useWahooAutoPush } from '@/sync/useWahoo'
 
 const ProgressPage = lazy(() => import('@/features/progress/ProgressPage').then((m) => ({ default: m.ProgressPage })))
 
@@ -51,6 +52,7 @@ function BottomNav() {
 
 function Layout() {
   useSyncRunner()
+  useWahooAutoPush()
   return (
     <div className="safe-top mx-auto w-full max-w-lg flex-1">
       <main className="pb-nav px-4 pt-3">

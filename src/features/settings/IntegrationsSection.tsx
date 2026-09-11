@@ -1,47 +1,35 @@
-import { useEffect, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import { useSearchParams } from 'react-router'
 import { useAuth } from '@/sync/auth'
+import { useEngine } from '@/app/useSettings'
 import { strava, type StravaStatus } from '@/sync/strava'
+import { autoPushEnabled, lastAutoPush, pushItemsFrom, setAutoPush, wahoo, type WahooStatus } from '@/sync/wahoo'
 import { runSync } from '@/sync/sync'
 import { loadProgram } from '@/data/program'
+import { todayISO, fmtDayMonth } from '@/lib/dates'
 import { Button, Card, CardTitle, Row } from '@/components/ui'
 
-export function IntegrationsSection() {
-  const auth = useAuth()
+function useOAuthResult(key: 'strava' | 'wahoo'): string | null {
   const [params, setParams] = useSearchParams()
-  const [status, setStatus] = useState<StravaStatus | null>(null)
-  const [busy, setBusy] = useState(false)
-  // komunikat z powrotu OAuth (?strava=ok|error) – czytany raz przy montowaniu, potem URL czyszczony
-  const [msg, setMsg] = useState<string | null>(() => {
-    const r = params.get('strava')
-    if (r === 'ok') return `Połączono ze Stravą. Webhook: ${params.get('webhook') ?? '—'}.`
-    if (r === 'error') return `Błąd połączenia ze Stravą: ${params.get('reason') ?? 'nieznany'}.`
+  const [msg] = useState<string | null>(() => {
+    const r = params.get(key)
+    if (r === 'ok') return key === 'strava' ? `Połączono ze Stravą. Webhook: ${params.get('webhook') ?? '—'}.` : 'Połączono z Wahoo.'
+    if (r === 'error') return `Błąd połączenia: ${params.get('reason') ?? 'nieznany'}.`
     return null
   })
-  const loggedIn = !!auth.session
-
   useEffect(() => {
-    if (!params.has('strava')) return
+    if (!params.has(key)) return
     const next = new URLSearchParams(params)
-    next.delete('strava')
-    next.delete('webhook')
-    next.delete('reason')
+    for (const k of [key, 'webhook', 'reason']) next.delete(k)
     setParams(next, { replace: true })
-  }, [params, setParams])
+  }, [params, setParams, key])
+  return msg
+}
 
-  useEffect(() => {
-    if (!loggedIn) return
-    let active = true
-    strava
-      .status()
-      .then((s) => active && setStatus(s))
-      .catch((e) => active && setMsg(String(e instanceof Error ? e.message : e)))
-    return () => {
-      active = false
-    }
-  }, [loggedIn, msg])
-
-  async function run(label: string, fn: () => Promise<string>) {
+function useRunner() {
+  const [busy, setBusy] = useState(false)
+  const [msg, setMsg] = useState<string | null>(null)
+  const run = useCallback(async (label: string, fn: () => Promise<string>) => {
     setBusy(true)
     setMsg(null)
     try {
@@ -51,70 +39,200 @@ export function IntegrationsSection() {
     } finally {
       setBusy(false)
     }
+  }, [])
+  return { busy, msg, setMsg, run }
+}
+
+export function IntegrationsSection() {
+  const auth = useAuth()
+  if (!auth.session) {
+    return (
+      <Card>
+        <CardTitle icon="🔗">Integracje</CardTitle>
+        <p className="text-sm text-slate-500">Zaloguj się, żeby połączyć Stravę i Wahoo (tokeny są przechowywane tylko na serwerze).</p>
+      </Card>
+    )
   }
+  return (
+    <>
+      <StravaCard />
+      <WahooCard />
+    </>
+  )
+}
+
+function StravaCard() {
+  const initial = useOAuthResult('strava')
+  const { busy, msg, setMsg, run } = useRunner()
+  const [status, setStatus] = useState<StravaStatus | null>(null)
+  useEffect(() => {
+    if (initial) setMsg(initial)
+  }, [initial, setMsg])
+  useEffect(() => {
+    let active = true
+    strava
+      .status()
+      .then((s) => active && setStatus(s))
+      .catch(() => undefined)
+    return () => {
+      active = false
+    }
+  }, [msg])
 
   return (
     <Card>
-      <CardTitle icon="🔗">Integracje</CardTitle>
-      {!loggedIn ? (
-        <p className="text-sm text-slate-500">Zaloguj się, żeby połączyć Stravę (tokeny są przechowywane tylko na serwerze).</p>
-      ) : (
-        <>
-          <Row label="Strava">{status ? (status.connected ? `połączona (atleta ${status.athlete_id})` : 'niepołączona') : '…'}</Row>
-          {status?.connected && <Row label="Zaimportowane jazdy">{status.activities}</Row>}
-          {status?.connected && status.expires_at && <Row label="Token ważny do">{new Date(status.expires_at).toLocaleString('pl-PL')}</Row>}
-          <div className="mt-2 flex flex-wrap gap-2">
-            {status && !status.connected && (
-              <Button
-                disabled={busy}
-                onClick={() =>
-                  run('Strava', async () => {
-                    const { url } = await strava.startUrl()
-                    window.location.assign(url)
-                    return 'Przekierowuję do Stravy…'
-                  })
-                }
-              >
-                Połącz ze Stravą
-              </Button>
-            )}
-            {status?.connected && (
-              <>
-                <Button
-                  variant="secondary"
-                  disabled={busy}
-                  onClick={() =>
-                    run('Import', async () => {
-                      const r = await strava.sync(14)
-                      await runSync({ programVersion: loadProgram().version })
-                      return `Pobrano ${r.imported} jazd z ${r.scanned} aktywności (14 dni).`
-                    })
-                  }
-                >
-                  Pobierz ostatnie 14 dni
-                </Button>
-                <Button variant="secondary" disabled={busy} onClick={() => run('Webhook', async () => `Webhook: ${(await strava.subscribe()).detail}`)}>
-                  Sprawdź webhook
-                </Button>
-                <Button
-                  variant="ghost"
-                  disabled={busy}
-                  onClick={() =>
-                    run('Rozłączanie', async () => {
-                      await strava.disconnect()
-                      return 'Strava rozłączona.'
-                    })
-                  }
-                >
-                  Rozłącz
-                </Button>
-              </>
-            )}
-          </div>
-          {msg && <p className="mt-2 text-sm">{msg}</p>}
-          <p className="mt-2 text-xs text-slate-500">Nowe jazdy pojawiają się automatycznie (webhook) w ciągu kilku minut od wgrania na Stravę. Wahoo (Etap 4) – wkrótce.</p>
-        </>
+      <CardTitle icon="🟠">Strava</CardTitle>
+      <Row label="Stan">{status ? (status.connected ? `połączona (atleta ${status.athlete_id})` : 'niepołączona') : '…'}</Row>
+      {status?.connected && <Row label="Zaimportowane jazdy">{status.activities}</Row>}
+      <div className="mt-2 flex flex-wrap gap-2">
+        {status && !status.connected && (
+          <Button
+            disabled={busy}
+            onClick={() =>
+              run('Strava', async () => {
+                window.location.assign((await strava.startUrl()).url)
+                return 'Przekierowuję do Stravy…'
+              })
+            }
+          >
+            Połącz ze Stravą
+          </Button>
+        )}
+        {status?.connected && (
+          <>
+            <Button
+              variant="secondary"
+              disabled={busy}
+              onClick={() =>
+                run('Import', async () => {
+                  const r = await strava.sync(14)
+                  await runSync({ programVersion: loadProgram().version })
+                  return `Pobrano ${r.imported} jazd z ${r.scanned} aktywności (14 dni).`
+                })
+              }
+            >
+              Pobierz ostatnie 14 dni
+            </Button>
+            <Button variant="secondary" disabled={busy} onClick={() => run('Webhook', async () => `Webhook: ${(await strava.subscribe()).detail}`)}>
+              Sprawdź webhook
+            </Button>
+            <Button
+              variant="ghost"
+              disabled={busy}
+              onClick={() =>
+                run('Rozłączanie', async () => {
+                  await strava.disconnect()
+                  return 'Strava rozłączona.'
+                })
+              }
+            >
+              Rozłącz
+            </Button>
+          </>
+        )}
+      </div>
+      {msg && <p className="mt-2 text-sm">{msg}</p>}
+      <p className="mt-2 text-xs text-slate-500">Nowe jazdy pojawiają się automatycznie w ciągu kilku minut od wgrania na Stravę.</p>
+    </Card>
+  )
+}
+
+function WahooCard() {
+  const initial = useOAuthResult('wahoo')
+  const engine = useEngine()
+  const { busy, msg, setMsg, run } = useRunner()
+  const [status, setStatus] = useState<WahooStatus | null>(null)
+  const [auto, setAuto] = useState(true)
+  const [last, setLast] = useState<string | null>(null)
+  useEffect(() => {
+    if (initial) setMsg(initial)
+  }, [initial, setMsg])
+  useEffect(() => {
+    let active = true
+    wahoo
+      .status()
+      .then((s) => active && setStatus(s))
+      .catch(() => undefined)
+    void autoPushEnabled().then((v) => active && setAuto(v))
+    void lastAutoPush().then((v) => active && setLast(v))
+    return () => {
+      active = false
+    }
+  }, [msg])
+
+  const today = todayISO()
+  const sent = status?.pushes?.filter((p) => p.status !== 'error') ?? []
+  const failed = status?.pushes?.filter((p) => p.status === 'error') ?? []
+
+  return (
+    <Card>
+      <CardTitle icon="⌚">Wahoo ELEMNT Bolt</CardTitle>
+      <Row label="Stan">{status ? (status.connected ? 'połączone' : 'niepołączone') : '…'}</Row>
+      {status?.connected && <Row label="Wysłane treningi">{sent.length > 0 ? sent.map((p) => fmtDayMonth(p.date)).join(', ') : 'brak'}</Row>}
+      {failed.length > 0 && <p className="text-xs text-red-600">Błędy: {failed.map((p) => `${fmtDayMonth(p.date)} – ${p.error}`).join('; ')}</p>}
+      <div className="mt-2 flex flex-wrap gap-2">
+        {status && !status.connected && (
+          <Button
+            disabled={busy}
+            onClick={() =>
+              run('Wahoo', async () => {
+                window.location.assign((await wahoo.startUrl()).url)
+                return 'Przekierowuję do Wahoo…'
+              })
+            }
+          >
+            Połącz z Wahoo
+          </Button>
+        )}
+        {status?.connected && (
+          <>
+            <Button
+              variant="secondary"
+              disabled={busy}
+              onClick={() =>
+                run('Wysyłka', async () => {
+                  const items = pushItemsFrom(today, 7, engine.ctx, engine.weeks)
+                  if (items.length === 0) return 'Na najbliższy tydzień nie ma treningów do wysłania.'
+                  const r = await wahoo.push(items)
+                  const err = r.results.filter((x) => x.status === 'error')
+                  return err.length ? `Wysłano ${r.pushed} z ${items.length}. Błędy: ${err.map((x) => `${x.date}: ${x.error}`).join('; ')}` : `Wysłano ${r.pushed} treningów (dziś + 6 dni). Zsynchronizuj Bolta.`
+                })
+              }
+            >
+              Wyślij 7 dni
+            </Button>
+            <Button
+              variant="ghost"
+              disabled={busy}
+              onClick={() =>
+                run('Rozłączanie', async () => {
+                  await wahoo.disconnect()
+                  return 'Wahoo rozłączone.'
+                })
+              }
+            >
+              Rozłącz
+            </Button>
+          </>
+        )}
+      </div>
+      {status?.connected && (
+        <label className="mt-2 flex min-h-11 items-center gap-2 text-sm">
+          <input
+            type="checkbox"
+            className="h-5 w-5"
+            checked={auto}
+            onChange={async (e) => {
+              setAuto(e.target.checked)
+              await setAutoPush(e.target.checked)
+            }}
+          />
+          Wysyłaj automatycznie raz dziennie {last && <span className="text-xs text-slate-500">(ostatnio {fmtDayMonth(last)})</span>}
+        </label>
       )}
+      {msg && <p className="mt-2 text-sm">{msg}</p>}
+      {status && !status.connected && <p className="mt-2 text-xs text-slate-500">W portalu Wahoo dodaj adres zwrotny: <code className="break-all">{status.redirect_uri}</code></p>}
+      <p className="mt-2 text-xs text-slate-500">Treningi trafiają do „Planned Workouts” na Bolcie po synchronizacji zegarka (Wi-Fi lub aplikacja ELEMNT).</p>
     </Card>
   )
 }

@@ -14,6 +14,13 @@ export function todayISO(): ISODate {
   return format(new TZDate(Date.now(), TIMEZONE), 'yyyy-MM-dd')
 }
 
+/** Godzina lokalna w Warszawie danego dnia jako ISO w UTC (np. start treningu 6:00 na Bolcie). */
+export function localTimeISO(date: ISODate, hour = 6): string {
+  const d = new Date(toUtc(date))
+  const local = new TZDate(d.getUTCFullYear(), d.getUTCMonth(), d.getUTCDate(), hour, 0, 0, TIMEZONE)
+  return new Date(local.getTime()).toISOString() // forma UTC („Z”) – jednoznaczna dla API Wahoo
+}
+
 function asDate(iso: ISODate): Date {
   return new Date(toUtc(iso))
 }
