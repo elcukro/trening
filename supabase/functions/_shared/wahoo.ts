@@ -78,19 +78,38 @@ export function b64utf8(text: string): string {
   return btoa(bin)
 }
 
-async function api(token: string, path: string, method: 'POST' | 'PUT' | 'DELETE', body?: BodyInit): Promise<{ ok: boolean; status: number; json: Record<string, unknown> | null; text: string }> {
-  // dla FormData nagłówek content-type ustawia fetch (potrzebna granica multipart)
-  const headers: Record<string, string> = { authorization: `Bearer ${token}` }
-  if (body instanceof URLSearchParams) headers['content-type'] = 'application/x-www-form-urlencoded'
-  const res = await fetch(`${WAHOO_API}${path}`, { method, headers, body })
-  const text = await res.text()
-  let json: Record<string, unknown> | null = null
-  try {
-    json = JSON.parse(text)
-  } catch {
-    /* nie JSON */
+const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms))
+
+/**
+ * Limity sandboxa Wahoo: 25 zapytań / 5 min, 100 / h, 250 / dzień. Przy 429 czekamy i ponawiamy,
+ * respektując nagłówek Retry-After. Ciało żądania typu FormData trzeba zbudować od nowa przy każdej próbie.
+ */
+async function api(
+  token: string,
+  path: string,
+  method: 'POST' | 'PUT' | 'DELETE',
+  body?: BodyInit | (() => BodyInit),
+  retries = 2,
+): Promise<{ ok: boolean; status: number; json: Record<string, unknown> | null; text: string }> {
+  for (let attempt = 0; ; attempt++) {
+    const headers: Record<string, string> = { authorization: `Bearer ${token}` }
+    const payload = typeof body === 'function' ? body() : body
+    if (payload instanceof URLSearchParams) headers['content-type'] = 'application/x-www-form-urlencoded'
+    const res = await fetch(`${WAHOO_API}${path}`, { method, headers, body: payload })
+    const text = await res.text()
+    if (res.status === 429 && attempt < retries) {
+      const retryAfter = Number(res.headers.get('retry-after'))
+      await sleep(Number.isFinite(retryAfter) && retryAfter > 0 ? Math.min(retryAfter, 30) * 1000 : 15_000 * (attempt + 1))
+      continue
+    }
+    let json: Record<string, unknown> | null = null
+    try {
+      json = JSON.parse(text)
+    } catch {
+      /* nie JSON */
+    }
+    return { ok: res.ok, status: res.status, json, text }
   }
-  return { ok: res.ok, status: res.status, json, text }
 }
 
 /**
@@ -130,7 +149,7 @@ async function sendPlan(token: string, item: PushItem, planId: number | null, no
   let last = { ok: false, status: 0, text: 'brak próby' }
   for (const variant of order) {
     const path = planId ? `/v1/plans/${planId}` : '/v1/plans'
-    const res = await api(token, path, planId ? 'PUT' : 'POST', planBody(item, variant, now))
+    const res = await api(token, path, planId ? 'PUT' : 'POST', () => planBody(item, variant, now))
     if (res.ok) {
       preferred = variant
       return { ok: true, id: planId ?? Number(res.json?.id), status: res.status, text: res.text, variant }
@@ -166,7 +185,12 @@ export interface PushResult {
 }
 
 /** Tworzy albo aktualizuje plan i trening dla jednego dnia. */
-export async function pushDay(token: string, item: PushItem, existing: { wahoo_plan_id: number | null; wahoo_workout_id: number | null } | null): Promise<PushResult> {
+export async function pushDay(
+  token: string,
+  item: PushItem,
+  existing: { wahoo_plan_id: number | null; wahoo_workout_id: number | null } | null,
+  opts: { verify?: boolean } = {},
+): Promise<PushResult> {
   const now = new Date().toISOString()
 
   let planId = existing?.wahoo_plan_id ?? null
@@ -184,7 +208,7 @@ export async function pushDay(token: string, item: PushItem, existing: { wahoo_p
     if (!planId) return { date: item.date, status: 'error', error: 'plan bez id' }
   }
 
-  const workoutBody = new URLSearchParams({
+  const workoutFields = () => new URLSearchParams({
     'workout[name]': item.name,
     'workout[workout_type_id]': String(item.workout_type_id),
     'workout[starts]': item.starts,
@@ -192,8 +216,14 @@ export async function pushDay(token: string, item: PushItem, existing: { wahoo_p
     'workout[plan_id]': String(planId),
     'workout[workout_token]': item.external_id,
   })
+
+
   // samo plan_id nie wiąże planu z treningiem – licznik czyta listę plan_ids
-  workoutBody.append('workout[plan_ids][]', String(planId))
+  const workoutBody = () => {
+    const b = workoutFields()
+    b.append('workout[plan_ids][]', String(planId))
+    return b
+  }
 
   let workoutId = existing?.wahoo_workout_id ?? null
   let status: PushResult['status'] = updated ? 'updated' : 'created'
@@ -209,9 +239,10 @@ export async function pushDay(token: string, item: PushItem, existing: { wahoo_p
     workoutId = Number(post.json?.id) || null
   }
 
-  // sprawdzamy, czy plan naprawdę jest podpięty – bez tego licznik pokazuje „Select workout plan”
+  // sprawdzamy, czy plan naprawdę jest podpięty – bez tego licznik pokazuje „Select workout plan”.
+  // Kosztuje jedno zapytanie, więc robimy to tylko dla pierwszego dnia wysyłki.
   let linked: boolean | null = null
-  if (workoutId) {
+  if (workoutId && opts.verify) {
     const check = await getWorkout(token, workoutId)
     if (check.status === 200) {
       try {

@@ -109,6 +109,8 @@ export interface PushResponse {
   results: { date: string; status: string; error?: string; variant?: string; plan_linked?: boolean | null }[]
   /** sposób przesłania pliku zaakceptowany przez Wahoo (diagnostyka) */
   variant?: string | null
+  /** true, gdy Wahoo odmówiło z powodu limitu zapytań */
+  rate_limited?: boolean
 }
 
 export const wahoo = {
@@ -146,7 +148,9 @@ export async function maybeAutoPush(today: ISODate, ctx: EngineContext, weeks?: 
   const items = pushItemsFrom(today, 7, ctx, weeks)
   if (items.length === 0) return null
   const res = await wahoo.push(items)
-  // przy błędach nie blokujemy dnia – kolejne uruchomienie spróbuje jeszcze raz
-  if (res.ok) await db.kv.put({ key: LAST_KEY, value: today, updated_at: new Date().toISOString() })
+  // Znaczymy dzień niezależnie od wyniku: przy niepowodzeniu ponawianie przy każdym uruchomieniu
+  // aplikacji zjadałoby limit Wahoo (25 zapytań / 5 min, 100 / h, 250 / dzień).
+  // Powtórkę uruchamia się ręcznie przyciskiem w Ustawieniach.
+  await db.kv.put({ key: LAST_KEY, value: today, updated_at: new Date().toISOString() })
   return res
 }

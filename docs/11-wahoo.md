@@ -43,4 +43,8 @@ Nagłówek planu przyjmuje `ftp`, ale go nie wysyłamy, dopóki plan nie ma cel�
 - **`redirect_uri_mismatch`** – adres zwrotny w portalu musi być znakowo identyczny z tym z sekcji Integracje.
 - **`plan POST 422: Invalid file`** – Wahoo odrzuciło strukturę albo sposób przesłania pliku. Komunikat w aplikacji podaje wariant przesyłki; przy powtórzeniu błędu sprawdź nagłówek planu (wymagane `name`, `version`, `workout_type_family`, `workout_type_location`) i to, czy bloki powtórzeń nie mają własnych celów.
 - **Trening nie pojawia się na Bolcie** – zegarek synchronizuje się po Wi-Fi albo przez aplikację ELEMNT; sprawdź, czy dzień nie jest w przeszłości.
-- **Limity Wahoo (sandbox)**: 25 zapytań / 5 min, 100 / h, 250 / dzień. Wysyłka 7 dni to około 28 zapytań, dlatego między dniami jest krótka przerwa.
+- **Limity Wahoo (sandbox)**: 25 zapytań / 5 min, 100 / h, 250 / dzień – potwierdzone w portalu. Budżet trzeba traktować poważnie, bo przy debugowaniu wyczerpuje się w kilkanaście minut.
+  - Wysyłka dnia kosztuje **2 zapytania** (plan + trening), cały tydzień około 13 z jedną weryfikacją powiązania. Tryb „od zera” dokłada po jednym skasowaniu treningu na dzień.
+  - Przy `429` funkcja czeka (respektując `Retry-After`) i ponawia dwa razy, a po wyczerpaniu prób **przerywa całą wysyłkę** zamiast dobijać się kolejnymi dniami. Komunikat mówi wprost o limicie.
+  - Automatyczna wysyłka oznacza dzień jako wykonany **niezależnie od wyniku**. Inaczej każde uruchomienie aplikacji ponawiałoby nieudaną wysyłkę i zjadało budżet. Powtórkę uruchamia się ręcznie.
+  - Diagnostyka kosztuje do 9 zapytań (trzy warianty razy utworzenie, odczyt i skasowanie) – używać oszczędnie.

@@ -207,9 +207,10 @@ function WahooCard() {
                   if (items.length === 0) return 'Na najbliższy tydzień nie ma treningów do wysłania.'
                   const r = await wahoo.push(items)
                   const err = r.results.filter((x) => x.status === 'error')
+                  if (r.rate_limited) throw new Error(`Wahoo odmówiło: limit zapytań wyczerpany (sandbox: 25 na 5 minut, 250 na dobę). Wysłano ${r.pushed} z ${items.length}. Spróbuj za kilka minut.`)
                   if (err.length) throw new Error(`Wysłano ${r.pushed} z ${items.length}. ${err.map((x) => `${x.date}: ${x.error}`).join('; ')}`)
                   const unlinked = r.results.filter((x) => x.plan_linked === false)
-                  if (unlinked.length) throw new Error(`Wysłano ${r.pushed}, ale ${unlinked.length} bez podpiętego planu (${unlinked.map((x) => x.date).join(', ')}).`)
+                  if (unlinked.length) throw new Error(`Wysłano ${r.pushed}, ale plan nie został podpięty (${unlinked.map((x) => x.date).join(', ')}).`)
                   return `Wysłano ${r.pushed} treningów na Bolta`
                 })
               }
@@ -225,9 +226,10 @@ function WahooCard() {
                   if (items.length === 0) return 'Na najbliższy tydzień nie ma treningów do wysłania.'
                   const r = await wahoo.push(items, 'replace')
                   const err = r.results.filter((x) => x.status === 'error')
+                  if (r.rate_limited) throw new Error(`Wahoo odmówiło: limit zapytań wyczerpany (sandbox: 25 na 5 minut, 250 na dobę). Utworzono ${r.pushed} z ${items.length}. Spróbuj za kilka minut.`)
                   if (err.length) throw new Error(`Wysłano ${r.pushed} z ${items.length}. ${err.map((x) => `${x.date}: ${x.error}`).join('; ')}`)
                   const unlinked = r.results.filter((x) => x.plan_linked === false)
-                  if (unlinked.length) throw new Error(`Utworzono ${r.pushed}, ale ${unlinked.length} bez podpiętego planu (${unlinked.map((x) => x.date).join(', ')}).`)
+                  if (unlinked.length) throw new Error(`Utworzono ${r.pushed}, ale plan nie został podpięty (${unlinked.map((x) => x.date).join(', ')}).`)
                   return `Utworzono od nowa ${r.pushed} treningów, plany podpięte`
                 })
               }

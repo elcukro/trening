@@ -35,22 +35,32 @@ Deno.serve(async (req) => {
     return json({ ok: true, date: first.date, variants: await diagnose(token, first), workout })
   }
 
-  // tryb „od zera”: kasujemy to, co jest w Wahoo, i tworzymy na nowo
+  // Tryb „od zera”: kasujemy sam trening i tworzymy go na nowo. Plan zostaje i jest nadpisywany,
+  // bo kasowanie go kosztowałoby dodatkowe zapytanie, a limity sandboxa Wahoo są ciasne
+  // (25 zapytań / 5 min, 100 / h, 250 / dzień).
   if (body.mode === 'replace') {
-    for (const [, row] of byDate) {
-      await removeDay(token, { wahoo_plan_id: row.wahoo_plan_id as number | null, wahoo_workout_id: row.wahoo_workout_id as number | null }).catch((e) => console.warn('usuwanie', e))
+    for (const [date, row] of byDate) {
+      if (row.wahoo_workout_id) await removeDay(token, { wahoo_plan_id: null, wahoo_workout_id: row.wahoo_workout_id as number }).catch((e) => console.warn('usuwanie', e))
+      byDate.set(date, { ...row, wahoo_workout_id: null })
     }
-    byDate.clear()
   }
 
   const results: PushResult[] = []
-  for (const item of items) {
+  let rateLimited = false
+  for (const [index, item] of items.entries()) {
+    if (rateLimited) {
+      results.push({ date: item.date, status: 'error', error: 'pominięte – limit zapytań Wahoo' })
+      continue
+    }
     let result: PushResult
     try {
-      result = await pushDay(token, item, byDate.get(item.date) ?? null)
+      // weryfikujemy powiązanie planu tylko przy pierwszym dniu – to dodatkowe zapytanie
+      result = await pushDay(token, item, byDate.get(item.date) ?? null, { verify: index === 0 })
     } catch (e) {
       result = { date: item.date, status: 'error', error: String(e instanceof Error ? e.message : e).slice(0, 200) }
     }
+    // przy wyczerpanym limicie nie ma sensu dobijać się kolejnymi dniami
+    if (result.status === 'error' && result.error?.includes('429')) rateLimited = true
     results.push(result)
     await admin.from('wahoo_pushes').upsert(
       {
@@ -70,9 +80,15 @@ Deno.serve(async (req) => {
       { onConflict: 'user_id,date' },
     )
     // limity Wahoo: 25 zapytań / 5 min – rozkładamy wysyłkę w czasie
-    if (items.length > 1) await new Promise((r) => setTimeout(r, 400))
+    if (items.length > 1) await new Promise((r) => setTimeout(r, 1200))
   }
 
   const errors = results.filter((r) => r.status === 'error')
-  return json({ ok: errors.length === 0, results, pushed: results.length - errors.length, variant: results.find((r) => r.variant)?.variant ?? null })
+  return json({
+    ok: errors.length === 0,
+    results,
+    pushed: results.length - errors.length,
+    variant: results.find((r) => r.variant)?.variant ?? null,
+    rate_limited: rateLimited,
+  })
 })
