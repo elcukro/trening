@@ -101,7 +101,7 @@ export function pushItemsFrom(from: ISODate, days: number, ctx: EngineContext, w
 export interface PushResponse {
   ok: boolean
   pushed: number
-  results: { date: string; status: string; error?: string; variant?: string }[]
+  results: { date: string; status: string; error?: string; variant?: string; plan_linked?: boolean | null }[]
   /** sposób przesłania pliku zaakceptowany przez Wahoo (diagnostyka) */
   variant?: string | null
 }

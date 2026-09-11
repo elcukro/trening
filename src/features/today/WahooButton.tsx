@@ -22,6 +22,7 @@ export function WahooButton({ day }: { day: DayPlan }) {
         const res = await wahoo.push([item])
         const r = res.results[0]
         if (!r || r.status === 'error') throw new Error(r?.error === 'not_connected' ? 'Najpierw połącz Wahoo w Ustawieniach → Integracje.' : (r?.error ?? 'nieznany błąd'))
+        if (r.plan_linked === false) throw new Error('Trening utworzony, ale Wahoo nie podpięło do niego planu.')
         return r.status
       },
       (status) => (status === 'updated' ? 'Zaktualizowano trening na Bolcie' : 'Wysłano na Bolta. Zsynchronizuj zegarek.'),

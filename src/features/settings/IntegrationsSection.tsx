@@ -199,7 +199,9 @@ function WahooCard() {
                   const r = await wahoo.push(items)
                   const err = r.results.filter((x) => x.status === 'error')
                   if (err.length) throw new Error(`Wysłano ${r.pushed} z ${items.length}. ${err.map((x) => `${x.date}: ${x.error}`).join('; ')}`)
-                  return `Wysłano ${r.pushed} treningów na Bolta${r.variant ? ` (${r.variant})` : ''}`
+                  const unlinked = r.results.filter((x) => x.plan_linked === false)
+                  if (unlinked.length) throw new Error(`Wysłano ${r.pushed}, ale ${unlinked.length} bez podpiętego planu (${unlinked.map((x) => x.date).join(', ')}).`)
+                  return `Wysłano ${r.pushed} treningów na Bolta`
                 })
               }
             >
@@ -215,7 +217,9 @@ function WahooCard() {
                   const r = await wahoo.push(items, 'replace')
                   const err = r.results.filter((x) => x.status === 'error')
                   if (err.length) throw new Error(`Wysłano ${r.pushed} z ${items.length}. ${err.map((x) => `${x.date}: ${x.error}`).join('; ')}`)
-                  return `Utworzono od nowa ${r.pushed} treningów`
+                  const unlinked = r.results.filter((x) => x.plan_linked === false)
+                  if (unlinked.length) throw new Error(`Utworzono ${r.pushed}, ale ${unlinked.length} bez podpiętego planu (${unlinked.map((x) => x.date).join(', ')}).`)
+                  return `Utworzono od nowa ${r.pushed} treningów, plany podpięte`
                 })
               }
             >

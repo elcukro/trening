@@ -98,8 +98,13 @@ async function api(token: string, path: string, method: 'POST' | 'PUT' | 'DELETE
  * czy chce przesyłki multipart, czy zwykłego pola formularza, więc próbujemy po kolei i zapamiętujemy,
  * co zadziałało. Nazwa wariantu wraca w wyniku, żeby było wiadomo, który jest właściwy.
  */
-type Variant = 'multipart-base64' | 'multipart-json' | 'form-base64'
-const VARIANTS: Variant[] = ['multipart-base64', 'multipart-json', 'form-base64']
+type Variant = 'multipart-json' | 'multipart-base64' | 'form-base64'
+/**
+ * Dokumentacja Wahoo mówi „Base64 encoded JSON file”, ale API parsuje plik wprost jako JSON:
+ * base64 kończy się błędem „Could not serialize plan for validation. unexpected character”.
+ * Właściwy wariant to surowy JSON w przesyłce multipart; pozostałe zostają jako zapas.
+ */
+const VARIANTS: Variant[] = ['multipart-json', 'multipart-base64', 'form-base64']
 let preferred: Variant | null = null
 
 function planBody(item: PushItem, variant: Variant, now: string): BodyInit {
@@ -156,6 +161,8 @@ export interface PushResult {
   error?: string
   /** który sposób przesłania pliku zaakceptowało Wahoo */
   variant?: string
+  /** czy trening ma faktycznie podpięty plan (weryfikacja po zapisie) */
+  plan_linked?: boolean | null
 }
 
 /** Tworzy albo aktualizuje plan i trening dla jednego dnia. */
@@ -185,18 +192,37 @@ export async function pushDay(token: string, item: PushItem, existing: { wahoo_p
     'workout[plan_id]': String(planId),
     'workout[workout_token]': item.external_id,
   })
+  // samo plan_id nie wiąże planu z treningiem – licznik czyta listę plan_ids
+  workoutBody.append('workout[plan_ids][]', String(planId))
 
   let workoutId = existing?.wahoo_workout_id ?? null
+  let status: PushResult['status'] = updated ? 'updated' : 'created'
   if (workoutId) {
     const put = await api(token, `/v1/workouts/${workoutId}`, 'PUT', workoutBody)
-    if (put.ok) return { date: item.date, status: 'updated', wahoo_plan_id: planId, wahoo_workout_id: workoutId, variant: preferred ?? undefined }
-    if (put.status !== 404) return { date: item.date, status: 'error', error: `workout PUT ${put.status}: ${put.text.slice(0, 160)}` }
-    workoutId = null
+    if (put.ok) status = 'updated'
+    else if (put.status === 404) workoutId = null
+    else return { date: item.date, status: 'error', error: `workout PUT ${put.status}: ${put.text.slice(0, 160)}` }
   }
-  const post = await api(token, '/v1/workouts', 'POST', workoutBody)
-  if (!post.ok) return { date: item.date, status: 'error', error: `workout POST ${post.status}: ${post.text.slice(0, 160)}` }
-  workoutId = Number(post.json?.id) || null
-  return { date: item.date, status: updated ? 'updated' : 'created', wahoo_plan_id: planId, wahoo_workout_id: workoutId ?? undefined, variant: preferred ?? undefined }
+  if (!workoutId) {
+    const post = await api(token, '/v1/workouts', 'POST', workoutBody)
+    if (!post.ok) return { date: item.date, status: 'error', error: `workout POST ${post.status}: ${post.text.slice(0, 160)}` }
+    workoutId = Number(post.json?.id) || null
+  }
+
+  // sprawdzamy, czy plan naprawdę jest podpięty – bez tego licznik pokazuje „Select workout plan”
+  let linked: boolean | null = null
+  if (workoutId) {
+    const check = await getWorkout(token, workoutId)
+    if (check.status === 200) {
+      try {
+        const w = JSON.parse(check.body) as { plan_ids?: number[] }
+        linked = Array.isArray(w.plan_ids) && w.plan_ids.length > 0
+      } catch {
+        linked = null
+      }
+    }
+  }
+  return { date: item.date, status, wahoo_plan_id: planId, wahoo_workout_id: workoutId ?? undefined, variant: preferred ?? undefined, plan_linked: linked }
 }
 
 export async function deleteWorkout(token: string, workoutId: number): Promise<void> {
