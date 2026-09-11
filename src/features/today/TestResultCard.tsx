@@ -5,6 +5,7 @@ import { saveTestResult } from '@/db/repo'
 import { computeZones } from '@/engine/zones'
 import type { Program } from '@/engine/schema'
 import { Button, Card, CardTitle } from '@/components/ui'
+import { useToast } from '@/components/Toast'
 import { num } from '@/lib/format'
 import { fmtDate } from '@/lib/dates'
 
@@ -12,6 +13,7 @@ type Protocol = 'TEST_LTHR' | 'WATTBIKE_TEST'
 
 /** Formularz wyniku testu (R11). Na Dziś pokazywany w dniu testu, w Postępie – zawsze. */
 export function TestResultForm({ date, protocol, program, previousLthr, onSaved }: { date: string; protocol: Protocol; program: Program; previousLthr: number | null; onSaved?: () => void }) {
+  const toast = useToast()
   const [f, setF] = useState({ avg_hr: '', avg_power_w: '', avg_speed_kmh: '', distance_km: '', route: '', bike: '', temp_c: '', wind: '', notes: '' })
   const n = (v: string) => (v.trim() === '' ? null : Number(v.replace(',', '.')))
   const avgHr = n(f.avg_hr)
@@ -21,7 +23,7 @@ export function TestResultForm({ date, protocol, program, previousLthr, onSaved 
   const zones = lthr ? computeZones(program.hr_zones_lthr_fraction, lthr) : null
 
   async function save() {
-    await saveTestResult({ date, protocol, lthr_bpm: lthr, avg_hr: avgHr, avg_power_w: avgPower, ftp_w: ftp, avg_speed_kmh: n(f.avg_speed_kmh), distance_km: n(f.distance_km), route: f.route || null, bike: f.bike || null, temp_c: n(f.temp_c), wind: f.wind || null, notes: f.notes || null })
+    await toast.run('Zapisuję wynik testu…', () => saveTestResult({ date, protocol, lthr_bpm: lthr, avg_hr: avgHr, avg_power_w: avgPower, ftp_w: ftp, avg_speed_kmh: n(f.avg_speed_kmh), distance_km: n(f.distance_km), route: f.route || null, bike: f.bike || null, temp_c: n(f.temp_c), wind: f.wind || null, notes: f.notes || null }), () => `Zapisano. LTHR ${lthr} bpm – nowe strefy od jutra.`)
     onSaved?.()
   }
   const input = (key: keyof typeof f, label: string, mode: 'numeric' | 'decimal' | 'text' = 'numeric', placeholder = '') => (

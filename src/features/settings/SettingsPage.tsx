@@ -8,6 +8,7 @@ import { fmtDate } from '@/lib/dates'
 import { PHASE_SHORT } from '@/lib/labels'
 import type { LayoutWeek, PhaseId } from '@/engine/types'
 import { AccountSection, BackupSection } from './AccountSection'
+import { useToast } from '@/components/Toast'
 import { IntegrationsSection } from './IntegrationsSection'
 
 type Form = {
@@ -115,6 +116,7 @@ export function SettingsPage() {
 
 function SettingsForm({ engine, saved, setSaved }: { engine: ReturnType<typeof useEngine>; saved: boolean; setSaved: (v: boolean) => void }) {
   const { settings, update, reset } = engine.settingsApi
+  const toast = useToast()
   const [form, setForm] = useState<Form>(() => toForm(settings))
 
   const parsed = useMemo(() => fromForm(form, settings), [form, settings])
@@ -138,7 +140,7 @@ function SettingsForm({ engine, saved, setSaved }: { engine: ReturnType<typeof u
 
   async function save() {
     if (!canSave) return
-    await update(parsed.settings)
+    await toast.run('Zapisuję ustawienia…', () => update(parsed.settings), () => 'Ustawienia zapisane')
     setSaved(true)
   }
 
@@ -238,7 +240,7 @@ function SettingsForm({ engine, saved, setSaved }: { engine: ReturnType<typeof u
         <Button onClick={save} disabled={!canSave} className="flex-1">
           {saved ? 'Zapisano ✓' : 'Zapisz'}
         </Button>
-        <Button variant="secondary" onClick={() => reset()}>
+        <Button variant="secondary" onClick={() => toast.run('Przywracam domyślne…', reset, () => 'Przywrócono ustawienia domyślne')}>
           Przywróć domyślne
         </Button>
       </div>

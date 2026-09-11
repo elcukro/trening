@@ -5,12 +5,14 @@ import { resetSyncCursors, runSync } from '@/sync/sync'
 import { db, SYNC_TABLES } from '@/db'
 import { loadProgram } from '@/data/program'
 import { Button, Card, CardTitle, Row } from '@/components/ui'
+import { useToast } from '@/components/Toast'
 
 const STATE_LABEL: Record<string, string> = { idle: 'Zsynchronizowano', syncing: 'Synchronizuję…', error: 'Błąd', offline: 'Offline', unauthenticated: 'Niezalogowany', disabled: 'Wyłączona (brak konfiguracji)' }
 
 export function AccountSection() {
   const auth = useAuth()
   const sync = useSyncRunner()
+  const toast = useToast()
   const [email, setEmail] = useState('')
   const [link, setLink] = useState('')
   const [code, setCode] = useState('')
@@ -20,23 +22,33 @@ export function AccountSection() {
 
   async function send() {
     setMsg(null)
-    const { error } = await auth.signIn(email)
-    setSent(!error)
-    setMsg(error ?? 'Mail wysłany. Wpisz kod z maila poniżej (albo kliknij link, jeśli otwierasz go w tej samej przeglądarce).')
+    await toast.run('Wysyłam kod na maila…', async () => {
+      const { error } = await auth.signIn(email)
+      if (error) throw new Error(error)
+      setSent(true)
+      setMsg('Mail wysłany. Wpisz kod z maila poniżej (albo kliknij link, jeśli otwierasz go w tej samej przeglądarce).')
+      return 'Mail wysłany'
+    })
   }
 
   async function useCode() {
     setMsg(null)
-    const { error } = await auth.signInWithCode(email, code)
-    setMsg(error)
-    if (!error) setCode('')
+    await toast.run('Sprawdzam kod…', async () => {
+      const { error } = await auth.signInWithCode(email, code)
+      if (error) throw new Error(error)
+      setCode('')
+      return 'Zalogowano'
+    })
   }
 
   async function useLink() {
     setMsg(null)
-    const { error } = await auth.signInWithLink(link)
-    setMsg(error)
-    if (!error) setLink('')
+    await toast.run('Loguję linkiem…', async () => {
+      const { error } = await auth.signInWithLink(link)
+      if (error) throw new Error(error)
+      setLink('')
+      return 'Zalogowano'
+    })
   }
 
   return (
@@ -52,15 +64,21 @@ export function AccountSection() {
           <Row label="W kolejce">{sync.pending} zmian</Row>
           {sync.error && <p className="mt-1 text-xs text-red-600">{sync.error}</p>}
           <div className="mt-2 flex gap-2">
-            <Button variant="secondary" onClick={() => runSync({ programVersion: loadProgram().version })}>
+            <Button variant="secondary" disabled={toast.busy} onClick={() => toast.run('Synchronizuję…', () => runSync({ programVersion: loadProgram().version }), () => 'Zsynchronizowano')}>
               Synchronizuj teraz
             </Button>
             <Button
               variant="ghost"
-              onClick={async () => {
-                await auth.signOut()
-                await resetSyncCursors()
-              }}
+              onClick={() =>
+                toast.run(
+                  'Wylogowuję…',
+                  async () => {
+                    await auth.signOut()
+                    await resetSyncCursors()
+                  },
+                  () => 'Wylogowano',
+                )
+              }
             >
               Wyloguj
             </Button>
@@ -110,6 +128,7 @@ interface Backup {
 
 export function BackupSection() {
   const fileRef = useRef<HTMLInputElement>(null)
+  const toast = useToast()
   const [msg, setMsg] = useState<string | null>(null)
 
   async function exportJson() {
@@ -135,7 +154,18 @@ export function BackupSection() {
   }
 
   async function importJson(file: File) {
-    try {
+    await toast.run(
+      'Wczytuję kopię…',
+      async () => {
+        const n = await doImport(file)
+        setMsg(`Zaimportowano ${n} rekordów (nowsze lokalne zostały zachowane).`)
+        return `Zaimportowano ${n} rekordów`
+      },
+    )
+  }
+
+  async function doImport(file: File): Promise<number> {
+    {
       const parsed = JSON.parse(await file.text()) as Backup
       if (parsed.app !== 'trening' || !parsed.tables) throw new Error('To nie jest kopia aplikacji Trening.')
       let n = 0
@@ -151,9 +181,7 @@ export function BackupSection() {
           }
         }
       })
-      setMsg(`Zaimportowano ${n} rekordów (nowsze lokalne zostały zachowane).`)
-    } catch (e) {
-      setMsg(e instanceof Error ? e.message : 'Błąd importu.')
+      return n
     }
   }
 
@@ -161,7 +189,7 @@ export function BackupSection() {
     <Card>
       <CardTitle icon="💾">Kopia zapasowa</CardTitle>
       <div className="flex gap-2">
-        <Button variant="secondary" onClick={exportJson} className="flex-1">
+        <Button variant="secondary" onClick={() => toast.run('Przygotowuję kopię…', exportJson, () => 'Kopia gotowa')} className="flex-1">
           Eksport JSON
         </Button>
         <Button variant="secondary" onClick={() => fileRef.current?.click()} className="flex-1">

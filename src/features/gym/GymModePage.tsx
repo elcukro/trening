@@ -10,6 +10,7 @@ import type { GymItem, GymSession } from '@/engine/schema'
 import { db, newId, type SessionLog, type SetLog } from '@/db'
 import { exerciseHistory, putSet, setsForSession, softDelete, upsertSessionLog } from '@/db/repo'
 import { Button, Card, Empty } from '@/components/ui'
+import { useToast } from '@/components/Toast'
 import { num, seconds } from '@/lib/format'
 import { rxLabel } from '@/features/today/GymItems'
 import { buildSequence, isLoggable, parseReps, parseRir, setsOf, type SeqStep } from './sequence'
@@ -293,6 +294,7 @@ function RestOverlay({ remaining, total, onSkip, onAdd }: { remaining: number; t
 
 function Summary({ date, session, log, sets, week, deload, onBack, onFinish }: { date: string; session: GymSession; log: SessionLog; sets: SetLog[]; week: number; deload: boolean; onBack: () => void; onFinish: () => void }) {
   const engine = useEngine()
+  const toast = useToast()
   const program = engine.ctx.program
   const total = tonnage(sets)
   const prev = useLiveQuery(async () => {
@@ -310,7 +312,7 @@ function Summary({ date, session, log, sets, week, deload, onBack, onFinish }: {
   const doneLoggable = sets.filter((s) => isLoggable({ exercise: s.exercise_id, rx: { sets: 1, reps: 1 } })).length
 
   async function finish(status: 'done' | 'modified') {
-    await upsertSessionLog(date, 'gym', { status, duration_min: log.duration_min ?? session.est_min })
+    await toast.run('Zamykam sesję…', () => upsertSessionLog(date, 'gym', { status, duration_min: log.duration_min ?? session.est_min }), () => 'Sesja zapisana')
     onFinish()
   }
 

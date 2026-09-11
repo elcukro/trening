@@ -3,6 +3,7 @@ import { useLiveQuery } from 'dexie-react-hooks'
 import { db } from '@/db'
 import { upsertCheckin } from '@/db/repo'
 import { Button, Card, CardTitle } from '@/components/ui'
+import { useToast } from '@/components/Toast'
 import { num } from '@/lib/format'
 
 function Scale({ label, value, onChange }: { label: string; value: number | null; onChange: (v: number) => void }) {
@@ -28,6 +29,7 @@ function Scale({ label, value, onChange }: { label: string; value: number | null
 }
 
 export function CheckinCard({ date }: { date: string }) {
+  const toast = useToast()
   const checkin = useLiveQuery(() => db.checkins.where('date').equals(date).first(), [date])
   const [open, setOpen] = useState(false)
   const [weight, setWeight] = useState('')
@@ -36,6 +38,7 @@ export function CheckinCard({ date }: { date: string }) {
   const done = !!checkin && (checkin.sleep != null || checkin.weight_kg != null)
 
   async function save() {
+    const doSave = async () => {
     const w = weight.trim() ? Number(weight.replace(',', '.')) : (checkin?.weight_kg ?? null)
     const r = rhr.trim() ? Number(rhr) : (checkin?.resting_hr ?? null)
     await upsertCheckin(date, {
@@ -46,6 +49,8 @@ export function CheckinCard({ date }: { date: string }) {
       motivation: draft.motivation ?? checkin?.motivation ?? null,
     })
     setOpen(false)
+    }
+    await toast.run('Zapisuję check-in…', doSave, () => 'Check-in zapisany')
   }
 
   if (done && !open) {

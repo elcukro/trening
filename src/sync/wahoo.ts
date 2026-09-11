@@ -33,6 +33,19 @@ export interface PushItem {
   plan: WahooPlan
 }
 
+
+const ERROR_PL: Record<string, string> = {
+  unauthorized: 'Zaloguj się w Ustawieniach → Konto, żeby korzystać z integracji.',
+  not_connected: 'Integracja nie jest połączona – zrób to w Ustawieniach → Integracje.',
+  no_items: 'Na ten okres nie ma treningów do wysłania.',
+  unknown_action: 'Nieznana akcja – zgłoś błąd.',
+  method: 'Nieobsługiwane żądanie.',
+}
+
+function translate(code: string): string {
+  return ERROR_PL[code] ?? code
+}
+
 async function call<T>(fn: 'wahoo-oauth' | 'wahoo-push', body: Record<string, unknown>): Promise<T> {
   if (!supabase) throw new Error('Brak konfiguracji Supabase.')
   const { data, error } = await supabase.functions.invoke(fn, { body })
@@ -44,7 +57,7 @@ async function call<T>(fn: 'wahoo-oauth' | 'wahoo-push', body: Record<string, un
     } catch {
       /* ignoruj */
     }
-    throw new Error(detail)
+    throw new Error(translate(detail))
   }
   return data as T
 }
@@ -125,6 +138,7 @@ export async function maybeAutoPush(today: ISODate, ctx: EngineContext, weeks?: 
   const items = pushItemsFrom(today, 7, ctx, weeks)
   if (items.length === 0) return null
   const res = await wahoo.push(items)
-  await db.kv.put({ key: LAST_KEY, value: today, updated_at: new Date().toISOString() })
+  // przy błędach nie blokujemy dnia – kolejne uruchomienie spróbuje jeszcze raz
+  if (res.ok) await db.kv.put({ key: LAST_KEY, value: today, updated_at: new Date().toISOString() })
   return res
 }

@@ -9,7 +9,11 @@ export function useWahooAutoPush(): void {
   const { ctx, weeks } = engine
   useEffect(() => {
     const id = setTimeout(() => {
-      maybeAutoPush(todayISO(), ctx, weeks).catch((e) => console.warn('Wahoo auto push:', e))
+      maybeAutoPush(todayISO(), ctx, weeks)
+        .then((res) => {
+          if (res && !res.ok) console.warn('Wahoo auto push – błędy:', res.results.filter((r) => r.status === 'error'))
+        })
+        .catch((e) => console.warn('Wahoo auto push:', e))
     }, 4000) // po synchronizacji Supabase
     return () => clearTimeout(id)
   }, [ctx, weeks])

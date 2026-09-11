@@ -38,7 +38,7 @@ test('wynik testu LTHR: strefy od następnego dnia (R11)', async ({ page }) => {
   await fillNumber(page, 'Śr. prędkość (km/h)', '31,2')
   await expect(page.getByText('LTHR = 160 bpm')).toBeVisible()
   await page.getByRole('button', { name: 'Zapisz wynik testu' }).click()
-  await expect(page.getByText(/LTHR 160 bpm/)).toBeVisible()
+  await expect(page.getByText(/LTHR 160 bpm/).first()).toBeVisible()
   // ten sam dzień – jeszcze RPE
   await expect(page.getByText(/Zrób test i wpisz LTHR/)).toBeVisible()
   // następny akcent – bpm
@@ -145,4 +145,21 @@ test('Etap 5: sprzęt i wyjazd', async ({ page }) => {
   await expect(page.getByText('1/17')).toBeVisible()
   await page.getByRole('button', { name: 'Biwak' }).click()
   await expect(page.getByText('0/19')).toBeVisible()
+})
+
+test('Komunikaty o wyniku akcji: sukces i błąd', async ({ page }) => {
+  // zapis lokalny: pasek postępu i potwierdzenie
+  await page.goto('/?today=2026-09-15')
+  await page.getByRole('button', { name: /Poranny check-in/ }).click()
+  await page.getByLabel('Waga (kg)').fill('104,2')
+  await page.getByRole('button', { name: 'Zapisz' }).click()
+  await expect(page.getByRole('status')).toContainText('Check-in zapisany')
+  // akcja sieciowa bez zalogowania: komunikat błędu ze szczegółami
+  await page.getByRole('button', { name: /Wyślij na Wahoo/ }).click()
+  await expect(page.getByRole('alert')).toContainText('Nie udało się')
+  await page.getByRole('button', { name: 'szczegóły' }).click()
+  await expect(page.getByRole('alert')).toContainText(/Zaloguj się/i)
+  await page.screenshot({ path: 'test-results/toast.png' })
+  await page.getByRole('alert').getByRole('button', { name: 'Zamknij' }).click()
+  await expect(page.getByRole('alert')).toHaveCount(0)
 })

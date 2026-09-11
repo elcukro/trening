@@ -15,6 +15,7 @@ import { GearPage } from '@/features/gear/GearPage'
 import { TripPage } from '@/features/trip/TripPage'
 import { GymModePage } from '@/features/gym/GymModePage'
 import { useSyncRunner } from '@/sync/useSync'
+import { ToastProvider } from '@/components/Toast'
 import { useWahooAutoPush } from '@/sync/useWahoo'
 
 const ProgressPage = lazy(() => import('@/features/progress/ProgressPage').then((m) => ({ default: m.ProgressPage })))
@@ -89,7 +90,8 @@ class ErrorBoundary extends Component<{ children: ReactNode }, { error: Error | 
 export function App() {
   return (
     <ErrorBoundary>
-      <BrowserRouter>
+      <ToastProvider>
+        <BrowserRouter>
         <Routes>
           <Route element={<Layout />}>
             <Route index element={<TodayPage />} />
@@ -110,8 +112,9 @@ export function App() {
             <Route path="*" element={<Navigate to="/" replace />} />
           </Route>
           <Route path="silownia/:date" element={<GymModePage />} />
-        </Routes>
-      </BrowserRouter>
+          </Routes>
+        </BrowserRouter>
+      </ToastProvider>
     </ErrorBoundary>
   )
 }

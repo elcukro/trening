@@ -8,6 +8,7 @@ import { runSync } from '@/sync/sync'
 import { loadProgram } from '@/data/program'
 import { todayISO, fmtDayMonth } from '@/lib/dates'
 import { Button, Card, CardTitle, Row } from '@/components/ui'
+import { useToast } from '@/components/Toast'
 
 function useOAuthResult(key: 'strava' | 'wahoo'): string | null {
   const [params, setParams] = useSearchParams()
@@ -27,20 +28,16 @@ function useOAuthResult(key: 'strava' | 'wahoo'): string | null {
 }
 
 function useRunner() {
-  const [busy, setBusy] = useState(false)
+  const toast = useToast()
   const [msg, setMsg] = useState<string | null>(null)
-  const run = useCallback(async (label: string, fn: () => Promise<string>) => {
-    setBusy(true)
-    setMsg(null)
-    try {
-      setMsg(await fn())
-    } catch (e) {
-      setMsg(`${label}: ${e instanceof Error ? e.message : String(e)}`)
-    } finally {
-      setBusy(false)
-    }
-  }, [])
-  return { busy, msg, setMsg, run }
+  const run = useCallback(
+    async (label: string, fn: () => Promise<string>) => {
+      const result = await toast.run(`${label}…`, fn, (text) => text)
+      setMsg(result)
+    },
+    [toast],
+  )
+  return { busy: toast.busy, msg, setMsg, run }
 }
 
 export function IntegrationsSection() {
@@ -89,9 +86,9 @@ function StravaCard() {
           <Button
             disabled={busy}
             onClick={() =>
-              run('Strava', async () => {
+              run('Łączę ze Stravą', async () => {
                 window.location.assign((await strava.startUrl()).url)
-                return 'Przekierowuję do Stravy…'
+                return 'Przekierowuję do Stravy'
               })
             }
           >
@@ -104,7 +101,7 @@ function StravaCard() {
               variant="secondary"
               disabled={busy}
               onClick={() =>
-                run('Import', async () => {
+                run('Pobieram jazdy ze Stravy', async () => {
                   const r = await strava.sync(14)
                   await runSync({ programVersion: loadProgram().version })
                   return `Pobrano ${r.imported} jazd z ${r.scanned} aktywności (14 dni).`
@@ -113,16 +110,16 @@ function StravaCard() {
             >
               Pobierz ostatnie 14 dni
             </Button>
-            <Button variant="secondary" disabled={busy} onClick={() => run('Webhook', async () => `Webhook: ${(await strava.subscribe()).detail}`)}>
+            <Button variant="secondary" disabled={busy} onClick={() => run('Sprawdzam webhook', async () => `Webhook: ${(await strava.subscribe()).detail}`)}>
               Sprawdź webhook
             </Button>
             <Button
               variant="ghost"
               disabled={busy}
               onClick={() =>
-                run('Rozłączanie', async () => {
+                run('Rozłączam Stravę', async () => {
                   await strava.disconnect()
-                  return 'Strava rozłączona.'
+                  return 'Strava rozłączona'
                 })
               }
             >
@@ -175,9 +172,9 @@ function WahooCard() {
           <Button
             disabled={busy}
             onClick={() =>
-              run('Wahoo', async () => {
+              run('Łączę z Wahoo', async () => {
                 window.location.assign((await wahoo.startUrl()).url)
-                return 'Przekierowuję do Wahoo…'
+                return 'Przekierowuję do Wahoo'
               })
             }
           >
@@ -190,12 +187,13 @@ function WahooCard() {
               variant="secondary"
               disabled={busy}
               onClick={() =>
-                run('Wysyłka', async () => {
+                run('Wysyłam 7 dni na Bolta', async () => {
                   const items = pushItemsFrom(today, 7, engine.ctx, engine.weeks)
                   if (items.length === 0) return 'Na najbliższy tydzień nie ma treningów do wysłania.'
                   const r = await wahoo.push(items)
                   const err = r.results.filter((x) => x.status === 'error')
-                  return err.length ? `Wysłano ${r.pushed} z ${items.length}. Błędy: ${err.map((x) => `${x.date}: ${x.error}`).join('; ')}` : `Wysłano ${r.pushed} treningów (dziś + 6 dni). Zsynchronizuj Bolta.`
+                  if (err.length) throw new Error(`Wysłano ${r.pushed} z ${items.length}. ${err.map((x) => `${x.date}: ${x.error}`).join('; ')}`)
+                  return `Wysłano ${r.pushed} treningów na Bolta${r.variant ? ` (${r.variant})` : ''}`
                 })
               }
             >
@@ -205,9 +203,9 @@ function WahooCard() {
               variant="ghost"
               disabled={busy}
               onClick={() =>
-                run('Rozłączanie', async () => {
+                run('Rozłączam Wahoo', async () => {
                   await wahoo.disconnect()
-                  return 'Wahoo rozłączone.'
+                  return 'Wahoo rozłączone'
                 })
               }
             >

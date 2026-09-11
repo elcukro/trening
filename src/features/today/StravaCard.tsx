@@ -8,6 +8,7 @@ import { addDays, isValidISODate } from '@/engine/dates'
 import { zoneColor } from '@/lib/zones'
 import { minutes, num, seconds } from '@/lib/format'
 import { Button, Card, CardTitle } from '@/components/ui'
+import { useToast } from '@/components/Toast'
 
 export function useActivities(date: string): StravaActivity[] {
   return useLiveQuery(async () => (await db.strava_activities.where('date').equals(date).toArray()).filter((a) => !a.deleted_at && a.is_ride), [date], [] as StravaActivity[])
@@ -37,13 +38,14 @@ export function ZoneBar({ histogram, zones, lthr }: { histogram: number[]; zones
 /** Jazdy ze Stravy danego dnia: szczegóły, strefy, przenoszenie na inny dzień. */
 export function StravaActivities({ date, zones, lthr, extra }: { date: string; zones: HrZone[]; lthr: number | null; extra?: boolean }) {
   const acts = useActivities(date)
+  const toast = useToast()
   const [moving, setMoving] = useState<string | null>(null)
   const [target, setTarget] = useState(date)
   if (acts.length === 0) return null
 
   async function move(a: StravaActivity) {
     if (!isValidISODate(target) || target === a.date) return
-    await putSynced('strava_activities', { ...a, date: target })
+    await toast.run('Przenoszę jazdę…', () => putSynced('strava_activities', { ...a, date: target }), () => `Jazda przeniesiona na ${target}`)
     setMoving(null)
   }
 

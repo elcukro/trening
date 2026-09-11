@@ -9,6 +9,7 @@ import { applyOverrides, warningsFor, type LogLike, type RuleAction, type RuleWa
 import type { CalendarDay, PlanOverride } from '@/engine/types'
 import { useEngine, type Engine } from './useSettings'
 import { todayISO } from '@/lib/dates'
+import { useToast } from '@/components/Toast'
 
 /** Ile dni wstecz i w przód liczymy, żeby reguły widziały kontekst (R7 potrzebuje dwóch tygodni). */
 const BACK = 15
@@ -29,8 +30,18 @@ export interface DayView {
   undo: (id: string) => Promise<void>
 }
 
+const OVERRIDE_DONE: Record<string, string> = {
+  indoor: 'Trening zamieniony na wersję pod dachem',
+  sick: 'Dzień dostosowany do choroby',
+  downgrade: 'Dzień obniżony',
+  skip: 'Trening pominięty',
+  swap: 'Dni zamienione',
+  move: 'Trening przeniesiony',
+}
+
 export function useDayView(date: ISODate): DayView {
   const engine = useEngine()
+  const toast = useToast()
   const { ctx, weeks } = engine
   const from = addDays(date, -BACK)
   const to = addDays(date, FORWARD)
@@ -61,10 +72,10 @@ export function useDayView(date: ISODate): DayView {
     warnings,
     overrides: overrides.filter((o) => o.date === date),
     applyAction: async (action) => {
-      await addOverride(action.date, action.kind, action.payload)
+      await toast.run('Zmieniam plan…', () => addOverride(action.date, action.kind, action.payload), () => OVERRIDE_DONE[action.kind] ?? 'Plan zmieniony')
     },
     undo: async (id) => {
-      await removeOverride(id)
+      await toast.run('Cofam zmianę…', () => removeOverride(id), () => 'Przywrócono plan')
     },
   }
 }

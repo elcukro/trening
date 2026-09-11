@@ -8,6 +8,7 @@ import { useEngine } from '@/app/useSettings'
 import { todayISO, fmtDate } from '@/lib/dates'
 import { num } from '@/lib/format'
 import { Badge, Button, Card, CardTitle, PageTitle } from '@/components/ui'
+import { useToast } from '@/components/Toast'
 
 const BIKES = [
   { id: 'checkpoint', name: 'Trek Checkpoint ALR 4', role: 'Alpy, zima, mokro, szuter, weekendy w górach, bloki z bagażem. Przełożenie 40/50, hamulce tarczowe.' },
@@ -16,6 +17,7 @@ const BIKES = [
 
 export function GearPage() {
   const engine = useEngine()
+  const toast = useToast()
   const today = todayISO()
   const tasks = loadGearTasks()
   const states = useLiveQuery(() => db.gear_task_state.toArray(), [], [] as GearTaskState[])
@@ -31,7 +33,7 @@ export function GearPage() {
 
   async function saveService() {
     if (!form.description.trim()) return
-    await addServiceEntry({ date: form.date, bike: form.bike, km: form.km ? Number(form.km) : null, description: form.description.trim() })
+    await toast.run('Zapisuję…', () => addServiceEntry({ date: form.date, bike: form.bike, km: form.km ? Number(form.km) : null, description: form.description.trim() }), () => 'Dopisano do dziennika')
     setForm({ date: today, bike: form.bike, km: '', description: '' })
   }
 

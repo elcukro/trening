@@ -10,6 +10,7 @@ import { todayISO, fmtRange } from '@/lib/dates'
 import { hours, minutes } from '@/lib/format'
 import { FLAG_LABEL, PHASE_COLOR, WEEKDAY_SHORT, WEEK_TYPE_LABEL } from '@/lib/labels'
 import { Badge, Button, Card, Empty } from '@/components/ui'
+import { useToast } from '@/components/Toast'
 import { StatusBadge } from '@/features/today/BikeLogCard'
 
 export function WeekPage() {
@@ -18,6 +19,7 @@ export function WeekPage() {
   const today = todayISO()
   const monday = date && isValidISODate(date) ? mondayOf(date) : mondayOf(today)
   const { days, window } = useWeekView(monday)
+  const toast = useToast()
   const [swapFrom, setSwapFrom] = useState<string | null>(null)
   const [msg, setMsg] = useState<string | null>(null)
 
@@ -36,12 +38,14 @@ export function WeekPage() {
     const check = validateSwap(swapFrom, target, window)
     if (!check.ok) {
       setMsg(check.reason ?? 'Nie można zamienić tych dni.')
+      toast.notify('Nie można zamienić tych dni', 'error', check.reason)
       setSwapFrom(null)
       return
     }
-    await addOverride(swapFrom, 'swap', { swap_with: target })
-    setMsg('Dni zamienione.')
+    const from = swapFrom
     setSwapFrom(null)
+    await toast.run('Zamieniam dni…', () => addOverride(from, 'swap', { swap_with: target }), () => 'Dni zamienione')
+    setMsg('Dni zamienione.')
   }
 
   return (
@@ -125,7 +129,7 @@ export function WeekPage() {
                       ))}
                       {d.event && <Badge color="bg-orange-600">Wydarzenie</Badge>}
                       {dayOverrides.map((o) => (
-                        <button key={o.id} onClick={() => removeOverride(o.id)} className="rounded-full bg-sky-600 px-2 py-0.5 text-xs text-white">
+                        <button key={o.id} onClick={() => toast.run('Cofam zmianę…', () => removeOverride(o.id), () => 'Przywrócono plan')} className="rounded-full bg-sky-600 px-2 py-0.5 text-xs text-white">
                           zmienione ✕
                         </button>
                       ))}

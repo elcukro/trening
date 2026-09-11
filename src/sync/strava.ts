@@ -8,6 +8,19 @@ export interface StravaStatus {
   activities: number
 }
 
+
+const ERROR_PL: Record<string, string> = {
+  unauthorized: 'Zaloguj się w Ustawieniach → Konto, żeby korzystać z integracji.',
+  not_connected: 'Integracja nie jest połączona – zrób to w Ustawieniach → Integracje.',
+  no_items: 'Na ten okres nie ma treningów do wysłania.',
+  unknown_action: 'Nieznana akcja – zgłoś błąd.',
+  method: 'Nieobsługiwane żądanie.',
+}
+
+function translate(code: string): string {
+  return ERROR_PL[code] ?? code
+}
+
 async function call<T>(action: string, extra: Record<string, unknown> = {}): Promise<T> {
   if (!supabase) throw new Error('Brak konfiguracji Supabase.')
   const { data, error } = await supabase.functions.invoke('strava-oauth', { body: { action, ...extra } })
@@ -19,7 +32,7 @@ async function call<T>(action: string, extra: Record<string, unknown> = {}): Pro
     } catch {
       /* ignoruj */
     }
-    throw new Error(detail)
+    throw new Error(translate(detail))
   }
   return data as T
 }

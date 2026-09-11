@@ -4,6 +4,7 @@ import { db, type SessionLog, type SessionStatus } from '@/db'
 import { upsertSessionLog } from '@/db/repo'
 import type { DayPlan } from '@/engine/plan'
 import { Button } from '@/components/ui'
+import { useToast } from '@/components/Toast'
 import { minutes, num } from '@/lib/format'
 
 const STATUS_LABEL: Record<SessionStatus, string> = { planned: 'Zaplanowane', in_progress: 'W trakcie', done: 'Wykonane', modified: 'Zmienione', skipped: 'Pominięte' }
@@ -21,6 +22,7 @@ export function StatusBadge({ status }: { status: SessionStatus }) {
 
 /** Oznaczanie jazdy: wykonane / zmienione / pominięte + szczegóły (RPE, czas, dystans, przewyższenie, tętno, notatka). */
 export function BikeLogCard({ day }: { day: DayPlan }) {
+  const toast = useToast()
   const log = useBikeLog(day.date)
   const [editing, setEditing] = useState<SessionStatus | null>(null)
   const [f, setF] = useState<Fields>({ rpe: '', duration_min: '', distance_km: '', elevation_m: '', avg_hr: '', notes: '' })
@@ -29,7 +31,7 @@ export function BikeLogCard({ day }: { day: DayPlan }) {
   const n = (v: string) => (v.trim() === '' ? null : Number(v.replace(',', '.')))
 
   async function save(status: SessionStatus) {
-    await upsertSessionLog(day.date, 'bike', {
+    await toast.run('Zapisuję…', () => upsertSessionLog(day.date, 'bike', {
       planned_workout_id: day.bike!.workout_id,
       status,
       rpe: n(f.rpe) ?? log?.rpe ?? null,
@@ -38,7 +40,7 @@ export function BikeLogCard({ day }: { day: DayPlan }) {
       elevation_m: n(f.elevation_m) ?? log?.elevation_m ?? null,
       avg_hr: n(f.avg_hr) ?? log?.avg_hr ?? null,
       notes: f.notes.trim() || log?.notes || null,
-    })
+    }), () => `Zapisano: ${STATUS_LABEL[status].toLowerCase()}`)
     setEditing(null)
   }
 
