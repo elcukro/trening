@@ -95,6 +95,7 @@ test('kalkulator podjazdu i konto bez konfiguracji', async ({ page }) => {
   await expect(page.getByRole('heading', { name: 'Kalkulator podjazdu' })).toBeVisible()
   await expect(page.getByText(/^\d+ min$/).first()).toBeVisible()
   await page.goto('/wiecej/ustawienia')
-  await expect(page.getByText(/Brak konfiguracji Supabase/)).toBeVisible()
+  // bez env: komunikat o braku konfiguracji; z env (.env.local): formularz magic link
+  await expect(page.getByText(/Brak konfiguracji Supabase/).or(page.getByRole('button', { name: 'Wyślij link logowania' }))).toBeVisible()
   await expect(page.getByRole('button', { name: 'Eksport JSON' })).toBeVisible()
 })
