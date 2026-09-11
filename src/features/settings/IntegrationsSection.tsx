@@ -159,8 +159,10 @@ function WahooCard() {
   }, [msg])
 
   const today = todayISO()
-  const sent = status?.pushes?.filter((p) => p.status !== 'error') ?? []
-  const failed = status?.pushes?.filter((p) => p.status === 'error') ?? []
+  const pushes = status?.pushes ?? []
+  const sent = pushes.filter((p) => p.status !== 'error')
+  const failed = pushes.filter((p) => p.status === 'error')
+  const lastPush = pushes.map((p) => p.updated_at).toSorted().at(-1)
 
   return (
     <Card>
@@ -172,6 +174,7 @@ function WahooCard() {
         </p>
       )}
       {status?.connected && <Row label="Wysłane treningi">{sent.length > 0 ? sent.map((p) => fmtDayMonth(p.date)).join(', ') : 'brak'}</Row>}
+      {status?.connected && lastPush && <Row label="Ostatnia wysyłka">{new Date(lastPush).toLocaleString('pl-PL', { timeZone: 'Europe/Warsaw' })}</Row>}
       {failed.length > 0 && <p className="text-xs text-red-600">Błędy: {failed.map((p) => `${fmtDayMonth(p.date)} – ${p.error}`).join('; ')}</p>}
       <div className="mt-2 flex flex-wrap gap-2">
         {status && (!status.connected || (status.missing_scopes?.length ?? 0) > 0) && (
