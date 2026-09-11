@@ -13,6 +13,7 @@ export function AccountSection() {
   const sync = useSyncRunner()
   const [email, setEmail] = useState('')
   const [link, setLink] = useState('')
+  const [code, setCode] = useState('')
   const [sent, setSent] = useState(false)
   const [msg, setMsg] = useState<string | null>(auth.urlError)
   const inputCls = 'mt-1 min-h-11 w-full rounded-lg border border-slate-300 bg-white px-3 dark:border-slate-600 dark:bg-slate-900'
@@ -21,7 +22,14 @@ export function AccountSection() {
     setMsg(null)
     const { error } = await auth.signIn(email)
     setSent(!error)
-    setMsg(error ?? 'Link wysłany. Na iPhonie z ekranu początkowego: przytrzymaj link w mailu → Kopiuj → wklej poniżej. W przeglądarce wystarczy go kliknąć.')
+    setMsg(error ?? 'Mail wysłany. Wpisz kod z maila poniżej (albo kliknij link, jeśli otwierasz go w tej samej przeglądarce).')
+  }
+
+  async function useCode() {
+    setMsg(null)
+    const { error } = await auth.signInWithCode(email, code)
+    setMsg(error)
+    if (!error) setCode('')
   }
 
   async function useLink() {
@@ -68,14 +76,25 @@ export function AccountSection() {
             Wyślij link logowania
           </Button>
           {msg && <p className="mt-2 text-sm">{msg}</p>}
-          <details open={sent} className="mt-3">
+          {sent && (
+            <div className="mt-3 rounded-xl bg-sky-50 p-3 dark:bg-sky-950/40">
+              <label className="block">
+                <span className="text-xs text-slate-500">Kod z maila (8 cyfr)</span>
+                <input className={`${inputCls} text-center text-2xl tracking-[0.3em]`} inputMode="numeric" autoComplete="one-time-code" maxLength={8} value={code} onChange={(e) => setCode(e.target.value)} placeholder="········" />
+              </label>
+              <Button onClick={useCode} disabled={code.replace(/\D/g, '').length < 6} className="mt-2 w-full">
+                Zaloguj kodem
+              </Button>
+            </div>
+          )}
+          <details className="mt-3">
             <summary className="min-h-11 cursor-pointer py-2 text-sm font-medium">Mam link z maila – wklej go tutaj</summary>
             <textarea className={`${inputCls} min-h-20 text-xs`} value={link} onChange={(e) => setLink(e.target.value)} placeholder="https://kgllegvlnmchdvkkbitt.supabase.co/auth/v1/verify?token=…" />
             <Button variant="secondary" onClick={useLink} disabled={!link.includes('token')} className="mt-2 w-full">
               Zaloguj wklejonym linkiem
             </Button>
           </details>
-          <p className="mt-2 text-xs text-slate-500">Każdy link działa tylko raz i wyłącznie w tej przeglądarce/aplikacji, w której go otworzysz. Bez logowania wszystko działa lokalnie.</p>
+          <p className="mt-2 text-xs text-slate-500">Kod i link działają raz, przez godzinę. Nie otwieraj podglądu linku w Gmailu – to go zużywa. Bez logowania wszystko działa lokalnie.</p>
         </>
       )}
     </Card>

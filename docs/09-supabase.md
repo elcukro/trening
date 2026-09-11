@@ -29,6 +29,13 @@ Trigger `check_allowed_email` odrzuci każdą inną rejestrację. Dodatkowo, dla
 
 Magic link wraca na `/wiecej/ustawienia`. **Uwaga iOS:** aplikacja na ekranie początkowym ma osobną pamięć niż Safari, więc link kliknięty w Mailu zaloguje Safari, a nie PWA. W PWA: przytrzymaj link w Mailu → Kopiuj → Ustawienia → Konto → „Mam link z maila – wklej go tutaj”. Link działa tylko raz.
 
+## 4a. Własne SMTP (Resend) → logowanie kodem zamiast linkiem
+Darmowy plan Supabase z domyślną pocztą nie pozwala zmienić szablonu maila, a domyślny mail zawiera tylko jednorazowy link, którego podgląd w Gmailu na iOS zużywa. Rozwiązanie: darmowe SMTP z Resend (3000 maili/mies.; nadawca `onboarding@resend.dev` może wysyłać tylko na adres właściciela konta Resend – czyli dokładnie na Twój).
+1. https://resend.com → **Sign up** (zaloguj się Google kontem elcukro@gmail.com) → **API Keys → Create API Key** (Sending access) → skopiuj klucz.
+2. Supabase Dashboard → **Authentication → Emails → SMTP Settings** → **Enable Custom SMTP**: Sender email `onboarding@resend.dev`, Sender name `Trening`, Host `smtp.resend.com`, Port `465`, Username `resend`, Password = klucz API. **Save**.
+3. Wypchnij szablon z kodem (`supabase/templates/magic_link.html`): minimalny config z sekcją `[auth]` + `[auth.email.template.magic_link]`, `supabase config diff`, potem `supabase config push`.
+4. W aplikacji: Konto → e-mail → „Wyślij” → wpisz 8-cyfrowy kod z maila → „Zaloguj kodem”. Działa w PWA, Safari i na komputerze.
+
 ## 5. Zmienne środowiskowe
 Lokalnie – plik `.env.local` (jest w `.gitignore`):
 ```
