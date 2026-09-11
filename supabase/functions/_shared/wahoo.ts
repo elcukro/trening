@@ -276,15 +276,16 @@ export async function pushDay(
     workoutId = Number(post.json?.id) || null
   }
 
-  // sprawdzamy, czy plan naprawdę jest podpięty – bez tego licznik pokazuje „Select workout plan”.
+  // Sprawdzamy, czy trening ma przypisany plan. Wiążące jest pole `plan_id`; `plan_ids` to lista
+  // alternatywnych planów i pusta tablica jest stanem normalnym (tak wygląda przykład w dokumentacji).
   // Kosztuje jedno zapytanie, więc robimy to tylko dla pierwszego dnia wysyłki.
   let linked: boolean | null = null
   if (workoutId && opts.verify) {
     const check = await getWorkout(token, workoutId)
     if (check.status === 200) {
       try {
-        const w = JSON.parse(check.body) as { plan_ids?: number[] }
-        linked = Array.isArray(w.plan_ids) && w.plan_ids.length > 0
+        const w = JSON.parse(check.body) as { plan_id?: number | null; plan_ids?: number[] }
+        linked = w.plan_id != null || (Array.isArray(w.plan_ids) && w.plan_ids.length > 0)
       } catch {
         linked = null
       }
