@@ -3,7 +3,7 @@ import { useSearchParams } from 'react-router'
 import { useAuth } from '@/sync/auth'
 import { useEngine } from '@/app/useSettings'
 import { strava, type StravaStatus } from '@/sync/strava'
-import { autoPushEnabled, lastAutoPush, pushItemsFrom, setAutoPush, wahoo, type WahooStatus } from '@/sync/wahoo'
+import { autoPushEnabled, lastAttempt, lastAutoPush, pushItemsFrom, setAutoPush, wahoo, type PushAttempt, type WahooStatus } from '@/sync/wahoo'
 import { runSync } from '@/sync/sync'
 import { loadProgram } from '@/data/program'
 import { todayISO, fmtDayMonth } from '@/lib/dates'
@@ -148,6 +148,7 @@ function WahooCard() {
   const [auto, setAuto] = useState(true)
   const [last, setLast] = useState<string | null>(null)
   const [report, setReport] = useState<string | null>(null)
+  const [attempt, setAttempt] = useState<PushAttempt | null>(null)
   useEffect(() => {
     if (initial) setMsg(initial)
   }, [initial, setMsg])
@@ -158,6 +159,7 @@ function WahooCard() {
       .then((s) => active && setStatus(s))
       .catch(() => undefined)
     void autoPushEnabled().then((v) => active && setAuto(v))
+    void lastAttempt().then((v) => active && setAttempt(v))
     void lastAutoPush().then((v) => active && setLast(v))
     return () => {
       active = false
@@ -181,6 +183,11 @@ function WahooCard() {
       )}
       {status?.connected && <Row label="Wysłane treningi">{sent.length > 0 ? sent.map((p) => fmtDayMonth(p.date)).join(', ') : 'brak'}</Row>}
       {status?.connected && lastPush && <Row label="Ostatnia wysyłka">{new Date(lastPush).toLocaleString('pl-PL', { timeZone: 'Europe/Warsaw' })}</Row>}
+      {attempt && (
+        <Row label="Ostatnia próba stąd">
+          {new Date(attempt.at).toLocaleTimeString('pl-PL', { timeZone: 'Europe/Warsaw' })} · {attempt.items} dni · {attempt.outcome}
+        </Row>
+      )}
       {failed.length > 0 && <p className="text-xs text-red-600">Błędy: {failed.map((p) => `${fmtDayMonth(p.date)} – ${p.error}`).join('; ')}</p>}
       <div className="mt-2 flex flex-wrap gap-2">
         {status && (!status.connected || (status.missing_scopes?.length ?? 0) > 0) && (

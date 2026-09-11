@@ -118,8 +118,38 @@ export const wahoo = {
   status: () => call<WahooStatus>('wahoo-oauth', { action: 'status' }),
   startUrl: () => call<{ url: string }>('wahoo-oauth', { action: 'start' }),
   disconnect: () => call<{ ok: boolean }>('wahoo-oauth', { action: 'disconnect' }),
-  push: (items: PushItem[], mode: 'update' | 'replace' = 'update') => call<PushResponse>('wahoo-push', { items, mode }),
+  push: async (items: PushItem[], mode: 'update' | 'replace' = 'update') => {
+    const at = new Date().toISOString()
+    await recordAttempt({ at, mode, items: items.length, outcome: 'wysyłam…' })
+    try {
+      const res = await call<PushResponse>('wahoo-push', { items, mode })
+      const errors = res.results.filter((r) => r.status === 'error')
+      await recordAttempt({ at, mode, items: items.length, outcome: errors.length ? `${res.pushed} ok, ${errors.length} błędów` : `${res.pushed} wysłanych` })
+      return res
+    } catch (e) {
+      await recordAttempt({ at, mode, items: items.length, outcome: `błąd: ${e instanceof Error ? e.message : String(e)}`.slice(0, 200) })
+      throw e
+    }
+  },
   diagnose: (items: PushItem[]) => call<Record<string, unknown>>('wahoo-push', { items, mode: 'diagnose' }),
+}
+
+const ATTEMPT_KEY = 'wahoo_last_attempt'
+
+export interface PushAttempt {
+  at: string
+  mode: string
+  items: number
+  outcome: string
+}
+
+/** Ślad próby zapisywany lokalnie, zanim cokolwiek poleci do sieci – pokazuje, czy klik w ogóle zadziałał. */
+export async function recordAttempt(a: PushAttempt): Promise<void> {
+  await db.kv.put({ key: ATTEMPT_KEY, value: a, updated_at: new Date().toISOString() })
+}
+
+export async function lastAttempt(): Promise<PushAttempt | null> {
+  return ((await db.kv.get(ATTEMPT_KEY))?.value as PushAttempt | undefined) ?? null
 }
 
 const AUTO_KEY = 'wahoo_auto_push'
