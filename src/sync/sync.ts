@@ -1,4 +1,4 @@
-import { db, SYNC_TABLES, type SyncTable, type SyncedRow } from '@/db'
+import { db, SYNC_TABLES, UPDATE_ONLY_TABLES, type SyncTable, type SyncedRow } from '@/db'
 import { supabase } from './supabase'
 import type { Settings } from '@/engine/schema'
 
@@ -52,9 +52,19 @@ async function pushOutbox(userId: string): Promise<void> {
     if (mine.length === 0) continue
     const rows = (await db.table(table).bulkGet(mine.map((i) => i.row_id))).filter((r): r is SyncedRow => !!r)
     if (rows.length > 0) {
-      const payload = rows.map((r) => ({ ...(r as unknown as Record<string, unknown>), user_id: userId }))
-      const { error } = await supabase.from(table).upsert(payload, { onConflict: 'id' })
-      if (error) throw new Error(`${table}: ${error.message}`)
+      const onlyCols = UPDATE_ONLY_TABLES[table]
+      if (onlyCols) {
+        for (const r of rows) {
+          const patch: Record<string, unknown> = {}
+          for (const c of onlyCols) patch[c] = (r as unknown as Record<string, unknown>)[c]
+          const { error } = await supabase.from(table).update(patch).eq('id', r.id)
+          if (error) throw new Error(`${table}: ${error.message}`)
+        }
+      } else {
+        const payload = rows.map((r) => ({ ...(r as unknown as Record<string, unknown>), user_id: userId }))
+        const { error } = await supabase.from(table).upsert(payload, { onConflict: 'id' })
+        if (error) throw new Error(`${table}: ${error.message}`)
+      }
     }
     await db.outbox.bulkDelete(mine.map((i) => i.seq!))
   }
@@ -78,6 +88,7 @@ async function pullTable(table: SyncTable): Promise<void> {
   await db.transaction('rw', [db.table(table), db.kv], async () => {
     for (const remote of data as (SyncedRow & { server_updated_at: string; user_id: string })[]) {
       const { user_id: _u, server_updated_at: _s, ...row } = remote
+      if (typeof (row as { id: unknown }).id === 'number') (row as { id: unknown }).id = String((row as { id: unknown }).id)
       const local = (await db.table(table).get(row.id)) as SyncedRow | undefined
       if (shouldApplyRemote(local, row, pending.has(row.id))) await db.table(table).put(normalize(row))
     }

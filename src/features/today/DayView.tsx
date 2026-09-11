@@ -10,6 +10,7 @@ import { GymItems } from './GymItems'
 import { CheckinCard } from './CheckinCard'
 import { BikeLogCard, StatusBadge } from './BikeLogCard'
 import { TestResultCard } from './TestResultCard'
+import { StravaActivities } from './StravaCard'
 import { useLiveQuery } from 'dexie-react-hooks'
 import { db } from '@/db'
 
@@ -44,16 +45,20 @@ export function DayHeader({ day }: { day: DayPlan }) {
   )
 }
 
-export function BikeCard({ day }: { day: DayPlan }) {
+export function BikeCard({ day, engine }: { day: DayPlan; engine: Engine }) {
   const w = day.workout
+  const program = engine.ctx.program
   if (!day.bike || !w) {
     return (
-      <Card tone="muted">
-        <CardTitle icon="🛋️">Dzień wolny</CardTitle>
-        <p className="text-sm text-slate-600 dark:text-slate-300">
-          {day.gym ? 'Dziś bez roweru – tylko siłownia.' : 'Pełny odpoczynek. Spacer, sen, 5 min rozciągania zginaczy bioder.'}
-        </p>
-      </Card>
+      <>
+        <Card tone="muted">
+          <CardTitle icon="🛋️">Dzień wolny</CardTitle>
+          <p className="text-sm text-slate-600 dark:text-slate-300">
+            {day.gym ? 'Dziś bez roweru – tylko siłownia.' : 'Pełny odpoczynek. Spacer, sen, 5 min rozciągania zginaczy bioder.'}
+          </p>
+        </Card>
+        <StravaActivities date={day.date} zones={program.hr_zones_lthr_fraction} lthr={day.lthr} extra />
+      </>
     )
   }
   if (day.bike.workout_id === 'TRIP') {
@@ -104,6 +109,7 @@ export function BikeCard({ day }: { day: DayPlan }) {
           </div>
         </details>
       )}
+      <StravaActivities date={day.date} zones={program.hr_zones_lthr_fraction} lthr={day.lthr} />
       <BikeLogCard day={day} />
     </Card>
   )
@@ -170,7 +176,7 @@ export function DayView({ day, engine }: { day: DayPlan; engine: Engine }) {
       <DayHeader day={day} />
       <CheckinCard date={day.date} />
       <NotesCard day={day} />
-      <BikeCard day={day} />
+      <BikeCard day={day} engine={engine} />
       {testProtocol && <TestResultCard date={day.date} protocol={testProtocol} program={engine.ctx.program} previousLthr={day.lthr} />}
       <GymCard day={day} engine={engine} />
       <NutritionCard day={day} engine={engine} />

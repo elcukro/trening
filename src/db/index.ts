@@ -83,6 +83,25 @@ export interface Checkin extends SyncedRow {
   notes?: string | null
 }
 
+export interface StravaActivity extends SyncedRow {
+  id: string // bigint jako string w JSON? PostgREST zwraca number – trzymamy string dla spójności kluczy
+  date: string
+  start_at: string
+  name: string | null
+  sport_type: string | null
+  moving_time_s: number
+  elapsed_time_s?: number | null
+  distance_m?: number | null
+  elevation_m?: number | null
+  avg_hr?: number | null
+  max_hr?: number | null
+  avg_cadence?: number | null
+  avg_speed_ms?: number | null
+  avg_watts?: number | null
+  hr_histogram?: number[] | null
+  is_ride: boolean
+}
+
 export interface OutboxItem {
   seq?: number
   table: SyncTable
@@ -90,7 +109,9 @@ export interface OutboxItem {
   ts: string
 }
 
-export const SYNC_TABLES = ['checkins', 'session_logs', 'set_logs', 'test_results'] as const
+export const SYNC_TABLES = ['checkins', 'session_logs', 'set_logs', 'test_results', 'strava_activities'] as const
+/** Tabele, do których klient nie wstawia wierszy – tylko aktualizuje wybrane pola (RLS: update own). */
+export const UPDATE_ONLY_TABLES: Record<string, string[]> = { strava_activities: ['date', 'is_ride', 'updated_at'] }
 export type SyncTable = (typeof SYNC_TABLES)[number]
 
 export class TreningDB extends Dexie {
@@ -100,6 +121,7 @@ export class TreningDB extends Dexie {
   session_logs!: EntityTable<SessionLog, 'id'>
   set_logs!: EntityTable<SetLog, 'id'>
   test_results!: EntityTable<TestResult, 'id'>
+  strava_activities!: EntityTable<StravaActivity, 'id'>
   outbox!: EntityTable<OutboxItem, 'seq'>
 
   constructor() {
@@ -113,6 +135,9 @@ export class TreningDB extends Dexie {
       set_logs: 'id, session_log_id, exercise_id, updated_at',
       test_results: 'id, date, updated_at',
       outbox: '++seq, [table+row_id]',
+    })
+    this.version(3).stores({
+      strava_activities: 'id, date, updated_at',
     })
   }
 }

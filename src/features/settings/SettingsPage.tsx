@@ -8,6 +8,7 @@ import { fmtDate } from '@/lib/dates'
 import { PHASE_SHORT } from '@/lib/labels'
 import type { LayoutWeek, PhaseId } from '@/engine/types'
 import { AccountSection, BackupSection } from './AccountSection'
+import { IntegrationsSection } from './IntegrationsSection'
 
 type Form = {
   athlete_name: string
@@ -145,6 +146,7 @@ function SettingsForm({ engine, saved, setSaved }: { engine: ReturnType<typeof u
     <div className="space-y-3">
       <PageTitle sub="Profil, daty, siłownia, konto">Ustawienia</PageTitle>
       <AccountSection />
+      <IntegrationsSection />
       <Card>
         <CardTitle icon="👤">Profil</CardTitle>
         <Field label="Imię">
@@ -241,7 +243,7 @@ function SettingsForm({ engine, saved, setSaved }: { engine: ReturnType<typeof u
         </Button>
       </div>
       <BackupSection />
-      <p className="text-xs text-slate-400">Wersja programu {engine.ctx.program.version} · build {__BUILD_ID__}. Integracje (Strava, Wahoo) pojawią się w Etapach 3–4.</p>
+      <p className="text-xs text-slate-400">Wersja programu {engine.ctx.program.version} · build {__BUILD_ID__}. Wahoo pojawi się w Etapie 4.</p>
     </div>
   )
 }

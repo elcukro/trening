@@ -320,3 +320,22 @@ describe('plan – API pomocnicze', () => {
     expect(getWeekPlan('2026-09-07', base)).toHaveLength(3)
   })
 })
+
+describe('czas w strefach z histogramu (Strava)', () => {
+  it('rozkłada sekundy po strefach dla LTHR 160', async () => {
+    const { zoneDistribution } = await import('../zones')
+    const hist: number[] = []
+    hist[120] = 600 // Z1 (<130)
+    hist[135] = 1800 // Z2 130–142
+    hist[150] = 300 // SS 147–154 (przed Z4/THR w kolejności listy)
+    hist[165] = 60 // Z5a 160–163? 165 → Z5b 165–170
+    const d = zoneDistribution(hist, program.hr_zones_lthr_fraction, 160)
+    const by = Object.fromEntries(d.map((x) => [x.id, x.seconds]))
+    expect(by.Z1).toBe(600)
+    expect(by.Z2).toBe(1800)
+    expect(by.SS).toBe(300)
+    expect(by.Z5b).toBe(60)
+    expect(d.reduce((a, x) => a + x.seconds, 0)).toBe(2760)
+    expect(d.find((x) => x.id === 'Z2')!.pct).toBe(65)
+  })
+})

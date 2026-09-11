@@ -2,7 +2,9 @@ import { useMemo, useState } from 'react'
 import { useLiveQuery } from 'dexie-react-hooks'
 import { Bar, BarChart, CartesianGrid, Line, LineChart, ReferenceLine, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts'
 import { useEngine } from '@/app/useSettings'
-import { db, type Checkin, type SessionLog, type SetLog, type TestResult } from '@/db'
+import { db, type Checkin, type SessionLog, type SetLog, type StravaActivity, type TestResult } from '@/db'
+import { ZoneBar } from '@/features/today/StravaCard'
+import { addDays } from '@/engine/dates'
 import { buildCalendar } from '@/engine/calendar'
 import { estimateClimb } from '@/engine/climb'
 import { compliance, e1rmSeries, weeklyVolume, weightSeries, weightTrend } from '@/engine/progress'
@@ -26,6 +28,17 @@ export function ProgressPage() {
   const tests = useLiveQuery(() => db.test_results.orderBy('date').toArray(), [], [] as TestResult[])
   const rides = useLiveQuery(() => db.session_logs.toArray(), [], [] as SessionLog[])
   const sets = useLiveQuery(() => db.set_logs.toArray(), [], [] as SetLog[])
+  const acts = useLiveQuery(() => db.strava_activities.where('date').aboveOrEqual(addDays(today, -27)).toArray(), [today], [] as StravaActivity[])
+  const zoneHist = useMemo(() => {
+    const h: number[] = []
+    for (const a of acts) {
+      if (a.deleted_at || !a.is_ride || !a.hr_histogram) continue
+      a.hr_histogram.forEach((v, i) => {
+        if (v) h[i] = (h[i] ?? 0) + v
+      })
+    }
+    return h.length ? Array.from(h, (v) => v ?? 0) : null
+  }, [acts])
 
   const weights = useMemo(() => checkins.filter((c) => !c.deleted_at && c.weight_kg != null).map((c) => ({ date: c.date, weight_kg: c.weight_kg as number })), [checkins])
   const wSeries = useMemo(() => weightSeries(weights, s.program_start, s.body_weight_start_kg, s.body_weight_target_kg), [weights, s])
@@ -166,8 +179,16 @@ export function ProgressPage() {
           <p className="text-sm text-slate-500">Brak tygodni w planie.</p>
         )}
         <p className="mt-1 text-xs text-slate-500">
-          Ten tydzień: plan {hours(volumes.at(-1)?.planned_min ?? 0)}, wykonanie {hours(volumes.at(-1)?.done_min ?? 0)}. Rozkład czasu w strefach pojawi się po integracji ze Stravą (Etap 3).
+          Ten tydzień: plan {hours(volumes.at(-1)?.planned_min ?? 0)}, wykonanie {hours(volumes.at(-1)?.done_min ?? 0)}.
         </p>
+        {zoneHist && lastLthr ? (
+          <div className="mt-3">
+            <p className="mb-1 text-xs font-medium text-slate-500">Czas w strefach – ostatnie 4 tygodnie (Strava, LTHR {lastLthr})</p>
+            <ZoneBar histogram={zoneHist} zones={engine.ctx.program.hr_zones_lthr_fraction} lthr={lastLthr} />
+          </div>
+        ) : (
+          <p className="mt-2 text-xs text-slate-400">Rozkład czasu w strefach pojawi się po połączeniu ze Stravą{lastLthr ? '' : ' i wpisaniu LTHR'}.</p>
+        )}
       </Card>
 
       <Card>

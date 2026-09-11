@@ -96,3 +96,19 @@ export function resolveWorkout(
 export function zoneById(program: Program, id: string): HrZone | undefined {
   return program.hr_zones_lthr_fraction.find((z) => z.id === id)
 }
+
+/** Czas w strefach (sekundy) z histogramu tętna (indeks = bpm) dla danego LTHR. Strefy nakładające się (SS/Z4/THR) – bpm liczy się do pierwszej pasującej w kolejności listy. */
+export function zoneDistribution(histogram: number[], zones: HrZone[], lthr: number): { id: string; seconds: number; pct: number }[] {
+  const bpmZones = computeZones(zones, lthr)
+  const out = bpmZones.map((z) => ({ id: z.id, seconds: 0, pct: 0 }))
+  let total = 0
+  histogram.forEach((sec, bpm) => {
+    if (!sec) return
+    total += sec
+    const idx = bpmZones.findIndex((z, i) => bpm >= z.low_bpm && (bpm < z.high_bpm || (i === bpmZones.length - 1 && bpm >= z.low_bpm)))
+    const target = idx >= 0 ? idx : bpm < bpmZones[0]!.low_bpm ? 0 : bpmZones.length - 1
+    out[target]!.seconds += sec
+  })
+  if (total > 0) for (const o of out) o.pct = Math.round((o.seconds / total) * 100)
+  return out
+}
