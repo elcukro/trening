@@ -4,7 +4,7 @@ Referencyjny generator programu treningowego (źródło prawdy dla danych).
 
 Tworzy:
   data/program.json   – definicje: strefy, treningi rowerowe, ćwiczenia, sesje siłowe,
-                        preskrypcje per tydzień, tabela tygodni sezonu
+                        preskrypcje siłowe per tydzień (gym_prescriptions), tabela tygodni sezonu
   data/calendar.json  – kalendarz dzień po dniu dla ustawień domyślnych
                         (start 14.09.2026, wyjazd 11.09.2027)
 
@@ -558,6 +558,10 @@ def main():
             "III": "tydz. 25–28", "C": "tydz. 29–33 (z wskokami)", "C_nobox": "tydz. 34–49", "C_deload": "tygodnie lżejsze od tydz. 32",
             "C_last": "tydz. 50", "CORE": "tydz. 51"},
         "weeks": {str(k): v for k, v in WEEKS.items()},
+        # preskrypcje siłowe per tydzień szablonu: slot "wed" (Sesja A / C / core) i "fri" (Sesja B);
+        # aplikacja mapuje sloty na dni z ustawienia gym_days
+        "gym_prescriptions": {str(k): {dn: g for dn in ("wed", "fri") if (g := gym_for(k, dn, v))}
+                              for k, v in WEEKS.items()},
         "week_summary": week_table(days),
     }
     with open(os.path.join(HERE, "program.json"), "w", encoding="utf-8") as f:

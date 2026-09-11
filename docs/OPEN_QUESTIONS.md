@@ -31,3 +31,6 @@ Nie ma `supabase` w PATH. Instrukcja: `brew install supabase/tap/supabase`. Migr
 - Masa startowa 105 kg (zakres 100–110) – potwierdzana pierwszym ważeniem w aplikacji.
 - Objętość latem 12–15 h/tydz. – `volume_scale` pozwala skrócić.
 - Protokół testu 30 min (LTHR = średnia z minut 10–30) – przyjęty jako obowiązujący.
+
+## 9. INDOOR_4x4: 35 min w specyfikacji, 43 min w danych
+Scenariusz 4 w `07-specyfikacja-aplikacji.md` mówi o „4×4 (35 min)”, a `program.json` definiuje `INDOOR_4x4` na 43 min (10 min rozgrzewki + 4×(4+3) min + 5 min schłodzenia). **[decyzja]** Dane są źródłem prawdy – test używa wartości z `program.json`. Jeśli chcesz 35 min, zmień generator (np. przerwy 2 min) i podbij wersję.
