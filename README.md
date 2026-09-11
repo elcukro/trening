@@ -28,7 +28,7 @@ Dokumentacja i dane dla aplikacji webowej (PWA na iPhone), która **każdego dni
 
 ## Aplikacja
 
-Kod aplikacji (Vite + React + TypeScript, PWA) jest w `src/`. Komendy i struktura: `CLAUDE.md`. Instrukcja wdrożenia: `docs/08-wdrozenie.md`, konfiguracja Supabase: `docs/09-supabase.md`.
+Kod aplikacji (Vite + React + TypeScript, PWA) jest w `src/`. Komendy i struktura: `CLAUDE.md`. Instrukcja wdrożenia: `docs/08-wdrozenie.md`, konfiguracja Supabase: `docs/09-supabase.md`, integracje: `docs/10-strava.md` i `docs/11-wahoo.md`, powiadomienia: `docs/12-powiadomienia.md`.
 
 ## Źródła
 

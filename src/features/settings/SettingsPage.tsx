@@ -10,6 +10,7 @@ import type { LayoutWeek, PhaseId } from '@/engine/types'
 import { AccountSection, BackupSection } from './AccountSection'
 import { useToast } from '@/components/Toast'
 import { IntegrationsSection } from './IntegrationsSection'
+import { PushSection } from './PushSection'
 
 type Form = {
   athlete_name: string
@@ -149,6 +150,7 @@ function SettingsForm({ engine, saved, setSaved }: { engine: ReturnType<typeof u
       <PageTitle sub="Profil, daty, siłownia, konto">Ustawienia</PageTitle>
       <AccountSection />
       <IntegrationsSection />
+      <PushSection />
       <Card>
         <CardTitle icon="👤">Profil</CardTitle>
         <Field label="Imię">

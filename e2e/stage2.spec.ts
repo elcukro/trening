@@ -164,3 +164,12 @@ test('Komunikaty o wyniku akcji: sukces i błąd', async ({ page }) => {
   await page.getByRole('alert').getByRole('button', { name: 'Zamknij' }).click()
   await expect(page.getByRole('alert')).toHaveCount(0)
 })
+
+test('Powiadomienia: sekcja tłumaczy warunki zamiast milczeć', async ({ page }) => {
+  await page.goto('/wiecej/ustawienia')
+  await expect(page.getByRole('heading', { name: 'Powiadomienia' })).toBeVisible()
+  await expect(page.getByText('To urządzenie')).toBeVisible()
+  // przeglądarka testowa udaje iPhone'a, więc musi pojawić się wyjaśnienie o ekranie początkowym
+  await expect(page.getByText(/ekranu początkowego/)).toBeVisible()
+  await expect(page.getByRole('button', { name: 'Włącz powiadomienia' })).toBeDisabled()
+})

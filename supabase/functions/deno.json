@@ -1,5 +1,7 @@
 {
   "imports": {
-    "npm:@supabase/supabase-js@2": "npm:@supabase/supabase-js@2.116.0"
-  }
+    "npm:@supabase/supabase-js@2": "npm:@supabase/supabase-js@2.116.0",
+    "npm:web-push@3.6.7": "npm:web-push@3.6.7"
+  },
+  "nodeModulesDir": "auto"
 }
