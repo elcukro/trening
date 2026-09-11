@@ -23,7 +23,8 @@ export function WahooButton({ day }: { day: DayPlan }) {
       const r = res.results[0]
       if (r?.status === 'error') throw new Error(r.error ?? 'nieznany błąd')
       setState('done')
-      setMsg(r?.status === 'updated' ? 'Zaktualizowano trening na Bolcie.' : 'Wysłano na Bolta. Zsynchronizuj zegarek.')
+      const how = res.variant ? ` (${res.variant})` : ''
+      setMsg((r?.status === 'updated' ? 'Zaktualizowano trening na Bolcie.' : 'Wysłano na Bolta. Zsynchronizuj zegarek.') + how)
     } catch (e) {
       setState('error')
       const detail = e instanceof Error ? e.message : String(e)

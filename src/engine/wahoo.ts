@@ -8,7 +8,7 @@ import { totalSeconds } from './zones'
  */
 
 export type WahooTargetType = 'threshold_hr' | 'rpm' | 'rpe'
-export type WahooIntensity = 'wu' | 'active' | 'tempo' | 'lt' | 'map' | 'ac' | 'recover' | 'cd'
+export type WahooIntensity = 'active' | 'wu' | 'tempo' | 'lt' | 'map' | 'ac' | 'nm' | 'ftp' | 'cd' | 'recover' | 'rest'
 
 export interface WahooTarget {
   type: WahooTargetType
@@ -53,9 +53,10 @@ export function isIndoor(workoutId: string): boolean {
   return INDOOR_WORKOUTS.has(workoutId)
 }
 
-/** `ftp` z naszych danych nie występuje u Wahoo – test progowy prowadzimy jak wysiłek progowy. */
+const INTENSITIES = new Set<WahooIntensity>(['active', 'wu', 'tempo', 'lt', 'map', 'ac', 'nm', 'ftp', 'cd', 'recover', 'rest'])
+
 function intensity(type: string): WahooIntensity {
-  return type === 'ftp' ? 'lt' : (type as WahooIntensity)
+  return INTENSITIES.has(type as WahooIntensity) ? (type as WahooIntensity) : 'active'
 }
 
 function isRepeat(b: StepBlock): b is { repeat: number; steps: StepBlock[] } {
@@ -84,7 +85,8 @@ function convert(blocks: StepBlock[], hasLthr: boolean): WahooInterval[] {
       return {
         name: `${b.repeat}×`,
         exit_trigger_type: 'repeat' as const,
-        exit_trigger_value: b.repeat,
+        // Wahoo liczy powtórzenia PO pierwszym przejściu: 0 = raz, 1 = dwa razy
+        exit_trigger_value: Math.max(0, b.repeat - 1),
         intervals: convert(b.steps, hasLthr),
       }
     }
@@ -166,9 +168,9 @@ export function isPushable(workoutId: string | null | undefined): boolean {
   return !!workoutId && !SKIP.has(workoutId)
 }
 
-/** Suma czasu planu w minutach (do pola `workout[minutes]`). */
+/** Suma czasu planu w minutach (do pola `workout[minutes]`); blok powtórzeń wykonuje się `value + 1` razy. */
 export function planMinutes(plan: WahooPlan): number {
   const walk = (xs: WahooInterval[]): number =>
-    xs.reduce((a, i) => a + (i.exit_trigger_type === 'repeat' ? i.exit_trigger_value * walk(i.intervals ?? []) : i.exit_trigger_value), 0)
+    xs.reduce((a, i) => a + (i.exit_trigger_type === 'repeat' ? (i.exit_trigger_value + 1) * walk(i.intervals ?? []) : i.exit_trigger_value), 0)
   return Math.round(walk(plan.intervals) / 60)
 }

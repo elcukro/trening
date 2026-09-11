@@ -58,5 +58,5 @@ Deno.serve(async (req) => {
   }
 
   const errors = results.filter((r) => r.status === 'error')
-  return json({ ok: errors.length === 0, results, pushed: results.length - errors.length })
+  return json({ ok: errors.length === 0, results, pushed: results.length - errors.length, variant: results.find((r) => r.variant)?.variant ?? null })
 })

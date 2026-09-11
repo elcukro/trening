@@ -77,12 +77,11 @@ export function b64utf8(text: string): string {
   return btoa(bin)
 }
 
-async function api(token: string, path: string, method: 'POST' | 'PUT' | 'DELETE', body?: URLSearchParams): Promise<{ ok: boolean; status: number; json: Record<string, unknown> | null; text: string }> {
-  const res = await fetch(`${WAHOO_API}${path}`, {
-    method,
-    headers: { authorization: `Bearer ${token}`, ...(body ? { 'content-type': 'application/x-www-form-urlencoded' } : {}) },
-    body,
-  })
+async function api(token: string, path: string, method: 'POST' | 'PUT' | 'DELETE', body?: BodyInit): Promise<{ ok: boolean; status: number; json: Record<string, unknown> | null; text: string }> {
+  // dla FormData nagłówek content-type ustawia fetch (potrzebna granica multipart)
+  const headers: Record<string, string> = { authorization: `Bearer ${token}` }
+  if (body instanceof URLSearchParams) headers['content-type'] = 'application/x-www-form-urlencoded'
+  const res = await fetch(`${WAHOO_API}${path}`, { method, headers, body })
   const text = await res.text()
   let json: Record<string, unknown> | null = null
   try {
@@ -91,6 +90,50 @@ async function api(token: string, path: string, method: 'POST' | 'PUT' | 'DELETE
     /* nie JSON */
   }
   return { ok: res.ok, status: res.status, json, text }
+}
+
+/**
+ * Wahoo opisuje `plan[file]` jako plik z zawartością base64. Dokumentacja nie mówi jednoznacznie,
+ * czy chce przesyłki multipart, czy zwykłego pola formularza, więc próbujemy po kolei i zapamiętujemy,
+ * co zadziałało. Nazwa wariantu wraca w wyniku, żeby było wiadomo, który jest właściwy.
+ */
+type Variant = 'multipart-base64' | 'multipart-json' | 'form-base64'
+const VARIANTS: Variant[] = ['multipart-base64', 'multipart-json', 'form-base64']
+let preferred: Variant | null = null
+
+function planBody(item: PushItem, variant: Variant, now: string): BodyInit {
+  const json = JSON.stringify(item.plan)
+  const filename = `${item.external_id.replace(/[^\w.-]/g, '_')}.json`
+  const fields: Record<string, string> = {
+    'plan[filename]': filename,
+    'plan[external_id]': item.external_id,
+    'plan[provider_updated_at]': now,
+  }
+  if (variant === 'form-base64') {
+    return new URLSearchParams({ 'plan[file]': b64utf8(json), ...fields })
+  }
+  const fd = new FormData()
+  const content = variant === 'multipart-json' ? json : b64utf8(json)
+  fd.append('plan[file]', new Blob([content], { type: 'application/json' }), filename)
+  for (const [k, v] of Object.entries(fields)) fd.append(k, v)
+  return fd
+}
+
+async function sendPlan(token: string, item: PushItem, planId: number | null, now: string): Promise<{ ok: boolean; id?: number; status: number; text: string; variant?: Variant }> {
+  const order = preferred ? [preferred, ...VARIANTS.filter((v) => v !== preferred)] : VARIANTS
+  let last = { ok: false, status: 0, text: 'brak próby' }
+  for (const variant of order) {
+    const path = planId ? `/v1/plans/${planId}` : '/v1/plans'
+    const res = await api(token, path, planId ? 'PUT' : 'POST', planBody(item, variant, now))
+    if (res.ok) {
+      preferred = variant
+      return { ok: true, id: planId ?? Number(res.json?.id), status: res.status, text: res.text, variant }
+    }
+    last = { ok: false, status: res.status, text: res.text }
+    // 422/400 to odrzucenie formatu – warto spróbować innego wariantu; reszta to prawdziwy błąd
+    if (res.status !== 422 && res.status !== 400) break
+  }
+  return { ...last }
 }
 
 export interface PushItem {
@@ -110,32 +153,26 @@ export interface PushResult {
   wahoo_plan_id?: number
   wahoo_workout_id?: number
   error?: string
+  /** który sposób przesłania pliku zaakceptowało Wahoo */
+  variant?: string
 }
 
 /** Tworzy albo aktualizuje plan i trening dla jednego dnia. */
 export async function pushDay(token: string, item: PushItem, existing: { wahoo_plan_id: number | null; wahoo_workout_id: number | null } | null): Promise<PushResult> {
-  const file = b64utf8(JSON.stringify(item.plan))
   const now = new Date().toISOString()
-
-  const planBody = new URLSearchParams({
-    'plan[file]': file,
-    'plan[filename]': `${item.external_id.replace(/[^\w.-]/g, '_')}.json`,
-    'plan[external_id]': item.external_id,
-    'plan[provider_updated_at]': now,
-  })
 
   let planId = existing?.wahoo_plan_id ?? null
   let updated = false
   if (planId) {
-    const put = await api(token, `/v1/plans/${planId}`, 'PUT', planBody)
+    const put = await sendPlan(token, item, planId, now)
     if (put.ok) updated = true
     else if (put.status === 404) planId = null
     else return { date: item.date, status: 'error', error: `plan PUT ${put.status}: ${put.text.slice(0, 160)}` }
   }
   if (!planId) {
-    const post = await api(token, '/v1/plans', 'POST', planBody)
+    const post = await sendPlan(token, item, null, now)
     if (!post.ok) return { date: item.date, status: 'error', error: `plan POST ${post.status}: ${post.text.slice(0, 160)}` }
-    planId = Number(post.json?.id)
+    planId = post.id ?? null
     if (!planId) return { date: item.date, status: 'error', error: 'plan bez id' }
   }
 
@@ -151,14 +188,14 @@ export async function pushDay(token: string, item: PushItem, existing: { wahoo_p
   let workoutId = existing?.wahoo_workout_id ?? null
   if (workoutId) {
     const put = await api(token, `/v1/workouts/${workoutId}`, 'PUT', workoutBody)
-    if (put.ok) return { date: item.date, status: 'updated', wahoo_plan_id: planId, wahoo_workout_id: workoutId }
+    if (put.ok) return { date: item.date, status: 'updated', wahoo_plan_id: planId, wahoo_workout_id: workoutId, variant: preferred ?? undefined }
     if (put.status !== 404) return { date: item.date, status: 'error', error: `workout PUT ${put.status}: ${put.text.slice(0, 160)}` }
     workoutId = null
   }
   const post = await api(token, '/v1/workouts', 'POST', workoutBody)
   if (!post.ok) return { date: item.date, status: 'error', error: `workout POST ${post.status}: ${post.text.slice(0, 160)}` }
   workoutId = Number(post.json?.id) || null
-  return { date: item.date, status: updated ? 'updated' : 'created', wahoo_plan_id: planId, wahoo_workout_id: workoutId ?? undefined }
+  return { date: item.date, status: updated ? 'updated' : 'created', wahoo_plan_id: planId, wahoo_workout_id: workoutId ?? undefined, variant: preferred ?? undefined }
 }
 
 export async function deleteWorkout(token: string, workoutId: number): Promise<void> {

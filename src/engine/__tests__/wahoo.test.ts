@@ -16,7 +16,7 @@ describe('plan.json dla Wahoo', () => {
       { type: 'rpm', low: 85, high: 95 },
     ])
     const rep = plan.intervals.find((i) => i.exit_trigger_type === 'repeat') as WahooInterval
-    expect(rep.exit_trigger_value).toBe(4)
+    expect(rep.exit_trigger_value).toBe(3) // 3 powtórzenia PO pierwszym = 4 razy łącznie
     expect(rep.intervals).toHaveLength(2)
     expect(rep.intervals![0]).toMatchObject({ exit_trigger_value: 360, intensity_type: 'lt' })
     expect(rep.intervals![0]!.targets![0]).toEqual({ type: 'threshold_hr', low: 0.95, high: 1 })
@@ -36,7 +36,7 @@ describe('plan.json dla Wahoo', () => {
     const plan = buildWahooPlan(program.bike_workouts.LONG_TEMPO!, { durationMin: 180, lthr: 160, programVersion: V })
     expect(planMinutes(plan)).toBe(180)
     const rep = plan.intervals.find((i) => i.exit_trigger_type === 'repeat')!
-    expect(rep.exit_trigger_value).toBe(3)
+    expect(rep.exit_trigger_value).toBe(2) // 3 bloki tempa
   })
 
   it('bez LTHR cele idą jako RPE', () => {
@@ -46,10 +46,9 @@ describe('plan.json dla Wahoo', () => {
     expect(rep.intervals![0]!.targets![0]).toEqual({ type: 'rpe', low: 6, high: 7 })
   })
 
-  it('test progowy: intensywność ftp mapowana na lt; Wattbike jako trening pod dachem', () => {
+  it('test progowy zachowuje intensywność ftp; Wattbike jako trening pod dachem', () => {
     const plan = buildWahooPlan(program.bike_workouts.TEST_LTHR!, { durationMin: 0, lthr: 160, programVersion: V })
-    expect(plan.intervals.some((i) => i.intensity_type === 'lt')).toBe(true)
-    expect(plan.intervals.every((i) => i.intensity_type !== ('ftp' as never))).toBe(true)
+    expect(plan.intervals.some((i) => i.intensity_type === 'ftp')).toBe(true)
     expect(plan.header.workout_type_location).toBe(1)
     const indoor = buildWahooPlan(program.bike_workouts.WATTBIKE_TEST!, { durationMin: 0, lthr: 160, programVersion: V })
     expect(indoor.header.workout_type_location).toBe(0)
@@ -67,10 +66,13 @@ describe('plan.json dla Wahoo', () => {
         for (const i of xs) {
           if (i.exit_trigger_type === 'repeat') {
             expect(i.intervals, w.id).toBeTruthy()
+            expect(i.targets, `${w.id}: blok powtórzeń nie może mieć celów`).toBeUndefined()
+            expect(i.exit_trigger_value, w.id).toBeGreaterThanOrEqual(0)
             walk(i.intervals!)
           } else {
             expect(i.exit_trigger_value, `${w.id}/${i.name}`).toBeGreaterThan(0)
-            expect(['wu', 'active', 'tempo', 'lt', 'map', 'ac', 'recover', 'cd']).toContain(i.intensity_type)
+            expect(['active', 'wu', 'tempo', 'lt', 'map', 'ac', 'nm', 'ftp', 'cd', 'recover', 'rest']).toContain(i.intensity_type)
+            expect(i.targets, `${w.id}/${i.name}`).toBeTruthy()
           }
         }
       }
