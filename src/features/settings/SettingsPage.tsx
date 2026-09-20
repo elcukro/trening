@@ -149,12 +149,16 @@ function SettingsForm({ engine, saved, setSaved }: { engine: ReturnType<typeof u
   }
 
   return (
-    <div className="space-y-3 lg:grid lg:grid-cols-2 lg:items-start lg:gap-4 lg:space-y-0">
+    <div className="space-y-3">
       <PageTitle sub="Profil, daty, siłownia, konto">Ustawienia</PageTitle>
-      <div className="hidden lg:block" />
-      <AccountSection />
-      <IntegrationsSection />
-      <PushSection />
+      {/* dwie niezależne kolumny (a nie wiersze siatki) – bez pustych dziur, gdy karty mają różną wysokość; na komputerze profil po lewej */}
+      <div className="space-y-3 lg:grid lg:grid-cols-2 lg:items-start lg:gap-6 lg:space-y-0">
+      <div className="space-y-3 lg:space-y-4">
+        <AccountSection />
+        <IntegrationsSection />
+        <PushSection />
+      </div>
+      <div className="space-y-3 lg:order-first lg:space-y-4">
       <Card>
         <CardTitle icon="👤">Profil</CardTitle>
         <Field label="Imię">
@@ -267,6 +271,8 @@ function SettingsForm({ engine, saved, setSaved }: { engine: ReturnType<typeof u
       </div>
       <BackupSection />
       <p className="text-xs text-slate-400">Wersja programu {engine.ctx.program.version} · build {__BUILD_ID__}</p>
+      </div>
+      </div>
     </div>
   )
 }

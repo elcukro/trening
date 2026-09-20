@@ -58,6 +58,36 @@ a {
   touch-action: manipulation;
 }
 
+/* Widoczny fokus z klawiatury (komputer), bez obwódki po dotknięciu */
+:where(a, button, input, select, textarea, summary):focus-visible {
+  outline: 2px solid #0284c7;
+  outline-offset: 2px;
+  border-radius: 0.5rem;
+}
+
+/* Na komputerze tło jest odrobinę ciemniejsze niż karty – karty wyraźniej „leżą” na ekranie */
+@media (min-width: 1024px) {
+  html,
+  body {
+    background: #f1f5f9;
+  }
+  @media (prefers-color-scheme: dark) {
+    html,
+    body {
+      background: #0b1120;
+    }
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
 @keyframes toastbar {
   0% {
     transform: translateX(-100%);

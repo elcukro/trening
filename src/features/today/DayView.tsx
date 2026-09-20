@@ -5,7 +5,7 @@ import { Badge, Card, CardTitle, Row } from '@/components/ui'
 import { StepList, TimelineBar } from '@/components/StepTimeline'
 import { fmtLong } from '@/lib/dates'
 import { days, minutes, num } from '@/lib/format'
-import { FLAG_LABEL, PHASE_COLOR, WEEK_TYPE_LABEL } from '@/lib/labels'
+import { FLAG_COLOR, FLAG_LABEL, PHASE_COLOR, WEEK_TYPE_LABEL } from '@/lib/labels'
 import { GymItems } from './GymItems'
 import { CheckinCard } from './CheckinCard'
 import { BikeLogCard, StatusBadge } from './BikeLogCard'
@@ -21,20 +21,17 @@ import { db } from '@/db'
 function typeBadges(day: DayPlan) {
   const out: { label: string; color: string }[] = []
   if (day.week_type === 'test' && !day.flags.includes('test')) out.push({ label: 'Tydzień testowy', color: 'bg-indigo-500' })
-  for (const f of day.flags) {
-    const color = { test: 'bg-indigo-600', deload: 'bg-teal-600', mountain_weekend: 'bg-orange-600', back_to_back: 'bg-red-600', heat: 'bg-amber-500' }[f]
-    out.push({ label: FLAG_LABEL[f], color })
-  }
+  for (const f of day.flags) out.push({ label: FLAG_LABEL[f], color: FLAG_COLOR[f] })
   return out
 }
 
 export function DayHeader({ day }: { day: DayPlan }) {
   const countdown = day.days_to_trip > 0 ? `${days(day.days_to_trip)} do wyjazdu` : day.days_to_trip === 0 ? 'Dzień wyjazdu!' : 'Wyjazd trwa'
   return (
-    <header className="mb-3">
-      <p className="text-sm text-slate-500 dark:text-slate-400 first-letter:uppercase">{fmtLong(day.date)}</p>
+    <header className="mb-3 lg:mb-5 lg:border-b lg:border-slate-200 lg:pb-4 lg:dark:border-slate-700">
+      <p className="text-sm text-slate-500 dark:text-slate-400 first-letter:uppercase lg:text-base">{fmtLong(day.date)}</p>
       <div className="mt-1 flex flex-wrap items-center gap-2">
-        <h1 className="text-2xl font-bold tracking-tight">Tydzień {day.week}</h1>
+        <h1 className="text-2xl font-bold tracking-tight lg:text-3xl">Tydzień {day.week}</h1>
         <Badge color={PHASE_COLOR[day.phase]}>{day.phase_name.replace(/ – .*/, '')}</Badge>
         {typeBadges(day).map((b) => (
           <Badge key={b.label} color={b.color}>
@@ -42,8 +39,10 @@ export function DayHeader({ day }: { day: DayPlan }) {
           </Badge>
         ))}
       </div>
-      <p className="mt-1 text-sm text-slate-600 dark:text-slate-300">
-        {WEEK_TYPE_LABEL[day.week_type]} · <span className="font-semibold">{countdown}</span>
+      <p className="mt-1 flex flex-wrap items-center gap-x-2 text-sm text-slate-600 dark:text-slate-300 lg:mt-2">
+        <span>{WEEK_TYPE_LABEL[day.week_type]}</span>
+        <span aria-hidden>·</span>
+        <span className="font-semibold text-sky-700 tabular-nums dark:text-sky-300 lg:rounded-full lg:bg-sky-100 lg:px-3 lg:py-0.5 lg:text-base lg:dark:bg-sky-900/40">{countdown}</span>
       </p>
     </header>
   )
@@ -114,10 +113,10 @@ export function BikeCard({ day, engine, onAction }: { day: DayPlan; engine: Engi
       )}
       {onAction && (
         <div className="mt-3 grid grid-cols-2 gap-2">
-          <button onClick={() => onAction({ kind: 'indoor', date: day.date, label: '', payload: {} })} className="min-h-11 rounded-xl bg-slate-200 text-sm font-semibold dark:bg-slate-700">
+          <button onClick={() => onAction({ kind: 'indoor', date: day.date, label: '', payload: {} })} className="min-h-11 rounded-xl border border-slate-300 bg-slate-100 text-sm font-semibold transition-colors hover:bg-slate-200 dark:border-slate-600 dark:bg-slate-700 dark:hover:bg-slate-600">
             🧊 Gołoledź / pod dachem
           </button>
-          <button onClick={() => onAction({ kind: 'sick', date: day.date, label: '', payload: { level: 'cold' } })} className="min-h-11 rounded-xl bg-slate-200 text-sm font-semibold dark:bg-slate-700">
+          <button onClick={() => onAction({ kind: 'sick', date: day.date, label: '', payload: { level: 'cold' } })} className="min-h-11 rounded-xl border border-slate-300 bg-slate-100 text-sm font-semibold transition-colors hover:bg-slate-200 dark:border-slate-600 dark:bg-slate-700 dark:hover:bg-slate-600">
             🤒 Choroba
           </button>
         </div>
@@ -139,7 +138,7 @@ export function GymCard({ day, engine }: { day: DayPlan; engine: Engine }) {
       </CardTitle>
       <GymItems session={day.gym} program={engine.ctx.program} />
       <div className="mt-3 flex items-center gap-3">
-        <Link to={`/silownia/${day.date}`} className="flex min-h-12 flex-1 items-center justify-center rounded-xl bg-sky-600 text-sm font-semibold text-white">
+        <Link to={`/silownia/${day.date}`} className="flex min-h-12 flex-1 items-center justify-center rounded-xl bg-sky-600 text-sm font-semibold text-white transition-colors hover:bg-sky-500">
           {log && log.status !== 'planned' && log.status !== 'skipped' ? (log.status === 'in_progress' ? 'Kontynuuj sesję' : 'Otwórz sesję') : 'Start sesji'}
         </Link>
         {log && log.status !== 'planned' && <StatusBadge status={log.status} />}
@@ -186,18 +185,18 @@ export function NotesCard({ day }: { day: DayPlan }) {
 export function DayView({ day, engine, warnings = [], overrides = [], onAction, onUndo }: { day: DayPlan; engine: Engine; warnings?: RuleWarning[]; overrides?: PlanOverrideRow[]; onAction?: (a: RuleAction) => void; onUndo?: (id: string) => void }) {
   const testProtocol = day.bike?.workout_id === 'TEST_LTHR' || day.bike?.workout_id === 'WATTBIKE_TEST' ? day.bike.workout_id : null
   return (
-    <div className="space-y-3">
+    <div className="space-y-3 lg:space-y-4">
       <DayHeader day={day} />
       <CheckinCard date={day.date} />
       {onAction && onUndo && <RulesCard warnings={warnings} overrides={overrides} onAction={onAction} onUndo={onUndo} />}
       <NotesCard day={day} />
-      {/* na komputerze: rower po lewej, siłownia i żywienie po prawej */}
-      <div className="grid gap-3 lg:grid-cols-2 lg:items-start">
-        <div className="space-y-3">
+      {/* na komputerze: rower (szerszy) po lewej, siłownia i żywienie po prawej */}
+      <div className="grid gap-3 lg:grid-cols-[minmax(0,3fr)_minmax(0,2fr)] lg:items-start lg:gap-5">
+        <div className="space-y-3 lg:space-y-4">
           <BikeCard day={day} engine={engine} onAction={onAction} />
           {testProtocol && <TestResultCard date={day.date} protocol={testProtocol} program={engine.ctx.program} previousLthr={day.lthr} />}
         </div>
-        <div className="space-y-3">
+        <div className="space-y-3 lg:space-y-4">
           <GymCard day={day} engine={engine} />
           <NutritionCard day={day} engine={engine} />
         </div>
