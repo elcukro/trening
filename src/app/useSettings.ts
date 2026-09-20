@@ -45,7 +45,7 @@ export function useEngine(): Engine {
   const program = loadProgram()
   const { settings } = settingsApi
   const testRows = useLiveQuery(() => db.test_results.where('date').above('').toArray(), [], [] as TestResult[])
-  const tests = useMemo(() => testRows.filter((t) => !t.deleted_at && t.lthr_bpm).map((t) => ({ date: t.date, lthr_bpm: t.lthr_bpm as number })), [testRows])
+  const tests = useMemo(() => testRows.filter((t) => !t.deleted_at && (t.lthr_bpm || t.ftp_w)).map((t) => ({ date: t.date, lthr_bpm: t.lthr_bpm ?? null, ftp_w: t.ftp_w ?? null })), [testRows])
   const { ctx, weeks, settingsError } = useMemo(() => {
     try {
       return { ctx: { program, settings, tests }, weeks: layoutWeeks(program, settings), settingsError: null }

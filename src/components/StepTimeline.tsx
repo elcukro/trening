@@ -32,6 +32,7 @@ export function StepList({ workout, compact = false }: { workout: ResolvedWorkou
             </div>
             <div className="flex flex-wrap gap-x-3 text-xs text-slate-600 dark:text-slate-300">
               <span className={`font-semibold ${zoneText(s.zone)}`}>{s.zone}</span>
+              {s.watts && <span className="font-semibold">{s.watts[0]}–{s.watts[1]} W</span>}
               <span>{s.bpm ? bpm(s.bpm) : rpe(s.rpe)}</span>
               {s.bpm && <span>{rpe(s.rpe)}</span>}
               {s.cadence_rpm && <span>{s.cadence_rpm[0]}–{s.cadence_rpm[1]} rpm</span>}

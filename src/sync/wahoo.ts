@@ -80,6 +80,10 @@ export function pushItemFor(date: ISODate, ctx: EngineContext, weeks?: LayoutWee
     durationMin: day.bike.duration_min,
     lthr: day.lthr,
     heatOffsetBpm: day.flags.includes('heat') ? 4 : 0,
+    // z miernikiem: cele mocy – jedyne, z których ELEMNT liczy TSS/IF i rysuje profil
+    usePowerTargets: ctx.settings.power_meter,
+    ftp: day.ftp,
+    powerZones: ctx.program.power_zones_ftp_fraction,
     programVersion: ctx.program.version,
   })
   return {

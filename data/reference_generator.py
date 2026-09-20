@@ -30,6 +30,7 @@ DEFAULT_SETTINGS = {
     "hr_max_bpm": None,
     "ftp_w_estimate": 220,                  # szacunek 200–240 W, brak miernika mocy
     "ftp_w_goal": 250,
+    "power_meter": False,                   # True → cele mocy w planach na Wahoo (ELEMNT nie obsługuje celów tętna)
     "gym_days": {"A": "wed", "B": "fri", "C": "wed"},  # alternatywa: A=tue, B=fri
     "timezone": "Europe/Warsaw",
     "volume_scale": 1.0,                    # 0.7–1.0: skaluje czas jazd niekluczowych (Z2, długie, pagórki)

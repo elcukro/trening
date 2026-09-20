@@ -76,3 +76,23 @@ describe('objętość', () => {
     expect(compliance([], 4)).toBeNull()
   })
 })
+
+describe('FTP i waty na ekranie', () => {
+  it('effectiveFtp bierze ostatni test Wattbike sprzed dnia', async () => {
+    const { effectiveFtp } = await import('../progress')
+    const tests = [{ date: '2026-12-30', lthr_bpm: 158, ftp_w: 235 }, { date: '2027-02-23', lthr_bpm: 160, ftp_w: 248 }]
+    expect(effectiveFtp('2026-12-30', 220, tests)).toMatchObject({ ftp: 220, source: 'estimate' })
+    expect(effectiveFtp('2027-01-05', 220, tests)).toMatchObject({ ftp: 235, source: 'test' })
+    expect(effectiveFtp('2027-03-01', 220, tests)).toMatchObject({ ftp: 248 })
+  })
+  it('plan dnia ma waty tylko przy włączonym mierniku', () => {
+    const off = getDayPlan('2026-09-23', { program, settings: { ...settings, lthr_bpm: 160 } })!
+    expect(off.ftp).toBeNull()
+    expect(off.workout!.steps[0]!.watts).toBeNull()
+    const on = getDayPlan('2026-09-23', { program, settings: { ...settings, lthr_bpm: 160, power_meter: true } })!
+    expect(on.ftp).toBe(220)
+    const ss = on.workout!.steps.find((s) => s.zone === 'SS')!
+    expect(ss.watts).toEqual([194, 207])
+    expect(ss.bpm).toEqual([147, 154])
+  })
+})

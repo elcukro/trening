@@ -118,6 +118,8 @@ export const SettingsSchema = z.object({
   hr_max_bpm: z.number().nullable(),
   ftp_w_estimate: z.number(),
   ftp_w_goal: z.number(),
+  /** miernik mocy: cele mocy w planach Wahoo i waty na ekranie */
+  power_meter: z.boolean().default(false),
   gym_days: GymDaysSchema,
   timezone: z.string(),
   volume_scale: z.number().min(0.7).max(1),
@@ -156,6 +158,7 @@ export const ProgramSchema = z.object({
 
 export type Program = z.infer<typeof ProgramSchema>
 export type HrZone = z.infer<typeof HrZoneSchema>
+export type PowerZone = z.infer<typeof PowerZoneSchema>
 export type Step = z.infer<typeof StepSchema>
 export type BikeWorkout = z.infer<typeof BikeWorkoutSchema>
 export type Exercise = z.infer<typeof ExerciseSchema>

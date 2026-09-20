@@ -72,8 +72,8 @@ export interface EngineContext {
   program: Program
   settings: Settings
   overrides?: PlanOverride[]
-  /** wyniki testów z LTHR – R11: strefy od następnego dnia po teście */
-  tests?: { date: ISODate; lthr_bpm: number }[]
+  /** wyniki testów – R11: strefy od następnego dnia po teście (LTHR z terenu, FTP z Wattbike'a) */
+  tests?: { date: ISODate; lthr_bpm: number | null; ftp_w?: number | null }[]
 }
 
 export interface ZoneBpm {
@@ -91,6 +91,8 @@ export interface ResolvedStep {
   duration_s: number
   zone: string
   bpm: [number, number] | null
+  /** cel mocy w watach (gdy jest miernik i FTP) */
+  watts: [number, number] | null
   rpe: [number, number]
   cadence_rpm?: [number, number]
   intensity_type: string

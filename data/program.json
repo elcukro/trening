@@ -11,6 +11,7 @@
   "hr_max_bpm": null,
   "ftp_w_estimate": 220,
   "ftp_w_goal": 250,
+  "power_meter": false,
   "gym_days": {
    "A": "wed",
    "B": "fri",

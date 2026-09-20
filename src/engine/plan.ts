@@ -5,7 +5,7 @@ import { buildCalendar, getCalendarDay, getCalendarWeek } from './calendar'
 import { layoutWeeks } from './layout'
 import { computeZones, resolveWorkout } from './zones'
 import { proteinGrams } from './nutrition'
-import { effectiveLthr } from './progress'
+import { effectiveFtp, effectiveLthr } from './progress'
 
 export interface DayPlan extends CalendarDay {
   /** dni do wyjazdu (0 = dzień wyjazdu, ujemne po wyjeździe) */
@@ -16,6 +16,8 @@ export interface DayPlan extends CalendarDay {
   zones: ZoneBpm[] | null
   lthr: number | null
   lthr_source: 'test' | 'manual' | null
+  /** FTP obowiązujące tego dnia (null, gdy nie ma miernika mocy) */
+  ftp: number | null
   protein_g: number
   /** ostrzeżenia z reguł (R1–R16) – etap 5; teraz tylko brak LTHR */
   warnings: PlanWarning[]
@@ -39,9 +41,11 @@ export function getDayPlan(date: ISODate, ctx: EngineContext, weeks?: LayoutWeek
 
 export function enrichDay(day: CalendarDay, ctx: EngineContext): DayPlan {
   const { program, settings } = ctx
-  const eff = effectiveLthr(day.date, settings.lthr_bpm, ctx.tests ?? [])
+  const eff = effectiveLthr(day.date, settings.lthr_bpm, (ctx.tests ?? []).filter((t): t is { date: string; lthr_bpm: number } => !!t.lthr_bpm))
   const lthr = eff.lthr
+  const ftp = settings.power_meter ? effectiveFtp(day.date, settings.ftp_w_estimate, ctx.tests ?? []).ftp : null
   const heat = day.flags.includes('heat') ? 4 : 0
+  const resolveOpts = { heatOffsetBpm: heat, ftp, powerZones: program.power_zones_ftp_fraction }
   const w: BikeWorkout | undefined = day.bike ? program.bike_workouts[day.bike.workout_id] : undefined
   const fb: BikeWorkout | undefined = day.bike?.fallback_workout_id ? program.bike_workouts[day.bike.fallback_workout_id] : undefined
   const warnings: PlanWarning[] = []
@@ -52,11 +56,12 @@ export function enrichDay(day: CalendarDay, ctx: EngineContext): DayPlan {
     ...day,
     days_to_trip: diffDays(settings.trip_start, day.date),
     phase_name: phaseName(ctx, day.phase),
-    workout: w && day.bike ? resolveWorkout(w, day.bike.duration_min, lthr, { heatOffsetBpm: heat }) : null,
-    fallback_workout: fb ? resolveWorkout(fb, fb.duration_min, lthr) : null,
+    workout: w && day.bike ? resolveWorkout(w, day.bike.duration_min, lthr, resolveOpts) : null,
+    fallback_workout: fb ? resolveWorkout(fb, fb.duration_min, lthr, { ...resolveOpts, heatOffsetBpm: 0 }) : null,
     zones: lthr ? computeZones(program.hr_zones_lthr_fraction, lthr) : null,
     lthr,
     lthr_source: eff.source,
+    ftp,
     protein_g: proteinGrams(day.nutrition, settings.body_weight_target_kg),
     warnings,
   }

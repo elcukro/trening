@@ -21,6 +21,7 @@ type Form = {
   hr_max_bpm: string
   ftp_w_estimate: string
   ftp_w_goal: string
+  power_meter: boolean
   program_start: string
   trip_start: string
   gym_a: 'wed' | 'tue'
@@ -37,6 +38,7 @@ function toForm(s: Settings): Form {
     hr_max_bpm: s.hr_max_bpm ? String(s.hr_max_bpm) : '',
     ftp_w_estimate: String(s.ftp_w_estimate),
     ftp_w_goal: String(s.ftp_w_goal),
+    power_meter: s.power_meter,
     program_start: s.program_start,
     trip_start: s.trip_start,
     gym_a: s.gym_days.A,
@@ -76,6 +78,7 @@ function fromForm(f: Form, base: Settings): { settings: Settings; errors: string
     hr_max_bpm: opt('HRmax', f.hr_max_bpm, 120, 230),
     ftp_w_estimate: req('FTP', f.ftp_w_estimate, 50, 600),
     ftp_w_goal: req('Cel FTP', f.ftp_w_goal, 50, 600),
+    power_meter: f.power_meter,
     program_start: f.program_start,
     trip_start: f.trip_start,
     gym_days: { A: f.gym_a, B: 'fri', C: f.gym_a },
@@ -146,8 +149,9 @@ function SettingsForm({ engine, saved, setSaved }: { engine: ReturnType<typeof u
   }
 
   return (
-    <div className="space-y-3">
+    <div className="space-y-3 lg:grid lg:grid-cols-2 lg:items-start lg:gap-4 lg:space-y-0">
       <PageTitle sub="Profil, daty, siłownia, konto">Ustawienia</PageTitle>
+      <div className="hidden lg:block" />
       <AccountSection />
       <IntegrationsSection />
       <PushSection />
@@ -179,6 +183,21 @@ function SettingsForm({ engine, saved, setSaved }: { engine: ReturnType<typeof u
             <input className={inputCls} inputMode="decimal" value={form.bike_and_kit_kg} onChange={set('bike_and_kit_kg')} />
           </Field>
         </div>
+        <label className="mt-2 flex min-h-11 items-center gap-3 text-sm">
+          <input
+            type="checkbox"
+            className="h-5 w-5"
+            checked={form.power_meter}
+            onChange={(e) => {
+              setSaved(false)
+              setForm((f) => ({ ...f, power_meter: e.target.checked }))
+            }}
+          />
+          <span>
+            Mam miernik mocy
+            <span className="block text-[11px] text-slate-400">Cele w watach na ekranie Dziś i w planach na Wahoo (ELEMNT liczy TSS, IF i rysuje profil tylko z mocy). FTP z pola wyżej albo z ostatniego testu.</span>
+          </span>
+        </label>
       </Card>
       <Card>
         <CardTitle icon="📆">Daty</CardTitle>

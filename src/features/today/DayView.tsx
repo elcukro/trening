@@ -90,7 +90,7 @@ export function BikeCard({ day, engine, onAction }: { day: DayPlan; engine: Engi
       </CardTitle>
       <p className="mb-2 text-xs text-slate-500 dark:text-slate-400">Rower: {day.bike.bike}</p>
       <TimelineBar steps={w.steps} />
-      {!lthr && (
+      {!lthr && !day.ftp && (
         <Link to="/wiecej/ustawienia" className="mt-2 block rounded-lg bg-amber-100 px-3 py-2 text-xs font-medium text-amber-900 dark:bg-amber-900/40 dark:text-amber-200">
           Zrób test i wpisz LTHR, żeby zobaczyć tętno w bpm. Do tego czasu jedź po RPE.
         </Link>
@@ -191,10 +191,17 @@ export function DayView({ day, engine, warnings = [], overrides = [], onAction, 
       <CheckinCard date={day.date} />
       {onAction && onUndo && <RulesCard warnings={warnings} overrides={overrides} onAction={onAction} onUndo={onUndo} />}
       <NotesCard day={day} />
-      <BikeCard day={day} engine={engine} onAction={onAction} />
-      {testProtocol && <TestResultCard date={day.date} protocol={testProtocol} program={engine.ctx.program} previousLthr={day.lthr} />}
-      <GymCard day={day} engine={engine} />
-      <NutritionCard day={day} engine={engine} />
+      {/* na komputerze: rower po lewej, siłownia i żywienie po prawej */}
+      <div className="grid gap-3 lg:grid-cols-2 lg:items-start">
+        <div className="space-y-3">
+          <BikeCard day={day} engine={engine} onAction={onAction} />
+          {testProtocol && <TestResultCard date={day.date} protocol={testProtocol} program={engine.ctx.program} previousLthr={day.lthr} />}
+        </div>
+        <div className="space-y-3">
+          <GymCard day={day} engine={engine} />
+          <NutritionCard day={day} engine={engine} />
+        </div>
+      </div>
     </div>
   )
 }

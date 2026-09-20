@@ -16,6 +16,14 @@ export function effectiveLthr(date: ISODate, manual: number | null, tests: LthrS
   return { lthr: null, source: null }
 }
 
+/** FTP obowiązujące danego dnia: ostatni test Wattbike sprzed tego dnia, inaczej szacunek z ustawień. */
+export function effectiveFtp(date: ISODate, estimate: number, tests: { date: ISODate; ftp_w?: number | null }[]): { ftp: number; source: 'test' | 'estimate'; test_date?: ISODate } {
+  const applicable = tests.filter((t) => t.ftp_w && t.ftp_w > 0 && t.date < date).toSorted((a, b) => (a.date < b.date ? -1 : 1))
+  const last = applicable.at(-1)
+  if (last) return { ftp: last.ftp_w as number, source: 'test', test_date: last.date }
+  return { ftp: estimate, source: 'estimate' }
+}
+
 // ---------------------------------------------------------------- masa
 export interface WeightPoint {
   date: ISODate

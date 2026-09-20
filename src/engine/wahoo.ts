@@ -1,5 +1,5 @@
-import type { BikeWorkout, StepBlock } from './schema'
-import { totalSeconds } from './zones'
+import type { BikeWorkout, PowerZone, StepBlock } from './schema'
+import { powerFraction, totalSeconds } from './zones'
 
 /**
  * Generator pliku `plan.json` dla Wahoo Cloud API (ELEMNT Bolt).
@@ -7,7 +7,7 @@ import { totalSeconds } from './zones'
  * Dokumentacja: https://cloud-api.wahooligan.com/ (plans, workouts).
  */
 
-export type WahooTargetType = 'threshold_hr' | 'rpm' | 'rpe'
+export type WahooTargetType = 'threshold_hr' | 'rpm' | 'rpe' | 'ftp'
 export type WahooIntensity = 'active' | 'wu' | 'tempo' | 'lt' | 'map' | 'ac' | 'nm' | 'ftp' | 'cd' | 'recover' | 'rest'
 
 export interface WahooTarget {
@@ -79,8 +79,13 @@ export function intervalLabel(name: string, target: { low: number; high: number 
   return `${range} · ${short}`
 }
 
-function targetsFor(step: Exclude<StepBlock, { repeat: number; steps: StepBlock[] }>, hasLthr: boolean): WahooTarget[] {
+function targetsFor(step: Exclude<StepBlock, { repeat: number; steps: StepBlock[] }>, hasLthr: boolean, powerZones: PowerZone[] | null): WahooTarget[] {
   const out: WahooTarget[] = []
+  // Moc jako pierwszy cel: to jedyny rodzaj, z którego ELEMNT liczy TSS/IF i rysuje profil treningu.
+  if (powerZones) {
+    const f = powerFraction(step.zone, powerZones)
+    if (f) out.push({ type: 'ftp', low: round2(f.low), high: round2(f.high) })
+  }
   if (hasLthr) {
     // Wahoo oczekuje ułamka tętna progowego, nie bpm
     out.push({ type: 'threshold_hr', low: round2(step.target.low), high: round2(step.target.high) })
@@ -95,7 +100,7 @@ function round2(v: number): number {
   return Math.round(v * 100) / 100
 }
 
-function convert(blocks: StepBlock[], lthr: number | null, heatOffset: number): WahooInterval[] {
+function convert(blocks: StepBlock[], lthr: number | null, heatOffset: number, powerZones: PowerZone[] | null): WahooInterval[] {
   return blocks.map((b) => {
     if (isRepeat(b)) {
       return {
@@ -103,7 +108,7 @@ function convert(blocks: StepBlock[], lthr: number | null, heatOffset: number): 
         exit_trigger_type: 'repeat' as const,
         // Wahoo liczy powtórzenia PO pierwszym przejściu: 0 = raz, 1 = dwa razy
         exit_trigger_value: Math.max(0, b.repeat - 1),
-        intervals: convert(b.steps, lthr, heatOffset),
+        intervals: convert(b.steps, lthr, heatOffset, powerZones),
       }
     }
     return {
@@ -111,7 +116,7 @@ function convert(blocks: StepBlock[], lthr: number | null, heatOffset: number): 
       exit_trigger_type: 'time' as const,
       exit_trigger_value: b.duration_s,
       intensity_type: intensity(b.intensity_type),
-      targets: targetsFor(b, !!lthr),
+      targets: targetsFor(b, !!lthr, powerZones),
     }
   })
 }
@@ -145,7 +150,9 @@ export interface BuildPlanOptions {
    * (przy braku celów mocy wychodzą absurdalnie niskie wartości, np. 0,41 dla testu progowego).
    */
   ftp?: number | null
+  /** cele mocy (typ `ftp`) z tabeli stref mocy programu – wymaga miernika i FTP w nagłówku */
   usePowerTargets?: boolean
+  powerZones?: PowerZone[]
   /** obniżenie celów tętna w upale (R13) */
   heatOffsetBpm?: number
   /** nazwa widoczna na Bolcie (domyślnie nazwa treningu) */
@@ -158,13 +165,14 @@ export function buildWahooPlan(workout: BikeWorkout, opts: BuildPlanOptions): Wa
   const header: WahooPlan['header'] = {
     name: (opts.name ?? workout.name).slice(0, 80),
     version: '1.0.0',
-    description: (opts.lthr ? `Cele tętna są w nazwach interwałów (ELEMNT nie obsługuje celów HR w planach). ${workout.description}` : workout.description).slice(0, 500),
+    description: (opts.lthr && !(opts.usePowerTargets && opts.ftp) ? `Cele tętna są w nazwach interwałów (ELEMNT nie obsługuje celów HR w planach). ${workout.description}` : workout.description).slice(0, 500),
     workout_type_family: WORKOUT_TYPE_FAMILY_CYCLING,
     workout_type_location: isIndoor(workout.id) ? LOCATION_INDOOR : LOCATION_OUTDOOR,
   }
   if (opts.lthr) header.threshold_hr = opts.lthr
-  if (opts.ftp && opts.usePowerTargets) header.ftp = opts.ftp
-  return { header, intervals: convert(blocks, opts.lthr, opts.heatOffsetBpm ?? 0) }
+  const power = !!(opts.usePowerTargets && opts.ftp && opts.powerZones?.length)
+  if (power) header.ftp = opts.ftp as number
+  return { header, intervals: convert(blocks, opts.lthr, opts.heatOffsetBpm ?? 0, power ? (opts.powerZones as PowerZone[]) : null) }
 }
 
 /** Identyfikator w Wahoo – pozwala aktualizować zamiast duplikować. */

@@ -1,4 +1,4 @@
-import type { BikeWorkout, HrZone, Program, Step, StepBlock } from './schema'
+import type { BikeWorkout, HrZone, PowerZone, Program, Step, StepBlock } from './schema'
 import type { ResolvedStep, ResolvedWorkout, ZoneBpm } from './types'
 
 export function computeZones(zones: HrZone[], lthr: number): ZoneBpm[] {
@@ -11,6 +11,24 @@ export function computeZones(zones: HrZone[], lthr: number): ZoneBpm[] {
     high_bpm: Math.round(z.high * lthr),
     rpe: z.rpe,
   }))
+}
+
+/**
+ * Strefa mocy odpowiadająca strefie tętna kroku. Z5a (nadprogowa) nie ma osobnej strefy mocy –
+ * dostaje przedział tuż nad FTP.
+ */
+export function powerFraction(zoneId: string, zones: PowerZone[]): { low: number; high: number } | null {
+  const z = zones.find((p) => p.id === zoneId)
+  if (z) return { low: z.low, high: z.high }
+  if (zoneId === 'Z5a') return { low: 1.0, high: 1.06 }
+  return null
+}
+
+export function wattsRange(zoneId: string, zones: PowerZone[], ftp: number | null): [number, number] | null {
+  if (!ftp) return null
+  const f = powerFraction(zoneId, zones)
+  if (!f) return null
+  return [Math.round(f.low * ftp), Math.round(f.high * ftp)]
 }
 
 export function bpmRange(step: Pick<Step, 'target'>, lthr: number | null, heatOffset = 0): [number, number] | null {
@@ -32,12 +50,19 @@ export function totalSeconds(blocks: StepBlock[]): number {
   return t
 }
 
-function flatten(blocks: StepBlock[], lthr: number | null, heatOffset: number, depth: number, out: ResolvedStep[]): void {
+interface FlattenOpts {
+  lthr: number | null
+  heatOffset: number
+  ftp: number | null
+  powerZones: PowerZone[]
+}
+
+function flatten(blocks: StepBlock[], o: FlattenOpts, depth: number, out: ResolvedStep[]): void {
   for (const b of blocks) {
     if (isRepeat(b)) {
       for (let r = 1; r <= b.repeat; r++) {
         const before = out.length
-        flatten(b.steps, lthr, heatOffset, depth + 1, out)
+        flatten(b.steps, o, depth + 1, out)
         for (let i = before; i < out.length; i++) out[i]!.repeat_label = `${r}/${b.repeat}`
       }
     } else {
@@ -45,7 +70,8 @@ function flatten(blocks: StepBlock[], lthr: number | null, heatOffset: number, d
         name: b.name,
         duration_s: b.duration_s,
         zone: b.zone,
-        bpm: bpmRange(b, lthr, heatOffset),
+        bpm: bpmRange(b, o.lthr, o.heatOffset),
+        watts: wattsRange(b.zone, o.powerZones, o.ftp),
         rpe: b.rpe,
         intensity_type: b.intensity_type,
         depth,
@@ -62,7 +88,7 @@ export function resolveWorkout(
   workout: BikeWorkout,
   durationMin: number,
   lthr: number | null,
-  opts: { heatOffsetBpm?: number } = {},
+  opts: { heatOffsetBpm?: number; ftp?: number | null; powerZones?: PowerZone[] } = {},
 ): ResolvedWorkout {
   const heat = opts.heatOffsetBpm ?? 0
   let blocks: StepBlock[] = workout.steps
@@ -80,7 +106,7 @@ export function resolveWorkout(
     }
   }
   const steps: ResolvedStep[] = []
-  flatten(blocks, lthr, heat, 0, steps)
+  flatten(blocks, { lthr, heatOffset: heat, ftp: opts.ftp ?? null, powerZones: opts.powerZones ?? [] }, 0, steps)
   return {
     id: workout.id,
     name: workout.name,

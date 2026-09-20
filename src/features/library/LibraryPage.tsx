@@ -51,7 +51,7 @@ export function LibraryPage() {
         </Link>
       </div>
       {tab === 'bike' ? (
-        <ul className="space-y-2">
+        <ul className="space-y-2 lg:grid lg:grid-cols-2 lg:gap-2 lg:space-y-0">
           {workouts.map((w) => {
             const r = resolveWorkout(w, w.duration_min, lthr)
             return (

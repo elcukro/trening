@@ -86,7 +86,7 @@ export function WeekPage() {
       )}
       {swapFrom && <p className="rounded-lg bg-amber-100 px-3 py-2 text-sm dark:bg-amber-950/40">Wybierz dzień, z którym zamienić {swapFrom.slice(8)}.{swapFrom.slice(5, 7)}. <button className="underline" onClick={() => setSwapFrom(null)}>Anuluj</button></p>}
       {days.length === 0 && <Empty>Ten tydzień jest poza planem.</Empty>}
-      <ul className="space-y-2">
+      <ul className="space-y-2 lg:grid lg:grid-cols-7 lg:gap-2 lg:space-y-0">
         {days.map((d) => {
           const bikeLog = logs.find((l) => l.date === d.date && l.kind === 'bike')
           const gymLog = logs.find((l) => l.date === d.date && l.kind === 'gym')
@@ -94,8 +94,8 @@ export function WeekPage() {
           const selectable = swapFrom && swapFrom !== d.date
           return (
             <li key={d.date}>
-              <Card className={`${d.date === today ? 'ring-2 ring-sky-500' : ''} ${selectable ? 'ring-2 ring-amber-400' : ''}`}>
-                <div className="flex items-start gap-3">
+              <Card className={`h-full ${d.date === today ? 'ring-2 ring-sky-500' : ''} ${selectable ? 'ring-2 ring-amber-400' : ''}`}>
+                <div className="flex items-start gap-3 lg:flex-col lg:gap-2">
                   <div className="w-10 shrink-0 text-center">
                     <div className="text-xs font-semibold uppercase text-slate-500">{WEEKDAY_SHORT[d.weekday]}</div>
                     <div className="text-lg font-bold leading-tight">{d.date.slice(8)}</div>

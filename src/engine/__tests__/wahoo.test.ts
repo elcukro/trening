@@ -115,3 +115,33 @@ describe('cele tętna w nazwach interwałów', () => {
     expect(bez.header.description).not.toContain('w nazwach interwałów')
   })
 })
+
+describe('cele mocy (miernik)', () => {
+  const zones = program.power_zones_ftp_fraction
+  it('bez miernika: brak ftp w nagłówku i brak celów mocy, tętno w nazwach', () => {
+    const plan = buildWahooPlan(program.bike_workouts.SS_2x20!, { durationMin: 0, lthr: 160, ftp: 220, usePowerTargets: false, powerZones: zones, programVersion: V })
+    expect(plan.header.ftp).toBeUndefined()
+    expect(plan.intervals[0]!.targets!.some((t) => t.type === 'ftp')).toBe(false)
+    expect(plan.header.description).toContain('w nazwach interwałów')
+  })
+  it('z miernikiem: ftp w nagłówku, cel mocy jako pierwszy, tętno zostaje', () => {
+    const plan = buildWahooPlan(program.bike_workouts.SS_2x20!, { durationMin: 0, lthr: 160, ftp: 220, usePowerTargets: true, powerZones: zones, programVersion: V })
+    expect(plan.header.ftp).toBe(220)
+    const rep = plan.intervals.find((i) => i.exit_trigger_type === 'repeat')!
+    const work = rep.intervals![0]!
+    expect(work.targets![0]).toEqual({ type: 'ftp', low: 0.88, high: 0.94 }) // sweet spot
+    expect(work.targets!.some((t) => t.type === 'threshold_hr')).toBe(true)
+    expect(plan.intervals[0]!.targets![0]).toEqual({ type: 'ftp', low: 0.56, high: 0.75 }) // rozgrzewka Z2
+    expect(plan.header.description).not.toContain('w nazwach interwałów')
+  })
+  it('każda strefa treningów ma odpowiednik mocy (Z5a dostaje przedział nad FTP)', async () => {
+    const { powerFraction, wattsRange } = await import('../zones')
+    for (const id of ['Z1', 'Z2', 'Z3', 'SS', 'Z4', 'THR', 'Z5a', 'Z5b', 'Z5c']) expect(powerFraction(id, zones), id).not.toBeNull()
+    expect(wattsRange('SS', zones, 220)).toEqual([194, 207])
+    expect(wattsRange('SS', zones, null)).toBeNull()
+  })
+  it('miernik wyłączony → brak ftp nawet gdy podano', () => {
+    const plan = buildWahooPlan(program.bike_workouts.Z2!, { durationMin: 60, lthr: 160, ftp: 220, powerZones: zones, programVersion: V })
+    expect(plan.header.ftp).toBeUndefined()
+  })
+})

@@ -51,6 +51,11 @@ Druga rzecz warta zapamiętania: **zwykła wysyłka nie odświeża pliku na licz
 ## Diagnostyka
 Przycisk „Diagnostyka” w sekcji Integracje tworzy plan próbny każdym z trzech wariantów przesyłki (pod unikalnym `external_id`, bo Wahoo pilnuje ich niepowtarzalności), odczytuje każdy z powrotem, kasuje i pokazuje raport razem ze stanem istniejącego treningu. To najszybsza droga do ustalenia, czy problem leży w formacie pliku, w sposobie przesłania, czy w powiązaniu planu z treningiem.
 
+## Dlaczego TSS i IF wyglądały jednakowo (16/24/32, IF 0,40)
+To nie błąd formatu. ELEMNT liczy TSS i IF **wyłącznie z celów mocy**; interwał bez celu mocy dostaje domyślną intensywność 0,40. Stąd IF 0,40 dla każdego treningu i TSS = 0,40² × godziny × 100, czyli dokładnie 16 dla 60 min, 24 dla 90, 32 dla 120 – co zgadza się z obserwacją co do jednostki. Z tego samego powodu profil treningu jest płaski. Plan po tętnie nigdy nie da innych liczb, bo licznik ignoruje cele tętna (patrz wyżej).
+
+Rozwiązanie: przełącznik **„Mam miernik mocy”** w Ustawieniach. Po włączeniu każdy interwał dostaje cel `ftp` z tabeli `power_zones_ftp_fraction` (SS = 0,88–0,94 FTP itd.), nagłówek dostaje FTP (z ostatniego testu Wattbike albo z szacunku w ustawieniach), a tętno zostaje w nazwach. Wtedy profil, TSS i IF liczą się z prawdziwych intensywności, a Bolt prowadzi po watach. Bez miernika przełącznik zostaje wyłączony, bo cele mocy bez pomiaru byłyby pustymi liczbami na ekranie.
+
 ## FTP w nagłówku: świadomie pomijane
 Nagłówek planu przyjmuje `ftp`, ale go nie wysyłamy, dopóki plan nie ma celów mocy. Użytkownik nie ma miernika mocy, więc wszystkie cele są tętnem. Gdy `ftp` trafiło do nagłówka, aplikacja ELEMNT policzyła z niego obciążenie treningowe i pokazała dla testu progowego TSS 16 przy IF 0,41, czyli wartości oderwane od rzeczywistości (godzina z trzydziestoma minutami na progu to raczej TSS rzędu 70–80). Bez `ftp` Wahoo albo nie pokazuje tych wskaźników, albo liczy je z tętna. Gdy pojawi się miernik mocy, wystarczy ustawić `usePowerTargets` i dodać cele typu `ftp`.
 

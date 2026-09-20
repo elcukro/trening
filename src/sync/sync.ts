@@ -108,6 +108,7 @@ const PROFILE_MAP: [keyof Settings, string][] = [
   ['hr_max_bpm', 'hr_max_bpm'],
   ['ftp_w_estimate', 'ftp_w'],
   ['ftp_w_goal', 'ftp_goal_w'],
+  ['power_meter', 'power_meter'],
   ['program_start', 'program_start'],
   ['trip_start', 'trip_start'],
   ['gym_days', 'gym_days'],
