@@ -80,6 +80,37 @@ export function useDayView(date: ISODate): DayView {
   }
 }
 
+export interface RangeView {
+  engine: Engine
+  /** dni zakresu [from, to] po nałożeniu nadpisań (tylko dni w planie) */
+  days: DayPlan[]
+  logs: SessionLog[]
+  overrides: PlanOverrideRow[]
+}
+
+/** Zakres dni (np. miesiąc kalendarza) po nałożeniu nadpisań – z zapasem po obu stronach, żeby zamiany widziały drugi dzień. */
+export function useRangeView(from: ISODate, to: ISODate): RangeView {
+  const engine = useEngine()
+  const { ctx, weeks } = engine
+  const padFrom = addDays(from, -FORWARD)
+  const padTo = addDays(to, FORWARD)
+  const overrides = useLiveQuery(async () => (await db.plan_overrides.where('date').between(padFrom, padTo, true, true).toArray()).filter((o) => !o.deleted_at), [padFrom, padTo], [] as PlanOverrideRow[])
+  const logs = useLiveQuery(async () => (await db.session_logs.where('date').between(from, to, true, true).toArray()).filter((l) => !l.deleted_at), [from, to], [] as SessionLog[])
+
+  const days = useMemo(() => {
+    const base: CalendarDay[] = []
+    for (let d = padFrom; d <= padTo; d = addDays(d, 1)) {
+      const day = getCalendarDay(d, ctx, weeks)
+      if (day) base.push(day)
+    }
+    return applyOverrides(base, overrides.map(toOverride), ctx.program)
+      .filter((d) => d.date >= from && d.date <= to)
+      .map((d) => enrichDay(d, ctx))
+  }, [padFrom, padTo, from, to, ctx, weeks, overrides])
+
+  return { engine, days, logs, overrides: overrides.filter((o) => o.date >= from && o.date <= to) }
+}
+
 /** Tydzień po nałożeniu nadpisań. */
 export function useWeekView(anyDateInWeek: ISODate): { engine: Engine; days: DayPlan[]; monday: ISODate; window: CalendarDay[] } {
   const monday = mondayOf(anyDateInWeek)
