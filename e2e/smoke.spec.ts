@@ -76,3 +76,13 @@ test('PWA: manifest i service worker', async ({ page }) => {
   const res = await page.request.get('/sw.js')
   expect(res.ok()).toBeTruthy()
 })
+
+test('przełącznik motywu: ciemny i z powrotem jak system', async ({ page }) => {
+  await page.goto('/wiecej/ustawienia')
+  await page.getByRole('radio', { name: 'Ciemny' }).click()
+  await expect(page.locator('html')).toHaveClass(/dark/)
+  await page.reload()
+  await expect(page.locator('html')).toHaveClass(/dark/) // zapamiętane
+  await page.getByRole('radio', { name: 'Jasny' }).click()
+  await expect(page.locator('html')).not.toHaveClass(/dark/)
+})

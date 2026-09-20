@@ -1,5 +1,8 @@
 @import 'tailwindcss';
 
+/* Ciemny motyw sterowany klasą `dark` na <html> (src/lib/theme.ts), nie tylko ustawieniem systemu */
+@custom-variant dark (&:where(.dark, .dark *));
+
 @theme {
   --font-sans: -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
   --color-bg: #f8fafc;
@@ -7,7 +10,7 @@
 }
 
 :root {
-  color-scheme: light dark;
+  color-scheme: light;
   -webkit-tap-highlight-color: transparent;
   -webkit-text-size-adjust: 100%;
 }
@@ -22,12 +25,10 @@ body {
   overscroll-behavior-y: none;
 }
 
-@media (prefers-color-scheme: dark) {
-  html,
-  body {
-    background: var(--color-bg-dark);
-    color: #f1f5f9;
-  }
+html.dark,
+html.dark body {
+  background: var(--color-bg-dark);
+  color: #f1f5f9;
 }
 
 #root {
@@ -71,11 +72,9 @@ a {
   body {
     background: #f1f5f9;
   }
-  @media (prefers-color-scheme: dark) {
-    html,
-    body {
-      background: #0b1120;
-    }
+  html.dark,
+  html.dark body {
+    background: #0b1120;
   }
 }
 

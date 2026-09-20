@@ -9,6 +9,7 @@ import { PHASE_SHORT } from '@/lib/labels'
 import type { LayoutWeek, PhaseId } from '@/engine/types'
 import { AccountSection, BackupSection } from './AccountSection'
 import { useToast } from '@/components/Toast'
+import { getThemePref, setThemePref, type ThemePref } from '@/lib/theme'
 import { IntegrationsSection } from './IntegrationsSection'
 import { PushSection } from './PushSection'
 
@@ -243,6 +244,10 @@ function SettingsForm({ engine, saved, setSaved }: { engine: ReturnType<typeof u
         )}
       </Card>
       <Card>
+        <CardTitle icon="🌗">Wygląd</CardTitle>
+        <ThemePicker />
+      </Card>
+      <Card>
         <CardTitle icon="🏋️">Siłownia i objętość</CardTitle>
         <Field label="Dni siłowni">
           <select className={inputCls} value={form.gym_a} onChange={set('gym_a')}>
@@ -273,6 +278,34 @@ function SettingsForm({ engine, saved, setSaved }: { engine: ReturnType<typeof u
       <p className="text-xs text-slate-400">Wersja programu {engine.ctx.program.version} · build {__BUILD_ID__}</p>
       </div>
       </div>
+    </div>
+  )
+}
+
+const THEME_LABEL: Record<ThemePref, string> = { system: 'Jak system', light: 'Jasny', dark: 'Ciemny' }
+
+function ThemePicker() {
+  const [pref, setPref] = useState<ThemePref>(() => getThemePref())
+  return (
+    <div>
+      <div className="grid grid-cols-3 gap-1 rounded-xl bg-slate-200 p-1 dark:bg-slate-700" role="radiogroup" aria-label="Motyw">
+        {(['system', 'light', 'dark'] as const).map((t) => (
+          <button
+            key={t}
+            type="button"
+            role="radio"
+            aria-checked={pref === t}
+            onClick={() => {
+              setThemePref(t)
+              setPref(t)
+            }}
+            className={`min-h-10 rounded-lg text-sm font-semibold ${pref === t ? 'bg-white shadow dark:bg-slate-900' : 'text-slate-600 dark:text-slate-300'}`}
+          >
+            {THEME_LABEL[t]}
+          </button>
+        ))}
+      </div>
+      <p className="mt-1 text-[11px] text-slate-400">Zapisane na tym urządzeniu. „Jak system” podąża za ustawieniem telefonu lub komputera.</p>
     </div>
   )
 }
