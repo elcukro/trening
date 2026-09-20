@@ -46,7 +46,7 @@ adb shell 'cat /data/data/com.wahoofitness.bolt/files/plans/FID3830/<plik>.plan'
 ## Duplikaty na liczniku
 Bolt nazywa lokalne pliki planów `<plan>_WKT<trening>.plan`. Jeśli w Wahoo zostanie trening, o którym nasza baza nie wie (tak dzieje się, gdy wysyłka nie zdąży zapisać identyfikatora), licznik pokaże **dwa wpisy na ten sam dzień**. Przycisk **„Usuń duplikaty”** pobiera listę treningów z Wahoo, wybiera te oznaczone naszym `workout_token` (format `data:trening:wersja`), których nie ma w bazie, i kasuje je. Po tym trzeba zsynchronizować Bolta.
 
-Druga rzecz warta zapamiętania: **zwykła wysyłka nie odświeża pliku na liczniku**, bo identyfikatory planu i treningu zostają te same, a Bolt uznaje, że ma aktualną wersję. Gdy zmieni się treść planu (np. po nowym teście progowym), trzeba użyć „Wyślij od zera”, które tworzy nowy trening i wymusza pobranie.
+Druga rzecz warta zapamiętania: **Bolt nie pobiera ponownie pliku o tym samym identyfikatorze**. Dlatego od 20.09 wysyłka sama rozpoznaje zmianę treści dnia (inny trening albo inna wersja programu → inny `external_id`) i wtedy kasuje trening w Wahoo i tworzy go na nowo, tak jak „Wyślij od zera”. Dni, które po zmianie planu nie mają już jazdy (`remove` w żądaniu), są kasowane z Wahoo i z tabeli wysyłek. Zmiana samego LTHR nie zmienia `external_id` – po nowym teście progowym nadal użyj „Wyślij od zera”.
 
 ## Diagnostyka
 Przycisk „Diagnostyka” w sekcji Integracje tworzy plan próbny każdym z trzech wariantów przesyłki (pod unikalnym `external_id`, bo Wahoo pilnuje ich niepowtarzalności), odczytuje każdy z powrotem, kasuje i pokazuje raport razem ze stanem istniejącego treningu. To najszybsza droga do ustalenia, czy problem leży w formacie pliku, w sposobie przesłania, czy w powiązaniu planu z treningiem.

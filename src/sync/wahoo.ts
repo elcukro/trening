@@ -108,6 +108,16 @@ export function pushItemsFrom(from: ISODate, days: number, ctx: EngineContext, w
   return out
 }
 
+/** Dni w oknie bez jazdy do wysłania – po zmianie planu trzeba z Wahoo skasować to, co tam zostało. */
+export function removeDatesFrom(from: ISODate, days: number, ctx: EngineContext, weeks?: LayoutWeek[]): ISODate[] {
+  const out: ISODate[] = []
+  for (let i = 0; i < days; i++) {
+    const d = addDays(from, i)
+    if (!pushItemFor(d, ctx, weeks)) out.push(d)
+  }
+  return out
+}
+
 export interface PushResponse {
   ok: boolean
   pushed: number
@@ -116,17 +126,19 @@ export interface PushResponse {
   variant?: string | null
   /** true, gdy Wahoo odmówiło z powodu limitu zapytań */
   rate_limited?: boolean
+  /** dni, z których skasowano treningi (nie ma już jazdy w planie) */
+  removed?: string[]
 }
 
 export const wahoo = {
   status: () => call<WahooStatus>('wahoo-oauth', { action: 'status' }),
   startUrl: () => call<{ url: string }>('wahoo-oauth', { action: 'start' }),
   disconnect: () => call<{ ok: boolean }>('wahoo-oauth', { action: 'disconnect' }),
-  push: async (items: PushItem[], mode: 'update' | 'replace' = 'update') => {
+  push: async (items: PushItem[], mode: 'update' | 'replace' = 'update', remove: ISODate[] = []) => {
     const at = new Date().toISOString()
     await recordAttempt({ at, mode, items: items.length, outcome: 'wysyłam…' })
     try {
-      const res = await call<PushResponse>('wahoo-push', { items, mode })
+      const res = await call<PushResponse>('wahoo-push', { items, mode, remove })
       const errors = res.results.filter((r) => r.status === 'error')
       await recordAttempt({ at, mode, items: items.length, outcome: errors.length ? `${res.pushed} ok, ${errors.length} błędów` : `${res.pushed} wysłanych` })
       return res
@@ -183,7 +195,7 @@ export async function maybeAutoPush(today: ISODate, ctx: EngineContext, weeks?: 
   if (!status?.connected) return null
   const items = pushItemsFrom(today, 7, ctx, weeks)
   if (items.length === 0) return null
-  const res = await wahoo.push(items)
+  const res = await wahoo.push(items, 'update', removeDatesFrom(today, 7, ctx, weeks))
   // Znaczymy dzień niezależnie od wyniku: przy niepowodzeniu ponawianie przy każdym uruchomieniu
   // aplikacji zjadałoby limit Wahoo (25 zapytań / 5 min, 100 / h, 250 / dzień).
   // Powtórkę uruchamia się ręcznie przyciskiem w Ustawieniach.

@@ -15,10 +15,11 @@ Deno.serve(async (req) => {
   const user = await userFromRequest(req)
   if (!user) return json({ error: 'unauthorized' }, 401)
 
-  const body = (await req.json().catch(() => ({}))) as { items?: PushItem[]; mode?: 'update' | 'replace' | 'diagnose' | 'cleanup' }
+  const body = (await req.json().catch(() => ({}))) as { items?: PushItem[]; mode?: 'update' | 'replace' | 'diagnose' | 'cleanup'; remove?: string[] }
   const items = (body.items ?? []).slice(0, MAX_ITEMS)
   // porządkowanie nie potrzebuje listy treningów do wysłania
-  if (items.length === 0 && body.mode !== 'cleanup') return json({ error: 'no_items' }, 400)
+  const remove = (body.remove ?? []).filter((d) => /^\d{4}-\d{2}-\d{2}$/.test(d)).slice(0, 14)
+  if (items.length === 0 && remove.length === 0 && body.mode !== 'cleanup') return json({ error: 'no_items' }, 400)
 
   const admin = adminClient()
   const token0 = await accessTokenFor(admin, user.id).catch((e) => {
@@ -35,7 +36,19 @@ Deno.serve(async (req) => {
     return json({ ok: true, ...res })
   }
 
-  const { data: existing } = await admin.from('wahoo_pushes').select('date, wahoo_plan_id, wahoo_workout_id').eq('user_id', user.id).in('date', items.map((i) => i.date))
+  // dni, które po zmianie planu nie mają już jazdy: kasujemy trening z Wahoo i wpis z bazy
+  const removed: string[] = []
+  if (remove.length > 0) {
+    const { data: gone } = await admin.from('wahoo_pushes').select('date, wahoo_plan_id, wahoo_workout_id').eq('user_id', user.id).in('date', remove)
+    for (const row of gone ?? []) {
+      await removeDay(token, { wahoo_plan_id: row.wahoo_plan_id as number | null, wahoo_workout_id: row.wahoo_workout_id as number | null }).catch((e) => console.warn('usuwanie', e))
+      await admin.from('wahoo_pushes').delete().eq('user_id', user.id).eq('date', row.date as string)
+      removed.push(row.date as string)
+    }
+    if (items.length === 0) return json({ ok: true, results: [], pushed: 0, removed })
+  }
+
+  const { data: existing } = await admin.from('wahoo_pushes').select('date, external_id, wahoo_plan_id, wahoo_workout_id').eq('user_id', user.id).in('date', items.map((i) => i.date))
   const byDate = new Map((existing ?? []).map((r) => [r.date as string, r]))
   // kopia na potrzeby zapisu – `byDate` bywa modyfikowane przez tryb „od zera”
   const existingIds = new Map((existing ?? []).map((r) => [r.date as string, { plan: r.wahoo_plan_id as number | null, workout: r.wahoo_workout_id as number | null }]))
@@ -47,13 +60,17 @@ Deno.serve(async (req) => {
     return json({ ok: true, date: first.date, variants: await diagnose(token, first), workout })
   }
 
-  // Tryb „od zera”: kasujemy sam trening i tworzymy go na nowo. Plan zostaje i jest nadpisywany,
-  // bo kasowanie go kosztowałoby dodatkowe zapytanie, a limity sandboxa Wahoo są ciasne
-  // (25 zapytań / 5 min, 100 / h, 250 / dzień).
-  if (body.mode === 'replace') {
-    for (const [date, row] of byDate) {
-      if (row.wahoo_workout_id) await removeDay(token, { wahoo_plan_id: null, wahoo_workout_id: row.wahoo_workout_id as number }).catch((e) => console.warn('usuwanie', e))
-      byDate.set(date, { ...row, wahoo_workout_id: null })
+  // Tryb „od zera” albo zmiana treści dnia (inny trening / wersja programu → inny external_id):
+  // kasujemy sam trening i tworzymy go na nowo, bo Bolt nie pobiera ponownie pliku o tym samym
+  // identyfikatorze. Plan zostaje i jest nadpisywany – kasowanie go kosztowałoby dodatkowe zapytanie,
+  // a limity sandboxa Wahoo są ciasne (25 zapytań / 5 min, 100 / h, 250 / dzień).
+  for (const item of items) {
+    const row = byDate.get(item.date)
+    if (!row?.wahoo_workout_id) continue
+    const changed = row.external_id && row.external_id !== item.external_id
+    if (body.mode === 'replace' || changed) {
+      await removeDay(token, { wahoo_plan_id: null, wahoo_workout_id: row.wahoo_workout_id as number }).catch((e) => console.warn('usuwanie', e))
+      byDate.set(item.date, { ...row, wahoo_workout_id: null })
     }
   }
 
@@ -105,5 +122,6 @@ Deno.serve(async (req) => {
     pushed: results.length - errors.length,
     variant: results.find((r) => r.variant)?.variant ?? null,
     rate_limited: rateLimited,
+    removed,
   })
 })
