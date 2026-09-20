@@ -4,13 +4,14 @@ test.describe('wersja na komputer (≥ 1024 px)', () => {
   test.use({ viewport: { width: 1440, height: 900 }, isMobile: false, hasTouch: false })
 
   test('boczna nawigacja zamiast dolnego paska, Dziś w dwóch kolumnach', async ({ page }) => {
-    await page.goto('/?today=2026-09-16')
+    // faza III: dzień z jazdą i siłownią naraz (w fazach I–II akcent i siłownia są w różne dni)
+    await page.goto('/?today=2027-03-03')
     const side = page.getByRole('navigation', { name: 'Nawigacja główna' }).filter({ has: page.getByText('Alpy 2027') })
     await expect(side).toBeVisible()
     await expect(side.getByRole('link', { name: /Ustawienia/ })).toBeVisible()
     await expect(side.getByRole('link', { name: /Kalendarz/ })).toBeVisible()
     // pasek sezonu z odliczaniem
-    await expect(side.getByText('za 360 dni')).toBeVisible()
+    await expect(side.getByText('za 192 dni')).toBeVisible()
     // dolny pasek jest ukryty na szerokim ekranie
     const bottom = page.locator('nav.fixed.inset-x-0.bottom-0')
     await expect(bottom).toBeHidden()
@@ -18,7 +19,7 @@ test.describe('wersja na komputer (≥ 1024 px)', () => {
     const main = await page.getByRole('main').boundingBox()
     expect(main && main.width > 1000).toBe(true)
     // rower i siłownia obok siebie: karta siłowni nie jest pod kartą roweru
-    const bike = await page.getByRole('heading', { name: 'Test progowy 30 min (LTHR)' }).boundingBox()
+    const bike = await page.getByRole('heading', { name: 'Próg pod górę 4×6 min' }).boundingBox()
     const gym = await page.getByRole('heading', { name: 'Sesja A – Siła nóg (ciężka)' }).boundingBox()
     expect(bike && gym && gym.x > bike.x + 200).toBe(true)
     await page.screenshot({ path: 'test-results/desktop-today.png', fullPage: true })

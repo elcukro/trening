@@ -18,9 +18,9 @@ test.describe('kalendarz na telefonie', () => {
     await page.getByRole('button', { name: 'Dziś' }).click()
     await expect(page.getByRole('heading', { name: 'wrzesień 2026' })).toBeVisible()
     // kliknięcie dnia otwiera ekran dnia z planem
-    await page.getByRole('link', { name: 'środa 2026-09-16' }).click()
-    await expect(page).toHaveURL(/\/dzien\/2026-09-16/)
-    await expect(page.getByText('Test progowy 30 min (LTHR)')).toBeVisible()
+    await page.getByRole('link', { name: 'sobota 2026-09-26' }).click()
+    await expect(page).toHaveURL(/\/dzien\/2026-09-26/)
+    await expect(page.getByText('Test FTP 20 min (moc)')).toBeVisible()
   })
 
   test('status wykonania z logów jest widoczny w komórce', async ({ page }) => {
