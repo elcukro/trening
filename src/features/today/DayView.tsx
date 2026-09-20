@@ -184,7 +184,7 @@ export function NotesCard({ day }: { day: DayPlan }) {
 }
 
 export function DayView({ day, engine, warnings = [], overrides = [], onAction, onUndo }: { day: DayPlan; engine: Engine; warnings?: RuleWarning[]; overrides?: PlanOverrideRow[]; onAction?: (a: RuleAction) => void; onUndo?: (id: string) => void }) {
-  const testProtocol = day.bike?.workout_id === 'TEST_LTHR' || day.bike?.workout_id === 'WATTBIKE_TEST' ? day.bike.workout_id : null
+  const testProtocol = day.bike && ['TEST_LTHR', 'WATTBIKE_TEST', 'FTP_TEST'].includes(day.bike.workout_id) ? (day.bike.workout_id as 'TEST_LTHR' | 'WATTBIKE_TEST' | 'FTP_TEST') : null
   return (
     <div className="space-y-3">
       <DayHeader day={day} />

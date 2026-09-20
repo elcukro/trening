@@ -1,16 +1,18 @@
 import { expect, test } from '@playwright/test'
 
-test('Dziś 16.09.2026: tydzień 1, test LTHR, Sesja A', async ({ page }) => {
-  await page.goto('/?today=2026-09-16')
-  await expect(page.getByRole('heading', { name: 'Tydzień 1' })).toBeVisible()
-  await expect(page.getByText('Test progowy 30 min (LTHR)')).toBeVisible()
+test('Dziś 01.10.2026: tydzień 3, akcent sweet spot w czwartek; 30.09 Sesja A', async ({ page }) => {
+  await page.goto('/?today=2026-10-01')
+  await expect(page.getByRole('heading', { name: 'Tydzień 3' })).toBeVisible()
+  await expect(page.getByText('Sweet spot 2×12 min')).toBeVisible()
+  await expect(page.getByText('Dzień ciężki: bez deficytu, paliwo na trening')).toBeVisible()
+  await expect(page.getByText('345 dni do wyjazdu')).toBeVisible()
+  await expect(page.getByText(/Zrób test i wpisz LTHR/)).toBeVisible()
+  await page.screenshot({ path: 'test-results/today-2026-10-01.png', fullPage: true })
+  await page.goto('/?today=2026-09-30')
   await expect(page.getByText('Sesja A – Siła nóg (ciężka)')).toBeVisible()
   await expect(page.getByText('Przysiad ze sztangą na plecach')).toBeVisible()
-  await expect(page.getByText('2×10 · RIR 4 · 120 s').first()).toBeVisible()
-  await expect(page.getByText('Dzień ciężki: bez deficytu, paliwo na trening')).toBeVisible()
-  await expect(page.getByText('360 dni do wyjazdu')).toBeVisible()
-  await expect(page.getByText(/Zrób test i wpisz LTHR/)).toBeVisible()
-  await page.screenshot({ path: 'test-results/today-2026-09-16.png', fullPage: true })
+  await expect(page.getByText('3×10 · RIR 3 · 120 s').first()).toBeVisible()
+  await expect(page.getByText('Dzień lekki: deficyt ok. 500 kcal')).toBeVisible()
 })
 
 test('Dziś 15.05.2027: weekend w górach', async ({ page }) => {
@@ -23,7 +25,7 @@ test('Dziś 15.05.2027: weekend w górach', async ({ page }) => {
 test('Tydzień: nawigacja i suma godzin', async ({ page }) => {
   await page.goto('/tydzien/2026-09-16?today=2026-09-16')
   await expect(page.getByRole('heading', { name: 'Tydzień 1' })).toBeVisible()
-  await expect(page.getByText(/6,3\s*h/)).toBeVisible()
+  await expect(page.getByText(/5,3\s*h/)).toBeVisible()
   await expect(page.getByText(/siłownia 0\/2/)).toBeVisible()
   await page.getByRole('button', { name: '›' }).click()
   await expect(page.getByRole('heading', { name: 'Tydzień 2' })).toBeVisible()
@@ -31,12 +33,12 @@ test('Tydzień: nawigacja i suma godzin', async ({ page }) => {
 })
 
 test('Ustawienia: LTHR 160 daje bpm na ekranie Dziś', async ({ page }) => {
-  await page.goto('/wiecej/ustawienia?today=2026-09-23')
+  await page.goto('/wiecej/ustawienia?today=2026-10-01')
   await page.getByLabel('LTHR (bpm)').fill('160')
   await page.getByRole('button', { name: 'Zapisz' }).click()
   await expect(page.getByRole('button', { name: 'Zapisano ✓' })).toBeVisible()
-  await page.goto('/?today=2026-09-23')
-  await expect(page.getByText('Sweet spot 2×10 min')).toBeVisible()
+  await page.goto('/?today=2026-10-01')
+  await expect(page.getByText('Sweet spot 2×12 min')).toBeVisible()
   await expect(page.getByText('147–154 bpm').first()).toBeVisible()
   await expect(page.getByText(/Zrób test i wpisz LTHR/)).toHaveCount(0)
 })

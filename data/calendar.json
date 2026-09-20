@@ -1,10 +1,10 @@
 {
- "version": "2026.09.11-1",
+ "version": "2026.09.20-1",
  "settings": {
   "program_start": "2026-09-14",
   "trip_start": "2027-09-11",
   "athlete_name": "Luke",
-  "body_weight_start_kg": 105,
+  "body_weight_start_kg": 110,
   "body_weight_target_kg": 90,
   "bike_and_kit_kg": 12,
   "lthr_bpm": null,
@@ -108,8 +108,8 @@
    "date": "2026-09-14",
    "weekday": "mon",
    "week": 1,
-   "phase": "I",
-   "week_type": "test",
+   "phase": "PREP",
+   "week_type": "prep",
    "day_type": "rest",
    "bike": null,
    "gym": null,
@@ -124,18 +124,18 @@
     "post_workout": null
    },
    "flags": [],
-   "week_notes": "Pierwszy test progowy → wpisz LTHR i ustaw strefy tętna w aplikacji ELEMNT. Siłownia celowo lekko (RIR 4)."
+   "week_notes": "Wyjście ze zmęczenia po Great Escape. Jedź lekko, siłownia celowo lekko (RIR 4)."
   },
   {
    "date": "2026-09-15",
    "weekday": "tue",
    "week": 1,
-   "phase": "I",
-   "week_type": "test",
+   "phase": "PREP",
+   "week_type": "prep",
    "day_type": "easy",
    "bike": {
-    "workout_id": "Z2_CADENCE",
-    "name": "Z2 + praca nad kadencją",
+    "workout_id": "Z2",
+    "name": "Baza tlenowa Z2",
     "duration_min": 60,
     "bike": "Dogma na suchą szosę > 5 °C; Checkpoint na mokro, sól, szuter",
     "fallback_workout_id": null
@@ -157,16 +157,10 @@
    "date": "2026-09-16",
    "weekday": "wed",
    "week": 1,
-   "phase": "I",
-   "week_type": "test",
-   "day_type": "key",
-   "bike": {
-    "workout_id": "TEST_LTHR",
-    "name": "Test progowy 30 min (LTHR)",
-    "duration_min": 60,
-    "bike": "Dogma na suchą szosę > 5 °C; Checkpoint na mokro, sól, szuter",
-    "fallback_workout_id": null
-   },
+   "phase": "PREP",
+   "week_type": "prep",
+   "day_type": "gym",
+   "bike": null,
    "gym": {
     "session": "A",
     "name": "Sesja A – Siła nóg (ciężka)",
@@ -262,29 +256,27 @@
     ]
    },
    "nutrition": {
-    "energy": "maintenance",
-    "label": "Dzień ciężki: bez deficytu, paliwo na trening",
+    "energy": "deficit_500",
+    "label": "Dzień lekki: deficyt ok. 500 kcal",
     "protein_g_per_kg": 1.8,
     "on_bike_carbs_g_per_h": [
-     30,
-     40
+     0,
+     0
     ],
-    "post_workout": "30–40 g białka + węglowodany w ciągu 1–2 h"
+    "post_workout": null
    },
-   "flags": [
-    "test"
-   ]
+   "flags": []
   },
   {
    "date": "2026-09-17",
    "weekday": "thu",
    "week": 1,
-   "phase": "I",
-   "week_type": "test",
+   "phase": "PREP",
+   "week_type": "prep",
    "day_type": "easy",
    "bike": {
-    "workout_id": "Z1_RECOVERY",
-    "name": "Jazda regeneracyjna",
+    "workout_id": "Z2",
+    "name": "Baza tlenowa Z2",
     "duration_min": 45,
     "bike": "Dogma na suchą szosę > 5 °C; Checkpoint na mokro, sól, szuter",
     "fallback_workout_id": null
@@ -306,8 +298,8 @@
    "date": "2026-09-18",
    "weekday": "fri",
    "week": 1,
-   "phase": "I",
-   "week_type": "test",
+   "phase": "PREP",
+   "week_type": "prep",
    "day_type": "gym",
    "bike": null,
    "gym": {
@@ -438,8 +430,8 @@
    "date": "2026-09-19",
    "weekday": "sat",
    "week": 1,
-   "phase": "I",
-   "week_type": "test",
+   "phase": "PREP",
+   "week_type": "prep",
    "day_type": "long",
    "bike": {
     "workout_id": "LONG",
@@ -465,12 +457,12 @@
    "date": "2026-09-20",
    "weekday": "sun",
    "week": 1,
-   "phase": "I",
-   "week_type": "test",
+   "phase": "PREP",
+   "week_type": "prep",
    "day_type": "easy",
    "bike": {
-    "workout_id": "HILLS",
-    "name": "Pagórki / gravel",
+    "workout_id": "Z2",
+    "name": "Baza tlenowa Z2",
     "duration_min": 90,
     "bike": "Dogma na suchą szosę > 5 °C; Checkpoint na mokro, sól, szuter",
     "fallback_workout_id": null
@@ -492,10 +484,38 @@
    "date": "2026-09-21",
    "weekday": "mon",
    "week": 2,
-   "phase": "I",
-   "week_type": "build",
+   "phase": "PREP",
+   "week_type": "test",
    "day_type": "rest",
    "bike": null,
+   "gym": null,
+   "nutrition": {
+    "energy": "deficit_500",
+    "label": "Dzień lekki: deficyt ok. 500 kcal",
+    "protein_g_per_kg": 1.8,
+    "on_bike_carbs_g_per_h": [
+     0,
+     0
+    ],
+    "post_workout": null
+   },
+   "flags": [],
+   "week_notes": "Tydzień resetu przed fazą: Sesja A lekko (RIR 4, o serię mniej), w sobotę test FTP 20 min. Zważ się rano na czczo trzy razy – to punkt zero redukcji. Skalibruj miernik (zeruj offset przed każdą jazdą). Jeśli nogi ciężkie – test w niedzielę i faza tydzień później."
+  },
+  {
+   "date": "2026-09-22",
+   "weekday": "tue",
+   "week": 2,
+   "phase": "PREP",
+   "week_type": "test",
+   "day_type": "easy",
+   "bike": {
+    "workout_id": "Z2",
+    "name": "Baza tlenowa Z2",
+    "duration_min": 45,
+    "bike": "Dogma na suchą szosę > 5 °C; Checkpoint na mokro, sól, szuter",
+    "fallback_workout_id": null
+   },
    "gym": null,
    "nutrition": {
     "energy": "deficit_500",
@@ -510,46 +530,13 @@
    "flags": []
   },
   {
-   "date": "2026-09-22",
-   "weekday": "tue",
-   "week": 2,
-   "phase": "I",
-   "week_type": "build",
-   "day_type": "easy",
-   "bike": {
-    "workout_id": "Z2_CADENCE",
-    "name": "Z2 + praca nad kadencją",
-    "duration_min": 60,
-    "bike": "Dogma na suchą szosę > 5 °C; Checkpoint na mokro, sól, szuter",
-    "fallback_workout_id": null
-   },
-   "gym": null,
-   "nutrition": {
-    "energy": "deficit_300",
-    "label": "Deficyt ok. 300 kcal",
-    "protein_g_per_kg": 1.8,
-    "on_bike_carbs_g_per_h": [
-     30,
-     40
-    ],
-    "post_workout": "30–40 g białka + węglowodany w ciągu 1–2 h"
-   },
-   "flags": []
-  },
-  {
    "date": "2026-09-23",
    "weekday": "wed",
    "week": 2,
-   "phase": "I",
-   "week_type": "build",
-   "day_type": "key",
-   "bike": {
-    "workout_id": "SS_2x10",
-    "name": "Sweet spot 2×10 min",
-    "duration_min": 55,
-    "bike": "Dogma na suchą szosę > 5 °C; Checkpoint na mokro, sól, szuter",
-    "fallback_workout_id": null
-   },
+   "phase": "PREP",
+   "week_type": "test",
+   "day_type": "gym",
+   "bike": null,
    "gym": {
     "session": "A",
     "name": "Sesja A – Siła nóg (ciężka)",
@@ -645,14 +632,14 @@
     ]
    },
    "nutrition": {
-    "energy": "maintenance",
-    "label": "Dzień ciężki: bez deficytu, paliwo na trening",
+    "energy": "deficit_500",
+    "label": "Dzień lekki: deficyt ok. 500 kcal",
     "protein_g_per_kg": 1.8,
     "on_bike_carbs_g_per_h": [
      0,
      0
     ],
-    "post_workout": "30–40 g białka + węglowodany w ciągu 1–2 h"
+    "post_workout": null
    },
    "flags": []
   },
@@ -660,16 +647,10 @@
    "date": "2026-09-24",
    "weekday": "thu",
    "week": 2,
-   "phase": "I",
-   "week_type": "build",
-   "day_type": "easy",
-   "bike": {
-    "workout_id": "Z2",
-    "name": "Baza tlenowa Z2",
-    "duration_min": 45,
-    "bike": "Dogma na suchą szosę > 5 °C; Checkpoint na mokro, sól, szuter",
-    "fallback_workout_id": null
-   },
+   "phase": "PREP",
+   "week_type": "test",
+   "day_type": "rest",
+   "bike": null,
    "gym": null,
    "nutrition": {
     "energy": "deficit_500",
@@ -687,122 +668,17 @@
    "date": "2026-09-25",
    "weekday": "fri",
    "week": 2,
-   "phase": "I",
-   "week_type": "build",
-   "day_type": "gym",
-   "bike": null,
-   "gym": {
-    "session": "B",
-    "name": "Sesja B – Jedna noga, tułów, postawa (średnia)",
-    "est_min": 68,
-    "items": [
-     {
-      "exercise": "mobility_circuit",
-      "rx": {
-       "sets": 2,
-       "reps": "obwód",
-       "note": "5 min rowerek/wioślarz luźno + 2 rundy obwodu. Serie wstępne do 1. ćwiczenia: pusta sztanga×8 → 50%×5 → 70%×3 → 85%×1–2."
-      }
-     },
-     {
-      "exercise": "step_up",
-      "rx": {
-       "sets": 2,
-       "reps": 8,
-       "rir": 4,
-       "rest_s": 90
-      },
-      "block": "1"
-     },
-     {
-      "exercise": "bulgarian_split_squat",
-      "rx": {
-       "sets": 2,
-       "reps": 10,
-       "rir": 4,
-       "rest_s": 90
-      },
-      "block": "2"
-     },
-     {
-      "exercise": "hip_thrust",
-      "rx": {
-       "sets": 2,
-       "reps": 10,
-       "rir": 3,
-       "rest_s": 90,
-       "note": "pauza 2 s na górze"
-      },
-      "block": "3"
-     },
-     {
-      "exercise": "pull_up",
-      "rx": {
-       "sets": 2,
-       "reps": "max−2",
-       "rest_s": 75,
-       "note": "lub ściąganie drążka 2×10"
-      },
-      "block": "4A"
-     },
-     {
-      "exercise": "push_up",
-      "rx": {
-       "sets": 2,
-       "reps": "10",
-       "rest_s": 60
-      },
-      "block": "4B"
-     },
-     {
-      "exercise": "farmer_walk",
-      "rx": {
-       "sets": 2,
-       "reps": "30–40 m",
-       "rest_s": 45
-      },
-      "block": "5",
-      "circuit": "core_B"
-     },
-     {
-      "exercise": "back_extension",
-      "rx": {
-       "sets": 2,
-       "reps": 12,
-       "rest_s": 45
-      },
-      "block": "5",
-      "circuit": "core_B"
-     },
-     {
-      "exercise": "copenhagen_plank",
-      "rx": {
-       "sets": 2,
-       "reps": "15 s",
-       "rest_s": 45
-      },
-      "block": "5",
-      "circuit": "core_B"
-     },
-     {
-      "exercise": "plank_reach",
-      "rx": {
-       "sets": 2,
-       "reps": 8,
-       "rest_s": 45
-      },
-      "block": "5",
-      "circuit": "core_B"
-     },
-     {
-      "exercise": "cooldown_stretch",
-      "rx": {
-       "sets": 1,
-       "reps": "4–5 min"
-      }
-     }
-    ]
+   "phase": "PREP",
+   "week_type": "test",
+   "day_type": "easy",
+   "bike": {
+    "workout_id": "Z2",
+    "name": "Baza tlenowa Z2",
+    "duration_min": 50,
+    "bike": "Dogma na suchą szosę > 5 °C; Checkpoint na mokro, sól, szuter",
+    "fallback_workout_id": null
    },
+   "gym": null,
    "nutrition": {
     "energy": "deficit_500",
     "label": "Dzień lekki: deficyt ok. 500 kcal",
@@ -819,13 +695,13 @@
    "date": "2026-09-26",
    "weekday": "sat",
    "week": 2,
-   "phase": "I",
-   "week_type": "build",
-   "day_type": "long",
+   "phase": "PREP",
+   "week_type": "test",
+   "day_type": "key",
    "bike": {
-    "workout_id": "LONG",
-    "name": "Długa jazda",
-    "duration_min": 135,
+    "workout_id": "FTP_TEST",
+    "name": "Test FTP 20 min (moc)",
+    "duration_min": 65,
     "bike": "Dogma na suchą szosę > 5 °C; Checkpoint na mokro, sól, szuter",
     "fallback_workout_id": null
    },
@@ -835,37 +711,33 @@
     "label": "Dzień ciężki: bez deficytu, paliwo na trening",
     "protein_g_per_kg": 1.8,
     "on_bike_carbs_g_per_h": [
-     60,
-     80
+     30,
+     40
     ],
     "post_workout": "30–40 g białka + węglowodany w ciągu 1–2 h"
    },
-   "flags": []
+   "flags": [
+    "test"
+   ]
   },
   {
    "date": "2026-09-27",
    "weekday": "sun",
    "week": 2,
-   "phase": "I",
-   "week_type": "build",
-   "day_type": "easy",
-   "bike": {
-    "workout_id": "HILLS",
-    "name": "Pagórki / gravel",
-    "duration_min": 90,
-    "bike": "Dogma na suchą szosę > 5 °C; Checkpoint na mokro, sól, szuter",
-    "fallback_workout_id": null
-   },
+   "phase": "PREP",
+   "week_type": "test",
+   "day_type": "rest",
+   "bike": null,
    "gym": null,
    "nutrition": {
-    "energy": "deficit_300",
-    "label": "Deficyt ok. 300 kcal",
+    "energy": "deficit_500",
+    "label": "Dzień lekki: deficyt ok. 500 kcal",
     "protein_g_per_kg": 1.8,
     "on_bike_carbs_g_per_h": [
-     60,
-     80
+     0,
+     0
     ],
-    "post_workout": "30–40 g białka + węglowodany w ciągu 1–2 h"
+    "post_workout": null
    },
    "flags": []
   },
@@ -888,7 +760,8 @@
     ],
     "post_workout": null
    },
-   "flags": []
+   "flags": [],
+   "week_notes": "Start fazy: 3 jazdy + 2 siłownie. Z2 ma być nudne – rozmowa pełnymi zdaniami. Czwartek to jedyna jazda, na której wolno się zmęczyć. Kadencja na każdym podjeździe min. 75 rpm (38×46). Minimalna jazda 40 min Z2 liczy się jako wykonana."
   },
   {
    "date": "2026-09-29",
@@ -923,14 +796,8 @@
    "week": 3,
    "phase": "I",
    "week_type": "build",
-   "day_type": "key",
-   "bike": {
-    "workout_id": "SS_3x10",
-    "name": "Sweet spot 3×10 min",
-    "duration_min": 70,
-    "bike": "Dogma na suchą szosę > 5 °C; Checkpoint na mokro, sól, szuter",
-    "fallback_workout_id": null
-   },
+   "day_type": "gym",
+   "bike": null,
    "gym": {
     "session": "A",
     "name": "Sesja A – Siła nóg (ciężka)",
@@ -1026,14 +893,14 @@
     ]
    },
    "nutrition": {
-    "energy": "maintenance",
-    "label": "Dzień ciężki: bez deficytu, paliwo na trening",
+    "energy": "deficit_500",
+    "label": "Dzień lekki: deficyt ok. 500 kcal",
     "protein_g_per_kg": 1.8,
     "on_bike_carbs_g_per_h": [
-     30,
-     40
+     0,
+     0
     ],
-    "post_workout": "30–40 g białka + węglowodany w ciągu 1–2 h"
+    "post_workout": null
    },
    "flags": []
   },
@@ -1043,24 +910,24 @@
    "week": 3,
    "phase": "I",
    "week_type": "build",
-   "day_type": "easy",
+   "day_type": "key",
    "bike": {
-    "workout_id": "Z2",
-    "name": "Baza tlenowa Z2",
-    "duration_min": 45,
+    "workout_id": "SS_2x12",
+    "name": "Sweet spot 2×12 min",
+    "duration_min": 59,
     "bike": "Dogma na suchą szosę > 5 °C; Checkpoint na mokro, sól, szuter",
     "fallback_workout_id": null
    },
    "gym": null,
    "nutrition": {
-    "energy": "deficit_500",
-    "label": "Dzień lekki: deficyt ok. 500 kcal",
+    "energy": "maintenance",
+    "label": "Dzień ciężki: bez deficytu, paliwo na trening",
     "protein_g_per_kg": 1.8,
     "on_bike_carbs_g_per_h": [
      0,
      0
     ],
-    "post_workout": null
+    "post_workout": "30–40 g białka + węglowodany w ciągu 1–2 h"
    },
    "flags": []
   },
@@ -1206,7 +1073,7 @@
    "bike": {
     "workout_id": "LONG",
     "name": "Długa jazda",
-    "duration_min": 150,
+    "duration_min": 120,
     "bike": "Dogma na suchą szosę > 5 °C; Checkpoint na mokro, sól, szuter",
     "fallback_workout_id": null
    },
@@ -1229,24 +1096,18 @@
    "week": 3,
    "phase": "I",
    "week_type": "build",
-   "day_type": "easy",
-   "bike": {
-    "workout_id": "HILLS",
-    "name": "Pagórki / gravel",
-    "duration_min": 105,
-    "bike": "Dogma na suchą szosę > 5 °C; Checkpoint na mokro, sól, szuter",
-    "fallback_workout_id": null
-   },
+   "day_type": "rest",
+   "bike": null,
    "gym": null,
    "nutrition": {
-    "energy": "deficit_300",
-    "label": "Deficyt ok. 300 kcal",
+    "energy": "deficit_500",
+    "label": "Dzień lekki: deficyt ok. 500 kcal",
     "protein_g_per_kg": 1.8,
     "on_bike_carbs_g_per_h": [
-     60,
-     80
+     0,
+     0
     ],
-    "post_workout": "30–40 g białka + węglowodany w ciągu 1–2 h"
+    "post_workout": null
    },
    "flags": []
   },
@@ -1304,14 +1165,8 @@
    "week": 4,
    "phase": "I",
    "week_type": "build",
-   "day_type": "key",
-   "bike": {
-    "workout_id": "SS_2x15",
-    "name": "Sweet spot 2×15 min",
-    "duration_min": 65,
-    "bike": "Dogma na suchą szosę > 5 °C; Checkpoint na mokro, sól, szuter",
-    "fallback_workout_id": null
-   },
+   "day_type": "gym",
+   "bike": null,
    "gym": {
     "session": "A",
     "name": "Sesja A – Siła nóg (ciężka)",
@@ -1407,14 +1262,14 @@
     ]
    },
    "nutrition": {
-    "energy": "maintenance",
-    "label": "Dzień ciężki: bez deficytu, paliwo na trening",
+    "energy": "deficit_500",
+    "label": "Dzień lekki: deficyt ok. 500 kcal",
     "protein_g_per_kg": 1.8,
     "on_bike_carbs_g_per_h": [
-     30,
-     40
+     0,
+     0
     ],
-    "post_workout": "30–40 g białka + węglowodany w ciągu 1–2 h"
+    "post_workout": null
    },
    "flags": []
   },
@@ -1424,18 +1279,18 @@
    "week": 4,
    "phase": "I",
    "week_type": "build",
-   "day_type": "easy",
+   "day_type": "key",
    "bike": {
-    "workout_id": "Z2",
-    "name": "Baza tlenowa Z2",
-    "duration_min": 60,
+    "workout_id": "SS_2x15",
+    "name": "Sweet spot 2×15 min",
+    "duration_min": 65,
     "bike": "Dogma na suchą szosę > 5 °C; Checkpoint na mokro, sól, szuter",
     "fallback_workout_id": null
    },
    "gym": null,
    "nutrition": {
-    "energy": "deficit_300",
-    "label": "Deficyt ok. 300 kcal",
+    "energy": "maintenance",
+    "label": "Dzień ciężki: bez deficytu, paliwo na trening",
     "protein_g_per_kg": 1.8,
     "on_bike_carbs_g_per_h": [
      30,
@@ -1587,7 +1442,7 @@
    "bike": {
     "workout_id": "LONG",
     "name": "Długa jazda",
-    "duration_min": 150,
+    "duration_min": 135,
     "bike": "Dogma na suchą szosę > 5 °C; Checkpoint na mokro, sól, szuter",
     "fallback_workout_id": null
    },
@@ -1610,24 +1465,18 @@
    "week": 4,
    "phase": "I",
    "week_type": "build",
-   "day_type": "easy",
-   "bike": {
-    "workout_id": "HILLS",
-    "name": "Pagórki / gravel",
-    "duration_min": 105,
-    "bike": "Dogma na suchą szosę > 5 °C; Checkpoint na mokro, sól, szuter",
-    "fallback_workout_id": null
-   },
+   "day_type": "rest",
+   "bike": null,
    "gym": null,
    "nutrition": {
-    "energy": "deficit_300",
-    "label": "Deficyt ok. 300 kcal",
+    "energy": "deficit_500",
+    "label": "Dzień lekki: deficyt ok. 500 kcal",
     "protein_g_per_kg": 1.8,
     "on_bike_carbs_g_per_h": [
-     60,
-     80
+     0,
+     0
     ],
-    "post_workout": "30–40 g białka + węglowodany w ciągu 1–2 h"
+    "post_workout": null
    },
    "flags": []
   },
@@ -1650,7 +1499,8 @@
     ],
     "post_workout": null
    },
-   "flags": []
+   "flags": [],
+   "week_notes": "Do 18.10 kup lampę przednią ≥ 800 lm i tył z radarem – od zmiany czasu (25.10) wtorki i czwartki jedziesz po ciemku."
   },
   {
    "date": "2026-10-13",
@@ -1685,14 +1535,8 @@
    "week": 5,
    "phase": "I",
    "week_type": "build",
-   "day_type": "key",
-   "bike": {
-    "workout_id": "SS_3x12",
-    "name": "Sweet spot 3×12 min",
-    "duration_min": 76,
-    "bike": "Dogma na suchą szosę > 5 °C; Checkpoint na mokro, sól, szuter",
-    "fallback_workout_id": null
-   },
+   "day_type": "gym",
+   "bike": null,
    "gym": {
     "session": "A",
     "name": "Sesja A – Siła nóg (ciężka)",
@@ -1788,14 +1632,14 @@
     ]
    },
    "nutrition": {
-    "energy": "maintenance",
-    "label": "Dzień ciężki: bez deficytu, paliwo na trening",
+    "energy": "deficit_500",
+    "label": "Dzień lekki: deficyt ok. 500 kcal",
     "protein_g_per_kg": 1.8,
     "on_bike_carbs_g_per_h": [
-     30,
-     40
+     0,
+     0
     ],
-    "post_workout": "30–40 g białka + węglowodany w ciągu 1–2 h"
+    "post_workout": null
    },
    "flags": []
   },
@@ -1805,18 +1649,18 @@
    "week": 5,
    "phase": "I",
    "week_type": "build",
-   "day_type": "easy",
+   "day_type": "key",
    "bike": {
-    "workout_id": "Z2",
-    "name": "Baza tlenowa Z2",
-    "duration_min": 60,
+    "workout_id": "SS_2x15",
+    "name": "Sweet spot 2×15 min",
+    "duration_min": 65,
     "bike": "Dogma na suchą szosę > 5 °C; Checkpoint na mokro, sól, szuter",
     "fallback_workout_id": null
    },
    "gym": null,
    "nutrition": {
-    "energy": "deficit_300",
-    "label": "Deficyt ok. 300 kcal",
+    "energy": "maintenance",
+    "label": "Dzień ciężki: bez deficytu, paliwo na trening",
     "protein_g_per_kg": 1.8,
     "on_bike_carbs_g_per_h": [
      30,
@@ -1968,7 +1812,7 @@
    "bike": {
     "workout_id": "LONG",
     "name": "Długa jazda",
-    "duration_min": 165,
+    "duration_min": 150,
     "bike": "Dogma na suchą szosę > 5 °C; Checkpoint na mokro, sól, szuter",
     "fallback_workout_id": null
    },
@@ -1991,24 +1835,18 @@
    "week": 5,
    "phase": "I",
    "week_type": "build",
-   "day_type": "long",
-   "bike": {
-    "workout_id": "HILLS",
-    "name": "Pagórki / gravel",
-    "duration_min": 120,
-    "bike": "Dogma na suchą szosę > 5 °C; Checkpoint na mokro, sól, szuter",
-    "fallback_workout_id": null
-   },
+   "day_type": "rest",
+   "bike": null,
    "gym": null,
    "nutrition": {
-    "energy": "maintenance",
-    "label": "Dzień ciężki: bez deficytu, paliwo na trening",
+    "energy": "deficit_500",
+    "label": "Dzień lekki: deficyt ok. 500 kcal",
     "protein_g_per_kg": 1.8,
     "on_bike_carbs_g_per_h": [
-     60,
-     80
+     0,
+     0
     ],
-    "post_workout": "30–40 g białka + węglowodany w ciągu 1–2 h"
+    "post_workout": null
    },
    "flags": []
   },
@@ -2070,14 +1908,8 @@
    "week": 6,
    "phase": "I",
    "week_type": "deload",
-   "day_type": "easy",
-   "bike": {
-    "workout_id": "DELOAD_WED",
-    "name": "Tydzień lżejszy: Z2 z pobudzeniem",
-    "duration_min": 60,
-    "bike": "Dogma na suchą szosę > 5 °C; Checkpoint na mokro, sól, szuter",
-    "fallback_workout_id": null
-   },
+   "day_type": "gym",
+   "bike": null,
    "gym": {
     "session": "A",
     "name": "Sesja A – Siła nóg (ciężka) – tydzień rozładowania",
@@ -2178,14 +2010,14 @@
     ]
    },
    "nutrition": {
-    "energy": "deficit_300",
-    "label": "Deficyt ok. 300 kcal",
+    "energy": "deficit_500",
+    "label": "Dzień lekki: deficyt ok. 500 kcal",
     "protein_g_per_kg": 1.8,
     "on_bike_carbs_g_per_h": [
-     30,
-     40
+     0,
+     0
     ],
-    "post_workout": "30–40 g białka + węglowodany w ciągu 1–2 h"
+    "post_workout": null
    },
    "flags": [
     "deload"
@@ -2197,18 +2029,24 @@
    "week": 6,
    "phase": "I",
    "week_type": "deload",
-   "day_type": "rest",
-   "bike": null,
+   "day_type": "easy",
+   "bike": {
+    "workout_id": "Z2",
+    "name": "Baza tlenowa Z2",
+    "duration_min": 60,
+    "bike": "Dogma na suchą szosę > 5 °C; Checkpoint na mokro, sól, szuter",
+    "fallback_workout_id": null
+   },
    "gym": null,
    "nutrition": {
-    "energy": "deficit_500",
-    "label": "Dzień lekki: deficyt ok. 500 kcal",
+    "energy": "deficit_300",
+    "label": "Deficyt ok. 300 kcal",
     "protein_g_per_kg": 1.8,
     "on_bike_carbs_g_per_h": [
-     0,
-     0
+     30,
+     40
     ],
-    "post_workout": null
+    "post_workout": "30–40 g białka + węglowodany w ciągu 1–2 h"
    },
    "flags": [
     "deload"
@@ -2365,7 +2203,7 @@
    "bike": {
     "workout_id": "LONG",
     "name": "Długa jazda",
-    "duration_min": 105,
+    "duration_min": 90,
     "bike": "Dogma na suchą szosę > 5 °C; Checkpoint na mokro, sól, szuter",
     "fallback_workout_id": null
    },
@@ -2390,24 +2228,18 @@
    "week": 6,
    "phase": "I",
    "week_type": "deload",
-   "day_type": "easy",
-   "bike": {
-    "workout_id": "Z2",
-    "name": "Baza tlenowa Z2",
-    "duration_min": 75,
-    "bike": "Dogma na suchą szosę > 5 °C; Checkpoint na mokro, sól, szuter",
-    "fallback_workout_id": null
-   },
+   "day_type": "rest",
+   "bike": null,
    "gym": null,
    "nutrition": {
-    "energy": "deficit_300",
-    "label": "Deficyt ok. 300 kcal",
+    "energy": "deficit_500",
+    "label": "Dzień lekki: deficyt ok. 500 kcal",
     "protein_g_per_kg": 1.8,
     "on_bike_carbs_g_per_h": [
-     30,
-     40
+     0,
+     0
     ],
-    "post_workout": "30–40 g białka + węglowodany w ciągu 1–2 h"
+    "post_workout": null
    },
    "flags": [
     "deload"
@@ -2418,7 +2250,7 @@
    "weekday": "mon",
    "week": 7,
    "phase": "I",
-   "week_type": "test",
+   "week_type": "build",
    "day_type": "rest",
    "bike": null,
    "gym": null,
@@ -2439,7 +2271,7 @@
    "weekday": "tue",
    "week": 7,
    "phase": "I",
-   "week_type": "test",
+   "week_type": "build",
    "day_type": "easy",
    "bike": {
     "workout_id": "Z2_CADENCE",
@@ -2466,15 +2298,9 @@
    "weekday": "wed",
    "week": 7,
    "phase": "I",
-   "week_type": "test",
-   "day_type": "key",
-   "bike": {
-    "workout_id": "TEST_LTHR",
-    "name": "Test progowy 30 min (LTHR)",
-    "duration_min": 60,
-    "bike": "Dogma na suchą szosę > 5 °C; Checkpoint na mokro, sól, szuter",
-    "fallback_workout_id": null
-   },
+   "week_type": "build",
+   "day_type": "gym",
+   "bike": null,
    "gym": {
     "session": "A",
     "name": "Sesja A – Siła nóg (ciężka)",
@@ -2570,37 +2396,35 @@
     ]
    },
    "nutrition": {
-    "energy": "maintenance",
-    "label": "Dzień ciężki: bez deficytu, paliwo na trening",
+    "energy": "deficit_500",
+    "label": "Dzień lekki: deficyt ok. 500 kcal",
     "protein_g_per_kg": 1.8,
     "on_bike_carbs_g_per_h": [
-     30,
-     40
+     0,
+     0
     ],
-    "post_workout": "30–40 g białka + węglowodany w ciągu 1–2 h"
+    "post_workout": null
    },
-   "flags": [
-    "test"
-   ]
+   "flags": []
   },
   {
    "date": "2026-10-29",
    "weekday": "thu",
    "week": 7,
    "phase": "I",
-   "week_type": "test",
-   "day_type": "easy",
+   "week_type": "build",
+   "day_type": "key",
    "bike": {
-    "workout_id": "Z2",
-    "name": "Baza tlenowa Z2",
-    "duration_min": 60,
+    "workout_id": "SS_3x12",
+    "name": "Sweet spot 3×12 min",
+    "duration_min": 76,
     "bike": "Dogma na suchą szosę > 5 °C; Checkpoint na mokro, sól, szuter",
     "fallback_workout_id": null
    },
    "gym": null,
    "nutrition": {
-    "energy": "deficit_300",
-    "label": "Deficyt ok. 300 kcal",
+    "energy": "maintenance",
+    "label": "Dzień ciężki: bez deficytu, paliwo na trening",
     "protein_g_per_kg": 1.8,
     "on_bike_carbs_g_per_h": [
      30,
@@ -2615,7 +2439,7 @@
    "weekday": "fri",
    "week": 7,
    "phase": "I",
-   "week_type": "test",
+   "week_type": "build",
    "day_type": "gym",
    "bike": null,
    "gym": {
@@ -2747,7 +2571,7 @@
    "weekday": "sat",
    "week": 7,
    "phase": "I",
-   "week_type": "test",
+   "week_type": "build",
    "day_type": "long",
    "bike": {
     "workout_id": "LONG",
@@ -2774,25 +2598,19 @@
    "weekday": "sun",
    "week": 7,
    "phase": "I",
-   "week_type": "test",
-   "day_type": "long",
-   "bike": {
-    "workout_id": "HILLS",
-    "name": "Pagórki / gravel",
-    "duration_min": 120,
-    "bike": "Dogma na suchą szosę > 5 °C; Checkpoint na mokro, sól, szuter",
-    "fallback_workout_id": null
-   },
+   "week_type": "build",
+   "day_type": "rest",
+   "bike": null,
    "gym": null,
    "nutrition": {
-    "energy": "maintenance",
-    "label": "Dzień ciężki: bez deficytu, paliwo na trening",
+    "energy": "deficit_500",
+    "label": "Dzień lekki: deficyt ok. 500 kcal",
     "protein_g_per_kg": 1.8,
     "on_bike_carbs_g_per_h": [
-     60,
-     80
+     0,
+     0
     ],
-    "post_workout": "30–40 g białka + węglowodany w ciągu 1–2 h"
+    "post_workout": null
    },
    "flags": []
   },
@@ -2850,14 +2668,8 @@
    "week": 8,
    "phase": "I",
    "week_type": "build",
-   "day_type": "key",
-   "bike": {
-    "workout_id": "SS_2x15",
-    "name": "Sweet spot 2×15 min",
-    "duration_min": 65,
-    "bike": "Dogma na suchą szosę > 5 °C; Checkpoint na mokro, sól, szuter",
-    "fallback_workout_id": null
-   },
+   "day_type": "gym",
+   "bike": null,
    "gym": {
     "session": "A",
     "name": "Sesja A – Siła nóg (ciężka)",
@@ -2953,14 +2765,14 @@
     ]
    },
    "nutrition": {
-    "energy": "maintenance",
-    "label": "Dzień ciężki: bez deficytu, paliwo na trening",
+    "energy": "deficit_500",
+    "label": "Dzień lekki: deficyt ok. 500 kcal",
     "protein_g_per_kg": 1.8,
     "on_bike_carbs_g_per_h": [
-     30,
-     40
+     0,
+     0
     ],
-    "post_workout": "30–40 g białka + węglowodany w ciągu 1–2 h"
+    "post_workout": null
    },
    "flags": []
   },
@@ -2970,18 +2782,18 @@
    "week": 8,
    "phase": "I",
    "week_type": "build",
-   "day_type": "easy",
+   "day_type": "key",
    "bike": {
-    "workout_id": "Z2",
-    "name": "Baza tlenowa Z2",
-    "duration_min": 60,
+    "workout_id": "SS_2x20",
+    "name": "Sweet spot 2×20 min",
+    "duration_min": 75,
     "bike": "Dogma na suchą szosę > 5 °C; Checkpoint na mokro, sól, szuter",
     "fallback_workout_id": null
    },
    "gym": null,
    "nutrition": {
-    "energy": "deficit_300",
-    "label": "Deficyt ok. 300 kcal",
+    "energy": "maintenance",
+    "label": "Dzień ciężki: bez deficytu, paliwo na trening",
     "protein_g_per_kg": 1.8,
     "on_bike_carbs_g_per_h": [
      30,
@@ -3156,24 +2968,18 @@
    "week": 8,
    "phase": "I",
    "week_type": "build",
-   "day_type": "long",
-   "bike": {
-    "workout_id": "HILLS",
-    "name": "Pagórki / gravel",
-    "duration_min": 120,
-    "bike": "Dogma na suchą szosę > 5 °C; Checkpoint na mokro, sól, szuter",
-    "fallback_workout_id": null
-   },
+   "day_type": "rest",
+   "bike": null,
    "gym": null,
    "nutrition": {
-    "energy": "maintenance",
-    "label": "Dzień ciężki: bez deficytu, paliwo na trening",
+    "energy": "deficit_500",
+    "label": "Dzień lekki: deficyt ok. 500 kcal",
     "protein_g_per_kg": 1.8,
     "on_bike_carbs_g_per_h": [
-     60,
-     80
+     0,
+     0
     ],
-    "post_workout": "30–40 g białka + węglowodany w ciągu 1–2 h"
+    "post_workout": null
    },
    "flags": []
   },
@@ -3231,14 +3037,8 @@
    "week": 9,
    "phase": "I",
    "week_type": "build",
-   "day_type": "key",
-   "bike": {
-    "workout_id": "SS_3x15",
-    "name": "Sweet spot 3×15 min",
-    "duration_min": 85,
-    "bike": "Dogma na suchą szosę > 5 °C; Checkpoint na mokro, sól, szuter",
-    "fallback_workout_id": null
-   },
+   "day_type": "gym",
+   "bike": null,
    "gym": {
     "session": "A",
     "name": "Sesja A – Siła nóg (ciężka)",
@@ -3334,14 +3134,14 @@
     ]
    },
    "nutrition": {
-    "energy": "maintenance",
-    "label": "Dzień ciężki: bez deficytu, paliwo na trening",
+    "energy": "deficit_500",
+    "label": "Dzień lekki: deficyt ok. 500 kcal",
     "protein_g_per_kg": 1.8,
     "on_bike_carbs_g_per_h": [
-     30,
-     40
+     0,
+     0
     ],
-    "post_workout": "30–40 g białka + węglowodany w ciągu 1–2 h"
+    "post_workout": null
    },
    "flags": []
   },
@@ -3351,18 +3151,18 @@
    "week": 9,
    "phase": "I",
    "week_type": "build",
-   "day_type": "easy",
+   "day_type": "key",
    "bike": {
-    "workout_id": "Z2",
-    "name": "Baza tlenowa Z2",
-    "duration_min": 60,
+    "workout_id": "SS_3x15",
+    "name": "Sweet spot 3×15 min",
+    "duration_min": 85,
     "bike": "Dogma na suchą szosę > 5 °C; Checkpoint na mokro, sól, szuter",
     "fallback_workout_id": null
    },
    "gym": null,
    "nutrition": {
-    "energy": "deficit_300",
-    "label": "Deficyt ok. 300 kcal",
+    "energy": "maintenance",
+    "label": "Dzień ciężki: bez deficytu, paliwo na trening",
     "protein_g_per_kg": 1.8,
     "on_bike_carbs_g_per_h": [
      30,
@@ -3514,7 +3314,7 @@
    "bike": {
     "workout_id": "LONG",
     "name": "Długa jazda",
-    "duration_min": 180,
+    "duration_min": 195,
     "bike": "Dogma na suchą szosę > 5 °C; Checkpoint na mokro, sól, szuter",
     "fallback_workout_id": null
    },
@@ -3537,24 +3337,18 @@
    "week": 9,
    "phase": "I",
    "week_type": "build",
-   "day_type": "long",
-   "bike": {
-    "workout_id": "HILLS",
-    "name": "Pagórki / gravel",
-    "duration_min": 120,
-    "bike": "Dogma na suchą szosę > 5 °C; Checkpoint na mokro, sól, szuter",
-    "fallback_workout_id": null
-   },
+   "day_type": "rest",
+   "bike": null,
    "gym": null,
    "nutrition": {
-    "energy": "maintenance",
-    "label": "Dzień ciężki: bez deficytu, paliwo na trening",
+    "energy": "deficit_500",
+    "label": "Dzień lekki: deficyt ok. 500 kcal",
     "protein_g_per_kg": 1.8,
     "on_bike_carbs_g_per_h": [
-     60,
-     80
+     0,
+     0
     ],
-    "post_workout": "30–40 g białka + węglowodany w ciągu 1–2 h"
+    "post_workout": null
    },
    "flags": []
   },
@@ -3580,7 +3374,7 @@
    "flags": [
     "deload"
    ],
-   "week_notes": "Przed zimą: pełne błotniki SKS Bluemels 45 na Checkpoincie, oświetlenie ≥800 lm + radar, odzież zimowa."
+   "week_notes": "Przed zimą: pełne błotniki SKS Bluemels 45, odzież (merino, rękawice trójpalczaste, ochraniacze na buty), ciśnienie w oponach −0,3 bara."
   },
   {
    "date": "2026-11-17",
@@ -3617,14 +3411,8 @@
    "week": 10,
    "phase": "I",
    "week_type": "deload",
-   "day_type": "easy",
-   "bike": {
-    "workout_id": "DELOAD_WED",
-    "name": "Tydzień lżejszy: Z2 z pobudzeniem",
-    "duration_min": 60,
-    "bike": "Dogma na suchą szosę > 5 °C; Checkpoint na mokro, sól, szuter",
-    "fallback_workout_id": null
-   },
+   "day_type": "gym",
+   "bike": null,
    "gym": {
     "session": "A",
     "name": "Sesja A – Siła nóg (ciężka) – tydzień rozładowania",
@@ -3725,14 +3513,14 @@
     ]
    },
    "nutrition": {
-    "energy": "deficit_300",
-    "label": "Deficyt ok. 300 kcal",
+    "energy": "deficit_500",
+    "label": "Dzień lekki: deficyt ok. 500 kcal",
     "protein_g_per_kg": 1.8,
     "on_bike_carbs_g_per_h": [
-     30,
-     40
+     0,
+     0
     ],
-    "post_workout": "30–40 g białka + węglowodany w ciągu 1–2 h"
+    "post_workout": null
    },
    "flags": [
     "deload"
@@ -3744,18 +3532,24 @@
    "week": 10,
    "phase": "I",
    "week_type": "deload",
-   "day_type": "rest",
-   "bike": null,
+   "day_type": "easy",
+   "bike": {
+    "workout_id": "Z2",
+    "name": "Baza tlenowa Z2",
+    "duration_min": 60,
+    "bike": "Dogma na suchą szosę > 5 °C; Checkpoint na mokro, sól, szuter",
+    "fallback_workout_id": null
+   },
    "gym": null,
    "nutrition": {
-    "energy": "deficit_500",
-    "label": "Dzień lekki: deficyt ok. 500 kcal",
+    "energy": "deficit_300",
+    "label": "Deficyt ok. 300 kcal",
     "protein_g_per_kg": 1.8,
     "on_bike_carbs_g_per_h": [
-     0,
-     0
+     30,
+     40
     ],
-    "post_workout": null
+    "post_workout": "30–40 g białka + węglowodany w ciągu 1–2 h"
    },
    "flags": [
     "deload"
@@ -3937,24 +3731,18 @@
    "week": 10,
    "phase": "I",
    "week_type": "deload",
-   "day_type": "easy",
-   "bike": {
-    "workout_id": "Z2",
-    "name": "Baza tlenowa Z2",
-    "duration_min": 75,
-    "bike": "Dogma na suchą szosę > 5 °C; Checkpoint na mokro, sól, szuter",
-    "fallback_workout_id": null
-   },
+   "day_type": "rest",
+   "bike": null,
    "gym": null,
    "nutrition": {
-    "energy": "deficit_300",
-    "label": "Deficyt ok. 300 kcal",
+    "energy": "deficit_500",
+    "label": "Dzień lekki: deficyt ok. 500 kcal",
     "protein_g_per_kg": 1.8,
     "on_bike_carbs_g_per_h": [
-     30,
-     40
+     0,
+     0
     ],
-    "post_workout": "30–40 g białka + węglowodany w ciągu 1–2 h"
+    "post_workout": null
    },
    "flags": [
     "deload"
@@ -4014,14 +3802,8 @@
    "week": 11,
    "phase": "I",
    "week_type": "build",
-   "day_type": "key",
-   "bike": {
-    "workout_id": "SS_2x20",
-    "name": "Sweet spot 2×20 min",
-    "duration_min": 75,
-    "bike": "Dogma na suchą szosę > 5 °C; Checkpoint na mokro, sól, szuter",
-    "fallback_workout_id": null
-   },
+   "day_type": "gym",
+   "bike": null,
    "gym": {
     "session": "A",
     "name": "Sesja A – Siła nóg (ciężka)",
@@ -4118,14 +3900,14 @@
     ]
    },
    "nutrition": {
-    "energy": "maintenance",
-    "label": "Dzień ciężki: bez deficytu, paliwo na trening",
+    "energy": "deficit_500",
+    "label": "Dzień lekki: deficyt ok. 500 kcal",
     "protein_g_per_kg": 1.8,
     "on_bike_carbs_g_per_h": [
-     30,
-     40
+     0,
+     0
     ],
-    "post_workout": "30–40 g białka + węglowodany w ciągu 1–2 h"
+    "post_workout": null
    },
    "flags": []
   },
@@ -4135,18 +3917,18 @@
    "week": 11,
    "phase": "I",
    "week_type": "build",
-   "day_type": "easy",
+   "day_type": "key",
    "bike": {
-    "workout_id": "Z2",
-    "name": "Baza tlenowa Z2",
-    "duration_min": 60,
+    "workout_id": "SS_3x15",
+    "name": "Sweet spot 3×15 min",
+    "duration_min": 85,
     "bike": "Dogma na suchą szosę > 5 °C; Checkpoint na mokro, sól, szuter",
     "fallback_workout_id": null
    },
    "gym": null,
    "nutrition": {
-    "energy": "deficit_300",
-    "label": "Deficyt ok. 300 kcal",
+    "energy": "maintenance",
+    "label": "Dzień ciężki: bez deficytu, paliwo na trening",
     "protein_g_per_kg": 1.8,
     "on_bike_carbs_g_per_h": [
      30,
@@ -4319,24 +4101,18 @@
    "week": 11,
    "phase": "I",
    "week_type": "build",
-   "day_type": "long",
-   "bike": {
-    "workout_id": "HILLS",
-    "name": "Pagórki / gravel",
-    "duration_min": 120,
-    "bike": "Dogma na suchą szosę > 5 °C; Checkpoint na mokro, sól, szuter",
-    "fallback_workout_id": null
-   },
+   "day_type": "rest",
+   "bike": null,
    "gym": null,
    "nutrition": {
-    "energy": "maintenance",
-    "label": "Dzień ciężki: bez deficytu, paliwo na trening",
+    "energy": "deficit_500",
+    "label": "Dzień lekki: deficyt ok. 500 kcal",
     "protein_g_per_kg": 1.8,
     "on_bike_carbs_g_per_h": [
-     60,
-     80
+     0,
+     0
     ],
-    "post_workout": "30–40 g białka + węglowodany w ciągu 1–2 h"
+    "post_workout": null
    },
    "flags": []
   },
@@ -4344,7 +4120,7 @@
    "date": "2026-11-30",
    "weekday": "mon",
    "week": 12,
-   "phase": "II",
+   "phase": "I",
    "week_type": "build",
    "day_type": "rest",
    "bike": null,
@@ -4359,21 +4135,20 @@
     ],
     "post_workout": null
    },
-   "flags": [],
-   "week_notes": "Zima: domyślnie Checkpoint z błotnikami. Środowy akcent na zewnątrz tylko przy ≥ −5 °C i suchej drodze – inaczej INDOOR_4x4 przed Sesją A."
+   "flags": []
   },
   {
    "date": "2026-12-01",
    "weekday": "tue",
    "week": 12,
-   "phase": "II",
+   "phase": "I",
    "week_type": "build",
    "day_type": "easy",
    "bike": {
     "workout_id": "Z2",
     "name": "Baza tlenowa Z2",
-    "duration_min": 60,
-    "bike": "Checkpoint (zima, błotniki)",
+    "duration_min": 75,
+    "bike": "Dogma na suchą szosę > 5 °C; Checkpoint na mokro, sól, szuter",
     "fallback_workout_id": null
    },
    "gym": null,
@@ -4393,16 +4168,10 @@
    "date": "2026-12-02",
    "weekday": "wed",
    "week": 12,
-   "phase": "II",
+   "phase": "I",
    "week_type": "build",
-   "day_type": "key",
-   "bike": {
-    "workout_id": "SS_2x15",
-    "name": "Sweet spot 2×15 min",
-    "duration_min": 65,
-    "bike": "Checkpoint (zima, błotniki)",
-    "fallback_workout_id": "INDOOR_4x4"
-   },
+   "day_type": "gym",
+   "bike": null,
    "gym": {
     "session": "A",
     "name": "Sesja A – Siła nóg (ciężka)",
@@ -4498,33 +4267,6 @@
     ]
    },
    "nutrition": {
-    "energy": "maintenance",
-    "label": "Dzień ciężki: bez deficytu, paliwo na trening",
-    "protein_g_per_kg": 1.8,
-    "on_bike_carbs_g_per_h": [
-     30,
-     40
-    ],
-    "post_workout": "30–40 g białka + węglowodany w ciągu 1–2 h"
-   },
-   "flags": []
-  },
-  {
-   "date": "2026-12-03",
-   "weekday": "thu",
-   "week": 12,
-   "phase": "II",
-   "week_type": "build",
-   "day_type": "easy",
-   "bike": {
-    "workout_id": "Z2",
-    "name": "Baza tlenowa Z2",
-    "duration_min": 45,
-    "bike": "Checkpoint (zima, błotniki)",
-    "fallback_workout_id": null
-   },
-   "gym": null,
-   "nutrition": {
     "energy": "deficit_500",
     "label": "Dzień lekki: deficyt ok. 500 kcal",
     "protein_g_per_kg": 1.8,
@@ -4537,10 +4279,37 @@
    "flags": []
   },
   {
+   "date": "2026-12-03",
+   "weekday": "thu",
+   "week": 12,
+   "phase": "I",
+   "week_type": "build",
+   "day_type": "key",
+   "bike": {
+    "workout_id": "SS_2x20",
+    "name": "Sweet spot 2×20 min",
+    "duration_min": 75,
+    "bike": "Dogma na suchą szosę > 5 °C; Checkpoint na mokro, sól, szuter",
+    "fallback_workout_id": null
+   },
+   "gym": null,
+   "nutrition": {
+    "energy": "maintenance",
+    "label": "Dzień ciężki: bez deficytu, paliwo na trening",
+    "protein_g_per_kg": 1.8,
+    "on_bike_carbs_g_per_h": [
+     30,
+     40
+    ],
+    "post_workout": "30–40 g białka + węglowodany w ciągu 1–2 h"
+   },
+   "flags": []
+  },
+  {
    "date": "2026-12-04",
    "weekday": "fri",
    "week": 12,
-   "phase": "II",
+   "phase": "I",
    "week_type": "build",
    "day_type": "gym",
    "bike": null,
@@ -4673,14 +4442,14 @@
    "date": "2026-12-05",
    "weekday": "sat",
    "week": 12,
-   "phase": "II",
+   "phase": "I",
    "week_type": "build",
    "day_type": "long",
    "bike": {
     "workout_id": "LONG",
     "name": "Długa jazda",
-    "duration_min": 150,
-    "bike": "Checkpoint (zima, błotniki)",
+    "duration_min": 180,
+    "bike": "Dogma na suchą szosę > 5 °C; Checkpoint na mokro, sól, szuter",
     "fallback_workout_id": null
    },
    "gym": null,
@@ -4700,34 +4469,7 @@
    "date": "2026-12-06",
    "weekday": "sun",
    "week": 12,
-   "phase": "II",
-   "week_type": "build",
-   "day_type": "easy",
-   "bike": {
-    "workout_id": "Z2",
-    "name": "Baza tlenowa Z2",
-    "duration_min": 90,
-    "bike": "Checkpoint (zima, błotniki)",
-    "fallback_workout_id": null
-   },
-   "gym": null,
-   "nutrition": {
-    "energy": "deficit_300",
-    "label": "Deficyt ok. 300 kcal",
-    "protein_g_per_kg": 1.8,
-    "on_bike_carbs_g_per_h": [
-     60,
-     80
-    ],
-    "post_workout": "30–40 g białka + węglowodany w ciągu 1–2 h"
-   },
-   "flags": []
-  },
-  {
-   "date": "2026-12-07",
-   "weekday": "mon",
-   "week": 13,
-   "phase": "II",
+   "phase": "I",
    "week_type": "build",
    "day_type": "rest",
    "bike": null,
@@ -4745,17 +4487,39 @@
    "flags": []
   },
   {
+   "date": "2026-12-07",
+   "weekday": "mon",
+   "week": 13,
+   "phase": "I",
+   "week_type": "build",
+   "day_type": "rest",
+   "bike": null,
+   "gym": null,
+   "nutrition": {
+    "energy": "deficit_500",
+    "label": "Dzień lekki: deficyt ok. 500 kcal",
+    "protein_g_per_kg": 1.8,
+    "on_bike_carbs_g_per_h": [
+     0,
+     0
+    ],
+    "post_workout": null
+   },
+   "flags": [],
+   "week_notes": "Największy tydzień fazy. Jeśli pogoda go zabierze, przenieś 3:30 na tydzień wcześniej i potraktuj ten jako rozładowanie. Nie odrabiaj straconych godzin."
+  },
+  {
    "date": "2026-12-08",
    "weekday": "tue",
    "week": 13,
-   "phase": "II",
+   "phase": "I",
    "week_type": "build",
    "day_type": "easy",
    "bike": {
     "workout_id": "Z2",
     "name": "Baza tlenowa Z2",
-    "duration_min": 60,
-    "bike": "Checkpoint (zima, błotniki)",
+    "duration_min": 90,
+    "bike": "Dogma na suchą szosę > 5 °C; Checkpoint na mokro, sól, szuter",
     "fallback_workout_id": null
    },
    "gym": null,
@@ -4764,8 +4528,8 @@
     "label": "Deficyt ok. 300 kcal",
     "protein_g_per_kg": 1.8,
     "on_bike_carbs_g_per_h": [
-     30,
-     40
+     60,
+     80
     ],
     "post_workout": "30–40 g białka + węglowodany w ciągu 1–2 h"
    },
@@ -4775,16 +4539,10 @@
    "date": "2026-12-09",
    "weekday": "wed",
    "week": 13,
-   "phase": "II",
+   "phase": "I",
    "week_type": "build",
-   "day_type": "key",
-   "bike": {
-    "workout_id": "SS_3x15",
-    "name": "Sweet spot 3×15 min",
-    "duration_min": 85,
-    "bike": "Checkpoint (zima, błotniki)",
-    "fallback_workout_id": "INDOOR_4x4"
-   },
+   "day_type": "gym",
+   "bike": null,
    "gym": {
     "session": "A",
     "name": "Sesja A – Siła nóg (ciężka)",
@@ -4880,14 +4638,14 @@
     ]
    },
    "nutrition": {
-    "energy": "maintenance",
-    "label": "Dzień ciężki: bez deficytu, paliwo na trening",
+    "energy": "deficit_500",
+    "label": "Dzień lekki: deficyt ok. 500 kcal",
     "protein_g_per_kg": 1.8,
     "on_bike_carbs_g_per_h": [
-     30,
-     40
+     0,
+     0
     ],
-    "post_workout": "30–40 g białka + węglowodany w ciągu 1–2 h"
+    "post_workout": null
    },
    "flags": []
   },
@@ -4895,24 +4653,24 @@
    "date": "2026-12-10",
    "weekday": "thu",
    "week": 13,
-   "phase": "II",
+   "phase": "I",
    "week_type": "build",
-   "day_type": "easy",
+   "day_type": "key",
    "bike": {
-    "workout_id": "Z2",
-    "name": "Baza tlenowa Z2",
-    "duration_min": 60,
-    "bike": "Checkpoint (zima, błotniki)",
+    "workout_id": "SS_3x20",
+    "name": "Sweet spot 3×20 min",
+    "duration_min": 100,
+    "bike": "Dogma na suchą szosę > 5 °C; Checkpoint na mokro, sól, szuter",
     "fallback_workout_id": null
    },
    "gym": null,
    "nutrition": {
-    "energy": "deficit_300",
-    "label": "Deficyt ok. 300 kcal",
+    "energy": "maintenance",
+    "label": "Dzień ciężki: bez deficytu, paliwo na trening",
     "protein_g_per_kg": 1.8,
     "on_bike_carbs_g_per_h": [
-     30,
-     40
+     60,
+     80
     ],
     "post_workout": "30–40 g białka + węglowodany w ciągu 1–2 h"
    },
@@ -4922,7 +4680,7 @@
    "date": "2026-12-11",
    "weekday": "fri",
    "week": 13,
-   "phase": "II",
+   "phase": "I",
    "week_type": "build",
    "day_type": "gym",
    "bike": null,
@@ -5055,14 +4813,14 @@
    "date": "2026-12-12",
    "weekday": "sat",
    "week": 13,
-   "phase": "II",
+   "phase": "I",
    "week_type": "build",
    "day_type": "long",
    "bike": {
     "workout_id": "LONG",
     "name": "Długa jazda",
-    "duration_min": 165,
-    "bike": "Checkpoint (zima, błotniki)",
+    "duration_min": 210,
+    "bike": "Dogma na suchą szosę > 5 °C; Checkpoint na mokro, sól, szuter",
     "fallback_workout_id": null
    },
    "gym": null,
@@ -5082,34 +4840,7 @@
    "date": "2026-12-13",
    "weekday": "sun",
    "week": 13,
-   "phase": "II",
-   "week_type": "build",
-   "day_type": "easy",
-   "bike": {
-    "workout_id": "Z2",
-    "name": "Baza tlenowa Z2",
-    "duration_min": 105,
-    "bike": "Checkpoint (zima, błotniki)",
-    "fallback_workout_id": null
-   },
-   "gym": null,
-   "nutrition": {
-    "energy": "deficit_300",
-    "label": "Deficyt ok. 300 kcal",
-    "protein_g_per_kg": 1.8,
-    "on_bike_carbs_g_per_h": [
-     60,
-     80
-    ],
-    "post_workout": "30–40 g białka + węglowodany w ciągu 1–2 h"
-   },
-   "flags": []
-  },
-  {
-   "date": "2026-12-14",
-   "weekday": "mon",
-   "week": 14,
-   "phase": "II",
+   "phase": "I",
    "week_type": "build",
    "day_type": "rest",
    "bike": null,
@@ -5127,17 +4858,39 @@
    "flags": []
   },
   {
+   "date": "2026-12-14",
+   "weekday": "mon",
+   "week": 14,
+   "phase": "I",
+   "week_type": "test",
+   "day_type": "rest",
+   "bike": null,
+   "gym": null,
+   "nutrition": {
+    "energy": "deficit_500",
+    "label": "Dzień lekki: deficyt ok. 500 kcal",
+    "protein_g_per_kg": 1.8,
+    "on_bike_carbs_g_per_h": [
+     0,
+     0
+    ],
+    "post_workout": null
+   },
+   "flags": [],
+   "week_notes": "Test FTP 20 min w sobotę – koniec Fazy 1. Zapisz W/kg (FTP ÷ masa)."
+  },
+  {
    "date": "2026-12-15",
    "weekday": "tue",
    "week": 14,
-   "phase": "II",
-   "week_type": "build",
+   "phase": "I",
+   "week_type": "test",
    "day_type": "easy",
    "bike": {
     "workout_id": "Z2",
     "name": "Baza tlenowa Z2",
     "duration_min": 75,
-    "bike": "Checkpoint (zima, błotniki)",
+    "bike": "Dogma na suchą szosę > 5 °C; Checkpoint na mokro, sól, szuter",
     "fallback_workout_id": null
    },
    "gym": null,
@@ -5157,16 +4910,10 @@
    "date": "2026-12-16",
    "weekday": "wed",
    "week": 14,
-   "phase": "II",
-   "week_type": "build",
-   "day_type": "key",
-   "bike": {
-    "workout_id": "SS_2x20",
-    "name": "Sweet spot 2×20 min",
-    "duration_min": 75,
-    "bike": "Checkpoint (zima, błotniki)",
-    "fallback_workout_id": "INDOOR_4x4"
-   },
+   "phase": "I",
+   "week_type": "test",
+   "day_type": "gym",
+   "bike": null,
    "gym": {
     "session": "A",
     "name": "Sesja A – Siła nóg (ciężka)",
@@ -5262,14 +5009,14 @@
     ]
    },
    "nutrition": {
-    "energy": "maintenance",
-    "label": "Dzień ciężki: bez deficytu, paliwo na trening",
+    "energy": "deficit_500",
+    "label": "Dzień lekki: deficyt ok. 500 kcal",
     "protein_g_per_kg": 1.8,
     "on_bike_carbs_g_per_h": [
-     30,
-     40
+     0,
+     0
     ],
-    "post_workout": "30–40 g białka + węglowodany w ciągu 1–2 h"
+    "post_workout": null
    },
    "flags": []
   },
@@ -5277,14 +5024,14 @@
    "date": "2026-12-17",
    "weekday": "thu",
    "week": 14,
-   "phase": "II",
-   "week_type": "build",
+   "phase": "I",
+   "week_type": "test",
    "day_type": "easy",
    "bike": {
     "workout_id": "Z2",
     "name": "Baza tlenowa Z2",
     "duration_min": 60,
-    "bike": "Checkpoint (zima, błotniki)",
+    "bike": "Dogma na suchą szosę > 5 °C; Checkpoint na mokro, sól, szuter",
     "fallback_workout_id": null
    },
    "gym": null,
@@ -5304,8 +5051,8 @@
    "date": "2026-12-18",
    "weekday": "fri",
    "week": 14,
-   "phase": "II",
-   "week_type": "build",
+   "phase": "I",
+   "week_type": "test",
    "day_type": "gym",
    "bike": null,
    "gym": {
@@ -5437,14 +5184,14 @@
    "date": "2026-12-19",
    "weekday": "sat",
    "week": 14,
-   "phase": "II",
-   "week_type": "build",
-   "day_type": "long",
+   "phase": "I",
+   "week_type": "test",
+   "day_type": "key",
    "bike": {
-    "workout_id": "LONG",
-    "name": "Długa jazda",
-    "duration_min": 180,
-    "bike": "Checkpoint (zima, błotniki)",
+    "workout_id": "FTP_TEST",
+    "name": "Test FTP 20 min (moc)",
+    "duration_min": 65,
+    "bike": "Dogma na suchą szosę > 5 °C; Checkpoint na mokro, sól, szuter",
     "fallback_workout_id": null
    },
    "gym": null,
@@ -5453,37 +5200,33 @@
     "label": "Dzień ciężki: bez deficytu, paliwo na trening",
     "protein_g_per_kg": 1.8,
     "on_bike_carbs_g_per_h": [
-     60,
-     80
+     30,
+     40
     ],
     "post_workout": "30–40 g białka + węglowodany w ciągu 1–2 h"
    },
-   "flags": []
+   "flags": [
+    "test"
+   ]
   },
   {
    "date": "2026-12-20",
    "weekday": "sun",
    "week": 14,
-   "phase": "II",
-   "week_type": "build",
-   "day_type": "easy",
-   "bike": {
-    "workout_id": "Z2",
-    "name": "Baza tlenowa Z2",
-    "duration_min": 105,
-    "bike": "Checkpoint (zima, błotniki)",
-    "fallback_workout_id": null
-   },
+   "phase": "I",
+   "week_type": "test",
+   "day_type": "rest",
+   "bike": null,
    "gym": null,
    "nutrition": {
-    "energy": "deficit_300",
-    "label": "Deficyt ok. 300 kcal",
+    "energy": "deficit_500",
+    "label": "Dzień lekki: deficyt ok. 500 kcal",
     "protein_g_per_kg": 1.8,
     "on_bike_carbs_g_per_h": [
-     60,
-     80
+     0,
+     0
     ],
-    "post_workout": "30–40 g białka + węglowodany w ciągu 1–2 h"
+    "post_workout": null
    },
    "flags": []
   },
@@ -5509,7 +5252,7 @@
    "flags": [
     "deload"
    ],
-   "week_notes": "Święta – tydzień lżejszy."
+   "week_notes": "Święta – tydzień lżejszy. Zima: domyślnie Checkpoint z błotnikami. Czwartek poniżej −10 °C lub gołoledź = INDOOR_4x4 przed Sesją A."
   },
   {
    "date": "2026-12-22",
@@ -5546,14 +5289,8 @@
    "week": 15,
    "phase": "II",
    "week_type": "deload",
-   "day_type": "easy",
-   "bike": {
-    "workout_id": "DELOAD_WED",
-    "name": "Tydzień lżejszy: Z2 z pobudzeniem",
-    "duration_min": 60,
-    "bike": "Checkpoint (zima, błotniki)",
-    "fallback_workout_id": null
-   },
+   "day_type": "gym",
+   "bike": null,
    "gym": {
     "session": "A",
     "name": "Sesja A – Siła nóg (ciężka) – tydzień rozładowania",
@@ -5654,14 +5391,14 @@
     ]
    },
    "nutrition": {
-    "energy": "deficit_300",
-    "label": "Deficyt ok. 300 kcal",
+    "energy": "deficit_500",
+    "label": "Dzień lekki: deficyt ok. 500 kcal",
     "protein_g_per_kg": 1.8,
     "on_bike_carbs_g_per_h": [
-     30,
-     40
+     0,
+     0
     ],
-    "post_workout": "30–40 g białka + węglowodany w ciągu 1–2 h"
+    "post_workout": null
    },
    "flags": [
     "deload"
@@ -5673,18 +5410,24 @@
    "week": 15,
    "phase": "II",
    "week_type": "deload",
-   "day_type": "rest",
-   "bike": null,
+   "day_type": "easy",
+   "bike": {
+    "workout_id": "Z2",
+    "name": "Baza tlenowa Z2",
+    "duration_min": 60,
+    "bike": "Checkpoint (zima, błotniki)",
+    "fallback_workout_id": null
+   },
    "gym": null,
    "nutrition": {
-    "energy": "deficit_500",
-    "label": "Dzień lekki: deficyt ok. 500 kcal",
+    "energy": "deficit_300",
+    "label": "Deficyt ok. 300 kcal",
     "protein_g_per_kg": 1.8,
     "on_bike_carbs_g_per_h": [
-     0,
-     0
+     30,
+     40
     ],
-    "post_workout": null
+    "post_workout": "30–40 g białka + węglowodany w ciągu 1–2 h"
    },
    "flags": [
     "deload"
@@ -5867,35 +5610,6 @@
    "week": 15,
    "phase": "II",
    "week_type": "deload",
-   "day_type": "easy",
-   "bike": {
-    "workout_id": "Z2",
-    "name": "Baza tlenowa Z2",
-    "duration_min": 75,
-    "bike": "Checkpoint (zima, błotniki)",
-    "fallback_workout_id": null
-   },
-   "gym": null,
-   "nutrition": {
-    "energy": "deficit_300",
-    "label": "Deficyt ok. 300 kcal",
-    "protein_g_per_kg": 1.8,
-    "on_bike_carbs_g_per_h": [
-     30,
-     40
-    ],
-    "post_workout": "30–40 g białka + węglowodany w ciągu 1–2 h"
-   },
-   "flags": [
-    "deload"
-   ]
-  },
-  {
-   "date": "2026-12-28",
-   "weekday": "mon",
-   "week": 16,
-   "phase": "II",
-   "week_type": "test",
    "day_type": "rest",
    "bike": null,
    "gym": null,
@@ -5909,20 +5623,42 @@
     ],
     "post_workout": null
    },
-   "flags": [],
-   "week_notes": "Test zimowy – domyślnie Wattbike (FTP + LTHR). Jeśli sucho i > 0 °C, możesz zrobić test terenowy 30 min."
+   "flags": [
+    "deload"
+   ]
+  },
+  {
+   "date": "2026-12-28",
+   "weekday": "mon",
+   "week": 16,
+   "phase": "II",
+   "week_type": "build",
+   "day_type": "rest",
+   "bike": null,
+   "gym": null,
+   "nutrition": {
+    "energy": "deficit_500",
+    "label": "Dzień lekki: deficyt ok. 500 kcal",
+    "protein_g_per_kg": 1.8,
+    "on_bike_carbs_g_per_h": [
+     0,
+     0
+    ],
+    "post_workout": null
+   },
+   "flags": []
   },
   {
    "date": "2026-12-29",
    "weekday": "tue",
    "week": 16,
    "phase": "II",
-   "week_type": "test",
+   "week_type": "build",
    "day_type": "easy",
    "bike": {
     "workout_id": "Z2",
     "name": "Baza tlenowa Z2",
-    "duration_min": 60,
+    "duration_min": 75,
     "bike": "Checkpoint (zima, błotniki)",
     "fallback_workout_id": null
    },
@@ -5944,15 +5680,9 @@
    "weekday": "wed",
    "week": 16,
    "phase": "II",
-   "week_type": "test",
-   "day_type": "key",
-   "bike": {
-    "workout_id": "WATTBIKE_TEST",
-    "name": "Test 20 min na Wattbike (FTP + LTHR)",
-    "duration_min": 50,
-    "bike": "Wattbike / rowerek na siłowni",
-    "fallback_workout_id": null
-   },
+   "week_type": "build",
+   "day_type": "gym",
+   "bike": null,
    "gym": {
     "session": "A",
     "name": "Sesja A – Siła nóg (ciężka)",
@@ -6048,37 +5778,35 @@
     ]
    },
    "nutrition": {
-    "energy": "maintenance",
-    "label": "Dzień ciężki: bez deficytu, paliwo na trening",
+    "energy": "deficit_500",
+    "label": "Dzień lekki: deficyt ok. 500 kcal",
     "protein_g_per_kg": 1.8,
     "on_bike_carbs_g_per_h": [
      0,
      0
     ],
-    "post_workout": "30–40 g białka + węglowodany w ciągu 1–2 h"
+    "post_workout": null
    },
-   "flags": [
-    "test"
-   ]
+   "flags": []
   },
   {
    "date": "2026-12-31",
    "weekday": "thu",
    "week": 16,
    "phase": "II",
-   "week_type": "test",
-   "day_type": "easy",
+   "week_type": "build",
+   "day_type": "key",
    "bike": {
-    "workout_id": "Z2",
-    "name": "Baza tlenowa Z2",
-    "duration_min": 60,
+    "workout_id": "SS_2x15",
+    "name": "Sweet spot 2×15 min",
+    "duration_min": 65,
     "bike": "Checkpoint (zima, błotniki)",
-    "fallback_workout_id": null
+    "fallback_workout_id": "INDOOR_4x4"
    },
    "gym": null,
    "nutrition": {
-    "energy": "deficit_300",
-    "label": "Deficyt ok. 300 kcal",
+    "energy": "maintenance",
+    "label": "Dzień ciężki: bez deficytu, paliwo na trening",
     "protein_g_per_kg": 1.8,
     "on_bike_carbs_g_per_h": [
      30,
@@ -6093,7 +5821,7 @@
    "weekday": "fri",
    "week": 16,
    "phase": "II",
-   "week_type": "test",
+   "week_type": "build",
    "day_type": "gym",
    "bike": null,
    "gym": {
@@ -6224,12 +5952,12 @@
    "weekday": "sat",
    "week": 16,
    "phase": "II",
-   "week_type": "test",
+   "week_type": "build",
    "day_type": "long",
    "bike": {
     "workout_id": "LONG",
     "name": "Długa jazda",
-    "duration_min": 165,
+    "duration_min": 135,
     "bike": "Checkpoint (zima, błotniki)",
     "fallback_workout_id": null
    },
@@ -6251,25 +5979,19 @@
    "weekday": "sun",
    "week": 16,
    "phase": "II",
-   "week_type": "test",
-   "day_type": "easy",
-   "bike": {
-    "workout_id": "Z2",
-    "name": "Baza tlenowa Z2",
-    "duration_min": 105,
-    "bike": "Checkpoint (zima, błotniki)",
-    "fallback_workout_id": null
-   },
+   "week_type": "build",
+   "day_type": "rest",
+   "bike": null,
    "gym": null,
    "nutrition": {
-    "energy": "deficit_300",
-    "label": "Deficyt ok. 300 kcal",
+    "energy": "deficit_500",
+    "label": "Dzień lekki: deficyt ok. 500 kcal",
     "protein_g_per_kg": 1.8,
     "on_bike_carbs_g_per_h": [
-     60,
-     80
+     0,
+     0
     ],
-    "post_workout": "30–40 g białka + węglowodany w ciągu 1–2 h"
+    "post_workout": null
    },
    "flags": []
   },
@@ -6327,14 +6049,8 @@
    "week": 17,
    "phase": "II",
    "week_type": "build",
-   "day_type": "key",
-   "bike": {
-    "workout_id": "SS_3x15",
-    "name": "Sweet spot 3×15 min",
-    "duration_min": 85,
-    "bike": "Checkpoint (zima, błotniki)",
-    "fallback_workout_id": "INDOOR_4x4"
-   },
+   "day_type": "gym",
+   "bike": null,
    "gym": {
     "session": "A",
     "name": "Sesja A – Siła nóg (ciężka)",
@@ -6430,14 +6146,14 @@
     ]
    },
    "nutrition": {
-    "energy": "maintenance",
-    "label": "Dzień ciężki: bez deficytu, paliwo na trening",
+    "energy": "deficit_500",
+    "label": "Dzień lekki: deficyt ok. 500 kcal",
     "protein_g_per_kg": 1.8,
     "on_bike_carbs_g_per_h": [
-     30,
-     40
+     0,
+     0
     ],
-    "post_workout": "30–40 g białka + węglowodany w ciągu 1–2 h"
+    "post_workout": null
    },
    "flags": []
   },
@@ -6447,18 +6163,18 @@
    "week": 17,
    "phase": "II",
    "week_type": "build",
-   "day_type": "easy",
+   "day_type": "key",
    "bike": {
-    "workout_id": "Z2",
-    "name": "Baza tlenowa Z2",
-    "duration_min": 60,
+    "workout_id": "SS_3x12",
+    "name": "Sweet spot 3×12 min",
+    "duration_min": 76,
     "bike": "Checkpoint (zima, błotniki)",
-    "fallback_workout_id": null
+    "fallback_workout_id": "INDOOR_4x4"
    },
    "gym": null,
    "nutrition": {
-    "energy": "deficit_300",
-    "label": "Deficyt ok. 300 kcal",
+    "energy": "maintenance",
+    "label": "Dzień ciężki: bez deficytu, paliwo na trening",
     "protein_g_per_kg": 1.8,
     "on_bike_carbs_g_per_h": [
      30,
@@ -6609,7 +6325,7 @@
    "bike": {
     "workout_id": "LONG",
     "name": "Długa jazda",
-    "duration_min": 180,
+    "duration_min": 150,
     "bike": "Checkpoint (zima, błotniki)",
     "fallback_workout_id": null
    },
@@ -6632,24 +6348,18 @@
    "week": 17,
    "phase": "II",
    "week_type": "build",
-   "day_type": "easy",
-   "bike": {
-    "workout_id": "Z2",
-    "name": "Baza tlenowa Z2",
-    "duration_min": 105,
-    "bike": "Checkpoint (zima, błotniki)",
-    "fallback_workout_id": null
-   },
+   "day_type": "rest",
+   "bike": null,
    "gym": null,
    "nutrition": {
-    "energy": "deficit_300",
-    "label": "Deficyt ok. 300 kcal",
+    "energy": "deficit_500",
+    "label": "Dzień lekki: deficyt ok. 500 kcal",
     "protein_g_per_kg": 1.8,
     "on_bike_carbs_g_per_h": [
-     60,
-     80
+     0,
+     0
     ],
-    "post_workout": "30–40 g białka + węglowodany w ciągu 1–2 h"
+    "post_workout": null
    },
    "flags": []
   },
@@ -6707,14 +6417,8 @@
    "week": 18,
    "phase": "II",
    "week_type": "build",
-   "day_type": "key",
-   "bike": {
-    "workout_id": "SS_2x20",
-    "name": "Sweet spot 2×20 min",
-    "duration_min": 75,
-    "bike": "Checkpoint (zima, błotniki)",
-    "fallback_workout_id": "INDOOR_4x4"
-   },
+   "day_type": "gym",
+   "bike": null,
    "gym": {
     "session": "A",
     "name": "Sesja A – Siła nóg (ciężka)",
@@ -6810,14 +6514,14 @@
     ]
    },
    "nutrition": {
-    "energy": "maintenance",
-    "label": "Dzień ciężki: bez deficytu, paliwo na trening",
+    "energy": "deficit_500",
+    "label": "Dzień lekki: deficyt ok. 500 kcal",
     "protein_g_per_kg": 1.8,
     "on_bike_carbs_g_per_h": [
-     30,
-     40
+     0,
+     0
     ],
-    "post_workout": "30–40 g białka + węglowodany w ciągu 1–2 h"
+    "post_workout": null
    },
    "flags": []
   },
@@ -6827,18 +6531,18 @@
    "week": 18,
    "phase": "II",
    "week_type": "build",
-   "day_type": "easy",
+   "day_type": "key",
    "bike": {
-    "workout_id": "Z2",
-    "name": "Baza tlenowa Z2",
-    "duration_min": 60,
+    "workout_id": "SS_2x20",
+    "name": "Sweet spot 2×20 min",
+    "duration_min": 75,
     "bike": "Checkpoint (zima, błotniki)",
-    "fallback_workout_id": null
+    "fallback_workout_id": "INDOOR_4x4"
    },
    "gym": null,
    "nutrition": {
-    "energy": "deficit_300",
-    "label": "Deficyt ok. 300 kcal",
+    "energy": "maintenance",
+    "label": "Dzień ciężki: bez deficytu, paliwo na trening",
     "protein_g_per_kg": 1.8,
     "on_bike_carbs_g_per_h": [
      30,
@@ -6989,7 +6693,7 @@
    "bike": {
     "workout_id": "LONG",
     "name": "Długa jazda",
-    "duration_min": 180,
+    "duration_min": 150,
     "bike": "Checkpoint (zima, błotniki)",
     "fallback_workout_id": null
    },
@@ -7012,24 +6716,18 @@
    "week": 18,
    "phase": "II",
    "week_type": "build",
-   "day_type": "long",
-   "bike": {
-    "workout_id": "Z2",
-    "name": "Baza tlenowa Z2",
-    "duration_min": 120,
-    "bike": "Checkpoint (zima, błotniki)",
-    "fallback_workout_id": null
-   },
+   "day_type": "rest",
+   "bike": null,
    "gym": null,
    "nutrition": {
-    "energy": "maintenance",
-    "label": "Dzień ciężki: bez deficytu, paliwo na trening",
+    "energy": "deficit_500",
+    "label": "Dzień lekki: deficyt ok. 500 kcal",
     "protein_g_per_kg": 1.8,
     "on_bike_carbs_g_per_h": [
-     60,
-     80
+     0,
+     0
     ],
-    "post_workout": "30–40 g białka + węglowodany w ciągu 1–2 h"
+    "post_workout": null
    },
    "flags": []
   },
@@ -7091,14 +6789,8 @@
    "week": 19,
    "phase": "II",
    "week_type": "deload",
-   "day_type": "easy",
-   "bike": {
-    "workout_id": "DELOAD_WED",
-    "name": "Tydzień lżejszy: Z2 z pobudzeniem",
-    "duration_min": 60,
-    "bike": "Checkpoint (zima, błotniki)",
-    "fallback_workout_id": null
-   },
+   "day_type": "gym",
+   "bike": null,
    "gym": {
     "session": "A",
     "name": "Sesja A – Siła nóg (ciężka) – tydzień rozładowania",
@@ -7199,14 +6891,14 @@
     ]
    },
    "nutrition": {
-    "energy": "deficit_300",
-    "label": "Deficyt ok. 300 kcal",
+    "energy": "deficit_500",
+    "label": "Dzień lekki: deficyt ok. 500 kcal",
     "protein_g_per_kg": 1.8,
     "on_bike_carbs_g_per_h": [
-     30,
-     40
+     0,
+     0
     ],
-    "post_workout": "30–40 g białka + węglowodany w ciągu 1–2 h"
+    "post_workout": null
    },
    "flags": [
     "deload"
@@ -7218,18 +6910,24 @@
    "week": 19,
    "phase": "II",
    "week_type": "deload",
-   "day_type": "rest",
-   "bike": null,
+   "day_type": "easy",
+   "bike": {
+    "workout_id": "Z2",
+    "name": "Baza tlenowa Z2",
+    "duration_min": 60,
+    "bike": "Checkpoint (zima, błotniki)",
+    "fallback_workout_id": null
+   },
    "gym": null,
    "nutrition": {
-    "energy": "deficit_500",
-    "label": "Dzień lekki: deficyt ok. 500 kcal",
+    "energy": "deficit_300",
+    "label": "Deficyt ok. 300 kcal",
     "protein_g_per_kg": 1.8,
     "on_bike_carbs_g_per_h": [
-     0,
-     0
+     30,
+     40
     ],
-    "post_workout": null
+    "post_workout": "30–40 g białka + węglowodany w ciągu 1–2 h"
    },
    "flags": [
     "deload"
@@ -7412,24 +7110,18 @@
    "week": 19,
    "phase": "II",
    "week_type": "deload",
-   "day_type": "easy",
-   "bike": {
-    "workout_id": "Z2",
-    "name": "Baza tlenowa Z2",
-    "duration_min": 75,
-    "bike": "Checkpoint (zima, błotniki)",
-    "fallback_workout_id": null
-   },
+   "day_type": "rest",
+   "bike": null,
    "gym": null,
    "nutrition": {
-    "energy": "deficit_300",
-    "label": "Deficyt ok. 300 kcal",
+    "energy": "deficit_500",
+    "label": "Dzień lekki: deficyt ok. 500 kcal",
     "protein_g_per_kg": 1.8,
     "on_bike_carbs_g_per_h": [
-     30,
-     40
+     0,
+     0
     ],
-    "post_workout": "30–40 g białka + węglowodany w ciągu 1–2 h"
+    "post_workout": null
    },
    "flags": [
     "deload"
@@ -7489,14 +7181,8 @@
    "week": 20,
    "phase": "II",
    "week_type": "build",
-   "day_type": "key",
-   "bike": {
-    "workout_id": "SS_3x15",
-    "name": "Sweet spot 3×15 min",
-    "duration_min": 85,
-    "bike": "Checkpoint (zima, błotniki)",
-    "fallback_workout_id": "INDOOR_4x4"
-   },
+   "day_type": "gym",
+   "bike": null,
    "gym": {
     "session": "A",
     "name": "Sesja A – Siła nóg (ciężka)",
@@ -7592,14 +7278,14 @@
     ]
    },
    "nutrition": {
-    "energy": "maintenance",
-    "label": "Dzień ciężki: bez deficytu, paliwo na trening",
+    "energy": "deficit_500",
+    "label": "Dzień lekki: deficyt ok. 500 kcal",
     "protein_g_per_kg": 1.8,
     "on_bike_carbs_g_per_h": [
-     30,
-     40
+     0,
+     0
     ],
-    "post_workout": "30–40 g białka + węglowodany w ciągu 1–2 h"
+    "post_workout": null
    },
    "flags": []
   },
@@ -7609,18 +7295,18 @@
    "week": 20,
    "phase": "II",
    "week_type": "build",
-   "day_type": "easy",
+   "day_type": "key",
    "bike": {
-    "workout_id": "Z2",
-    "name": "Baza tlenowa Z2",
-    "duration_min": 60,
+    "workout_id": "SS_3x15",
+    "name": "Sweet spot 3×15 min",
+    "duration_min": 85,
     "bike": "Checkpoint (zima, błotniki)",
-    "fallback_workout_id": null
+    "fallback_workout_id": "INDOOR_4x4"
    },
    "gym": null,
    "nutrition": {
-    "energy": "deficit_300",
-    "label": "Deficyt ok. 300 kcal",
+    "energy": "maintenance",
+    "label": "Dzień ciężki: bez deficytu, paliwo na trening",
     "protein_g_per_kg": 1.8,
     "on_bike_carbs_g_per_h": [
      30,
@@ -7771,7 +7457,7 @@
    "bike": {
     "workout_id": "LONG",
     "name": "Długa jazda",
-    "duration_min": 195,
+    "duration_min": 150,
     "bike": "Checkpoint (zima, błotniki)",
     "fallback_workout_id": null
    },
@@ -7794,24 +7480,18 @@
    "week": 20,
    "phase": "II",
    "week_type": "build",
-   "day_type": "long",
-   "bike": {
-    "workout_id": "Z2",
-    "name": "Baza tlenowa Z2",
-    "duration_min": 120,
-    "bike": "Checkpoint (zima, błotniki)",
-    "fallback_workout_id": null
-   },
+   "day_type": "rest",
+   "bike": null,
    "gym": null,
    "nutrition": {
-    "energy": "maintenance",
-    "label": "Dzień ciężki: bez deficytu, paliwo na trening",
+    "energy": "deficit_500",
+    "label": "Dzień lekki: deficyt ok. 500 kcal",
     "protein_g_per_kg": 1.8,
     "on_bike_carbs_g_per_h": [
-     60,
-     80
+     0,
+     0
     ],
-    "post_workout": "30–40 g białka + węglowodany w ciągu 1–2 h"
+    "post_workout": null
    },
    "flags": []
   },
@@ -7869,14 +7549,8 @@
    "week": 21,
    "phase": "II",
    "week_type": "build",
-   "day_type": "key",
-   "bike": {
-    "workout_id": "SS_2x20",
-    "name": "Sweet spot 2×20 min",
-    "duration_min": 75,
-    "bike": "Checkpoint (zima, błotniki)",
-    "fallback_workout_id": "INDOOR_4x4"
-   },
+   "day_type": "gym",
+   "bike": null,
    "gym": {
     "session": "A",
     "name": "Sesja A – Siła nóg (ciężka)",
@@ -7972,14 +7646,14 @@
     ]
    },
    "nutrition": {
-    "energy": "maintenance",
-    "label": "Dzień ciężki: bez deficytu, paliwo na trening",
+    "energy": "deficit_500",
+    "label": "Dzień lekki: deficyt ok. 500 kcal",
     "protein_g_per_kg": 1.8,
     "on_bike_carbs_g_per_h": [
-     30,
-     40
+     0,
+     0
     ],
-    "post_workout": "30–40 g białka + węglowodany w ciągu 1–2 h"
+    "post_workout": null
    },
    "flags": []
   },
@@ -7989,18 +7663,18 @@
    "week": 21,
    "phase": "II",
    "week_type": "build",
-   "day_type": "easy",
+   "day_type": "key",
    "bike": {
-    "workout_id": "Z2",
-    "name": "Baza tlenowa Z2",
-    "duration_min": 60,
+    "workout_id": "SS_2x20",
+    "name": "Sweet spot 2×20 min",
+    "duration_min": 75,
     "bike": "Checkpoint (zima, błotniki)",
-    "fallback_workout_id": null
+    "fallback_workout_id": "INDOOR_4x4"
    },
    "gym": null,
    "nutrition": {
-    "energy": "deficit_300",
-    "label": "Deficyt ok. 300 kcal",
+    "energy": "maintenance",
+    "label": "Dzień ciężki: bez deficytu, paliwo na trening",
     "protein_g_per_kg": 1.8,
     "on_bike_carbs_g_per_h": [
      30,
@@ -8151,7 +7825,7 @@
    "bike": {
     "workout_id": "LONG",
     "name": "Długa jazda",
-    "duration_min": 195,
+    "duration_min": 150,
     "bike": "Checkpoint (zima, błotniki)",
     "fallback_workout_id": null
    },
@@ -8174,24 +7848,18 @@
    "week": 21,
    "phase": "II",
    "week_type": "build",
-   "day_type": "long",
-   "bike": {
-    "workout_id": "Z2",
-    "name": "Baza tlenowa Z2",
-    "duration_min": 120,
-    "bike": "Checkpoint (zima, błotniki)",
-    "fallback_workout_id": null
-   },
+   "day_type": "rest",
+   "bike": null,
    "gym": null,
    "nutrition": {
-    "energy": "maintenance",
-    "label": "Dzień ciężki: bez deficytu, paliwo na trening",
+    "energy": "deficit_500",
+    "label": "Dzień lekki: deficyt ok. 500 kcal",
     "protein_g_per_kg": 1.8,
     "on_bike_carbs_g_per_h": [
-     60,
-     80
+     0,
+     0
     ],
-    "post_workout": "30–40 g białka + węglowodany w ciągu 1–2 h"
+    "post_workout": null
    },
    "flags": []
   },
@@ -8249,14 +7917,8 @@
    "week": 22,
    "phase": "II",
    "week_type": "build",
-   "day_type": "key",
-   "bike": {
-    "workout_id": "SS_3x20",
-    "name": "Sweet spot 3×20 min",
-    "duration_min": 100,
-    "bike": "Checkpoint (zima, błotniki)",
-    "fallback_workout_id": "INDOOR_4x4"
-   },
+   "day_type": "gym",
+   "bike": null,
    "gym": {
     "session": "A",
     "name": "Sesja A – Siła nóg (ciężka)",
@@ -8352,14 +8014,14 @@
     ]
    },
    "nutrition": {
-    "energy": "maintenance",
-    "label": "Dzień ciężki: bez deficytu, paliwo na trening",
+    "energy": "deficit_500",
+    "label": "Dzień lekki: deficyt ok. 500 kcal",
     "protein_g_per_kg": 1.8,
     "on_bike_carbs_g_per_h": [
-     60,
-     80
+     0,
+     0
     ],
-    "post_workout": "30–40 g białka + węglowodany w ciągu 1–2 h"
+    "post_workout": null
    },
    "flags": []
   },
@@ -8369,22 +8031,22 @@
    "week": 22,
    "phase": "II",
    "week_type": "build",
-   "day_type": "easy",
+   "day_type": "key",
    "bike": {
-    "workout_id": "Z2",
-    "name": "Baza tlenowa Z2",
-    "duration_min": 60,
+    "workout_id": "SS_3x20",
+    "name": "Sweet spot 3×20 min",
+    "duration_min": 100,
     "bike": "Checkpoint (zima, błotniki)",
-    "fallback_workout_id": null
+    "fallback_workout_id": "INDOOR_4x4"
    },
    "gym": null,
    "nutrition": {
-    "energy": "deficit_300",
-    "label": "Deficyt ok. 300 kcal",
+    "energy": "maintenance",
+    "label": "Dzień ciężki: bez deficytu, paliwo na trening",
     "protein_g_per_kg": 1.8,
     "on_bike_carbs_g_per_h": [
-     30,
-     40
+     60,
+     80
     ],
     "post_workout": "30–40 g białka + węglowodany w ciągu 1–2 h"
    },
@@ -8531,7 +8193,7 @@
    "bike": {
     "workout_id": "LONG",
     "name": "Długa jazda",
-    "duration_min": 210,
+    "duration_min": 150,
     "bike": "Checkpoint (zima, błotniki)",
     "fallback_workout_id": null
    },
@@ -8554,24 +8216,18 @@
    "week": 22,
    "phase": "II",
    "week_type": "build",
-   "day_type": "long",
-   "bike": {
-    "workout_id": "Z2",
-    "name": "Baza tlenowa Z2",
-    "duration_min": 120,
-    "bike": "Checkpoint (zima, błotniki)",
-    "fallback_workout_id": null
-   },
+   "day_type": "rest",
+   "bike": null,
    "gym": null,
    "nutrition": {
-    "energy": "maintenance",
-    "label": "Dzień ciężki: bez deficytu, paliwo na trening",
+    "energy": "deficit_500",
+    "label": "Dzień lekki: deficyt ok. 500 kcal",
     "protein_g_per_kg": 1.8,
     "on_bike_carbs_g_per_h": [
-     60,
-     80
+     0,
+     0
     ],
-    "post_workout": "30–40 g białka + węglowodany w ciągu 1–2 h"
+    "post_workout": null
    },
    "flags": []
   },
@@ -8633,14 +8289,8 @@
    "week": 23,
    "phase": "II",
    "week_type": "deload",
-   "day_type": "easy",
-   "bike": {
-    "workout_id": "DELOAD_WED",
-    "name": "Tydzień lżejszy: Z2 z pobudzeniem",
-    "duration_min": 60,
-    "bike": "Checkpoint (zima, błotniki)",
-    "fallback_workout_id": null
-   },
+   "day_type": "gym",
+   "bike": null,
    "gym": {
     "session": "A",
     "name": "Sesja A – Siła nóg (ciężka) – tydzień rozładowania",
@@ -8741,14 +8391,14 @@
     ]
    },
    "nutrition": {
-    "energy": "deficit_300",
-    "label": "Deficyt ok. 300 kcal",
+    "energy": "deficit_500",
+    "label": "Dzień lekki: deficyt ok. 500 kcal",
     "protein_g_per_kg": 1.8,
     "on_bike_carbs_g_per_h": [
-     30,
-     40
+     0,
+     0
     ],
-    "post_workout": "30–40 g białka + węglowodany w ciągu 1–2 h"
+    "post_workout": null
    },
    "flags": [
     "deload"
@@ -8760,18 +8410,24 @@
    "week": 23,
    "phase": "II",
    "week_type": "deload",
-   "day_type": "rest",
-   "bike": null,
+   "day_type": "easy",
+   "bike": {
+    "workout_id": "Z2",
+    "name": "Baza tlenowa Z2",
+    "duration_min": 60,
+    "bike": "Checkpoint (zima, błotniki)",
+    "fallback_workout_id": null
+   },
    "gym": null,
    "nutrition": {
-    "energy": "deficit_500",
-    "label": "Dzień lekki: deficyt ok. 500 kcal",
+    "energy": "deficit_300",
+    "label": "Deficyt ok. 300 kcal",
     "protein_g_per_kg": 1.8,
     "on_bike_carbs_g_per_h": [
-     0,
-     0
+     30,
+     40
     ],
-    "post_workout": null
+    "post_workout": "30–40 g białka + węglowodany w ciągu 1–2 h"
    },
    "flags": [
     "deload"
@@ -8954,24 +8610,18 @@
    "week": 23,
    "phase": "II",
    "week_type": "deload",
-   "day_type": "easy",
-   "bike": {
-    "workout_id": "Z2",
-    "name": "Baza tlenowa Z2",
-    "duration_min": 75,
-    "bike": "Checkpoint (zima, błotniki)",
-    "fallback_workout_id": null
-   },
+   "day_type": "rest",
+   "bike": null,
    "gym": null,
    "nutrition": {
-    "energy": "deficit_300",
-    "label": "Deficyt ok. 300 kcal",
+    "energy": "deficit_500",
+    "label": "Dzień lekki: deficyt ok. 500 kcal",
     "protein_g_per_kg": 1.8,
     "on_bike_carbs_g_per_h": [
-     30,
-     40
+     0,
+     0
     ],
-    "post_workout": "30–40 g białka + węglowodany w ciągu 1–2 h"
+    "post_workout": null
    },
    "flags": [
     "deload"
@@ -8997,7 +8647,7 @@
     "post_workout": null
    },
    "flags": [],
-   "week_notes": "Tydzień sprawdzianów: we wtorek test Wattbike (świeże nogi po wolnym poniedziałku), w środę sprawdzian siłowy (przysiad i trap bar 1×5 RIR 1) + luźne Z2. Porównaj wyniki z celami na koniec lutego."
+   "week_notes": "Tydzień sprawdzianów: wtorek test FTP (świeże nogi po wolnym poniedziałku; przy gołoledzi Wattbike), środa sprawdzian siłowy (przysiad i trap bar 1×5 RIR 1). Kryteria wejścia do fazy III: ≥ 2,7 dnia jazdy/tydz. (śr. z 12 tyg.), FTP ≥ 200 W, masa ≤ 102 kg, kadencja na podjazdach ≥ 78 rpm, 3,5 h Z2 pod Łodzią zimą. Przy 2–3 spełnionych przesuń fazę III o 3–4 tygodnie i skróć IV."
   },
   {
    "date": "2027-02-23",
@@ -9007,11 +8657,11 @@
    "week_type": "test",
    "day_type": "key",
    "bike": {
-    "workout_id": "WATTBIKE_TEST",
-    "name": "Test 20 min na Wattbike (FTP + LTHR)",
-    "duration_min": 50,
-    "bike": "Wattbike / rowerek na siłowni",
-    "fallback_workout_id": null
+    "workout_id": "FTP_TEST",
+    "name": "Test FTP 20 min (moc)",
+    "duration_min": 65,
+    "bike": "Checkpoint (zima, błotniki)",
+    "fallback_workout_id": "WATTBIKE_TEST"
    },
    "gym": null,
    "nutrition": {
@@ -9019,8 +8669,8 @@
     "label": "Dzień ciężki: bez deficytu, paliwo na trening",
     "protein_g_per_kg": 1.8,
     "on_bike_carbs_g_per_h": [
-     0,
-     0
+     30,
+     40
     ],
     "post_workout": "30–40 g białka + węglowodany w ciągu 1–2 h"
    },
@@ -9034,14 +8684,8 @@
    "week": 24,
    "phase": "II",
    "week_type": "test",
-   "day_type": "easy",
-   "bike": {
-    "workout_id": "Z2",
-    "name": "Baza tlenowa Z2",
-    "duration_min": 45,
-    "bike": "Checkpoint (zima, błotniki)",
-    "fallback_workout_id": null
-   },
+   "day_type": "gym",
+   "bike": null,
    "gym": {
     "session": "A",
     "name": "Sesja A – Siła nóg (ciężka)",
@@ -9318,7 +8962,7 @@
    "bike": {
     "workout_id": "LONG",
     "name": "Długa jazda",
-    "duration_min": 180,
+    "duration_min": 150,
     "bike": "Checkpoint (zima, błotniki)",
     "fallback_workout_id": null
    },
@@ -9341,24 +8985,18 @@
    "week": 24,
    "phase": "II",
    "week_type": "test",
-   "day_type": "long",
-   "bike": {
-    "workout_id": "Z2",
-    "name": "Baza tlenowa Z2",
-    "duration_min": 120,
-    "bike": "Checkpoint (zima, błotniki)",
-    "fallback_workout_id": null
-   },
+   "day_type": "rest",
+   "bike": null,
    "gym": null,
    "nutrition": {
-    "energy": "maintenance",
-    "label": "Dzień ciężki: bez deficytu, paliwo na trening",
+    "energy": "deficit_500",
+    "label": "Dzień lekki: deficyt ok. 500 kcal",
     "protein_g_per_kg": 1.8,
     "on_bike_carbs_g_per_h": [
-     60,
-     80
+     0,
+     0
     ],
-    "post_workout": "30–40 g białka + węglowodany w ciągu 1–2 h"
+    "post_workout": null
    },
    "flags": []
   },

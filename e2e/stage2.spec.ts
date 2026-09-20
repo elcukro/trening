@@ -31,20 +31,21 @@ test('oznaczenie jazdy jako wykonanej z danymi', async ({ page }) => {
   await expect(page.getByText('132 bpm')).toBeVisible()
 })
 
-test('wynik testu LTHR: strefy od następnego dnia (R11)', async ({ page }) => {
-  await page.goto('/?today=2026-09-16')
+test('wynik testu FTP: strefy od następnego dnia (R11)', async ({ page }) => {
+  await page.goto('/?today=2026-09-26')
   await expect(page.getByRole('heading', { name: 'Wynik testu' })).toBeVisible()
-  await fillNumber(page, 'Śr. tętno z minut 10–30', '160')
-  await fillNumber(page, 'Śr. prędkość (km/h)', '31,2')
+  await fillNumber(page, 'Śr. tętno z ostatnich 10 min', '160')
+  await fillNumber(page, 'Śr. moc z 20 min (W)', '235')
   await expect(page.getByText('LTHR = 160 bpm')).toBeVisible()
+  await expect(page.getByText('FTP = 223 W')).toBeVisible()
   await page.getByRole('button', { name: 'Zapisz wynik testu' }).click()
   await expect(page.getByText(/LTHR 160 bpm/).first()).toBeVisible()
   // ten sam dzień – jeszcze RPE
   await expect(page.getByText(/Zrób test i wpisz LTHR/)).toBeVisible()
   // następny akcent – bpm
-  await page.goto('/?today=2026-09-23')
+  await page.goto('/?today=2026-10-01')
   await expect(page.getByText('147–154 bpm').first()).toBeVisible()
-  await page.goto('/postep?today=2026-09-23')
+  await page.goto('/postep?today=2026-10-01')
   await expect(page.getByText('LTHR bpm')).toBeVisible()
   await expect(page.getByText('160', { exact: true }).first()).toBeVisible()
 })
@@ -101,7 +102,7 @@ test('kalkulator podjazdu i konto bez konfiguracji', async ({ page }) => {
 })
 
 test('Wahoo: przycisk wysyłki na dniu z treningiem, sekcja w Integracjach', async ({ page }) => {
-  await page.goto('/?today=2026-09-16')
+  await page.goto('/?today=2026-10-01')
   await expect(page.getByRole('button', { name: /Wyślij na Wahoo/ })).toBeVisible()
   // dzień bez jazdy – bez przycisku
   await page.goto('/?today=2026-09-18')
@@ -111,7 +112,7 @@ test('Wahoo: przycisk wysyłki na dniu z treningiem, sekcja w Integracjach', asy
 })
 
 test('Etap 5: gołoledź podmienia trening, cofnięcie wraca do planu', async ({ page }) => {
-  await page.goto('/?today=2027-01-13')
+  await page.goto('/?today=2027-01-14')
   await expect(page.getByRole('heading', { name: 'Sweet spot 2×20 min' })).toBeVisible()
   await page.getByRole('button', { name: /Gołoledź/ }).click()
   await expect(page.getByRole('heading', { name: /4×4 min/ })).toBeVisible()

@@ -289,9 +289,10 @@ export function warningsFor(date: ISODate, window: CalendarDay[], ctx: RuleConte
       actions: [{ kind: 'move', date: yesterday.date, label: 'Przenieś akcent na dziś', payload: { to: date, what: 'bike' } }],
     })
   }
+  // przeniesienie tylko na dzień z lekką jazdą (Z2) – nigdy na dzień wolny ani na siłownię (R1: „nigdy w piątek/sobotę”)
   if (isKeyDay(day) && compareISO(date, ctx.today) < 0 && wasSkipped(ctx, date, 'bike')) {
     const thu = at(addDays(date, 1))
-    if (thu && !isKeyDay(thu)) {
+    if (thu && thu.bike && !isKeyDay(thu) && thu.day_type === 'easy') {
       out.push({ rule: 'R1', severity: 'info', message: 'Akcent nie został wykonany. Przenieś go na jutro (zamiast Z2) albo odpuść – nigdy dwóch akcentów dzień po dniu.', actions: [{ kind: 'move', date, label: 'Przenieś na jutro', payload: { to: thu.date, what: 'bike' } }] })
     }
   }

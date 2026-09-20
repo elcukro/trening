@@ -58,7 +58,7 @@ export interface SetLog extends SyncedRow {
 
 export interface TestResult extends SyncedRow {
   date: string
-  protocol: 'TEST_LTHR' | 'WATTBIKE_TEST'
+  protocol: 'TEST_LTHR' | 'WATTBIKE_TEST' | 'FTP_TEST'
   lthr_bpm: number | null
   avg_hr?: number | null
   avg_power_w?: number | null

@@ -1,5 +1,7 @@
 # 02 · Plan rowerowy
 
+> **Aktualizacja 20.09.2026:** tygodnie 1–24 (do 28.02.2027) zostały zastąpione planem „Faza 1 — baza przed Alpami” (3 jazdy + 2 siłownie, akcent w czwartek, test FTP 20 min). Opis i tabela: `docs/13-plan-z-20-09-2026.md` oraz `data/program.json → week_summary` (wersja `2026.09.20-1`). Tabele poniżej dla tygodni 1–24 są historyczne; fazy III–V bez zmian.
+
 Plan jest **zbudowany wstecz od wyjazdu** (wrzesień 2027) i dostosowany do: braku trenażera, płaskiej okolicy Łodzi, pełnego etatu, dwóch rowerów i redukcji masy. Wszystkie treningi są zdefiniowane maszynowo w `data/program.json` → `bike_workouts` (kroki z celami tętna jako ułamek LTHR – gotowe do eksportu na Wahoo).
 
 ## 1. Fazy

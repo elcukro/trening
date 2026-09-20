@@ -57,13 +57,12 @@ describe('R9 – 48 h ochrony (scenariusz 12)', () => {
 
 describe('R4 – gołoledź', () => {
   it('akcent zimą zamienia się na trening pod dachem', () => {
-    const w = week('2027-01-13', 0, 1)
-    const day = w.find((d) => d.date === '2027-01-13')!
+    const w = week('2027-01-14', 0, 1)
+    const day = w.find((d) => d.date === '2027-01-14')!
     expect(day.bike?.fallback_workout_id).toBe('INDOOR_4x4')
-    const [after] = applyOverrides([day], [ov('2027-01-13', 'indoor')], program)
+    const [after] = applyOverrides([day], [ov('2027-01-14', 'indoor')], program)
     expect(after!.bike?.workout_id).toBe('INDOOR_4x4')
     expect(after!.bike?.bike).toContain('Wattbike')
-    expect(after!.gym?.session).toBe('A')
   })
   it('długa jazda pod dachem to 90 min Z2', () => {
     const day = ALL.find((d) => d.date === '2027-01-16')!
@@ -73,8 +72,8 @@ describe('R4 – gołoledź', () => {
     expect(after!.bike?.duration_min).toBe(90)
   })
   it('pogoda z gołoledzią daje ostrzeżenie z akcją', () => {
-    const w = week('2027-01-13', 0, 1)
-    const warn = warningsFor('2027-01-13', w, rules({ today: '2027-01-13', weather: { icy: true } })).find((x) => x.rule === 'R4')!
+    const w = week('2027-01-14', 0, 1)
+    const warn = warningsFor('2027-01-14', w, rules({ today: '2027-01-14', weather: { icy: true } })).find((x) => x.rule === 'R4')!
     expect(warn.actions![0]!.kind).toBe('indoor')
   })
 })
@@ -100,15 +99,16 @@ describe('R5 – choroba', () => {
 
 describe('R6 – słaby check-in', () => {
   it('suma ocen ≤ 6 obniża akcent do Z2 60 i sesję o serię', () => {
-    const w = week('2026-09-16', 2, 2)
-    const checkins: CheckinLike[] = [{ date: '2026-09-16', sleep: 2, legs: 2, motivation: 2 }]
-    const warn = warningsFor('2026-09-16', w, rules({ today: '2026-09-16', checkins })).find((x) => x.rule === 'R6')!
+    const w = week('2026-10-01', 2, 2)
+    const checkins: CheckinLike[] = [{ date: '2026-10-01', sleep: 2, legs: 2, motivation: 2 }]
+    const warn = warningsFor('2026-10-01', w, rules({ today: '2026-10-01', checkins })).find((x) => x.rule === 'R6')!
     expect(warn.severity).toBe('warn')
     expect(warn.actions![0]!.kind).toBe('downgrade')
-    const [after] = applyOverrides([w.find((d) => d.date === '2026-09-16')!], [ov('2026-09-16', 'downgrade')], program)
+    const [after] = applyOverrides([w.find((d) => d.date === '2026-10-01')!], [ov('2026-10-01', 'downgrade')], program)
     expect(after!.bike?.workout_id).toBe('Z2')
     expect(after!.bike?.duration_min).toBe(60)
-    expect(rx(after, 'back_squat')).toMatchObject({ sets: 1, rir: 5 })
+    const [gym] = applyOverrides([w.find((d) => d.date === '2026-09-30')!], [ov('2026-09-30', 'downgrade')], program)
+    expect(rx(gym, 'back_squat')).toMatchObject({ sets: 2, rir: 4 }) // z 3×10 RIR 3
   })
   it('tętno spoczynkowe +7 przez dwa dni z rzędu', () => {
     const base: CheckinLike[] = [
@@ -135,18 +135,25 @@ describe('R6 – słaby check-in', () => {
 })
 
 describe('R1, R2, R3 – pominięte treningi', () => {
-  const w = week('2026-09-17', 3, 3)
-  it('pominięty środowy akcent proponuje czwartek', () => {
-    const logs: LogLike[] = [{ date: '2026-09-16', kind: 'bike', status: 'skipped' }]
-    const warn = warningsFor('2026-09-17', w, rules({ today: '2026-09-17', logs })).find((x) => x.rule === 'R1')!
+  // faza III: akcent w środę, Z2 w czwartek – przeniesienie ma sens
+  const w = week('2027-03-04', 3, 3)
+  it('pominięty środowy akcent proponuje czwartek (dzień z lekką jazdą)', () => {
+    const logs: LogLike[] = [{ date: '2027-03-03', kind: 'bike', status: 'skipped' }]
+    const warn = warningsFor('2027-03-04', w, rules({ today: '2027-03-04', logs })).find((x) => x.rule === 'R1')!
     expect(warn.message).toContain('nie został wykonany')
-    expect(warn.actions![0]).toMatchObject({ kind: 'move', date: '2026-09-16', payload: { to: '2026-09-17', what: 'bike' } })
+    expect(warn.actions![0]).toMatchObject({ kind: 'move', date: '2027-03-03', payload: { to: '2027-03-04', what: 'bike' } })
+  })
+  it('pominięty czwartkowy akcent (fazy I–II) przepada – nie ma propozycji na piątek', () => {
+    const w2 = week('2026-10-02', 2, 2)
+    const logs: LogLike[] = [{ date: '2026-10-01', kind: 'bike', status: 'skipped' }]
+    expect(warningsFor('2026-10-01', w2, rules({ today: '2026-10-02', logs })).filter((x) => x.rule === 'R1')).toHaveLength(0)
+    expect(warningsFor('2026-10-02', w2, rules({ today: '2026-10-02', logs })).filter((x) => x.rule === 'R1')).toHaveLength(0)
   })
   it('przeniesienie akcentu czyści środę i zajmuje czwartek', () => {
-    const moved = applyOverrides(w, [ov('2026-09-16', 'move', { to: '2026-09-17', what: 'bike' })], program)
-    expect(moved.find((d) => d.date === '2026-09-16')!.bike).toBeNull()
-    expect(moved.find((d) => d.date === '2026-09-17')!.bike?.workout_id).toBe('TEST_LTHR')
-    expect(moved.find((d) => d.date === '2026-09-16')!.day_type).toBe('gym')
+    const moved = applyOverrides(w, [ov('2027-03-03', 'move', { to: '2027-03-04', what: 'bike' })], program)
+    expect(moved.find((d) => d.date === '2027-03-03')!.bike).toBeNull()
+    expect(moved.find((d) => d.date === '2027-03-04')!.bike?.workout_id).toBe('THR_4x6')
+    expect(moved.find((d) => d.date === '2027-03-03')!.day_type).toBe('gym')
   })
   it('pominięta sobotnia długa jazda proponuje niedzielę', () => {
     const w2 = week('2026-09-20', 2, 1)
@@ -170,19 +177,19 @@ describe('R15 – zamiana dni', () => {
   it('zamienia rower i siłownię między dniami', () => {
     const w = week('2026-09-16', 2, 2)
     const swapped = applyOverrides(w, [ov('2026-09-14', 'swap', { swap_with: '2026-09-17' })], program)
-    expect(swapped.find((d) => d.date === '2026-09-14')!.bike?.workout_id).toBe('Z1_RECOVERY')
+    expect(swapped.find((d) => d.date === '2026-09-14')!.bike?.workout_id).toBe('Z2')
     expect(swapped.find((d) => d.date === '2026-09-17')!.bike).toBeNull()
   })
 })
 
 describe('R7, R12, R13', () => {
   it('dwa nieudane akcenty sugerują mniej serii', () => {
-    const w = week('2026-11-04', 14, 2) // R7 patrzy dwa tygodnie wstecz
+    const w = week('2026-11-06', 14, 2) // R7 patrzy dwa tygodnie wstecz; akcenty w czwartki, ostrzeżenie w dzień siłowni
     const logs: LogLike[] = [
-      { date: '2026-10-28', kind: 'bike', status: 'modified', rpe: 9 },
-      { date: '2026-11-04', kind: 'bike', status: 'skipped' },
+      { date: '2026-10-29', kind: 'bike', status: 'modified', rpe: 9 },
+      { date: '2026-11-05', kind: 'bike', status: 'skipped' },
     ]
-    const warn = warningsFor('2026-11-04', w, rules({ today: '2026-11-05', logs })).find((x) => x.rule === 'R7')
+    const warn = warningsFor('2026-11-06', w, rules({ today: '2026-11-06', logs })).find((x) => x.rule === 'R7')
     expect(warn?.message).toContain('o jedną serię mniej')
   })
   it('tydzień rozładowania i upał mają komunikaty', () => {
@@ -206,18 +213,18 @@ describe('pominięcie dnia', () => {
 
 describe('znaczniki wędrują z treningiem', () => {
   it('zamiana przenosi „test”, a „rozładowanie” zostaje przy tygodniu', () => {
-    const w = week('2026-09-16', 2, 2)
-    const swapped = applyOverrides(w, [ov('2026-09-15', 'swap', { swap_with: '2026-09-16' })], program)
-    expect(swapped.find((d) => d.date === '2026-09-15')!.flags).toContain('test')
-    expect(swapped.find((d) => d.date === '2026-09-16')!.flags).not.toContain('test')
+    const w = week('2026-09-24', 3, 3)
+    const swapped = applyOverrides(w, [ov('2026-09-22', 'swap', { swap_with: '2026-09-26' })], program)
+    expect(swapped.find((d) => d.date === '2026-09-22')!.flags).toContain('test')
+    expect(swapped.find((d) => d.date === '2026-09-26')!.flags).not.toContain('test')
     const deload = week('2026-10-21', 1, 1)
     const sw2 = applyOverrides(deload, [ov('2026-10-20', 'swap', { swap_with: '2026-10-21' })], program)
     expect(sw2.every((d) => d.flags.includes('deload'))).toBe(true)
   })
   it('przeniesienie jazdy zabiera jej znaczniki', () => {
-    const w = week('2026-09-17', 3, 2)
-    const moved = applyOverrides(w, [ov('2026-09-16', 'move', { to: '2026-09-17', what: 'bike' })], program)
-    expect(moved.find((d) => d.date === '2026-09-17')!.flags).toContain('test')
-    expect(moved.find((d) => d.date === '2026-09-16')!.flags).not.toContain('test')
+    const w = week('2026-09-25', 3, 2)
+    const moved = applyOverrides(w, [ov('2026-09-26', 'move', { to: '2026-09-25', what: 'bike' })], program)
+    expect(moved.find((d) => d.date === '2026-09-25')!.flags).toContain('test')
+    expect(moved.find((d) => d.date === '2026-09-26')!.flags).not.toContain('test')
   })
 })

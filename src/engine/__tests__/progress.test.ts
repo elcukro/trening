@@ -20,7 +20,7 @@ describe('R11 – skuteczne LTHR', () => {
     const ctx = { program, settings, tests: [{ date: '2026-09-16', lthr_bpm: 160 }] }
     const before = getDayPlan('2026-09-15', ctx)!
     expect(before.lthr).toBeNull()
-    const after = getDayPlan('2026-09-23', ctx)!
+    const after = getDayPlan('2026-10-01', ctx)!
     expect(after.lthr).toBe(160)
     expect(after.lthr_source).toBe('test')
     expect(after.workout!.steps.find((s) => s.zone === 'SS')!.bpm).toEqual([147, 154])
@@ -68,11 +68,11 @@ describe('objętość', () => {
     expect(v).toHaveLength(2)
     const w1 = v[1]!
     expect(w1.week).toBe(1)
-    expect(w1.planned_min).toBe(375)
-    expect(w1.done_min).toBe(125)
-    expect(w1.done_sessions).toBe(2)
-    expect(w1.compliance_pct).toBe(33)
-    expect(compliance(v, 1)).toBe(33)
+    expect(w1.planned_min).toBe(315) // wt 60 + czw 45 + sb 120 + nd 90; jazda 16.09 nie była w planie
+    expect(w1.done_min).toBe(65)
+    expect(w1.done_sessions).toBe(1)
+    expect(w1.compliance_pct).toBe(21)
+    expect(compliance(v, 1)).toBe(21)
     expect(compliance([], 4)).toBeNull()
   })
 })
@@ -86,10 +86,10 @@ describe('FTP i waty na ekranie', () => {
     expect(effectiveFtp('2027-03-01', 220, tests)).toMatchObject({ ftp: 248 })
   })
   it('plan dnia ma waty tylko przy włączonym mierniku', () => {
-    const off = getDayPlan('2026-09-23', { program, settings: { ...settings, lthr_bpm: 160 } })!
+    const off = getDayPlan('2026-10-01', { program, settings: { ...settings, lthr_bpm: 160 } })!
     expect(off.ftp).toBeNull()
     expect(off.workout!.steps[0]!.watts).toBeNull()
-    const on = getDayPlan('2026-09-23', { program, settings: { ...settings, lthr_bpm: 160, power_meter: true } })!
+    const on = getDayPlan('2026-10-01', { program, settings: { ...settings, lthr_bpm: 160, power_meter: true } })!
     expect(on.ftp).toBe(220)
     const ss = on.workout!.steps.find((s) => s.zone === 'SS')!
     expect(ss.watts).toEqual([194, 207])

@@ -9,7 +9,7 @@ import { useToast } from '@/components/Toast'
 import { num } from '@/lib/format'
 import { fmtDate } from '@/lib/dates'
 
-type Protocol = 'TEST_LTHR' | 'WATTBIKE_TEST'
+type Protocol = 'TEST_LTHR' | 'WATTBIKE_TEST' | 'FTP_TEST'
 
 /** Formularz wyniku testu (R11). Na Dziś pokazywany w dniu testu, w Postępie – zawsze. */
 export function TestResultForm({ date, protocol, program, previousLthr, onSaved }: { date: string; protocol: Protocol; program: Program; previousLthr: number | null; onSaved?: () => void }) {
@@ -18,8 +18,10 @@ export function TestResultForm({ date, protocol, program, previousLthr, onSaved 
   const n = (v: string) => (v.trim() === '' ? null : Number(v.replace(',', '.')))
   const avgHr = n(f.avg_hr)
   const avgPower = n(f.avg_power_w)
+  // TEST_LTHR: średnie tętno z minut 10–30; FTP_TEST: średnie z ostatnich 10 min; Wattbike: 0,97 × średnia z 20 min
   const lthr = avgHr ? (protocol === 'WATTBIKE_TEST' ? Math.round(avgHr * 0.97) : Math.round(avgHr)) : null
-  const ftp = protocol === 'WATTBIKE_TEST' && avgPower ? Math.round(avgPower * 0.95) : null
+  const ftp = protocol !== 'TEST_LTHR' && avgPower ? Math.round(avgPower * 0.95) : null
+  const hasPower = protocol !== 'TEST_LTHR'
   const zones = lthr ? computeZones(program.hr_zones_lthr_fraction, lthr) : null
 
   async function save() {
@@ -35,13 +37,14 @@ export function TestResultForm({ date, protocol, program, previousLthr, onSaved 
   return (
     <div>
       <div className="grid grid-cols-2 gap-2">
-        {input('avg_hr', protocol === 'WATTBIKE_TEST' ? 'Śr. tętno z 20 min' : 'Śr. tętno z minut 10–30', 'numeric', 'np. 160')}
-        {protocol === 'WATTBIKE_TEST' ? input('avg_power_w', 'Śr. moc z 20 min (W)', 'numeric', 'np. 235') : input('avg_speed_kmh', 'Śr. prędkość (km/h)', 'decimal', 'np. 31,5')}
+        {input('avg_hr', protocol === 'WATTBIKE_TEST' ? 'Śr. tętno z 20 min' : protocol === 'FTP_TEST' ? 'Śr. tętno z ostatnich 10 min' : 'Śr. tętno z minut 10–30', 'numeric', 'np. 160')}
+        {hasPower && input('avg_power_w', 'Śr. moc z 20 min (W)', 'numeric', 'np. 235')}
+        {protocol !== 'WATTBIKE_TEST' && input('avg_speed_kmh', 'Śr. prędkość (km/h)', 'decimal', 'np. 31,5')}
         {protocol === 'TEST_LTHR' && input('distance_km', 'Dystans 30 min (km)', 'decimal')}
-        {protocol === 'TEST_LTHR' && input('route', 'Trasa', 'text', 'ta sama co zawsze')}
+        {protocol !== 'WATTBIKE_TEST' && input('route', 'Trasa', 'text', 'ta sama co zawsze')}
         {input('bike', 'Rower', 'text', protocol === 'WATTBIKE_TEST' ? 'Wattbike' : 'Dogma')}
-        {protocol === 'TEST_LTHR' && input('temp_c', 'Temperatura (°C)', 'decimal')}
-        {protocol === 'TEST_LTHR' && input('wind', 'Wiatr', 'text', 'słaby / silny, kierunek')}
+        {protocol !== 'WATTBIKE_TEST' && input('temp_c', 'Temperatura (°C)', 'decimal')}
+        {protocol !== 'WATTBIKE_TEST' && input('wind', 'Wiatr', 'text', 'słaby / silny, kierunek')}
         <label className="col-span-2 block">
           <span className="text-xs text-slate-500">Notatka</span>
           <input className="mt-1 min-h-11 w-full rounded-lg border border-slate-300 bg-white px-3 dark:border-slate-600 dark:bg-slate-900" value={f.notes} onChange={(e) => setF((x) => ({ ...x, notes: e.target.value }))} />
@@ -67,7 +70,8 @@ export function TestResultForm({ date, protocol, program, previousLthr, onSaved 
           )}
         </div>
       )}
-      <Button onClick={save} disabled={!lthr} className="mt-3 w-full">
+      {protocol === 'FTP_TEST' && <p className="mt-2 text-xs text-slate-500">Bez miernika mocy wpisz samo tętno – zapisze się LTHR, FTP zostanie bez zmian.</p>}
+      <Button onClick={save} disabled={!lthr && !ftp} className="mt-3 w-full">
         Zapisz wynik testu
       </Button>
     </div>

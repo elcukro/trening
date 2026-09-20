@@ -72,7 +72,7 @@ export function ProgressPage() {
   }, [rides, sets])
 
   const [showTestForm, setShowTestForm] = useState(false)
-  const [protocol, setProtocol] = useState<'TEST_LTHR' | 'WATTBIKE_TEST'>('TEST_LTHR')
+  const [protocol, setProtocol] = useState<'TEST_LTHR' | 'WATTBIKE_TEST' | 'FTP_TEST'>('FTP_TEST')
   const [testDate, setTestDate] = useState(today)
 
   return (
@@ -134,7 +134,8 @@ export function ProgressPage() {
           <div className="mt-3 border-t border-slate-100 pt-3 dark:border-slate-700">
             <div className="mb-2 grid grid-cols-2 gap-2">
               <select className="min-h-11 rounded-lg border border-slate-300 bg-white px-2 dark:border-slate-600 dark:bg-slate-900" value={protocol} onChange={(e) => setProtocol(e.target.value as typeof protocol)}>
-                <option value="TEST_LTHR">Test terenowy 30 min</option>
+                <option value="FTP_TEST">Test FTP 20 min (moc)</option>
+                <option value="TEST_LTHR">Test terenowy 30 min (tętno)</option>
                 <option value="WATTBIKE_TEST">Wattbike 20 min</option>
               </select>
               <input type="date" className="min-h-11 rounded-lg border border-slate-300 bg-white px-2 dark:border-slate-600 dark:bg-slate-900" value={testDate} onChange={(e) => setTestDate(e.target.value)} />

@@ -1,5 +1,7 @@
 # 05 · Kalendarz sezonu
 
+> **Aktualizacja 20.09.2026:** tygodnie 1–24 (do 28.02.2027) zostały zastąpione planem „Faza 1 — baza przed Alpami” (3 jazdy + 2 siłownie, akcent w czwartek, test FTP 20 min). Opis i tabela: `docs/13-plan-z-20-09-2026.md` oraz `data/program.json → week_summary` (wersja `2026.09.20-1`). Tabele poniżej dla tygodni 1–24 są historyczne; fazy III–V bez zmian.
+
 Kalendarz jest **deterministyczny**: dla danej daty i ustawień zawsze daje ten sam plan dnia. Źródło prawdy: `data/reference_generator.py` → `data/calendar.json` (dla ustawień domyślnych: start programu **14.09.2026**, wyjazd **11.09.2027**).
 
 ## 1. Kluczowe daty

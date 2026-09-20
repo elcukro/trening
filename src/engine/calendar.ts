@@ -30,7 +30,7 @@ const DEFAULT_SLOT: Partial<Record<Weekday, [string, number]>> = {
 }
 
 function isKeyWorkout(id: string, key: boolean): boolean {
-  return key || /^(SS_|THR_|VO2_|TEST|WATTBIKE)/.test(id)
+  return key || /^(SS_|THR_|VO2_|TEST|WATTBIKE|FTP)/.test(id)
 }
 
 export function bikeSuggestion(phase: PhaseId, workoutId: string): string {
@@ -78,7 +78,7 @@ export function buildDay(ctx: EngineContext, lw: LayoutWeek, weekday: Weekday, d
   const gym = gymFor(program, lw.template, weekday, settings.gym_days)
   const key = isKeyWorkout(wid, w.key)
   let fallback: string | null = phase === 'II' && /^(SS_|THR_)/.test(wid) ? 'INDOOR_4x4' : null
-  if (wid === 'LONG' && phase === 'II') fallback = null
+  if (wid === 'FTP_TEST' && phase === 'II') fallback = 'WATTBIKE_TEST'
 
   let dayType: DayType
   if (wid === 'REST' || wid === 'TRAVEL_REST') dayType = gym ? 'gym' : 'rest'
@@ -86,7 +86,7 @@ export function buildDay(ctx: EngineContext, lw: LayoutWeek, weekday: Weekday, d
   else dayType = key ? 'key' : dur >= 120 ? 'long' : 'easy'
 
   const flags: DayFlag[] = []
-  if (/^(TEST|WATTBIKE)/.test(wid)) flags.push('test')
+  if (/^(TEST|WATTBIKE|FTP)/.test(wid)) flags.push('test')
   if (w.category === 'mountain') flags.push('mountain_weekend')
   if (wid === 'B2B_DAY' || wid === 'BLOCK_DAY1') flags.push('back_to_back')
   if (wk.type === 'deload') flags.push('deload')
@@ -171,7 +171,7 @@ export function seasonSummary(ctx: EngineContext, days = buildCalendar(ctx)): We
     }
     if (d.bike && d.bike.workout_id !== 'TRIP' && d.bike.workout_id !== 'TRAVEL_REST') w.bike_min += d.bike.duration_min
     if (d.gym) w.gym.push(`${d.gym.session}(${d.weekday})`)
-    if (d.weekday === 'wed' && d.bike) w.key.push(d.bike.workout_id)
+    if ((d.weekday === 'wed' || d.weekday === 'thu') && d.bike && d.day_type === 'key') w.key.push(d.bike.workout_id)
     if (d.weekday === 'sat' && d.bike) w.sat = `${d.bike.workout_id} ${d.bike.duration_min}′`
     if (d.weekday === 'sun' && d.bike) w.sun = `${d.bike.workout_id} ${d.bike.duration_min}′`
     if (d.weekday === 'fri' && d.bike && d.bike.workout_id === 'BLOCK_DAY1') w.key.push('BLOCK_DAY1(pt)')
