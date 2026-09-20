@@ -1,7 +1,7 @@
 import { TZDate } from '@date-fns/tz'
 import { format } from 'date-fns'
 import { pl } from 'date-fns/locale'
-import { toUtc, type ISODate } from '@/engine/dates'
+import { addDays, toUtc, type ISODate } from '@/engine/dates'
 
 export const TIMEZONE = 'Europe/Warsaw'
 
@@ -47,4 +47,28 @@ export function fmtDate(iso: ISODate): string {
 
 export function fmtRange(a: ISODate, b: ISODate): string {
   return `${format(asDate(a), 'd.MM')}–${format(asDate(b), 'd.MM')}`
+}
+
+/** „wrzesień 2026” */
+export function fmtMonth(iso: ISODate): string {
+  return format(asDate(iso), 'LLLL yyyy', { locale: pl })
+}
+
+/** Pierwszy dzień miesiąca (`YYYY-MM-01`) dla daty ISO. */
+export function monthStart(iso: ISODate): ISODate {
+  return `${iso.slice(0, 7)}-01`
+}
+
+/** Przesunięcie o `n` miesięcy – zwraca pierwszy dzień miesiąca. */
+export function addMonths(iso: ISODate, n: number): ISODate {
+  const y = Number(iso.slice(0, 4))
+  const m = Number(iso.slice(5, 7)) - 1 + n
+  const yy = y + Math.floor(m / 12)
+  const mm = ((m % 12) + 12) % 12
+  return `${yy}-${String(mm + 1).padStart(2, '0')}-01`
+}
+
+/** Ostatni dzień miesiąca. */
+export function monthEnd(iso: ISODate): ISODate {
+  return addDays(addMonths(iso, 1), -1)
 }

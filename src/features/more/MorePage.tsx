@@ -3,6 +3,7 @@ import { useEngine } from '@/app/useSettings'
 import { PageTitle } from '@/components/ui'
 
 const ITEMS = [
+  { to: '/kalendarz', icon: '🗓️', label: 'Kalendarz', sub: 'Miesiąc w siatce: jazdy, siłownia, znaczniki, wykonanie' },
   { to: '/wiecej/sezon', icon: '🗺️', label: 'Sezon', sub: 'Fazy, tabela 53 tygodni, wydarzenia' },
   { to: '/wiecej/sprzet', icon: '🔧', label: 'Sprzęt', sub: 'Zadania serwisowe, terminy, dziennik' },
   { to: '/wiecej/wyjazd', icon: '🎒', label: 'Wyjazd', sub: 'Checklista, torby, strategia na przełęcz' },
@@ -18,10 +19,10 @@ export function MorePage() {
   return (
     <div>
       <PageTitle sub={`Program ${engine.ctx.program.version}`}>Więcej</PageTitle>
-      <ul className="divide-y divide-slate-200 overflow-hidden rounded-2xl border border-slate-200 bg-white dark:divide-slate-700 dark:border-slate-700 dark:bg-slate-800">
+      <ul className="divide-y divide-slate-200 overflow-hidden rounded-2xl border border-slate-200 bg-white lg:grid lg:grid-cols-2 lg:gap-3 lg:divide-y-0 lg:border-0 lg:bg-transparent dark:divide-slate-700 dark:border-slate-700 dark:bg-slate-800 lg:dark:bg-transparent">
         {ITEMS.map((it) => (
-          <li key={it.to}>
-            <Link to={it.to} className="flex min-h-14 items-center gap-3 px-4 py-3">
+          <li key={it.to} className="lg:rounded-2xl lg:border lg:border-slate-200 lg:bg-white lg:shadow-sm lg:transition-colors lg:hover:bg-sky-50 lg:dark:border-slate-700 lg:dark:bg-slate-800 lg:dark:hover:bg-slate-700">
+            <Link to={it.to} className="flex min-h-14 items-center gap-3 px-4 py-3 lg:py-4">
               <span className="text-xl" aria-hidden>
                 {it.icon}
               </span>

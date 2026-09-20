@@ -1,8 +1,9 @@
-import { Component, Suspense, lazy, type ReactNode } from 'react'
+import { Component, Suspense, lazy, useMemo, type ReactNode } from 'react'
 import { BrowserRouter, NavLink, Navigate, Outlet, Route, Routes } from 'react-router'
 import { TodayPage } from '@/features/today/TodayPage'
 import { DayPage } from '@/features/today/DayPage'
 import { WeekPage } from '@/features/week/WeekPage'
+import { CalendarPage } from '@/features/calendar/CalendarPage'
 import { SeasonPage } from '@/features/season/SeasonPage'
 import { LibraryPage } from '@/features/library/LibraryPage'
 import { WorkoutPage } from '@/features/library/WorkoutPage'
@@ -17,15 +18,38 @@ import { GymModePage } from '@/features/gym/GymModePage'
 import { useSyncRunner } from '@/sync/useSync'
 import { ToastProvider } from '@/components/Toast'
 import { useWahooAutoPush } from '@/sync/useWahoo'
+import { useEngine } from '@/app/useSettings'
+import { todayISO } from '@/lib/dates'
+import { addDays, diffDays } from '@/engine/dates'
+import { days as daysLabel } from '@/lib/format'
+import { PHASE_COLOR, PHASE_SHORT } from '@/lib/labels'
+import type { PhaseId } from '@/engine/types'
 
 const ProgressPage = lazy(() => import('@/features/progress/ProgressPage').then((m) => ({ default: m.ProgressPage })))
 
+/** Dolny pasek na telefonie – bez zmian; Kalendarz jest dostępny przez „Więcej”. */
 const TABS = [
   { to: '/', label: 'Dziś', icon: '📅', end: true },
   { to: '/tydzien', label: 'Tydzień', icon: '🗓️' },
   { to: '/postep', label: 'Postęp', icon: '📈' },
   { to: '/biblioteka', label: 'Biblioteka', icon: '📚' },
   { to: '/wiecej', label: 'Więcej', icon: '⋯' },
+]
+
+/** Boczna nawigacja na komputerze ma własną listę – z Kalendarzem, bez „Więcej”. */
+const SIDE_MAIN = [
+  { to: '/', label: 'Dziś', icon: '📅', end: true },
+  { to: '/kalendarz', label: 'Kalendarz', icon: '🗓️' },
+  { to: '/tydzien', label: 'Tydzień', icon: '📋' },
+  { to: '/postep', label: 'Postęp', icon: '📈' },
+  { to: '/biblioteka', label: 'Biblioteka', icon: '📚' },
+]
+
+const SIDE_MORE = [
+  { to: '/wiecej/sezon', label: 'Sezon' },
+  { to: '/wiecej/sprzet', label: 'Sprzęt' },
+  { to: '/wiecej/wyjazd', label: 'Wyjazd' },
+  { to: '/wiecej/ustawienia', label: 'Ustawienia' },
 ]
 
 function BottomNav() {
@@ -53,25 +77,63 @@ function BottomNav() {
   )
 }
 
+/** Pasek sezonu: fazy w kolorach, znacznik „dziś” i odliczanie – ten sam obraz co na ekranie Sezon. */
+function SeasonStrip() {
+  const engine = useEngine()
+  const today = todayISO()
+  const { program_start, trip_start } = engine.ctx.settings
+  const phases = useMemo(() => {
+    const out: { id: PhaseId; count: number }[] = []
+    for (const w of engine.weeks) {
+      const last = out.at(-1)
+      if (last && last.id === w.phase) last.count++
+      else out.push({ id: w.phase, count: 1 })
+    }
+    return out
+  }, [engine.weeks])
+  const total = engine.weeks.length || 1
+  // diffDays(a, b) = a − b
+  const span = Math.max(1, diffDays(trip_start, program_start))
+  const elapsed = Math.min(Math.max(diffDays(today, program_start), 0), span)
+  const left = diffDays(trip_start, today)
+  const currentPhase = engine.weeks.find((w) => today >= w.monday && today <= addDays(w.monday, 6))
+  return (
+    <div className="mt-auto rounded-xl border border-slate-200 bg-slate-50 p-3 dark:border-slate-700 dark:bg-slate-800/60">
+      <div className="flex items-baseline justify-between">
+        <span className="text-xs font-semibold uppercase tracking-wide text-slate-500">Alpy 2027</span>
+        <span className="text-xs tabular-nums text-slate-500">{Math.round((elapsed / span) * 100)} %</span>
+      </div>
+      <p className="mt-0.5 text-sm font-semibold">{left > 0 ? `za ${daysLabel(left)}` : left === 0 ? 'Dziś wyjazd!' : 'Wyjazd trwa'}</p>
+      <div className="relative mt-2 flex h-2 w-full overflow-hidden rounded-full">
+        {phases.map((p, i) => (
+          <div key={`${p.id}-${i}`} className={PHASE_COLOR[p.id]} style={{ width: `${(p.count / total) * 100}%` }} title={PHASE_SHORT[p.id]} />
+        ))}
+        <span className="absolute top-0 h-2 w-0.5 bg-slate-900 dark:bg-white" style={{ left: `${(elapsed / span) * 100}%` }} aria-hidden />
+      </div>
+      {currentPhase && <p className="mt-1.5 text-[11px] text-slate-500">{PHASE_SHORT[currentPhase.phase]} · tydzień {currentPhase.week}</p>}
+    </div>
+  )
+}
+
 /** Boczna nawigacja na komputerze (≥ 1024 px); na telefonie zostaje dolny pasek. */
 function SideNav() {
   return (
-    <nav className="sticky top-0 hidden h-dvh w-56 shrink-0 flex-col border-r border-slate-200 bg-white/80 px-3 py-6 backdrop-blur lg:flex dark:border-slate-700 dark:bg-slate-900/80" aria-label="Nawigacja główna">
+    <nav className="sticky top-0 hidden h-dvh w-64 shrink-0 flex-col border-r border-slate-200 bg-white px-4 py-6 lg:flex dark:border-slate-700 dark:bg-slate-900" aria-label="Nawigacja główna">
       <div className="mb-6 px-3">
-        <div className="text-lg font-bold tracking-tight">Trening</div>
+        <div className="text-xl font-bold tracking-tight">Trening</div>
         <div className="text-xs text-slate-500">Alpy 2027</div>
       </div>
       <ul className="space-y-1">
-        {TABS.map((t) => (
+        {SIDE_MAIN.map((t) => (
           <li key={t.to}>
             <NavLink
               to={t.to}
               end={t.end}
               className={({ isActive }) =>
-                `flex min-h-11 items-center gap-3 rounded-xl px-3 text-sm font-medium ${isActive ? 'bg-sky-100 text-sky-800 dark:bg-sky-900/40 dark:text-sky-200' : 'text-slate-600 hover:bg-slate-100 dark:text-slate-300 dark:hover:bg-slate-800'}`
+                `flex min-h-11 items-center gap-3 rounded-xl px-3 text-[15px] font-medium transition-colors ${isActive ? 'bg-sky-600 text-white shadow-sm' : 'text-slate-700 hover:bg-slate-100 dark:text-slate-200 dark:hover:bg-slate-800'}`
               }
             >
-              <span className="text-lg" aria-hidden>
+              <span className="w-6 text-center text-lg" aria-hidden>
                 {t.icon}
               </span>
               {t.label}
@@ -79,20 +141,22 @@ function SideNav() {
           </li>
         ))}
       </ul>
-      <ul className="mt-6 space-y-1 border-t border-slate-200 pt-4 text-sm dark:border-slate-700">
-        {[
-          { to: '/wiecej/sezon', label: 'Sezon' },
-          { to: '/wiecej/sprzet', label: 'Sprzęt' },
-          { to: '/wiecej/wyjazd', label: 'Wyjazd' },
-          { to: '/wiecej/ustawienia', label: 'Ustawienia' },
-        ].map((t) => (
+      <p className="mt-6 mb-1 px-3 text-[11px] font-semibold uppercase tracking-wide text-slate-400">Więcej</p>
+      <ul className="space-y-0.5 text-sm">
+        {SIDE_MORE.map((t) => (
           <li key={t.to}>
-            <NavLink to={t.to} className={({ isActive }) => `flex min-h-10 items-center rounded-xl px-3 ${isActive ? 'font-semibold text-sky-700 dark:text-sky-300' : 'text-slate-500 hover:text-slate-800 dark:hover:text-slate-200'}`}>
+            <NavLink
+              to={t.to}
+              className={({ isActive }) =>
+                `flex min-h-10 items-center rounded-xl px-3 transition-colors ${isActive ? 'bg-slate-100 font-semibold text-slate-900 dark:bg-slate-800 dark:text-white' : 'text-slate-600 hover:bg-slate-100 hover:text-slate-900 dark:text-slate-300 dark:hover:bg-slate-800 dark:hover:text-white'}`
+              }
+            >
               {t.label}
             </NavLink>
           </li>
         ))}
       </ul>
+      <SeasonStrip />
     </nav>
   )
 }
@@ -103,8 +167,8 @@ function Layout() {
   return (
     <div className="flex w-full flex-1">
       <SideNav />
-      <div className="safe-top mx-auto w-full max-w-lg flex-1 lg:max-w-5xl">
-        <main className="pb-nav px-4 pt-3 lg:px-8 lg:pt-6 lg:pb-10">
+      <div className="safe-top mx-auto w-full max-w-lg flex-1 lg:max-w-[1600px]">
+        <main className="pb-nav px-4 pt-3 lg:px-10 lg:pt-8 lg:pb-12">
           <Outlet />
         </main>
         <BottomNav />
@@ -139,26 +203,28 @@ export function App() {
     <ErrorBoundary>
       <ToastProvider>
         <BrowserRouter>
-        <Routes>
-          <Route element={<Layout />}>
-            <Route index element={<TodayPage />} />
-            <Route path="dzien/:date" element={<DayPage />} />
-            <Route path="tydzien" element={<WeekPage />} />
-            <Route path="tydzien/:date" element={<WeekPage />} />
-            <Route path="postep" element={<Suspense fallback={<p className="py-8 text-center text-sm text-slate-500">Ładowanie…</p>}><ProgressPage /></Suspense>} />
-            <Route path="biblioteka" element={<LibraryPage />} />
-            <Route path="biblioteka/trening/:id" element={<WorkoutPage />} />
-            <Route path="biblioteka/cwiczenie/:id" element={<ExercisePage />} />
-            <Route path="biblioteka/strefy" element={<ZonesPage />} />
-            <Route path="biblioteka/zasady" element={<RulesPage />} />
-            <Route path="wiecej" element={<MorePage />} />
-            <Route path="wiecej/sezon" element={<SeasonPage />} />
-            <Route path="wiecej/sprzet" element={<GearPage />} />
-            <Route path="wiecej/wyjazd" element={<TripPage />} />
-            <Route path="wiecej/ustawienia" element={<SettingsPage />} />
-            <Route path="*" element={<Navigate to="/" replace />} />
-          </Route>
-          <Route path="silownia/:date" element={<GymModePage />} />
+          <Routes>
+            <Route element={<Layout />}>
+              <Route index element={<TodayPage />} />
+              <Route path="dzien/:date" element={<DayPage />} />
+              <Route path="tydzien" element={<WeekPage />} />
+              <Route path="tydzien/:date" element={<WeekPage />} />
+              <Route path="kalendarz" element={<CalendarPage />} />
+              <Route path="kalendarz/:month" element={<CalendarPage />} />
+              <Route path="postep" element={<Suspense fallback={<p className="py-8 text-center text-sm text-slate-500">Ładowanie…</p>}><ProgressPage /></Suspense>} />
+              <Route path="biblioteka" element={<LibraryPage />} />
+              <Route path="biblioteka/trening/:id" element={<WorkoutPage />} />
+              <Route path="biblioteka/cwiczenie/:id" element={<ExercisePage />} />
+              <Route path="biblioteka/strefy" element={<ZonesPage />} />
+              <Route path="biblioteka/zasady" element={<RulesPage />} />
+              <Route path="wiecej" element={<MorePage />} />
+              <Route path="wiecej/sezon" element={<SeasonPage />} />
+              <Route path="wiecej/sprzet" element={<GearPage />} />
+              <Route path="wiecej/wyjazd" element={<TripPage />} />
+              <Route path="wiecej/ustawienia" element={<SettingsPage />} />
+              <Route path="*" element={<Navigate to="/" replace />} />
+            </Route>
+            <Route path="silownia/:date" element={<GymModePage />} />
           </Routes>
         </BrowserRouter>
       </ToastProvider>

@@ -79,6 +79,9 @@ export function ProgressPage() {
     <div className="space-y-3">
       <PageTitle sub="Masa, testy, objętość, siła">Postęp</PageTitle>
 
+      {/* na komputerze dwie kolumny: masa + testy + kalkulator | objętość + siła */}
+      <div className="space-y-3 lg:grid lg:grid-cols-2 lg:items-start lg:gap-6 lg:space-y-0">
+      <div className="space-y-3 lg:space-y-4">
       <Card>
         <CardTitle icon="⚖️" right={<span className="text-sm tabular-nums">{num(avg7)} kg</span>}>
           Masa
@@ -158,7 +161,9 @@ export function ProgressPage() {
       </Card>
 
       <ClimbCalculator riderKg={avg7} watts={lastFtp} bikeKg={s.bike_and_kit_kg} targetKg={s.body_weight_target_kg} targetW={s.ftp_w_goal} />
+      </div>
 
+      <div className="space-y-3 lg:space-y-4">
       <Card>
         <CardTitle icon="⏱️" right={comp != null ? <span className="text-sm">zgodność {comp} %</span> : undefined}>
           Objętość (8 tygodni)
@@ -230,6 +235,8 @@ export function ProgressPage() {
           </ul>
         )}
       </Card>
+      </div>
+      </div>
     </div>
   )
 }

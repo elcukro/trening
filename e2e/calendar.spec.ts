@@ -1,0 +1,66 @@
+import { expect, test } from '@playwright/test'
+
+test.describe('kalendarz na telefonie', () => {
+  test('siatka miesiąca, nawigacja, dzień otwiera ekran dnia', async ({ page }) => {
+    await page.goto('/kalendarz?today=2026-09-16')
+    await expect(page.getByRole('heading', { name: 'wrzesień 2026' })).toBeVisible()
+    // nagłówek dni tygodnia od poniedziałku
+    await expect(page.getByText('Pn', { exact: true })).toBeVisible()
+    // podsumowanie miesiąca (jazdy, godziny, siłownia)
+    await expect(page.getByText(/jazd · .*h · siłownia/)).toBeVisible()
+    // dni przed startem planu są wyszarzone, nie są linkami
+    await expect(page.getByLabel('2026-09-01 – poza planem')).toBeVisible()
+    await page.screenshot({ path: 'test-results/mobile-calendar.png', fullPage: true })
+    // miesiąc naprzód i z powrotem do dziś
+    await page.getByRole('button', { name: 'Następny miesiąc' }).click()
+    await expect(page.getByRole('heading', { name: 'październik 2026' })).toBeVisible()
+    await expect(page).toHaveURL(/\/kalendarz\/2026-10/)
+    await page.getByRole('button', { name: 'Dziś' }).click()
+    await expect(page.getByRole('heading', { name: 'wrzesień 2026' })).toBeVisible()
+    // kliknięcie dnia otwiera ekran dnia z planem
+    await page.getByRole('link', { name: 'środa 2026-09-16' }).click()
+    await expect(page).toHaveURL(/\/dzien\/2026-09-16/)
+    await expect(page.getByText('Test progowy 30 min (LTHR)')).toBeVisible()
+  })
+
+  test('status wykonania z logów jest widoczny w komórce', async ({ page }) => {
+    await page.goto('/?today=2026-09-15')
+    await page.getByRole('button', { name: '✓ Wykonane' }).click()
+    await page.getByRole('button', { name: 'Zapisz' }).click()
+    await expect(page.getByText('Wykonane', { exact: true })).toBeVisible()
+    await page.goto('/kalendarz?today=2026-09-15')
+    const cell = page.getByRole('link', { name: 'wtorek 2026-09-15' })
+    // kropka istnieje w wariancie na komputer (ukryta) i na telefon – liczymy tylko widoczną
+    await expect(cell.locator('[aria-label="wykonane"]:visible')).toHaveCount(1)
+  })
+
+  test('Kalendarz jest w „Więcej”', async ({ page }) => {
+    await page.goto('/wiecej')
+    await page.getByRole('link', { name: /Kalendarz/ }).click()
+    await expect(page).toHaveURL(/\/kalendarz/)
+  })
+})
+
+test.describe('kalendarz na komputerze', () => {
+  test.use({ viewport: { width: 1440, height: 900 }, isMobile: false, hasTouch: false })
+
+  test('nazwy treningów, znaczniki i pasek tygodnia w siatce', async ({ page }) => {
+    await page.goto('/kalendarz/2027-05?today=2027-05-12')
+    await expect(page.getByRole('heading', { name: 'maj 2027' })).toBeVisible()
+    // pełne nazwy dni tygodnia na szerokim ekranie
+    await expect(page.getByText('poniedziałek', { exact: true })).toBeVisible()
+    // weekend w górach: nazwa jazdy i znacznik tekstem
+    await expect(page.getByText('Góry', { exact: true }).first()).toBeVisible()
+    await expect(page.getByText('Sesja C', { exact: true }).first()).toBeVisible()
+    // pasek tygodnia prowadzi do widoku tygodnia
+    const rail = page.getByRole('link', { name: /^Tydzień 35 · / })
+    await expect(rail).toBeVisible()
+    // siedem kolumn dni w jednym wierszu
+    const mon = await page.getByText('poniedziałek', { exact: true }).boundingBox()
+    const sun = await page.getByText('niedziela', { exact: true }).boundingBox()
+    expect(mon && sun && Math.abs(mon.y - sun.y) < 5 && sun.x > mon.x + 700).toBe(true)
+    await page.screenshot({ path: 'test-results/desktop-calendar.png', fullPage: true })
+    await rail.click()
+    await expect(page.getByRole('heading', { name: 'Tydzień 35' })).toBeVisible()
+  })
+})
