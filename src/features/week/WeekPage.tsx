@@ -12,6 +12,8 @@ import { DAY_TYPE_COLOR, FLAG_COLOR, FLAG_LABEL, PHASE_COLOR, WEEKDAY_SHORT, WEE
 import { Badge, Button, Card, Empty, Inset } from '@/components/ui'
 import { useToast } from '@/components/Toast'
 import { StatusBadge } from '@/features/today/BikeLogCard'
+import { useDailyLoad } from '@/app/useLoad'
+import { plannedTss } from '@/engine/pmc'
 
 /*
  * Układ: telefon i 1024–1279 px – lista dni (wiersz: data | treść | zamiana);
@@ -23,7 +25,7 @@ export function WeekPage() {
   const navigate = useNavigate()
   const today = todayISO()
   const monday = date && isValidISODate(date) ? mondayOf(date) : mondayOf(today)
-  const { days, window } = useWeekView(monday)
+  const { engine, days, window } = useWeekView(monday)
   const toast = useToast()
   const [swapFrom, setSwapFrom] = useState<string | null>(null)
   const [msg, setMsg] = useState<string | null>(null)
@@ -32,6 +34,9 @@ export function WeekPage() {
   const overrides = useLiveQuery(async () => (await db.plan_overrides.where('date').between(monday, addDays(monday, 6), true, true).toArray()).filter((o) => !o.deleted_at), [monday], [] as PlanOverrideRow[])
 
   const first = days[0]
+  const { actual: dailyTss } = useDailyLoad(60)
+  const planTss = days.reduce((a, d) => a + plannedTss(d, engine.ctx.program), 0)
+  const doneTss = days.reduce((a, d) => a + (dailyTss.get(d.date) ?? 0), 0)
   const planMin = days.reduce((a, d) => a + (d.bike && d.bike.workout_id !== 'TRIP' && d.bike.workout_id !== 'TRAVEL_REST' ? d.bike.duration_min : 0), 0)
   const doneMin = logs.filter((l) => l.kind === 'bike' && (l.status === 'done' || l.status === 'modified')).reduce((a, l) => a + (l.duration_min ?? 0), 0)
   const gymCount = days.filter((d) => d.gym).length
@@ -77,7 +82,7 @@ export function WeekPage() {
           <Badge color={PHASE_COLOR[first.phase]}>{first.phase_name.replace(/ – .*/, '')}</Badge>
           <span className="text-slate-600 dark:text-slate-300">{WEEK_TYPE_LABEL[first.week_type]}</span>
           <span className="ml-auto text-slate-600 tabular-nums dark:text-slate-300">
-            {hours(doneMin)} z {hours(planMin)} · siłownia {gymDone}/{gymCount}
+            {hours(doneMin)} z {hours(planMin)} · TSS {doneTss}/{planTss} · siłownia {gymDone}/{gymCount}
           </span>
         </div>
       )}

@@ -26,7 +26,7 @@ test('Tydzień: nawigacja i suma godzin', async ({ page }) => {
   await page.goto('/tydzien/2026-09-16?today=2026-09-16')
   await expect(page.getByRole('heading', { name: 'Tydzień 1' })).toBeVisible()
   await expect(page.getByText(/5,3\s*h/)).toBeVisible()
-  await expect(page.getByText(/siłownia 0\/2/)).toBeVisible()
+  await expect(page.getByText(/TSS 0\/\d+ · siłownia 0\/2/)).toBeVisible()
   await page.getByRole('button', { name: '›' }).click()
   await expect(page.getByRole('heading', { name: 'Tydzień 2' })).toBeVisible()
   await page.screenshot({ path: 'test-results/week.png', fullPage: true })

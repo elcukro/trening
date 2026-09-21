@@ -72,10 +72,10 @@ Kolejność wynika z zależności: wszystko, co „analizuje”, potrzebuje stru
 - [ ] Prognoza FTP z trendu – po ≥ 2 testach/propozycjach.
 
 ### 4. Obciążenie i forma (PMC)
-- [ ] CTL/ATL/TSB z TSS (pkt 1) – dni bez danych: TSS planowany × compliance; przyszłość: TSS planowany z silnika.
-- [ ] Wykres w Postępie do końca programu z zaznaczonymi rozładowaniami; ostrzeżenie R7 z ATL/CTL
-      (ramp rate > 7 pkt/tydz. → propozycja skrócenia).
-- [ ] Widok tygodnia: planowany TSS tygodnia vs zrobiony.
+- [x] CTL/ATL/TSB z TSS (pkt 1) – `src/engine/pmc.ts`; dzień „wykonany” bez Stravy = RPE × czas, bez RPE = TSS planowany; przyszłość: TSS planowany z kroków (kwadrat środka strefy mocy × 100 na godzinę).
+- [x] Postęp → „Forma i zmęczenie”: 8 tygodni wstecz + 12 w przód (rozbieg 42 dni), rozładowania jako pasy, linia „dziś”, szczyt formy wg planu; ostrzeżenie R7, gdy CTL rośnie > 7 pkt/tydz.
+- [x] Widok tygodnia: „TSS zrobione/plan” w podsumowaniu.
+- [ ] Wykres do końca programu (na razie 12 tygodni – dłuższy horyzont po pierwszych tygodniach danych).
 
 ### 5. Przegląd tygodnia (niedziela wieczorem) i wyróżnienie treningu kluczowego
 - [ ] `push-send`: rodzaj `weekly` (niedziela 19:00) z treścią: godziny plan/wykonanie, TSS, compliance, masa (trend),
@@ -118,6 +118,8 @@ Kolejność wynika z zależności: wszystko, co „analizuje”, potrzebuje stru
 
 - **21.09.2026** – pkt 3 wdrożony: `src/engine/power.ts` (suggestFtp, powerCurve, bestEffort/lthrFromRide, ftpSeries) + testy,
   `FtpSuggestionCard`, `PowerCard`, strefy z watami. Zacznie działać od pierwszej jazdy z miernikiem (`device_watts`).
+
+- **21.09.2026** – pkt 4 wdrożony: `src/engine/pmc.ts` (+ testy), hook `src/app/useLoad.ts` (faktyczny TSS per dzień), `PmcCard`, TSS w podsumowaniu tygodnia.
 
 ## Pracochłonność (orientacyjnie)
 | # | Zakres | Nakład |
