@@ -92,29 +92,40 @@ export async function pushStatus(): Promise<PushStatus> {
   return base
 }
 
-/** Zapisuje to urządzenie do powiadomień. Musi być wywołane z gestu użytkownika. */
-export async function subscribePush(label?: string): Promise<void> {
-  if (!pushSupported()) throw new Error('Ta przeglądarka nie obsługuje powiadomień.')
-  if (!isStandalone() && /iphone|ipad|ipod/i.test(navigator.userAgent)) {
-    throw new Error('Na iPhonie dodaj aplikację do ekranu początkowego, a potem włącz powiadomienia z jej poziomu.')
-  }
-  const permission = await Notification.requestPermission()
-  if (permission !== 'granted') throw new Error('Nie wyraziłeś zgody na powiadomienia.')
+const OPTOUT_KEY = 'push_optout'
 
-  const { public_key } = await call<{ public_key: string }>('public_key')
-  const reg = await registration()
-  const existing = await reg.pushManager.getSubscription()
-  const sub = existing ?? (await reg.pushManager.subscribe({ userVisibleOnly: true, applicationServerKey: b64ToBytes(public_key) }))
+function optedOut(): boolean {
+  try {
+    return localStorage.getItem(OPTOUT_KEY) === '1'
+  } catch {
+    return false
+  }
+}
+
+function setOptOut(v: boolean): void {
+  try {
+    if (v) localStorage.setItem(OPTOUT_KEY, '1')
+    else localStorage.removeItem(OPTOUT_KEY)
+  } catch {
+    /* prywatne okno */
+  }
+}
+
+async function subscriptionId(endpoint: string): Promise<string> {
+  return bytesToB64url(await crypto.subtle.digest('SHA-256', new TextEncoder().encode(endpoint))).slice(0, 32)
+}
+
+/** Zapisuje (albo odświeża) subskrypcję przeglądarki na serwerze. Idempotentne – id = skrót endpointu. */
+async function registerSubscription(sub: PushSubscription, label?: string): Promise<void> {
   const json = sub.toJSON() as { endpoint?: string; keys?: { p256dh?: string; auth?: string } }
   const endpoint = json.endpoint ?? sub.endpoint
   if (!supabase) throw new Error('Brak konfiguracji Supabase.')
   const { data: session } = await supabase.auth.getSession()
   const userId = session.session?.user.id
   if (!userId) throw new Error('Zaloguj się w Ustawieniach → Konto.')
-  const id = bytesToB64url(await crypto.subtle.digest('SHA-256', new TextEncoder().encode(endpoint))).slice(0, 32)
   const { error } = await supabase.from('push_subscriptions').upsert(
     {
-      id,
+      id: await subscriptionId(endpoint),
       user_id: userId,
       endpoint,
       p256dh: json.keys?.p256dh ?? bytesToB64url(sub.getKey('p256dh')),
@@ -128,10 +139,46 @@ export async function subscribePush(label?: string): Promise<void> {
   if (error) throw new Error(error.message)
 }
 
+async function subscribeInBrowser(reg: ServiceWorkerRegistration): Promise<PushSubscription> {
+  const { public_key } = await call<{ public_key: string }>('public_key')
+  return reg.pushManager.subscribe({ userVisibleOnly: true, applicationServerKey: b64ToBytes(public_key) })
+}
+
+/** Zapisuje to urządzenie do powiadomień. Musi być wywołane z gestu użytkownika. */
+export async function subscribePush(label?: string): Promise<void> {
+  if (!pushSupported()) throw new Error('Ta przeglądarka nie obsługuje powiadomień.')
+  if (!isStandalone() && /iphone|ipad|ipod/i.test(navigator.userAgent)) {
+    throw new Error('Na iPhonie dodaj aplikację do ekranu początkowego, a potem włącz powiadomienia z jej poziomu.')
+  }
+  const permission = await Notification.requestPermission()
+  if (permission !== 'granted') throw new Error('Nie wyraziłeś zgody na powiadomienia.')
+  const reg = await registration()
+  const sub = (await reg.pushManager.getSubscription()) ?? (await subscribeInBrowser(reg))
+  await registerSubscription(sub, label)
+  setOptOut(false)
+}
+
+/**
+ * Samonaprawa: przeglądarka potrafi unieważnić subskrypcję (np. po aktualizacji service workera) –
+ * wtedy serwer dostaje 410 i wykreśla urządzenie. Przy starcie aplikacji, gdy zgoda jest udzielona
+ * i użytkownik nie wyłączył powiadomień ręcznie, odnawiamy subskrypcję i dopisujemy ją na serwerze.
+ * Bez gestu użytkownika wolno subskrybować, bo zgoda już jest.
+ */
+export async function ensurePushSubscription(): Promise<'ok' | 'skipped'> {
+  if (!pushSupported() || !supabase || optedOut() || Notification.permission !== 'granted') return 'skipped'
+  const { data: session } = await supabase.auth.getSession()
+  if (!session.session) return 'skipped'
+  const reg = await registration()
+  const sub = (await reg.pushManager.getSubscription()) ?? (await subscribeInBrowser(reg))
+  await registerSubscription(sub)
+  return 'ok'
+}
+
 export async function unsubscribePush(): Promise<void> {
   const sub = await currentSubscription()
+  setOptOut(true)
   if (!sub) return
-  const id = bytesToB64url(await crypto.subtle.digest('SHA-256', new TextEncoder().encode(sub.endpoint))).slice(0, 32)
+  const id = await subscriptionId(sub.endpoint)
   // najpierw serwer: gdy zapis się nie uda (brak sieci), urządzenie zostaje zapisane i nic nie „znika” po cichu
   const { error } = (await supabase?.from('push_subscriptions').update({ deleted_at: new Date().toISOString(), updated_at: new Date().toISOString() }).eq('id', id)) ?? {}
   if (error) throw new Error(`Nie udało się wypisać urządzenia na serwerze: ${error.message}`)

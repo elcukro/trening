@@ -18,6 +18,7 @@ import { GymModePage } from '@/features/gym/GymModePage'
 import { useSyncRunner } from '@/sync/useSync'
 import { ToastProvider } from '@/components/Toast'
 import { useWahooAutoPush } from '@/sync/useWahoo'
+import { usePushKeepalive } from '@/sync/usePush'
 import { useEngine } from '@/app/useSettings'
 import { todayISO } from '@/lib/dates'
 import { addDays, diffDays } from '@/engine/dates'
@@ -164,6 +165,7 @@ function SideNav() {
 function Layout() {
   useSyncRunner()
   useWahooAutoPush()
+  usePushKeepalive()
   return (
     <div className="flex w-full flex-1">
       <SideNav />
