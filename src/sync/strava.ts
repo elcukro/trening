@@ -1,4 +1,6 @@
 import { supabase } from './supabase'
+import { db } from '@/db'
+import type { RideSamples } from '@/engine/analysis'
 
 export interface StravaStatus {
   connected: boolean
@@ -48,4 +50,21 @@ export const strava = {
   disconnect: () => call<{ ok: boolean }>('disconnect'),
   subscribe: () => call<{ ok: boolean; detail: string }>('subscribe'),
   sync: (days = 14) => call<{ ok: boolean; imported: number; scanned: number }>('sync', { days }),
+}
+
+/**
+ * Próbki jazdy (co 5 s) z `strava_streams` – pobierane na żądanie i buforowane w `kv`, żeby analiza działała offline
+ * po pierwszym otwarciu. Strumienie są niezmienne (Strava nie edytuje nagrania), więc bufor nie wygasa.
+ */
+export async function loadStreams(activityId: string): Promise<RideSamples | null> {
+  const key = `streams:${activityId}`
+  const cached = await db.kv.get(key)
+  if (cached) return cached.value as RideSamples
+  if (!supabase) return null
+  const { data, error } = await supabase.from('strava_streams').select('dt, n, samples').eq('activity_id', activityId).maybeSingle()
+  if (error) throw new Error(`strava_streams: ${error.message}`)
+  if (!data) return null
+  const samples = { dt: data.dt as number, n: data.n as number, ...(data.samples as Omit<RideSamples, 'dt' | 'n'>) } as RideSamples
+  await db.kv.put({ key, value: samples, updated_at: new Date().toISOString() })
+  return samples
 }

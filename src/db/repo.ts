@@ -1,4 +1,4 @@
-import { db, newId, nowISO, type Checkin, type GearTaskState, type PackingState, type PlanOverrideRow, type ServiceLogRow, type SessionLog, type SetLog, type SyncTable, type SyncedRow, type TestResult } from './index'
+import { db, newId, nowISO, type BaselineEntry, type Checkin, type GearTaskState, type PackingState, type PlanOverrideRow, type ServiceLogRow, type SessionLog, type SetLog, type SyncTable, type SyncedRow, type TestResult } from './index'
 
 /** Zapis lokalny + wpis do outboxa (jedna transakcja). */
 export async function putSynced<T extends SyncedRow>(table: SyncTable, row: T): Promise<T> {
@@ -136,4 +136,9 @@ export async function setPacked(tripKey: string, itemKey: string, checked: boole
 export async function resetPacking(tripKey: string): Promise<void> {
   const rows = (await db.packing_state.where('trip_key').equals(tripKey).toArray()).filter((r) => r.checked)
   for (const r of rows) await putSynced('packing_state', { ...r, checked: false })
+}
+
+// ---------------------------------------------------------------- punkt wyjścia
+export async function addBaselineEntry(entry: Omit<BaselineEntry, 'id' | 'updated_at'>): Promise<BaselineEntry> {
+  return putSynced('baseline_entries', { id: newId(), updated_at: nowISO(), ...entry })
 }

@@ -1,6 +1,7 @@
 import type { SupabaseClient } from 'npm:@supabase/supabase-js@2'
 import { env } from './env.ts'
 import { decrypt, encrypt } from './crypto.ts'
+import { resample, rideMetrics, type RawStreams } from './metrics.ts'
 
 export const STRAVA_API = 'https://www.strava.com/api/v3'
 export const RIDE_TYPES = new Set(['Ride', 'GravelRide', 'VirtualRide', 'MountainBikeRide', 'EBikeRide', 'EMountainBikeRide', 'Handcycle', 'Velomobile'])
@@ -95,17 +96,17 @@ export interface StravaActivity {
   device_watts?: boolean
 }
 
-type Streams = Record<string, { data: number[] }>
+type Streams = RawStreams
 
 /** Histogram: sekundy na każdą wartość bpm (indeks = bpm). */
 export function hrHistogram(streams: Streams | null): number[] | null {
-  const hr = streams?.heartrate?.data
-  const time = streams?.time?.data
+  const hr = streams?.heartrate?.data as (number | null)[] | undefined
+  const time = streams?.time?.data as number[] | undefined
   if (!hr || !time || hr.length !== time.length || hr.length < 2) return null
   const hist: number[] = []
   for (let i = 1; i < hr.length; i++) {
     const dt = Math.min(30, Math.max(0, time[i]! - time[i - 1]!))
-    const bpm = Math.round(hr[i]!)
+    const bpm = Math.round(hr[i] ?? 0)
     if (bpm <= 0 || bpm > 250) continue
     hist[bpm] = (hist[bpm] ?? 0) + dt
   }
@@ -115,10 +116,8 @@ export function hrHistogram(streams: Streams | null): number[] | null {
 export async function fetchActivity(token: string, id: number): Promise<{ activity: StravaActivity; streams: Streams | null } | null> {
   const activity = await stravaGet<StravaActivity>(token, `/activities/${id}`)
   if (!activity) return null
-  let streams: Streams | null = null
-  if (activity.average_heartrate) {
-    streams = await stravaGet<Streams>(token, `/activities/${id}/streams?keys=heartrate,time&key_by_type=true`)
-  }
+  // pełne strumienie do analizy (plan vs wykonanie, NP, MMP, kadencja) – Strava zwraca tylko te, które istnieją
+  const streams = await stravaGet<Streams>(token, `/activities/${id}/streams?keys=time,heartrate,watts,cadence,velocity_smooth,distance,altitude,moving&key_by_type=true`)
   return { activity, streams }
 }
 
@@ -155,6 +154,8 @@ export async function deauthorize(token: string): Promise<void> {
 /** Zapis aktywności do strava_activities (trigger w bazie przeliczy session_log dnia). */
 export async function upsertActivity(admin: SupabaseClient, userId: string, a: StravaActivity, streams: Streams | null): Promise<void> {
   const sport = a.sport_type ?? a.type ?? ''
+  const samples = resample(streams, 5)
+  const { avg_cadence_moving, ...metrics } = rideMetrics(samples, !!a.device_watts)
   const row = {
     id: a.id,
     user_id: userId,
@@ -168,16 +169,24 @@ export async function upsertActivity(admin: SupabaseClient, userId: string, a: S
     elevation_m: a.total_elevation_gain,
     avg_hr: a.average_heartrate ? Math.round(a.average_heartrate) : null,
     max_hr: a.max_heartrate ? Math.round(a.max_heartrate) : null,
-    avg_cadence: a.average_cadence ? Math.round(a.average_cadence) : null,
+    avg_cadence: avg_cadence_moving ?? (a.average_cadence ? Math.round(a.average_cadence) : null),
     avg_speed_ms: a.average_speed ?? null,
     avg_watts: a.device_watts && a.average_watts ? Math.round(a.average_watts) : null,
     hr_histogram: hrHistogram(streams),
     is_ride: RIDE_TYPES.has(sport),
+    device_watts: !!a.device_watts,
+    ...metrics,
+    has_streams: !!samples,
     deleted_at: null,
     updated_at: new Date().toISOString(),
   }
   const { error } = await admin.from('strava_activities').upsert(row, { onConflict: 'id' })
   if (error) throw new Error(`strava_activities: ${error.message}`)
+  if (samples) {
+    const { n, dt, ...rest } = samples
+    const { error: e2 } = await admin.from('strava_streams').upsert({ activity_id: a.id, user_id: userId, dt, n, samples: rest, updated_at: new Date().toISOString() }, { onConflict: 'activity_id' })
+    if (e2) throw new Error(`strava_streams: ${e2.message}`)
+  }
 }
 
 export async function importActivity(admin: SupabaseClient, userId: string, activityId: number): Promise<boolean> {

@@ -45,6 +45,10 @@ test.describe('wersja na komputer (≥ 1024 px)', () => {
 
   test('postęp i biblioteka w kolumnach', async ({ page }) => {
     await page.goto('/postep?today=2026-09-16')
+    // punkt wyjścia i obciążenie (pkt 0 i 1 planu usprawnień) – karty z celem 30 km/h
+    await expect(page.getByRole('heading', { name: 'Punkt wyjścia' })).toBeVisible()
+    await expect(page.getByText('FTP na 30 km/h (2–3 h)')).toBeVisible()
+    await expect(page.getByRole('heading', { name: 'Obciążenie (TSS)' })).toBeVisible()
     const mass = await page.getByRole('heading', { name: 'Masa' }).boundingBox()
     const vol = await page.getByRole('heading', { name: /Objętość/ }).boundingBox()
     expect(mass && vol && vol.x > mass.x + 300).toBe(true)

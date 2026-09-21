@@ -12,6 +12,8 @@ import { Button, Card, CardSection, CardTitle, Input, Metric, PageTitle, Row, Se
 import { hours, num } from '@/lib/format'
 import { fmtDayMonth, todayISO } from '@/lib/dates'
 import { TestResultForm, TestSummary } from '@/features/today/TestResultCard'
+import { BaselineCard } from './BaselineCard'
+import { LoadCard } from './LoadCard'
 
 const MAIN = [
   { id: 'back_squat', label: 'Przysiad', goal: [1.0, 1.2] as [number, number] },
@@ -28,7 +30,8 @@ export function ProgressPage() {
   const tests = useLiveQuery(() => db.test_results.orderBy('date').toArray(), [], [] as TestResult[])
   const rides = useLiveQuery(() => db.session_logs.toArray(), [], [] as SessionLog[])
   const sets = useLiveQuery(() => db.set_logs.toArray(), [], [] as SetLog[])
-  const acts = useLiveQuery(() => db.strava_activities.where('date').aboveOrEqual(addDays(today, -27)).toArray(), [today], [] as StravaActivity[])
+  const allActs = useLiveQuery(() => db.strava_activities.where('date').aboveOrEqual(addDays(today, -90)).toArray(), [today], [] as StravaActivity[])
+  const acts = useMemo(() => allActs.filter((a) => a.date >= addDays(today, -27)), [allActs, today])
   const zoneHist = useMemo(() => {
     const h: number[] = []
     for (const a of acts) {
@@ -82,6 +85,7 @@ export function ProgressPage() {
       {/* na komputerze dwie kolumny: masa + testy + kalkulator | objętość + siła */}
       <div className="space-y-3 lg:grid lg:grid-cols-2 lg:items-start lg:gap-6 lg:space-y-0">
       <div className="min-w-0 space-y-3 lg:space-y-4">
+      <BaselineCard engine={engine} checkins={checkins} acts={allActs} />
       <Card>
         <CardTitle icon="⚖️" right={<Metric>{num(avg7)} kg</Metric>}>
           Masa
@@ -164,6 +168,7 @@ export function ProgressPage() {
       </div>
 
       <div className="min-w-0 space-y-3 lg:space-y-4">
+      <LoadCard acts={allActs} logs={rides} ftp={lastFtp} lthr={lastLthr ?? null} zones={engine.ctx.program.hr_zones_lthr_fraction} today={today} />
       <Card>
         <CardTitle icon="⏱️" right={comp != null ? <Metric>zgodność {comp} %</Metric> : undefined}>
           Objętość (8 tygodni)

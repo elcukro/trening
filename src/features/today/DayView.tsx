@@ -11,6 +11,7 @@ import { CheckinCard } from './CheckinCard'
 import { BikeLogCard, StatusBadge } from './BikeLogCard'
 import { TestResultCard } from './TestResultCard'
 import { StravaActivities } from './StravaCard'
+import { effectiveFtp } from '@/engine/progress'
 import { RulesCard } from './RulesCard'
 import type { PlanOverrideRow } from '@/db'
 import type { RuleAction, RuleWarning } from '@/engine/rules'
@@ -124,7 +125,7 @@ export function BikeCard({ day, engine, onAction }: { day: DayPlan; engine: Engi
         </div>
       )}
       <WahooButton day={day} />
-      <StravaActivities date={day.date} zones={program.hr_zones_lthr_fraction} lthr={day.lthr} />
+      <StravaActivities date={day.date} zones={program.hr_zones_lthr_fraction} lthr={day.lthr} workout={w} ftp={day.ftp ?? effectiveFtp(day.date, engine.ctx.settings.ftp_w_estimate, engine.ctx.tests ?? []).ftp} />
       <BikeLogCard day={day} />
     </Card>
   )

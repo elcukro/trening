@@ -9,6 +9,8 @@ import { zoneColor } from '@/lib/zones'
 import { minutes, num, seconds } from '@/lib/format'
 import { Button, Card, CardSection, CardTitle, Input } from '@/components/ui'
 import { useToast } from '@/components/Toast'
+import type { ResolvedWorkout } from '@/engine/types'
+import { RideAnalysis, RideLoadLine } from './RideAnalysis'
 
 export function useActivities(date: string): StravaActivity[] {
   return useLiveQuery(async () => (await db.strava_activities.where('date').equals(date).toArray()).filter((a) => !a.deleted_at && a.is_ride), [date], [] as StravaActivity[])
@@ -36,7 +38,7 @@ export function ZoneBar({ histogram, zones, lthr }: { histogram: number[]; zones
 }
 
 /** Jazdy ze Stravy danego dnia: szczegóły, strefy, przenoszenie na inny dzień. */
-export function StravaActivities({ date, zones, lthr, extra }: { date: string; zones: HrZone[]; lthr: number | null; extra?: boolean }) {
+export function StravaActivities({ date, zones, lthr, extra, workout, ftp }: { date: string; zones: HrZone[]; lthr: number | null; extra?: boolean; workout?: ResolvedWorkout | null; ftp?: number | null }) {
   const acts = useActivities(date)
   const toast = useToast()
   const [moving, setMoving] = useState<string | null>(null)
@@ -64,7 +66,9 @@ export function StravaActivities({ date, zones, lthr, extra }: { date: string; z
         {a.avg_speed_ms != null && <span>{num(a.avg_speed_ms * 3.6)} km/h</span>}
         {a.avg_watts != null && <span>{a.avg_watts} W</span>}
       </div>
+      <RideLoadLine a={a} ftp={ftp ?? null} lthr={lthr} zones={zones} />
       {a.hr_histogram && lthr ? <div className="mt-1"><ZoneBar histogram={a.hr_histogram} zones={zones} lthr={lthr} /></div> : a.hr_histogram ? <p className="text-xs text-slate-400 dark:text-slate-500">Strefy po wpisaniu LTHR.</p> : null}
+      {workout && <RideAnalysis a={a} workout={workout} ftp={ftp ?? null} date={date} />}
       {moving === a.id ? (
         <div className="mt-2 flex flex-wrap items-center gap-2">
           <Input type="date" aria-label="Nowa data jazdy" className="min-w-0 flex-1" value={target} onChange={(e) => setTarget(e.target.value)} />

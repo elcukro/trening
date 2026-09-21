@@ -100,6 +100,22 @@ export interface StravaActivity extends SyncedRow {
   avg_watts?: number | null
   hr_histogram?: number[] | null
   is_ride: boolean
+  /** moc z miernika (nie szacunek Stravy) */
+  device_watts?: boolean | null
+  np_w?: number | null
+  mmp_w?: Record<string, number | null> | null
+  best_speed_kmh?: Record<string, number | null> | null
+  decoupling_pct?: number | null
+  has_streams?: boolean | null
+}
+
+/** Punkt wyjścia: pomiar miernika z datą (pierwszy zapis = baseline, kolejne = odczyty). */
+export interface BaselineEntry extends SyncedRow {
+  date: string
+  metric: string
+  value: number
+  source: 'manual' | 'test' | 'checkin' | 'strava'
+  note?: string | null
 }
 
 export interface PlanOverrideRow extends SyncedRow {
@@ -137,7 +153,7 @@ export interface OutboxItem {
   ts: string
 }
 
-export const SYNC_TABLES = ['checkins', 'session_logs', 'set_logs', 'test_results', 'plan_overrides', 'gear_task_state', 'service_log', 'packing_state', 'strava_activities'] as const
+export const SYNC_TABLES = ['checkins', 'session_logs', 'set_logs', 'test_results', 'plan_overrides', 'gear_task_state', 'service_log', 'packing_state', 'strava_activities', 'baseline_entries'] as const
 /** Tabele, do których klient nie wstawia wierszy – tylko aktualizuje wybrane pola (RLS: update own). */
 export const UPDATE_ONLY_TABLES: Record<string, string[]> = { strava_activities: ['date', 'is_ride', 'updated_at'] }
 export type SyncTable = (typeof SYNC_TABLES)[number]
@@ -154,6 +170,7 @@ export class TreningDB extends Dexie {
   service_log!: EntityTable<ServiceLogRow, 'id'>
   packing_state!: EntityTable<PackingState, 'id'>
   strava_activities!: EntityTable<StravaActivity, 'id'>
+  baseline_entries!: EntityTable<BaselineEntry, 'id'>
   outbox!: EntityTable<OutboxItem, 'seq'>
 
   constructor() {
@@ -178,6 +195,9 @@ export class TreningDB extends Dexie {
       gear_task_state: 'id, status, updated_at',
       service_log: 'id, date, updated_at',
       packing_state: 'id, trip_key, updated_at',
+    })
+    this.version(6).stores({
+      baseline_entries: 'id, date, metric, updated_at',
     })
   }
 }
