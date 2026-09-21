@@ -130,13 +130,16 @@ export async function subscribePush(label?: string): Promise<void> {
 
 export async function unsubscribePush(): Promise<void> {
   const sub = await currentSubscription()
-  if (sub) {
-    const id = bytesToB64url(await crypto.subtle.digest('SHA-256', new TextEncoder().encode(sub.endpoint))).slice(0, 32)
-    await supabase?.from('push_subscriptions').update({ deleted_at: new Date().toISOString(), updated_at: new Date().toISOString() }).eq('id', id)
-    await sub.unsubscribe()
-  }
+  if (!sub) return
+  const id = bytesToB64url(await crypto.subtle.digest('SHA-256', new TextEncoder().encode(sub.endpoint))).slice(0, 32)
+  // najpierw serwer: gdy zapis się nie uda (brak sieci), urządzenie zostaje zapisane i nic nie „znika” po cichu
+  const { error } = (await supabase?.from('push_subscriptions').update({ deleted_at: new Date().toISOString(), updated_at: new Date().toISOString() }).eq('id', id)) ?? {}
+  if (error) throw new Error(`Nie udało się wypisać urządzenia na serwerze: ${error.message}`)
+  await sub.unsubscribe()
 }
 
-export async function sendTestPush(): Promise<{ ok: boolean; failed: number; detail: string[] }> {
-  return call('test', { title: 'Trening', text: 'Powiadomienia działają. Tak będzie wyglądał plan dnia.' })
+/** Próbne powiadomienie; `expired` = wygasłe subskrypcje wykreślone przy okazji (nie liczą się jako błąd). */
+export async function sendTestPush(): Promise<{ ok: boolean; sent: number; failed: number; expired: number; detail: string[] }> {
+  const r = await call<{ ok: boolean; sent?: number; failed: number; expired?: number; detail: string[] }>('test', { title: 'Trening', text: 'Powiadomienia działają. Tak będzie wyglądał plan dnia.' })
+  return { ok: r.ok, sent: r.sent ?? 0, failed: r.failed, expired: r.expired ?? 0, detail: r.detail }
 }

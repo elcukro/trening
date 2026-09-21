@@ -84,7 +84,8 @@ export function PushSection() {
                 run('Wysyłam powiadomienie próbne', async () => {
                   const r = await sendTestPush()
                   if (!r.ok) throw new Error(r.detail.join('; ') || 'nie udało się dostarczyć')
-                  return 'Wysłane – sprawdź ekran blokady'
+                  const extra = r.expired > 0 ? ` (wykreślono ${r.expired} wygasłe urządzenie)` : ''
+                  return `Wysłane na ${r.sent} urządz. – sprawdź ekran blokady${extra}`
                 })
               }
             >

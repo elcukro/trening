@@ -29,11 +29,12 @@ interface Payload {
   tag?: string
 }
 
-async function sendTo(admin: SupabaseClient, subs: Sub[], payload: Payload): Promise<{ ok: number; failed: number; detail: string[] }> {
+async function sendTo(admin: SupabaseClient, subs: Sub[], payload: Payload): Promise<{ ok: number; failed: number; expired: number; detail: string[] }> {
   configure()
   let ok = 0
   let failed = 0
   const detail: string[] = []
+  let expired = 0
   for (const s of subs) {
     try {
       await webpush.sendNotification({ endpoint: s.endpoint, keys: { p256dh: s.p256dh, auth: s.auth } }, JSON.stringify(payload))
@@ -43,16 +44,18 @@ async function sendTo(admin: SupabaseClient, subs: Sub[], payload: Payload): Pro
       failed++
       const err = e as { statusCode?: number; message?: string }
       const msg = `${err.statusCode ?? '?'} ${err.message ?? e}`.slice(0, 160)
-      detail.push(msg)
-      // 404/410 = subskrypcja wygasła (odinstalowana aplikacja, wyczyszczone dane)
+      // 404/410 = subskrypcja wygasła (odinstalowana aplikacja, wyczyszczone dane, ponowne zapisanie urządzenia)
       if (err.statusCode === 404 || err.statusCode === 410) {
+        expired++
+        detail.push(`wygasłe urządzenie usunięte (${err.statusCode})`)
         await admin.from('push_subscriptions').update({ deleted_at: new Date().toISOString(), last_error: msg, updated_at: new Date().toISOString() }).eq('id', s.id)
       } else {
+        detail.push(msg)
         await admin.from('push_subscriptions').update({ last_error: msg, updated_at: new Date().toISOString() }).eq('id', s.id)
       }
     }
   }
-  return { ok, failed, detail }
+  return { ok, failed, expired, detail }
 }
 
 async function subsFor(admin: SupabaseClient, userId: string): Promise<Sub[]> {
@@ -108,7 +111,8 @@ Deno.serve(async (req) => {
     const subs = await subsFor(admin, user.id)
     if (subs.length === 0) return json({ error: 'no_subscriptions' }, 400)
     const res = await sendTo(admin, subs, { title: body.title ?? 'Trening', body: body.text ?? 'Powiadomienia działają.', url: '/', tag: 'test' })
-    return json({ ...res, ok: res.failed === 0 })
+    // wygasłe subskrypcje (404/410) są wykreślane po drodze – test jest udany, gdy dotarł na choć jedno żywe urządzenie
+    return json({ ok: res.ok > 0, sent: res.ok, failed: res.failed, expired: res.expired, detail: res.detail })
   }
 
   if (body.action === 'status') {
