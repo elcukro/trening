@@ -247,6 +247,19 @@ function WahooCard() {
               variant="secondary"
               disabled={busy}
               onClick={() =>
+                run('Pobieram wykonane treningi z Bolta', async () => {
+                  const r = await wahoo.completed(14)
+                  await runSync({ programVersion: loadProgram().version })
+                  return r.completed ? `Z Bolta: ${r.completed} wykonanych (${r.dates.join(', ')})` : `Bolt nie ma wykonanych treningów z 14 dni (przejrzano ${r.scanned}).`
+                })
+              }
+            >
+              Pobierz wykonane z Bolta
+            </Button>
+            <Button
+              variant="secondary"
+              disabled={busy}
+              onClick={() =>
                 run('Usuwam duplikaty', async () => {
                   const r = await wahoo.cleanup()
                   return r.removed.length ? `Usunięto ${r.removed.length} zduplikowanych treningów z ${r.scanned}. Zsynchronizuj Bolta.` : `Brak duplikatów (sprawdzono ${r.scanned} treningów).`

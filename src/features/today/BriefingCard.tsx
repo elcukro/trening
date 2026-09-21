@@ -8,6 +8,7 @@ import { DEFAULT_LOCATION, DEFAULT_RIDE_HOURS, loadForecast, type RideHours, typ
 import clothingJson from '../../../data/clothing.json'
 import { Button, Card, CardSection, CardTitle, Inset, Metric } from '@/components/ui'
 import { num } from '@/lib/format'
+import { boltLabel, useBoltState } from './WahooStatus'
 
 const CLOTHING = clothingJson as ClothingTable
 const ICON: Record<Advice['kind'], string> = { indoor: '🧊', ice: '🧊', shorten_ss: '🥶', heat: '🌡️', rain: '🌧️', wind: '💨', dark: '🔦' }
@@ -20,6 +21,7 @@ export function BriefingCard({ day, onAction, hasOverride }: { day: DayPlan; onA
   const loc = useLiveQuery(async () => ((await db.kv.get('weather_location'))?.value as WeatherLocation | undefined) ?? DEFAULT_LOCATION, [], DEFAULT_LOCATION)
   const hoursPref = useLiveQuery(async () => ((await db.kv.get('ride_hours'))?.value as RideHours | undefined) ?? DEFAULT_RIDE_HOURS, [], DEFAULT_RIDE_HOURS)
   const [forecast, setForecast] = useState<{ days: DayForecast[]; stale: boolean } | null | 'loading'>('loading')
+  const bolt = boltLabel(useBoltState(day))
 
   useEffect(() => {
     let alive = true
@@ -83,6 +85,12 @@ export function BriefingCard({ day, onAction, hasOverride }: { day: DayPlan; onA
           )}
           {advice.length === 0 && <p className="mt-1 text-xs text-emerald-700 dark:text-emerald-300">Warunki dobre – bez uwag.</p>}
         </>
+      )}
+      {bolt && (
+        <p className={`mt-2 text-xs ${bolt.tone === 'ok' ? 'text-emerald-700 dark:text-emerald-300' : bolt.tone === 'warn' ? 'text-amber-700 dark:text-amber-300' : 'text-slate-500 dark:text-slate-400'}`}>
+          ⌚ Bolt: {bolt.text}
+          {bolt.tone !== 'ok' ? ' – przycisk „Wyślij na Wahoo” jest pod treningiem.' : ' Zsynchronizuj licznik przed wyjazdem.'}
+        </p>
       )}
       <CardSection className="grid gap-3 sm:grid-cols-2">
         {clothing && (

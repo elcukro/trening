@@ -14,6 +14,8 @@ import { StravaActivities } from './StravaCard'
 import { effectiveFtp } from '@/engine/progress'
 import { RulesCard } from './RulesCard'
 import { BriefingCard } from './BriefingCard'
+import { WahooCompleted } from './WahooStatus'
+import { useActivities } from './StravaCard'
 import { FtpSuggestionCard } from '@/features/progress/FtpSuggestionCard'
 import { todayISO } from '@/lib/dates'
 import { addDays } from '@/engine/dates'
@@ -56,6 +58,7 @@ export function DayHeader({ day }: { day: DayPlan }) {
 export function BikeCard({ day, engine, onAction }: { day: DayPlan; engine: Engine; onAction?: (a: RuleAction) => void }) {
   const w = day.workout
   const program = engine.ctx.program
+  const acts = useActivities(day.date)
   if (!day.bike || !w) {
     return (
       <>
@@ -130,6 +133,7 @@ export function BikeCard({ day, engine, onAction }: { day: DayPlan; engine: Engi
       )}
       <WahooButton day={day} />
       <StravaActivities date={day.date} zones={program.hr_zones_lthr_fraction} lthr={day.lthr} workout={w} ftp={day.ftp ?? effectiveFtp(day.date, engine.ctx.settings.ftp_w_estimate, engine.ctx.tests ?? []).ftp} />
+      <WahooCompleted date={day.date} hasStrava={acts.length > 0} />
       <BikeLogCard day={day} />
     </Card>
   )

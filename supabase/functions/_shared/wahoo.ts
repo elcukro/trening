@@ -1,6 +1,7 @@
 import type { SupabaseClient } from 'npm:@supabase/supabase-js@2'
 import { env } from './env.ts'
 import { decrypt, encrypt } from './crypto.ts'
+import type { WahooWorkoutRaw } from './wahoo_summary.ts'
 
 export const WAHOO_API = 'https://api.wahooligan.com'
 // odczyt planów i treningów potrzebny, żeby sprawdzić, co Wahoo naprawdę zapisało
@@ -341,6 +342,20 @@ export async function listWorkouts(token: string, pages = 3): Promise<{ id: numb
     if (!res.ok) break
     const body = (await res.json()) as { workouts?: unknown[] } | unknown[]
     const list = (Array.isArray(body) ? body : (body.workouts ?? [])) as typeof out
+    out.push(...list)
+    if (list.length < 50) break
+  }
+  return out
+}
+
+/** Lista treningów z pełnymi obiektami (w tym `workout_summary`, gdy trening został wykonany). */
+export async function listWorkoutsDetailed(token: string, pages = 2): Promise<WahooWorkoutRaw[]> {
+  const out: WahooWorkoutRaw[] = []
+  for (let page = 1; page <= pages; page++) {
+    const res = await fetch(`${WAHOO_API}/v1/workouts?page=${page}&per_page=50`, { headers: { authorization: `Bearer ${token}` } })
+    if (!res.ok) break
+    const body = (await res.json()) as { workouts?: unknown[] } | unknown[]
+    const list = (Array.isArray(body) ? body : (body.workouts ?? [])) as WahooWorkoutRaw[]
     out.push(...list)
     if (list.length < 50) break
   }

@@ -100,9 +100,19 @@ Deno.serve(async (req) => {
       if (already) continue // jedno powiadomienie danego rodzaju na dzień
       const subs = await subsFor(admin, userId)
       if (subs.length === 0) continue
+      // Bolt: gdy ostatnia wysyłka planu jest starsza niż 36 h, treningi na liczniku mogą być nieaktualne
+      let boltHint = ''
+      if (kind === 'evening') {
+        const { data: wahoo } = await admin.from('integration_tokens').select('user_id').eq('user_id', userId).eq('provider', 'wahoo').maybeSingle()
+        if (wahoo) {
+          const { data: lastPush } = await admin.from('wahoo_pushes').select('updated_at').eq('user_id', userId).order('updated_at', { ascending: false }).limit(1).maybeSingle()
+          const age = lastPush ? Date.now() - new Date(lastPush.updated_at as string).getTime() : Infinity
+          if (age > 36 * 3600 * 1000) boltHint = ' Otwórz aplikację – treningi na Bolcie od dawna nie były odświeżane.'
+        }
+      }
       const payload = body.payloads?.[userId] ?? {
         title: kind === 'morning' ? 'Plan na dziś' : kind === 'evening' ? 'Odhacz dzisiejszy trening' : 'Przegląd tygodnia',
-        body: kind === 'morning' ? 'Otwórz aplikację, żeby zobaczyć dzisiejszy trening i odprawę (pogoda, ubiór, jedzenie).' : kind === 'evening' ? 'Wpisz RPE i jedno zdanie o jeździe – zajmie 20 s.' : 'Godziny, TSS, co poszło i co czeka w przyszłym tygodniu.',
+        body: kind === 'morning' ? 'Otwórz aplikację, żeby zobaczyć dzisiejszy trening i odprawę (pogoda, ubiór, jedzenie).' : kind === 'evening' ? `Wpisz RPE i jedno zdanie o jeździe – zajmie 20 s.${boltHint}` : 'Godziny, TSS, co poszło i co czeka w przyszłym tygodniu.',
         url: kind === 'weekly' ? `/postep/tydzien/${weekMonday}` : kind === 'evening' ? `/dzien/${date}` : '/',
         tag: `${kind}-${date}`,
       }

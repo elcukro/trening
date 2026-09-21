@@ -5,7 +5,8 @@
  */
 import { CORS, json } from '../_shared/env.ts'
 import { adminClient, userFromRequest } from '../_shared/supabase.ts'
-import { accessTokenFor, cleanupOrphans, diagnose, getWorkout, pushDay, removeDay, type PlanIndex, type PushItem, type PushResult } from '../_shared/wahoo.ts'
+import { accessTokenFor, cleanupOrphans, diagnose, getWorkout, listWorkoutsDetailed, pushDay, removeDay, type PlanIndex, type PushItem, type PushResult } from '../_shared/wahoo.ts'
+import { completedInRange, warsawDate } from '../_shared/wahoo_summary.ts'
 
 const MAX_ITEMS = 10
 
@@ -15,11 +16,11 @@ Deno.serve(async (req) => {
   const user = await userFromRequest(req)
   if (!user) return json({ error: 'unauthorized' }, 401)
 
-  const body = (await req.json().catch(() => ({}))) as { items?: PushItem[]; mode?: 'update' | 'replace' | 'diagnose' | 'cleanup'; remove?: string[] }
+  const body = (await req.json().catch(() => ({}))) as { items?: PushItem[]; mode?: 'update' | 'replace' | 'diagnose' | 'cleanup' | 'completed'; remove?: string[]; days?: number }
   const items = (body.items ?? []).slice(0, MAX_ITEMS)
   // porządkowanie nie potrzebuje listy treningów do wysłania
   const remove = (body.remove ?? []).filter((d) => /^\d{4}-\d{2}-\d{2}$/.test(d)).slice(0, 14)
-  if (items.length === 0 && remove.length === 0 && body.mode !== 'cleanup') return json({ error: 'no_items' }, 400)
+  if (items.length === 0 && remove.length === 0 && body.mode !== 'cleanup' && body.mode !== 'completed') return json({ error: 'no_items' }, 400)
 
   const admin = adminClient()
   const token0 = await accessTokenFor(admin, user.id).catch((e) => {
@@ -27,6 +28,20 @@ Deno.serve(async (req) => {
   })
   if (!token0) return json({ error: 'not_connected' }, 400)
   const token = token0
+
+  // Bolt w obie strony: wykonane treningi (workout_summary) z ostatnich dni → wahoo_workouts (trigger zbuduje log dnia)
+  if (body.mode === 'completed') {
+    const days = Math.min(30, Math.max(1, body.days ?? 7))
+    const to = warsawDate(new Date().toISOString())
+    const from = warsawDate(new Date(Date.now() - days * 86400000).toISOString())
+    const list = await listWorkoutsDetailed(token, 2)
+    const rows = completedInRange(list, from, to)
+    for (const r of rows) {
+      const { error } = await admin.from('wahoo_workouts').upsert({ ...r, user_id: user.id, deleted_at: null, updated_at: new Date().toISOString() }, { onConflict: 'id' })
+      if (error) throw new Error(`wahoo_workouts: ${error.message}`)
+    }
+    return json({ ok: true, scanned: list.length, completed: rows.length, from, to, dates: rows.map((r) => r.date) })
+  }
 
   // porządkowanie: kasuje treningi tej aplikacji, których nie ma w naszej bazie (duplikaty na liczniku)
   if (body.mode === 'cleanup') {

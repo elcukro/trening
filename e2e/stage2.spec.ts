@@ -104,6 +104,9 @@ test('kalkulator podjazdu i konto bez konfiguracji', async ({ page }) => {
 test('Wahoo: przycisk wysyłki na dniu z treningiem, sekcja w Integracjach', async ({ page }) => {
   await page.goto('/?today=2026-10-01')
   await expect(page.getByRole('button', { name: /Wyślij na Wahoo/ })).toBeVisible()
+  // stan na Bolcie: lokalnie nic nie wysłano – na karcie i w odprawie
+  await expect(page.getByTestId('bolt-state')).toHaveText('nie wysłano na Bolta')
+  await expect(page.getByText(/⌚ Bolt: nie wysłano na Bolta/)).toBeVisible()
   // dzień bez jazdy – bez przycisku
   await page.goto('/?today=2026-09-18')
   await expect(page.getByRole('button', { name: /Wyślij na Wahoo/ })).toHaveCount(0)

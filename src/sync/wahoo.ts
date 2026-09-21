@@ -148,6 +148,7 @@ export const wahoo = {
     }
   },
   diagnose: (items: PushItem[]) => call<Record<string, unknown>>('wahoo-push', { items, mode: 'diagnose' }),
+  completed: (days = 7) => call<{ ok: boolean; scanned: number; completed: number; dates: string[] }>('wahoo-push', { items: [], mode: 'completed', days }),
   cleanup: () => call<{ ok: boolean; removed: { id: number; name?: string; starts?: string }[]; scanned: number }>('wahoo-push', { items: [], mode: 'cleanup' }),
 }
 
@@ -196,6 +197,8 @@ export async function maybeAutoPush(today: ISODate, ctx: EngineContext, weeks?: 
   const items = pushItemsFrom(today, 7, ctx, weeks)
   if (items.length === 0) return null
   const res = await wahoo.push(items, 'update', removeDatesFrom(today, 7, ctx, weeks))
+  // w drugą stronę: wykonane treningi z Bolta (jedno zapytanie dziennie; błąd nie blokuje wysyłki)
+  await wahoo.completed(3).catch((e) => console.warn('Wahoo completed:', e))
   // Znaczymy dzień niezależnie od wyniku: przy niepowodzeniu ponawianie przy każdym uruchomieniu
   // aplikacji zjadałoby limit Wahoo (25 zapytań / 5 min, 100 / h, 250 / dzień).
   // Powtórkę uruchamia się ręcznie przyciskiem w Ustawieniach.

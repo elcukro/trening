@@ -109,6 +109,34 @@ export interface StravaActivity extends SyncedRow {
   has_streams?: boolean | null
 }
 
+/** Stan wysyłki dnia na Bolta (tylko odczyt – zapisuje funkcja wahoo-push). */
+export interface WahooPushRow extends SyncedRow {
+  date: string
+  workout_id: string
+  external_id?: string | null
+  name?: string | null
+  minutes?: number | null
+  status: 'pending' | 'created' | 'updated' | 'error'
+  error?: string | null
+  wahoo_plan_id?: number | null
+  wahoo_workout_id?: number | null
+}
+
+/** Wykonany trening wg Wahoo (workout_summary) – tylko odczyt. */
+export interface WahooWorkout extends SyncedRow {
+  date: string
+  starts: string
+  name: string | null
+  minutes_active: number
+  distance_km?: number | null
+  avg_hr?: number | null
+  avg_power?: number | null
+  np_w?: number | null
+  avg_cadence?: number | null
+  avg_speed_kmh?: number | null
+  ascent_m?: number | null
+}
+
 /** Punkt wyjścia: pomiar miernika z datą (pierwszy zapis = baseline, kolejne = odczyty). */
 export interface BaselineEntry extends SyncedRow {
   date: string
@@ -153,9 +181,9 @@ export interface OutboxItem {
   ts: string
 }
 
-export const SYNC_TABLES = ['checkins', 'session_logs', 'set_logs', 'test_results', 'plan_overrides', 'gear_task_state', 'service_log', 'packing_state', 'strava_activities', 'baseline_entries'] as const
+export const SYNC_TABLES = ['checkins', 'session_logs', 'set_logs', 'test_results', 'plan_overrides', 'gear_task_state', 'service_log', 'packing_state', 'strava_activities', 'baseline_entries', 'wahoo_pushes', 'wahoo_workouts'] as const
 /** Tabele, do których klient nie wstawia wierszy – tylko aktualizuje wybrane pola (RLS: update own). */
-export const UPDATE_ONLY_TABLES: Record<string, string[]> = { strava_activities: ['date', 'is_ride', 'updated_at'] }
+export const UPDATE_ONLY_TABLES: Record<string, string[]> = { strava_activities: ['date', 'is_ride', 'updated_at'], wahoo_pushes: [], wahoo_workouts: [] }
 export type SyncTable = (typeof SYNC_TABLES)[number]
 
 export class TreningDB extends Dexie {
@@ -171,6 +199,8 @@ export class TreningDB extends Dexie {
   packing_state!: EntityTable<PackingState, 'id'>
   strava_activities!: EntityTable<StravaActivity, 'id'>
   baseline_entries!: EntityTable<BaselineEntry, 'id'>
+  wahoo_pushes!: EntityTable<WahooPushRow, 'id'>
+  wahoo_workouts!: EntityTable<WahooWorkout, 'id'>
   outbox!: EntityTable<OutboxItem, 'seq'>
 
   constructor() {
@@ -198,6 +228,10 @@ export class TreningDB extends Dexie {
     })
     this.version(6).stores({
       baseline_entries: 'id, date, metric, updated_at',
+    })
+    this.version(7).stores({
+      wahoo_pushes: 'id, date, updated_at',
+      wahoo_workouts: 'id, date, updated_at',
     })
   }
 }

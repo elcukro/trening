@@ -89,10 +89,10 @@ Kolejność wynika z zależności: wszystko, co „analizuje”, potrzebuje stru
 - [ ] Checklista „trening na Bolcie ✓” – razem z pkt 7.
 
 ### 7. Bolt w obie strony
-- [ ] `wahoo-push`: odczyt wykonanych treningów (`workouts_read`, `GET /v1/workouts?…`) → status dnia, gdy Stravy brak.
-- [ ] Wskaźnik na karcie dnia: „na Bolcie ✓ / brak” (weryfikacja `workout[plan_id]`), powiadomienie wieczorem,
-      gdy jutrzejszy trening nie jest na urządzeniu.
-- [ ] Z miernikiem: cele mocy jako wąskie zakresy (ERG-friendly), krótsze nazwy interwałów (Bolt obcina tekst), kadencja w każdym kroku.
+- [x] `wahoo-push` tryb `completed`: `GET /v1/workouts` z `workout_summary` → tabela `wahoo_workouts` (`_shared/wahoo_summary.ts`, testowane Vitestem); trigger `rebuild_bike_log_from_wahoo` buduje log dnia, gdy nie ma jazdy ze Stravy (Strava ma pierwszeństwo). Automat raz dziennie po wysyłce (3 dni wstecz) + przycisk „Pobierz wykonane z Bolta” (14 dni). Na ekranie dnia: „⌚ Wykonane wg Bolta” z czasem, dystansem, tętnem, mocą, NP, kadencją.
+- [x] Wskaźnik na karcie dnia i w odprawie: „na Bolcie ✓ (data)” / „plan się zmienił – wyślij ponownie” (porównanie `external_id`) / „błąd wysyłki” / „nie wysłano”; `wahoo_pushes` synchronizowane do Dexie (tylko odczyt). Wieczorne powiadomienie dodaje „otwórz aplikację”, gdy ostatnia wysyłka planu jest starsza niż 36 h.
+- [ ] Z miernikiem: cele mocy jako wąskie zakresy (ERG-friendly), krótsze nazwy interwałów – do sprawdzenia na urządzeniu po pierwszych jazdach z mocą (kadencja w krokach już jest).
+- [x] Checklista „trening na Bolcie ✓” w odprawie (pkt 6).
 
 ### 8. Siłownia: obraz ćwiczenia, film, mniej wpisywania
 - [ ] `data/exercises_media.json`: dla każdego ćwiczenia (`program.json → exercises`, np. `back_squat`, `rdl`, `trap_bar_deadlift`)
@@ -122,6 +122,8 @@ Kolejność wynika z zależności: wszystko, co „analizuje”, potrzebuje stru
 - **21.09.2026** – pkt 5 wdrożony: migracja `20260921130000_weekly_push.sql`, `push-send` z rodzajem `weekly`, `src/engine/report.ts` (+ testy), `ReportPage`.
 
 - **22.09.2026** – pkt 6 wdrożony: `src/engine/weather.ts` (+ testy), `src/sync/weather.ts`, `BriefingCard` na ekranie dnia, `WeatherSettings`, `data/clothing.json`.
+
+- **22.09.2026** – pkt 7 wdrożony: migracja `20260921140000_wahoo_workouts.sql`, `wahoo-push` tryb `completed`, `WahooStatus.tsx` (stan na Bolcie, wykonane wg Bolta), Dexie v7 (`wahoo_pushes`, `wahoo_workouts`).
 
 ## Pracochłonność (orientacyjnie)
 | # | Zakres | Nakład |

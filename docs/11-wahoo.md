@@ -75,3 +75,11 @@ Nagłówek planu przyjmuje `ftp`, ale go nie wysyłamy, dopóki plan nie ma cel�
   - Przy `429` funkcja czeka (respektując `Retry-After`) i ponawia dwa razy, a po wyczerpaniu prób **przerywa całą wysyłkę** zamiast dobijać się kolejnymi dniami. Komunikat mówi wprost o limicie.
   - Automatyczna wysyłka oznacza dzień jako wykonany **niezależnie od wyniku**. Inaczej każde uruchomienie aplikacji ponawiałoby nieudaną wysyłkę i zjadało budżet. Powtórkę uruchamia się ręcznie.
   - Diagnostyka kosztuje do 9 zapytań (trzy warianty razy utworzenie, odczyt i skasowanie) – używać oszczędnie.
+
+## Bolt w obie strony (22.09.2026)
+Tryb `completed` funkcji `wahoo-push` listuje treningi (`GET /v1/workouts`, 2 strony) i te z `workout_summary` (wykonane) zapisuje do `wahoo_workouts`
+(jednostki Wahoo: sekundy, metry, m/s → minuty, km, km/h; data lokalna Europe/Warsaw). Trigger `private.rebuild_bike_log_from_wahoo` tworzy/uzupełnia
+log dnia tylko wtedy, gdy dzień nie ma jazdy ze Stravy – Strava zawsze ma pierwszeństwo, a gdy dotrze później, jej trigger nadpisze dane.
+Klient: `wahoo.completed(days)`; automat woła `completed(3)` raz dziennie po wysyłce planu (1 zapytanie), przycisk w Integracjach – 14 dni.
+Stan wysyłki (`wahoo_pushes`) jest synchronizowany do Dexie i porównywany z bieżącym `external_id` treningu – zmiana planu (zamiana dni, override)
+daje „plan się zmienił – wyślij ponownie” na karcie dnia i w odprawie.
