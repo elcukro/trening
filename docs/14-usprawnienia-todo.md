@@ -78,10 +78,9 @@ Kolejność wynika z zależności: wszystko, co „analizuje”, potrzebuje stru
 - [ ] Wykres do końca programu (na razie 12 tygodni – dłuższy horyzont po pierwszych tygodniach danych).
 
 ### 5. Przegląd tygodnia (niedziela wieczorem) i wyróżnienie treningu kluczowego
-- [ ] `push-send`: rodzaj `weekly` (niedziela 19:00) z treścią: godziny plan/wykonanie, TSS, compliance, masa (trend),
-      co opuszczono, kluczowy trening przyszłego tygodnia.
-- [ ] Strona `/postep/tydzien/:monday` z pełnym raportem (otwierana z powiadomienia); wersja miesięczna.
-- [ ] Tydzień i Kalendarz: czwartkowy akcent wyróżniony (obramowanie/etykieta „Klucz”).
+- [x] `push-send`: rodzaj `weekly` (niedziela 19:00, cron `trening-push-tydzien-zima/lato`) z linkiem do raportu tygodnia; treść raportu liczy klient (silnik + Dexie), powiadomienie tylko otwiera stronę.
+- [x] Strona `/postep/tydzien/:monday` (`src/engine/report.ts` + `ReportPage.tsx`): godziny, TSS, jazdy/siłownie, zgodność, masa, strefy, „Co poszło nie tak”, dzień po dniu, przyszły tydzień z treningiem kluczowym; wersja miesięczna `/postep/miesiac/:YYYY-MM` z tabelą tygodni. Link „Przegląd tygodnia” w Postępie.
+- [x] Tydzień: czerwona krawędź i etykieta „Klucz”; Kalendarz: ★ przed nazwą i legenda.
 
 ### 6. Odprawa przed jazdą i podsumowanie po niej (ekran Dziś)
 - [ ] Pogoda (Open-Meteo, bez klucza; Edge Function jako proxy z pamięcią podręczną): temperatura, wiatr, opady,
@@ -120,6 +119,8 @@ Kolejność wynika z zależności: wszystko, co „analizuje”, potrzebuje stru
   `FtpSuggestionCard`, `PowerCard`, strefy z watami. Zacznie działać od pierwszej jazdy z miernikiem (`device_watts`).
 
 - **21.09.2026** – pkt 4 wdrożony: `src/engine/pmc.ts` (+ testy), hook `src/app/useLoad.ts` (faktyczny TSS per dzień), `PmcCard`, TSS w podsumowaniu tygodnia.
+
+- **21.09.2026** – pkt 5 wdrożony: migracja `20260921130000_weekly_push.sql`, `push-send` z rodzajem `weekly`, `src/engine/report.ts` (+ testy), `ReportPage`.
 
 ## Pracochłonność (orientacyjnie)
 | # | Zakres | Nakład |

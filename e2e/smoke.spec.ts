@@ -30,6 +30,25 @@ test('Tydzień: nawigacja i suma godzin', async ({ page }) => {
   await page.getByRole('button', { name: '›' }).click()
   await expect(page.getByRole('heading', { name: 'Tydzień 2' })).toBeVisible()
   await page.screenshot({ path: 'test-results/week.png', fullPage: true })
+  // trening kluczowy (czwartek) wyróżniony w tygodniu 3
+  await page.goto('/tydzien/2026-10-01?today=2026-10-01')
+  await expect(page.getByText('Klucz', { exact: true })).toBeVisible()
+})
+
+test('Przegląd tygodnia i miesiąca: podsumowanie, co poszło nie tak, przyszły tydzień', async ({ page }) => {
+  await page.goto('/?today=2026-10-01')
+  await page.getByRole('button', { name: '✕ Pominięte' }).click()
+  await page.getByRole('button', { name: 'Zapisz' }).click()
+  await expect(page.getByText('Pominięte', { exact: true })).toBeVisible()
+  await page.goto('/postep/tydzien/2026-09-28?today=2026-10-03')
+  await expect(page.getByRole('heading', { name: 'Przegląd tygodnia 3' })).toBeVisible()
+  await expect(page.getByText('Co poszło nie tak')).toBeVisible()
+  await expect(page.getByText(/Sweet spot 2×12 min \(klucz\) – pominięte/)).toBeVisible()
+  await expect(page.getByText('Przyszły tydzień')).toBeVisible()
+  await expect(page.getByText(/Trening kluczowy:/)).toBeVisible()
+  await page.getByRole('link', { name: 'Przegląd miesiąca →' }).click()
+  await expect(page.getByRole('heading', { name: 'Przegląd miesiąca' })).toBeVisible()
+  await expect(page.getByText(/Tydzień 3/)).toBeVisible()
 })
 
 test('Ustawienia: LTHR 160 daje bpm na ekranie Dziś', async ({ page }) => {

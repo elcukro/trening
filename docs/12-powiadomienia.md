@@ -12,6 +12,10 @@ Obie wysyłki mają klucz `(użytkownik, rodzaj, data)` w tabeli `push_log`, wi�
 3. **Wysyłka**: Edge Function `push-send` podpisuje żądania kluczem VAPID i wysyła do dostawcy (Apple, Google). Subskrypcje, które zwrócą 404 albo 410, są oznaczane jako usunięte – to znak, że aplikacja została odinstalowana albo wyczyszczono dane.
 4. **Harmonogram**: `pg_cron` odpala `private.send_push(rodzaj)`, a ta wywołuje funkcję przez `pg_net`. Uwierzytelnienie idzie własnym sekretem `push_cron_secret` z vaulta, nie kluczem usługowym.
 
+## Przegląd tygodnia (niedziela 19:00)
+Rodzaj `weekly` (cron `trening-push-tydzien-zima` 18:00 UTC i `-lato` 17:00 UTC, dedupe w `push_log` jak dla pozostałych) wysyła link
+`/postep/tydzien/<poniedziałek>` – raport liczy aplikacja (`src/engine/report.ts`), więc serwer nie musi znać planu.
+
 ## Samonaprawa subskrypcji
 Przeglądarka potrafi unieważnić subskrypcję bez udziału aplikacji (zaobserwowane w Chrome po wdrożeniu nowej wersji service workera): serwer dostaje wtedy `410 Gone`, wykreśla urządzenie (`deleted_at`) i raportuje je jako `expired`, a nie błąd. Klient odnawia subskrypcję sam (`ensurePushSubscription` w `src/sync/push.ts`, hook `usePushKeepalive` w `App.tsx`): przy starcie, po zalogowaniu i po komunikacie `PUSH_SUBSCRIPTION_CHANGED` z service workera (`pushsubscriptionchange` w `src/sw.ts`), o ile zgoda jest udzielona i użytkownik nie kliknął „Wyłącz” (flaga `push_optout` w localStorage). Id wiersza to skrót endpointu, więc odnowienie jest idempotentne.
 

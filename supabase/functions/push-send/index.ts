@@ -63,6 +63,14 @@ async function subsFor(admin: SupabaseClient, userId: string): Promise<Sub[]> {
   return (data ?? []) as Sub[]
 }
 
+/** Poniedziałek tygodnia zawierającego datę ISO (bez obiektów Date ze strefą). */
+function mondayOf(iso: string): string {
+  const d = new Date(`${iso}T00:00:00Z`)
+  const shift = (d.getUTCDay() + 6) % 7
+  d.setUTCDate(d.getUTCDate() - shift)
+  return d.toISOString().slice(0, 10)
+}
+
 /** Data „dziś” w strefie Europe/Warsaw. */
 function todayWarsaw(): string {
   return new Intl.DateTimeFormat('sv-SE', { timeZone: 'Europe/Warsaw' }).format(new Date())
@@ -80,8 +88,10 @@ Deno.serve(async (req) => {
     // sekret wspólny z zadaniem cyklicznym w bazie (vault: push_cron_secret)
     if (!body.secret || body.secret !== env('PUSH_CRON_SECRET')) return json({ error: 'unauthorized' }, 401)
     const admin = adminClient()
-    const kind = body.kind === 'evening' ? 'evening' : 'morning'
+    const kind = body.kind === 'evening' ? 'evening' : body.kind === 'weekly' ? 'weekly' : 'morning'
     const date = todayWarsaw()
+    // przegląd tygodnia: link do raportu tygodnia, który właśnie się kończy (poniedziałek tej daty)
+    const weekMonday = mondayOf(date)
     const { data: profiles } = await admin.from('profiles').select('user_id, push_enabled').eq('push_enabled', true)
     const results: Record<string, unknown>[] = []
     for (const p of profiles ?? []) {
@@ -91,9 +101,9 @@ Deno.serve(async (req) => {
       const subs = await subsFor(admin, userId)
       if (subs.length === 0) continue
       const payload = body.payloads?.[userId] ?? {
-        title: kind === 'morning' ? 'Plan na dziś' : 'Odhacz dzisiejszy trening',
-        body: kind === 'morning' ? 'Otwórz aplikację, żeby zobaczyć dzisiejszy trening.' : 'Zapisz, jak poszło: rower i siłownia.',
-        url: '/',
+        title: kind === 'morning' ? 'Plan na dziś' : kind === 'evening' ? 'Odhacz dzisiejszy trening' : 'Przegląd tygodnia',
+        body: kind === 'morning' ? 'Otwórz aplikację, żeby zobaczyć dzisiejszy trening.' : kind === 'evening' ? 'Zapisz, jak poszło: rower i siłownia.' : 'Godziny, TSS, co poszło i co czeka w przyszłym tygodniu.',
+        url: kind === 'weekly' ? `/postep/tydzien/${weekMonday}` : '/',
         tag: `${kind}-${date}`,
       }
       const res = await sendTo(admin, subs, payload)

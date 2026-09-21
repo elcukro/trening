@@ -27,6 +27,7 @@ import { PHASE_COLOR, PHASE_SHORT } from '@/lib/labels'
 import type { PhaseId } from '@/engine/types'
 
 const ProgressPage = lazy(() => import('@/features/progress/ProgressPage').then((m) => ({ default: m.ProgressPage })))
+const ReportPage = lazy(() => import('@/features/progress/ReportPage').then((m) => ({ default: m.ReportPage })))
 
 /** Dolny pasek na telefonie – bez zmian; Kalendarz jest dostępny przez „Więcej”. */
 const TABS = [
@@ -214,6 +215,8 @@ export function App() {
               <Route path="kalendarz" element={<CalendarPage />} />
               <Route path="kalendarz/:month" element={<CalendarPage />} />
               <Route path="postep" element={<Suspense fallback={<p className="py-8 text-center text-sm text-slate-500">Ładowanie…</p>}><ProgressPage /></Suspense>} />
+              <Route path="postep/tydzien/:monday" element={<Suspense fallback={<p className="py-8 text-center text-sm text-slate-500">Ładowanie…</p>}><ReportPage kind="week" /></Suspense>} />
+              <Route path="postep/miesiac/:month" element={<Suspense fallback={<p className="py-8 text-center text-sm text-slate-500">Ładowanie…</p>}><ReportPage kind="month" /></Suspense>} />
               <Route path="biblioteka" element={<LibraryPage />} />
               <Route path="biblioteka/trening/:id" element={<WorkoutPage />} />
               <Route path="biblioteka/cwiczenie/:id" element={<ExercisePage />} />

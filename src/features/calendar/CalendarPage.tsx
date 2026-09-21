@@ -92,7 +92,7 @@ function DayCell({ date, day, inMonth, today, logs, hasOverride }: { date: ISODa
       {ride && (
         <>
           <span className={`h-1.5 w-full rounded-full lg:hidden ${DAY_TYPE_COLOR[day.day_type]}`} />
-          <CellItem color={DAY_TYPE_COLOR[day.day_type]} name={ride.name} meta={minutes(ride.duration_min)} status={bikeStatus} />
+          <CellItem color={DAY_TYPE_COLOR[day.day_type]} name={day.day_type === 'key' ? `★ ${ride.name}` : ride.name} title={day.day_type === 'key' ? `Klucz: ${ride.name}` : ride.name} meta={minutes(ride.duration_min)} status={bikeStatus} />
         </>
       )}
       {travel && (
@@ -237,7 +237,7 @@ export function CalendarPage() {
           <Dot color={DAY_TYPE_COLOR.long} /> Długa
         </li>
         <li className="flex items-center gap-1.5">
-          <Dot color={DAY_TYPE_COLOR.key} /> Akcent
+          <Dot color={DAY_TYPE_COLOR.key} /> Akcent (★ trening kluczowy)
         </li>
         <li className="flex items-center gap-1.5">
           <Dot color={GYM_COLOR} /> Siłownia

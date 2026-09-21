@@ -120,7 +120,7 @@ export function WeekPage() {
           const weekend = d.weekday === 'sat' || d.weekday === 'sun'
           return (
             <li key={d.date} className="xl:flex">
-              <Card className={`h-full w-full xl:flex xl:flex-col xl:p-3 ${isToday ? 'ring-2 ring-sky-500' : ''} ${selectable ? 'ring-2 ring-amber-400' : ''}`}>
+              <Card className={`h-full w-full xl:flex xl:flex-col xl:p-3 ${isToday ? 'ring-2 ring-sky-500' : ''} ${selectable ? 'ring-2 ring-amber-400' : ''} ${d.day_type === 'key' ? 'border-l-4 border-l-red-500' : ''}`}>
                 <div className="flex min-w-0 items-start gap-3 xl:flex-1 xl:flex-col xl:gap-2">
                   {/* data: na liście kolumna 2,5 rem, w siatce wiersz z paskiem koloru dnia */}
                   <div className="w-10 shrink-0 text-center xl:flex xl:w-full xl:items-baseline xl:gap-1.5 xl:border-b xl:border-slate-100 xl:pb-2 xl:text-left xl:dark:border-slate-700">
@@ -148,6 +148,7 @@ export function WeekPage() {
                       </div>
                     )}
                     <div className="flex min-w-0 flex-wrap items-center gap-1">
+                      {d.day_type === 'key' && d.bike && <Badge color="bg-red-500" title="Trening kluczowy tygodnia – akcent">Klucz</Badge>}
                       {bikeLog && bikeLog.status !== 'planned' && <StatusBadge status={bikeLog.status} />}
                       {gymLog && gymLog.status !== 'planned' && <StatusBadge status={gymLog.status} />}
                       {d.flags.map((f) => (

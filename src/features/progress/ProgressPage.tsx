@@ -8,7 +8,9 @@ import { addDays } from '@/engine/dates'
 import { buildCalendar } from '@/engine/calendar'
 import { estimateClimb } from '@/engine/climb'
 import { compliance, e1rmSeries, weeklyVolume, weightSeries, weightTrend } from '@/engine/progress'
-import { Button, Card, CardSection, CardTitle, Input, Metric, PageTitle, Row, Select } from '@/components/ui'
+import { Button, Card, CardSection, CardTitle, Input, Metric, PageTitle, Row, Select, buttonClass } from '@/components/ui'
+import { Link } from 'react-router'
+import { mondayOf } from '@/engine/dates'
 import { hours, num } from '@/lib/format'
 import { fmtDayMonth, todayISO } from '@/lib/dates'
 import { TestResultForm, TestSummary } from '@/features/today/TestResultCard'
@@ -84,7 +86,16 @@ export function ProgressPage() {
 
   return (
     <div className="space-y-3">
-      <PageTitle sub="Masa, testy, objętość, siła">Postęp</PageTitle>
+      <PageTitle
+        sub="Masa, testy, objętość, siła"
+        right={
+          <Link to={`/postep/tydzien/${mondayOf(today)}`} className={buttonClass('secondary', 'sm')}>
+            Przegląd tygodnia
+          </Link>
+        }
+      >
+        Postęp
+      </PageTitle>
       <FtpSuggestionCard engine={engine} acts={allActs} />
 
       {/* na komputerze dwie kolumny: masa + testy + kalkulator | objętość + siła */}
