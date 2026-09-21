@@ -95,7 +95,7 @@ Kolejność wynika z zależności: wszystko, co „analizuje”, potrzebuje stru
 - [x] Checklista „trening na Bolcie ✓” w odprawie (pkt 6).
 
 ### 8. Siłownia: obraz ćwiczenia, film, mniej wpisywania
-- [x] Schematy: `scripts/exercise-diagrams.py` generuje 22 SVG (patyczak z kątów, pozycja start → koniec) do `public/exercises/` – offline, w precache PWA. `data/exercises_media.json`: link do techniki na YouTube jako **wyszukiwanie** (bez martwych linków; pole `video_id` nadpisuje konkretnym filmem) + gryf do kalkulatora (`bar_kg`: 20 sztanga, 25 trap bar, null = brak).
+- [x] Zdjęcia start/koniec z **free-exercise-db** (Unlicense, domena publiczna) dla wszystkich 22 ćwiczeń – `public/exercises/<id>-0.jpg`, `-1.jpg` (480 px, ~1,5 MB łącznie, w precache PWA); schematy SVG (patyczaki) odrzucone jako zbyt słabe. Uwagi przy zdjęciach pokazujących wariant (`note`). `data/exercises_media.json`: link do techniki na YouTube jako **wyszukiwanie** (bez martwych linków; pole `video_id` nadpisuje konkretnym filmem) + gryf do kalkulatora (`bar_kg`: 20 sztanga, 25 trap bar, null = brak).
 - [x] Karta ćwiczenia w Bibliotece (schemat + „▶ Pokaż technikę (YouTube)” na górze, karta „Twoje wyniki (e1RM)” z wykresem) i w trybie siłowni (w rozwijanym „Technika i po co”).
 - [x] Kalkulator talerzy pod polem ciężaru (zachłannie 25→1,25 na stronę, z resztą i najbliższym możliwym ciężarem); „↻ Powtórz poprzednią serię” jednym dotknięciem (zapisuje i startuje przerwę).
 - [x] Plateau (`detectPlateau`): 3 ostatnie sesje bez przebicia rekordu e1RM (> 1 %) → podpowiedź zależna od RIR (≥ 2: zejdź o 1 RIR; inaczej: dołóż serię / zmień zakres) – w trybie siłowni i na karcie ćwiczenia.
@@ -124,7 +124,7 @@ Kolejność wynika z zależności: wszystko, co „analizuje”, potrzebuje stru
 
 - **22.09.2026** – pkt 7 wdrożony: migracja `20260921140000_wahoo_workouts.sql`, `wahoo-push` tryb `completed`, `WahooStatus.tsx` (stan na Bolcie, wykonane wg Bolta), Dexie v7 (`wahoo_pushes`, `wahoo_workouts`).
 
-- **22.09.2026** – pkt 8 wdrożony: `scripts/exercise-diagrams.py` + `public/exercises/*.svg`, `data/exercises_media.json`, `src/data/exercisesMedia.ts`, `ExerciseMedia.tsx`, `platesFor`/`detectPlateau` w `src/engine/load.ts` (+ testy), tryb siłowni i karta ćwiczenia.
+- **22.09.2026** – pkt 8 wdrożony: zdjęcia z free-exercise-db w `public/exercises/`, `data/exercises_media.json`, `src/data/exercisesMedia.ts`, `ExerciseMedia.tsx`, `platesFor`/`detectPlateau` w `src/engine/load.ts` (+ testy), tryb siłowni i karta ćwiczenia.
 
 ## Pracochłonność (orientacyjnie)
 | # | Zakres | Nakład |

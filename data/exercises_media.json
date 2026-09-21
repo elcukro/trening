@@ -1,27 +1,121 @@
 {
-  "_comment": "Pkt 8 planu usprawnień: schemat (SVG z scripts/exercise-diagrams.py, offline), link do techniki na YouTube (wyszukiwanie – bez ryzyka martwych linków; `video_id` nadpisuje, gdy wybierzesz konkretny film) i gryf do kalkulatora talerzy (kg, null = bez kalkulatora).",
+  "_comment": "Pkt 8 planu usprawnień: zdjęcia start/koniec z free-exercise-db (github.com/yuhonas/free-exercise-db, licencja Unlicense – domena publiczna) w public/exercises/<id>-0.jpg i -1.jpg (480 px, offline w precache PWA); link do techniki na YouTube (wyszukiwanie – bez martwych linków; `video_id` nadpisuje konkretnym filmem); gryf do kalkulatora talerzy (kg, null = bez kalkulatora); `note` – uwaga, gdy zdjęcie pokazuje wariant.",
   "exercises": {
-    "back_squat": { "search": "how to back squat technique Alan Thrall", "bar_kg": 20 },
-    "rdl": { "search": "romanian deadlift technique", "bar_kg": 20 },
-    "trap_bar_deadlift": { "search": "trap bar deadlift how to", "bar_kg": 25 },
-    "db_row": { "search": "one arm dumbbell row technique", "bar_kg": null },
-    "calf_raise": { "search": "standing calf raise machine technique", "bar_kg": null },
-    "pallof_press": { "search": "pallof press how to", "bar_kg": null },
-    "dead_bug": { "search": "dead bug exercise correct form", "bar_kg": null },
-    "side_plank": { "search": "side plank correct form", "bar_kg": null },
-    "step_up": { "search": "dumbbell step up technique", "bar_kg": null },
-    "bulgarian_split_squat": { "search": "bulgarian split squat technique", "bar_kg": null },
-    "hip_thrust": { "search": "barbell hip thrust technique Bret Contreras", "bar_kg": 20 },
-    "pull_up": { "search": "pull up technique beginner band", "bar_kg": null },
-    "push_up": { "search": "push up correct form", "bar_kg": null },
-    "farmer_walk": { "search": "farmers walk technique", "bar_kg": null },
-    "back_extension": { "search": "back extension roman chair technique", "bar_kg": null },
-    "copenhagen_plank": { "search": "copenhagen plank how to", "bar_kg": null },
-    "plank_reach": { "search": "plank shoulder tap arm reach form", "bar_kg": null },
-    "jump_squat": { "search": "dumbbell jump squat technique", "bar_kg": null },
-    "kb_swing": { "search": "kettlebell swing technique hinge", "bar_kg": null },
-    "box_jump": { "search": "box jump technique landing", "bar_kg": null },
-    "mobility_circuit": { "search": "cycling hip mobility warm up routine", "bar_kg": null },
-    "cooldown_stretch": { "search": "hip flexor stretch after cycling", "bar_kg": null }
+    "back_squat": {
+      "search": "how to back squat technique Alan Thrall",
+      "bar_kg": 20,
+      "photo_source": "Barbell_Full_Squat"
+    },
+    "rdl": {
+      "search": "romanian deadlift technique",
+      "bar_kg": 20,
+      "photo_source": "Romanian_Deadlift"
+    },
+    "trap_bar_deadlift": {
+      "search": "trap bar deadlift how to",
+      "bar_kg": 25,
+      "photo_source": "Trap_Bar_Deadlift"
+    },
+    "db_row": {
+      "search": "one arm dumbbell row technique",
+      "bar_kg": null,
+      "photo_source": "One-Arm_Dumbbell_Row"
+    },
+    "calf_raise": {
+      "search": "standing calf raise machine technique",
+      "bar_kg": null,
+      "photo_source": "Standing_Calf_Raises"
+    },
+    "pallof_press": {
+      "search": "pallof press how to",
+      "bar_kg": null,
+      "photo_source": "Pallof_Press"
+    },
+    "dead_bug": {
+      "search": "dead bug exercise correct form",
+      "bar_kg": null,
+      "photo_source": "Dead_Bug"
+    },
+    "side_plank": {
+      "search": "side plank correct form",
+      "bar_kg": null,
+      "photo_source": "Side_Bridge"
+    },
+    "step_up": {
+      "search": "dumbbell step up technique",
+      "bar_kg": null,
+      "photo_source": "Dumbbell_Step_Ups"
+    },
+    "bulgarian_split_squat": {
+      "search": "bulgarian split squat technique",
+      "bar_kg": null,
+      "photo_source": "Split_Squat_with_Dumbbells",
+      "note": "Na zdjęciu split squat z hantlami – w wersji bułgarskiej tylna stopa leży na ławce."
+    },
+    "hip_thrust": {
+      "search": "barbell hip thrust technique Bret Contreras",
+      "bar_kg": 20,
+      "photo_source": "Barbell_Hip_Thrust"
+    },
+    "pull_up": {
+      "search": "pull up technique beginner band",
+      "bar_kg": null,
+      "photo_source": "Band_Assisted_Pull-Up",
+      "note": "Na zdjęciu wersja z gumą asekuracyjną – bez gumy to samo ustawienie."
+    },
+    "push_up": {
+      "search": "push up correct form",
+      "bar_kg": null,
+      "photo_source": "Pushups"
+    },
+    "farmer_walk": {
+      "search": "farmers walk technique",
+      "bar_kg": null,
+      "photo_source": "Farmers_Walk"
+    },
+    "back_extension": {
+      "search": "back extension roman chair technique",
+      "bar_kg": null,
+      "photo_source": "Hyperextensions_Back_Extensions"
+    },
+    "copenhagen_plank": {
+      "search": "copenhagen plank how to",
+      "bar_kg": null,
+      "photo_source": "Side_Bridge",
+      "note": "Na zdjęciu plank bokiem – w wersji kopenhaskiej górna noga leży na ławce, dolna pracuje pod nią."
+    },
+    "plank_reach": {
+      "search": "plank shoulder tap arm reach form",
+      "bar_kg": null,
+      "photo_source": "Plank"
+    },
+    "jump_squat": {
+      "search": "dumbbell jump squat technique",
+      "bar_kg": null,
+      "photo_source": "Freehand_Jump_Squat",
+      "note": "Na zdjęciu wyskok bez obciążenia – w planie z lekkimi hantlami przy bokach."
+    },
+    "kb_swing": {
+      "search": "kettlebell swing technique hinge",
+      "bar_kg": null,
+      "photo_source": "One-Arm_Kettlebell_Swings",
+      "note": "Na zdjęciu swing jednorącz – w planie oburącz, ten sam zawias biodrowy."
+    },
+    "box_jump": {
+      "search": "box jump technique landing",
+      "bar_kg": null,
+      "photo_source": "Front_Box_Jump"
+    },
+    "mobility_circuit": {
+      "search": "cycling hip mobility warm up routine",
+      "bar_kg": null,
+      "photo_source": "Standing_Hip_Circles",
+      "note": "Zdjęcie pokazuje jeden element obwodu (krążenia bioder); pełna lista kroków niżej."
+    },
+    "cooldown_stretch": {
+      "search": "hip flexor stretch after cycling",
+      "bar_kg": null,
+      "photo_source": "Kneeling_Hip_Flexor"
+    }
   }
 }
