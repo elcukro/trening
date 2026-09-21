@@ -23,3 +23,13 @@
 
 ## Sprawdzenie (scenariusz 16)
 Wgraj jazdę z Bolta na Stravę → w ciągu kilku minut na ekranie Dziś jazda ma status *wykonane* z czasem i tętnem. Jeśli nie: Ustawienia → Integracje → „Pobierz ostatnie 14 dni”, a logi funkcji: Dashboard → Edge Functions → strava-webhook → Logs.
+
+## Strumienie i metryki (21.09.2026)
+Przy imporcie (`fetchActivity`) pobieramy pełne strumienie `time, heartrate, watts, cadence, velocity_smooth, distance, altitude, moving`
+i próbkujemy je do 5 s (`_shared/metrics.ts`, `resample`). Do `strava_activities` trafiają: `device_watts` (moc z miernika – tylko wtedy liczymy NP/MMP),
+`np_w`, `mmp_w` (5 s, 1, 5, 20, 60 min), `best_speed_kmh` (5, 20, 60 min z dystansu, czas zegarowy), `decoupling_pct` (Pw:HR, ≥ 40 min), `has_streams`;
+`avg_cadence` to średnia z próbek w ruchu z kadencją > 0. Próbki idą do `strava_streams` (jedna jazda ≈ 6–12 KB), klient pobiera je na żądanie
+(`loadStreams` w `src/sync/strava.ts`) i buforuje w `kv` (`streams:<id>`), więc analiza działa offline po pierwszym otwarciu.
+Analiza po stronie klienta: `src/engine/analysis.ts` (`rideLoad` – TSS z mocy → tętna → RPE; `matchSteps` – dopasowanie kroków treningu do próbek
+z automatycznym przesunięciem startu; `statusFromScore` – „wykonane” ≥ 60 % kroków pracy w celu, inaczej „zmienione”). Wynik analizy (przesunięcie, zgodność)
+w `kv` pod `analysis:<id>`. Metryki są testowane Vitestem mimo położenia w `supabase/functions` (plik bez importów Deno).

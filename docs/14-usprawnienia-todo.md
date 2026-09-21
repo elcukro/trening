@@ -38,7 +38,7 @@ Model (płasko, bezwietrznie, 110 kg + 12 kg rower, Crr 0,005, CdA 0,40–0,45 n
 - [ ] Tętno spoczynkowe rano przez 7 dni (check-in) – średnia wyjściowa.
 - [ ] Masa: 7-dniowa średnia (check-in) – start 110 kg.
 - [ ] Kadencja: średnia z jazd Z2 (cel ≥ 78 rpm; tour: 58–71).
-- [ ] W aplikacji: karta **„Punkt wyjścia”** w Postępie z powyższymi liczbami i datą pomiaru; kolejne pomiary
+- [x] W aplikacji: karta **„Punkt wyjścia”** w Postępie (21.09.2026) z powyższymi liczbami i datą pomiaru; kolejne pomiary
       (test co 12 tyg., jazda odniesienia co 4 tyg.) nanoszone obok – to jest miara postępu do celu.
 
 ## Kolejność wdrażania (todo)
@@ -46,21 +46,21 @@ Model (płasko, bezwietrznie, 110 kg + 12 kg rower, Crr 0,005, CdA 0,40–0,45 n
 Kolejność wynika z zależności: wszystko, co „analizuje”, potrzebuje strumieni ze Stravy i wspólnej miary obciążenia.
 
 ### 1. Strumienie ze Stravy + analiza „plan vs. wykonanie” (fundament)
-- [ ] `strava-webhook`/`strava-oauth sync`: po imporcie pobrać strumienie `time, watts, heart_rate, cadence, velocity_smooth, distance, grade_smooth`
+- [x] `strava-webhook`/`strava-oauth sync`: po imporcie pobrać strumienie `time, watts, heart_rate, cadence, velocity_smooth, distance, grade_smooth`
       (endpoint `/activities/{id}/streams`, scope `activity:read_all` już jest) i zapisać zredukowane (co 1 s → co 5 s) w `strava_streams`
       (JSONB, tylko po stronie serwera + pobranie do Dexie na żądanie).
-- [ ] Silnik (`src/engine/analysis.ts`, czysty TS + testy): dopasowanie kroków treningu do strumienia
+- [x] Silnik (`src/engine/analysis.ts`, czysty TS + testy): dopasowanie kroków treningu do strumienia
       (rozgrzewka → interwały → schłodzenie; heurystyka po mocy/tętnie, ręczna korekta przesunięcia w UI),
       dla każdego kroku: średnia i % czasu w celu (moc, tętno, kadencja), ocena ✅/⚠️/❌.
-- [ ] Miary jazdy: NP, IF, **TSS** (moc) → hrTSS (tętno) → RPE×czas (fallback); Pw:HR dla Z2; MMP 5 s / 1 / 5 / 20 / 60 min.
-- [ ] `StravaCard`: sekcja „Wykonanie” (tabela kroków + wykres mocy/tętna z pasami celu), automatyczny status dnia
+- [x] Miary jazdy: NP, IF, **TSS** (moc) → hrTSS (tętno) → RPE×czas (fallback); Pw:HR dla Z2; MMP 5 s / 1 / 5 / 20 / 60 min.
+- [x] `StravaCard`: sekcja „Wykonanie” (tabela kroków + wykres mocy/tętna z pasami celu), automatyczny status dnia
       `done`/`modified`, komentarz i RPE.
-- [ ] Postęp: „Compliance tygodnia” (kroki zaliczone / wszystkie) i lista jazd z TSS.
+- [x] Postęp: karta „Obciążenie (TSS)” – TSS tygodniami, lista jazd ze zgodnością z analizy i TSS (compliance tygodnia jako średnia po analizie – do zrobienia razem z pkt 5).
 
 ### 2. Punkt wyjścia i kalkulator celu 30 km/h
-- [ ] Karta „Punkt wyjścia” (pkt 0) w Postępie; wpisy ręczne + automatyczne z pkt 1.
-- [ ] Kalkulator: z jazdy odniesienia (prędkość, moc, masa) estymacja CdA/Crr → **moc potrzebna na 30 km/h**,
-      wymagane FTP (moc / 0,85), luka do dziś (W i %), prognoza z trendu FTP.
+- [x] Karta „Punkt wyjścia” (pkt 0) w Postępie; wpisy ręczne + automatyczne z pkt 1.
+- [x] Kalkulator: z jazdy odniesienia (prędkość, moc, masa) estymacja CdA → **moc potrzebna na 30 km/h**,
+      wymagane FTP (moc / 0,85), luka do dziś (W i %) – w karcie „Punkt wyjścia”; prognoza z trendu FTP po pierwszych dwóch testach.
 - [ ] Wskaźnik na ekranie Dziś/Sezon: „FTP 165 → cel 240 W · luka 75 W” zamiast tylko dni do wyjazdu.
 
 ### 3. Automatyczne FTP/LTHR i krzywa mocy
@@ -108,6 +108,12 @@ Kolejność wynika z zależności: wszystko, co „analizuje”, potrzebuje stru
 - [ ] Po jeździe: rozkład kadencji wg stref, średnia w interwałach siłowych vs cel, trend w Z2 (cel ≥ 78 rpm).
 - [ ] Plan: bloki niskiej kadencji (50–60 rpm) w Z2/SS jako kroki z celem kadencji i kontrolą wykonania (pkt 1).
 - [ ] Ostrzeżenie w przeglądzie tygodnia, gdy średnia kadencja Z2 < 75 rpm dwa tygodnie z rzędu.
+
+## Stan wdrożenia
+- **21.09.2026** – pkt 0 i 1 wdrożone (commit `842bb16`): `supabase/functions/_shared/metrics.ts`, migracja `20260921120000_streams_baseline.sql`,
+  `src/engine/analysis.ts`, `src/engine/baseline.ts`, `RideAnalysis.tsx`, `BaselineCard.tsx`, `LoadCard.tsx`. Import 30 dni wykonany:
+  13 jazd ze strumieniami. Do analizy „plan vs wykonanie” potrzebne są jazdy z tętnem/mocą – dotychczasowe ich nie mają, więc
+  pierwsze oceny pojawią się od 22.09 (pas HR) i po zamontowaniu miernika.
 
 ## Pracochłonność (orientacyjnie)
 | # | Zakres | Nakład |
