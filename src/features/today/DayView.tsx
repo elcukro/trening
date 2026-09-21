@@ -13,7 +13,10 @@ import { TestResultCard } from './TestResultCard'
 import { StravaActivities } from './StravaCard'
 import { effectiveFtp } from '@/engine/progress'
 import { RulesCard } from './RulesCard'
-import type { PlanOverrideRow } from '@/db'
+import { FtpSuggestionCard } from '@/features/progress/FtpSuggestionCard'
+import { todayISO } from '@/lib/dates'
+import { addDays } from '@/engine/dates'
+import type { PlanOverrideRow, StravaActivity } from '@/db'
 import type { RuleAction, RuleWarning } from '@/engine/rules'
 import { WahooButton } from './WahooButton'
 import { useLiveQuery } from 'dexie-react-hooks'
@@ -200,6 +203,7 @@ export function DayView({ day, engine, warnings = [], overrides = [], onAction, 
     <div className="space-y-3 lg:space-y-4">
       <DayHeader day={day} />
       <CheckinCard date={day.date} />
+      {day.date === todayISO() && <TodayFtpSuggestion engine={engine} />}
       {onAction && onUndo && <RulesCard warnings={warnings} overrides={overrides} onAction={onAction} onUndo={onUndo} />}
       <NotesCard day={day} />
       {/* na komputerze: rower (szerszy) po lewej, siłownia i żywienie po prawej */}
@@ -215,4 +219,10 @@ export function DayView({ day, engine, warnings = [], overrides = [], onAction, 
       </div>
     </div>
   )
+}
+
+/** Propozycja nowego FTP z ostatnich jazd – tylko na ekranie Dziś (szczegóły w Postępie). */
+function TodayFtpSuggestion({ engine }: { engine: Engine }) {
+  const acts = useLiveQuery(() => db.strava_activities.where('date').aboveOrEqual(addDays(todayISO(), -90)).toArray(), [], [] as StravaActivity[])
+  return <FtpSuggestionCard engine={engine} acts={acts} />
 }

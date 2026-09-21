@@ -1,21 +1,30 @@
 import { Link } from 'react-router'
 import { useEngine } from '@/app/useSettings'
-import { computeZones } from '@/engine/zones'
+import { computeZones, wattsRange } from '@/engine/zones'
+import { effectiveFtp, effectiveLthr } from '@/engine/progress'
+import { fmtDayMonth, todayISO } from '@/lib/dates'
 import { Card, CardTitle, Inset, PageTitle } from '@/components/ui'
 import { zoneColor } from '@/lib/zones'
 import { TESTS } from '@/data/rules'
 
 export function ZonesPage() {
   const engine = useEngine()
-  const lthr = engine.ctx.settings.lthr_bpm
+  const today = todayISO()
+  const tests = engine.ctx.tests ?? []
+  const effL = effectiveLthr(today, engine.ctx.settings.lthr_bpm, tests.filter((t): t is { date: string; lthr_bpm: number } => !!t.lthr_bpm))
+  const lthr = effL.lthr
+  const effF = effectiveFtp(today, engine.ctx.settings.ftp_w_estimate, tests)
+  const ftp = effF.ftp
+  const powerZones = engine.ctx.program.power_zones_ftp_fraction
   const zones = engine.ctx.program.hr_zones_lthr_fraction
   const bpm = lthr ? computeZones(zones, lthr) : null
+  const sub = [lthr ? `LTHR ${lthr} bpm${effL.source === 'test' && effL.test_date ? ` (test ${fmtDayMonth(effL.test_date)})` : ''}` : 'Brak LTHR – pokazuję % i RPE', `FTP ${ftp} W${effF.source === 'test' && effF.test_date ? ` (test ${fmtDayMonth(effF.test_date)})` : ' (szacunek)'}`].join(' · ')
   return (
     <div className="space-y-3">
       <Link to="/biblioteka" className="inline-flex min-h-11 items-center text-sm font-medium text-sky-700 hover:underline dark:text-sky-300">
         ‹ Biblioteka
       </Link>
-      <PageTitle sub={lthr ? `LTHR ${lthr} bpm` : 'Brak LTHR – pokazuję % i RPE'}>Strefy tętna</PageTitle>
+      <PageTitle sub={sub}>Strefy</PageTitle>
       <Card>
         <table className="w-full text-sm">
           <thead className="text-left text-xs text-slate-500 dark:text-slate-400">
@@ -23,6 +32,7 @@ export function ZonesPage() {
               <th className="py-1">Strefa</th>
               <th className="py-1">% LTHR</th>
               <th className="py-1">{lthr ? 'bpm' : 'RPE'}</th>
+              <th className="py-1">W</th>
               {lthr && <th className="py-1">RPE</th>}
             </tr>
           </thead>
@@ -40,12 +50,13 @@ export function ZonesPage() {
                   {Math.round(z.low * 100)}–{Math.round(z.high * 100)}%
                 </td>
                 <td className="py-1.5 tabular-nums">{bpm ? `${bpm[i]!.low_bpm}–${bpm[i]!.high_bpm}` : `${z.rpe[0]}–${z.rpe[1]}`}</td>
+                <td className="py-1.5 tabular-nums">{(() => { const w = wattsRange(z.id, powerZones, ftp); return w ? `${w[0]}–${w[1]}` : '—' })()}</td>
                 {lthr && <td className="py-1.5 tabular-nums">{z.rpe[0]}–{z.rpe[1]}</td>}
               </tr>
             ))}
           </tbody>
         </table>
-        <p className="mt-3 text-xs text-slate-500 dark:text-slate-400">W interwałach ≥ SS pierwsze 2–3 min prowadź po RPE – tętno dogania z opóźnieniem. W upale &gt; 28 °C cele Z2–SS niżej o 3–5 bpm.</p>
+        <p className="mt-3 text-xs text-slate-500 dark:text-slate-400">Waty z FTP {ftp} W ({effF.source === 'test' ? 'ostatni test' : 'szacunek z ustawień'}); zakresy mocy wg tabeli programu (Z2 56–75 %, SS 88–94 %, THR 95–105 % FTP). W interwałach ≥ SS pierwsze 2–3 min prowadź po RPE – tętno dogania z opóźnieniem. W upale &gt; 28 °C cele Z2–SS niżej o 3–5 bpm.</p>
       </Card>
       {!lthr && (
         <Link to="/wiecej/ustawienia" className="block">

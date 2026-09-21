@@ -49,6 +49,7 @@ test.describe('wersja na komputer (≥ 1024 px)', () => {
     await expect(page.getByRole('heading', { name: 'Punkt wyjścia' })).toBeVisible()
     await expect(page.getByText('FTP na 30 km/h (2–3 h)')).toBeVisible()
     await expect(page.getByRole('heading', { name: 'Obciążenie (TSS)' })).toBeVisible()
+    await expect(page.getByRole('heading', { name: 'Moc', exact: true })).toBeVisible()
     const mass = await page.getByRole('heading', { name: 'Masa' }).boundingBox()
     const vol = await page.getByRole('heading', { name: /Objętość/ }).boundingBox()
     expect(mass && vol && vol.x > mass.x + 300).toBe(true)

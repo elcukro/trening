@@ -64,11 +64,12 @@ Kolejność wynika z zależności: wszystko, co „analizuje”, potrzebuje stru
 - [ ] Wskaźnik na ekranie Dziś/Sezon: „FTP 165 → cel 240 W · luka 75 W” zamiast tylko dni do wyjazdu.
 
 ### 3. Automatyczne FTP/LTHR i krzywa mocy
-- [ ] Po każdej jeździe z mocą: najlepsze 20 min × 0,95 i 60 min → jeśli > aktualne FTP o ≥ 3 %: propozycja
-      „Zaktualizować FTP do 262 W?” (jedno dotknięcie → `test_results` jak wynik testu, R11 od następnego dnia).
-- [ ] Analogicznie LTHR z najlepszych 20–30 min tętna przy stałej mocy.
-- [ ] Postęp: wykres krzywej mocy (MMP) z historią (28/90 dni), FTP i **W/kg** na wspólnej osi z masą.
-- [ ] Strefy w Bibliotece: waty i bpm obok siebie, z datą ostatniej zmiany.
+- [x] Po każdej jeździe z mocą: najlepsze 20 min × 0,95 i 60 min → jeśli > aktualne FTP o ≥ 3 %: propozycja
+      „Zaktualizować FTP do X W?” na Dziś i w Postępie (jedno dotknięcie → `test_results` jak wynik testu, R11 od następnego dnia; „Nie teraz” pamiętane per jazda).
+- [x] LTHR z tej samej jazdy: tętno z drugiej połowy najlepszych 20 min, gdy wysiłek jest progowy (0,95 × moc ≥ 97 % FTP).
+- [x] Postęp → karta „Moc”: krzywa mocy (5 s–60 min, okna 28/90 dni), historia FTP i W/kg (masa z 7 dni) z linią celu.
+- [x] Biblioteka → Strefy: kolumna W obok bpm, źródło i data FTP/LTHR w podtytule.
+- [ ] Prognoza FTP z trendu – po ≥ 2 testach/propozycjach.
 
 ### 4. Obciążenie i forma (PMC)
 - [ ] CTL/ATL/TSB z TSS (pkt 1) – dni bez danych: TSS planowany × compliance; przyszłość: TSS planowany z silnika.
@@ -114,6 +115,9 @@ Kolejność wynika z zależności: wszystko, co „analizuje”, potrzebuje stru
   `src/engine/analysis.ts`, `src/engine/baseline.ts`, `RideAnalysis.tsx`, `BaselineCard.tsx`, `LoadCard.tsx`. Import 30 dni wykonany:
   13 jazd ze strumieniami. Do analizy „plan vs wykonanie” potrzebne są jazdy z tętnem/mocą – dotychczasowe ich nie mają, więc
   pierwsze oceny pojawią się od 22.09 (pas HR) i po zamontowaniu miernika.
+
+- **21.09.2026** – pkt 3 wdrożony: `src/engine/power.ts` (suggestFtp, powerCurve, bestEffort/lthrFromRide, ftpSeries) + testy,
+  `FtpSuggestionCard`, `PowerCard`, strefy z watami. Zacznie działać od pierwszej jazdy z miernikiem (`device_watts`).
 
 ## Pracochłonność (orientacyjnie)
 | # | Zakres | Nakład |

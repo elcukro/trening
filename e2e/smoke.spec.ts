@@ -61,6 +61,8 @@ test('Biblioteka, strefy, zasady, sezon', async ({ page }) => {
   await expect(page.getByRole('heading', { name: 'Technika' })).toBeVisible()
   await page.goto('/biblioteka/strefy')
   await expect(page.getByText('Sweet spot').first()).toBeVisible()
+  // kolumna W: Z2 z FTP 220 W (szacunek) = 56–75 % → 123–165
+  await expect(page.getByRole('cell', { name: '123–165' })).toBeVisible()
   await page.goto('/biblioteka/zasady')
   await expect(page.getByText('Zmiana daty wyjazdu')).toBeVisible()
   await page.goto('/wiecej/sezon?today=2026-09-16')

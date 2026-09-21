@@ -14,6 +14,9 @@ import { fmtDayMonth, todayISO } from '@/lib/dates'
 import { TestResultForm, TestSummary } from '@/features/today/TestResultCard'
 import { BaselineCard } from './BaselineCard'
 import { LoadCard } from './LoadCard'
+import { PowerCard } from './PowerCard'
+import { FtpSuggestionCard } from './FtpSuggestionCard'
+import { goalPower } from '@/engine/baseline'
 
 const MAIN = [
   { id: 'back_squat', label: 'Przysiad', goal: [1.0, 1.2] as [number, number] },
@@ -81,11 +84,13 @@ export function ProgressPage() {
   return (
     <div className="space-y-3">
       <PageTitle sub="Masa, testy, objętość, siła">Postęp</PageTitle>
+      <FtpSuggestionCard engine={engine} acts={allActs} />
 
       {/* na komputerze dwie kolumny: masa + testy + kalkulator | objętość + siła */}
       <div className="space-y-3 lg:grid lg:grid-cols-2 lg:items-start lg:gap-6 lg:space-y-0">
       <div className="min-w-0 space-y-3 lg:space-y-4">
       <BaselineCard engine={engine} checkins={checkins} acts={allActs} />
+      <PowerCard engine={engine} acts={allActs} tests={tests} checkins={checkins} goalFtp={goalPower(avg7 + s.bike_and_kit_kg, 30).ftp} />
       <Card>
         <CardTitle icon="⚖️" right={<Metric>{num(avg7)} kg</Metric>}>
           Masa
