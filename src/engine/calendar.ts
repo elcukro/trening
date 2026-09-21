@@ -8,6 +8,7 @@ import { nutritionFor } from './nutrition'
 export const SCALABLE_WORKOUTS: Record<string, number> = {
   Z2: 45,
   Z2_CADENCE: 45,
+  Z2_FORCE: 60,
   Z2_HEAT: 45,
   HILLS: 45,
   LONG: 90,

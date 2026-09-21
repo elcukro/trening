@@ -9,7 +9,9 @@ import { loadStreams } from '@/sync/strava'
 import { Button, Inset } from '@/components/ui'
 import { useToast } from '@/components/Toast'
 import { seconds } from '@/lib/format'
-import { zoneText } from '@/lib/zones'
+import { zoneColor, zoneText } from '@/lib/zones'
+import { cadenceByZone, cadenceHistogram } from '@/engine/cadence'
+import { useEngine } from '@/app/useSettings'
 
 const RATING_ICON = { ok: '✅', warn: '⚠️', miss: '❌' } as const
 
@@ -40,7 +42,7 @@ interface Saved {
  * Plan vs wykonanie: dopasowanie kroków treningu do próbek jazdy. Wynik (przesunięcie, zgodność) zapamiętujemy w `kv`,
  * a status logu dnia zmieniamy z „wykonane” na „zmienione”, gdy kroki pracy w większości nie trafiły w cel.
  */
-export function RideAnalysis({ a, workout, ftp, date }: { a: StravaActivity; workout: ResolvedWorkout; ftp: number | null; date: string }) {
+export function RideAnalysis({ a, workout, ftp, date, lthr = null }: { a: StravaActivity; workout: ResolvedWorkout; ftp: number | null; date: string; lthr?: number | null }) {
   const toast = useToast()
   const [samples, setSamples] = useState<RideSamples | null>(null)
   const [match, setMatch] = useState<MatchResult | null>(null)
@@ -98,13 +100,16 @@ export function RideAnalysis({ a, workout, ftp, date }: { a: StravaActivity; wor
         </Button>
         {scoreBadge}
       </div>
-      {open && match && match.steps.length > 0 && samples && <AnalysisBody match={match} samples={samples} busy={busy} onOffset={(o) => analyze(o)} onAuto={() => analyze('auto')} />}
+      {open && match && match.steps.length > 0 && samples && <AnalysisBody match={match} samples={samples} busy={busy} onOffset={(o) => analyze(o)} onAuto={() => analyze('auto')} a={a} ftp={ftp} lthr={lthr} />}
     </div>
   )
 }
 
-function AnalysisBody({ match, samples, busy, onOffset, onAuto }: { match: MatchResult; samples: RideSamples; busy: boolean; onOffset: (o: number) => void; onAuto: () => void }) {
+function AnalysisBody({ match, samples, busy, onOffset, onAuto, a, ftp, lthr }: { match: MatchResult; samples: RideSamples; busy: boolean; onOffset: (o: number) => void; onAuto: () => void; a: StravaActivity; ftp: number | null; lthr: number | null }) {
   const data = chartSeries(samples, match, 30)
+  const program = useEngine().ctx.program
+  const cad = cadenceHistogram(samples)
+  const cadZones = cadenceByZone(samples, { devicePower: !!a.device_watts, ftp, powerZones: program.power_zones_ftp_fraction, lthr, hrZones: program.hr_zones_lthr_fraction })
   const hasWatts = data.some((p) => p.watts != null)
   const kind = match.steps.find((s) => s.target)?.target?.kind
   const yKey = kind === 'watts' && hasWatts ? 'watts' : 'hr'
@@ -141,6 +146,35 @@ function AnalysisBody({ match, samples, busy, onOffset, onAuto }: { match: Match
         </Button>
       </div>
       {match.score == null && <Inset tone="info" className="text-xs">Brak celu do oceny – jazda bez mocy i tętna albo trening bez kroków pracy.</Inset>}
+      {cad.avg_rpm != null && (
+        <div className="rounded-xl bg-slate-100 p-3 dark:bg-slate-900/60" data-testid="cadence-section">
+          <p className="text-xs font-medium text-slate-500 dark:text-slate-400">
+            🔄 Kadencja: śr. <b className="text-slate-800 dark:text-slate-100">{cad.avg_rpm} rpm</b> · pedałowanie {cad.pedaling_pct} % czasu w ruchu
+          </p>
+          <div className="mt-1 flex h-3 w-full overflow-hidden rounded" role="img" aria-label="Rozkład kadencji">
+            {cad.buckets.filter((b) => b.pct > 0).map((b, i) => (
+              <div key={b.label} className={['bg-red-400', 'bg-orange-400', 'bg-amber-400', 'bg-emerald-500', 'bg-sky-500', 'bg-violet-500'][cad.buckets.indexOf(b)] ?? 'bg-slate-400'} style={{ width: `${b.pct}%` }} title={`${b.label} rpm: ${b.pct} %`} data-i={i} />
+            ))}
+          </div>
+          <div className="mt-1 flex flex-wrap gap-x-3 text-xs tabular-nums text-slate-500 dark:text-slate-400">
+            {cad.buckets.filter((b) => b.pct > 0).map((b) => (
+              <span key={b.label}>
+                {b.label}: {b.pct} %
+              </span>
+            ))}
+          </div>
+          {cadZones.length > 0 && (
+            <div className="mt-1.5 flex flex-wrap gap-x-3 text-xs tabular-nums">
+              {cadZones.map((z) => (
+                <span key={z.zone} className="inline-flex items-center gap-1">
+                  <span className={`h-2 w-2 rounded-full ${zoneColor(z.zone)}`} />
+                  {z.zone} {z.avg_rpm} rpm
+                </span>
+              ))}
+            </div>
+          )}
+        </div>
+      )}
     </div>
   )
 }
@@ -164,6 +198,12 @@ function StepRow({ st }: { st: StepResult }) {
         {st.avg_watts != null && st.avg_hr != null && ' · '}
         {st.avg_hr != null && `${st.avg_hr} bpm`}
         {st.avg_cadence != null && ` · ${st.avg_cadence} rpm`}
+        {st.cadence_in_target_pct != null && st.cadence_target && (
+          <span className={st.cadence_in_target_pct >= 70 ? 'text-emerald-600 dark:text-emerald-400' : 'text-amber-600 dark:text-amber-400'} title={`cel ${st.cadence_target[0]}–${st.cadence_target[1]} rpm`}>
+            {' '}
+            ({st.cadence_in_target_pct} % w celu rpm)
+          </span>
+        )}
       </span>
       <span className="w-10 text-right tabular-nums">{st.in_target_pct != null ? `${st.in_target_pct} %` : ''}</span>
     </li>

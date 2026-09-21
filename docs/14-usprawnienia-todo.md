@@ -103,9 +103,9 @@ Kolejność wynika z zależności: wszystko, co „analizuje”, potrzebuje stru
 - [ ] Wymiana wyszukiwań YT na konkretne, sprawdzone filmy (`video_id`) – gdy wybierzesz ulubione.
 
 ### 9. Kadencja i technika pedałowania
-- [ ] Po jeździe: rozkład kadencji wg stref, średnia w interwałach siłowych vs cel, trend w Z2 (cel ≥ 78 rpm).
-- [ ] Plan: bloki niskiej kadencji (50–60 rpm) w Z2/SS jako kroki z celem kadencji i kontrolą wykonania (pkt 1).
-- [ ] Ostrzeżenie w przeglądzie tygodnia, gdy średnia kadencja Z2 < 75 rpm dwa tygodnie z rzędu.
+- [x] Po jeździe (`src/engine/cadence.ts`, sekcja w „Plan vs wykonanie”): rozkład kadencji (kubełki < 60 … ≥ 100), udział pedałowania, średnia w strefach (z mocy, gdy miernik; inaczej z tętna); w każdym kroku „% w celu rpm” (± 5 rpm od celu kroku).
+- [x] Plan: nowy trening **Z2_FORCE** – Z2 + 4×5 min siły przy 55–65 rpm (górna Z2/dolna Z3) / 5 min Z2; wtorki w tyg. 8, 12, 16, 18, 20, 22 (`PROGRAM_VERSION` 2026.09.22-1, golden zregenerowany; Wahoo podmieni te dni przy następnej wysyłce).
+- [x] Postęp → karta „Kadencja” (tygodnie, linia celu 78 rpm) i wiersz „Kadencja (śr.)” w przeglądzie tygodnia/miesiąca; ostrzeżenie po dwóch tygodniach < 75 rpm.
 
 ## Stan wdrożenia
 - **21.09.2026** – pkt 0 i 1 wdrożone (commit `842bb16`): `supabase/functions/_shared/metrics.ts`, migracja `20260921120000_streams_baseline.sql`,
@@ -125,6 +125,8 @@ Kolejność wynika z zależności: wszystko, co „analizuje”, potrzebuje stru
 - **22.09.2026** – pkt 7 wdrożony: migracja `20260921140000_wahoo_workouts.sql`, `wahoo-push` tryb `completed`, `WahooStatus.tsx` (stan na Bolcie, wykonane wg Bolta), Dexie v7 (`wahoo_pushes`, `wahoo_workouts`).
 
 - **22.09.2026** – pkt 8 wdrożony: zdjęcia z free-exercise-db w `public/exercises/`, `data/exercises_media.json`, `src/data/exercisesMedia.ts`, `ExerciseMedia.tsx`, `platesFor`/`detectPlateau` w `src/engine/load.ts` (+ testy), tryb siłowni i karta ćwiczenia.
+
+- **22.09.2026** – pkt 9 wdrożony: `src/engine/cadence.ts` (+ testy), Z2_FORCE w generatorze, `CadenceCard`, kadencja w analizie jazdy i raportach. **Wszystkie punkty planu (0–9) zrealizowane.**
 
 ## Pracochłonność (orientacyjnie)
 | # | Zakres | Nakład |

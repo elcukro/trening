@@ -251,7 +251,7 @@ describe('R16 – volume_scale', () => {
     const ref = buildCalendar(base)
     days.forEach((d, i) => {
       const r = ref[i]!
-      if (!d.bike || !(d.bike.workout_id in { Z2: 1, Z2_CADENCE: 1, Z2_HEAT: 1, LONG: 1, LONG_TEMPO: 1, HILLS: 1 })) {
+      if (!d.bike || !(d.bike.workout_id in { Z2: 1, Z2_CADENCE: 1, Z2_FORCE: 1, Z2_HEAT: 1, LONG: 1, LONG_TEMPO: 1, HILLS: 1 })) {
         expect(d.bike?.duration_min).toBe(r.bike?.duration_min)
       } else {
         expect(d.bike.duration_min).toBeLessThanOrEqual(r.bike!.duration_min)

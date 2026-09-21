@@ -97,6 +97,9 @@ export interface StepResult {
   avg_watts: number | null
   avg_hr: number | null
   avg_cadence: number | null
+  /** cel kadencji kroku i % czasu w nim (± 5 rpm) */
+  cadence_target: [number, number] | null
+  cadence_in_target_pct: number | null
   /** cel użyty do oceny */
   target: { kind: 'watts' | 'bpm'; low: number; high: number } | null
   in_target_pct: number | null
@@ -196,6 +199,7 @@ export function matchSteps(workout: ResolvedWorkout, s: RideSamples, opts: { off
         wSum += pct * st.duration_s
         wN += st.duration_s
       }
+      const cadPct = to > from && s.cadence && st.cadence_rpm ? inTargetPct(s.cadence.map((c) => (c && c > 0 ? c : null)), from, to, idx, st.cadence_rpm[0] - 5, st.cadence_rpm[1] + 5, false) : null
       steps.push({
         index,
         name: st.name,
@@ -205,7 +209,9 @@ export function matchSteps(workout: ResolvedWorkout, s: RideSamples, opts: { off
         to_s,
         avg_watts: to > from && s.watts ? mean(s.watts, from, to, idx) : null,
         avg_hr: to > from && s.hr ? mean(s.hr, from, to, idx) : null,
-        avg_cadence: to > from && s.cadence ? mean(s.cadence, from, to, idx) : null,
+        avg_cadence: to > from && s.cadence ? mean(s.cadence.map((c) => (c && c > 0 ? c : null)), from, to, idx) : null,
+        cadence_target: st.cadence_rpm ?? null,
+        cadence_in_target_pct: cadPct,
         target,
         in_target_pct: pct,
         rating: ratingFor(pct),

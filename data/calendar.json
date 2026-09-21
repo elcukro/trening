@@ -1,5 +1,5 @@
 {
- "version": "2026.09.20-1",
+ "version": "2026.09.22-1",
  "settings": {
   "program_start": "2026-09-14",
   "trip_start": "2027-09-11",
@@ -2643,8 +2643,8 @@
    "week_type": "build",
    "day_type": "easy",
    "bike": {
-    "workout_id": "Z2",
-    "name": "Baza tlenowa Z2",
+    "workout_id": "Z2_FORCE",
+    "name": "Z2 + siła na niskiej kadencji",
     "duration_min": 75,
     "bike": "Dogma na suchą szosę > 5 °C; Checkpoint na mokro, sól, szuter",
     "fallback_workout_id": null
@@ -4145,8 +4145,8 @@
    "week_type": "build",
    "day_type": "easy",
    "bike": {
-    "workout_id": "Z2",
-    "name": "Baza tlenowa Z2",
+    "workout_id": "Z2_FORCE",
+    "name": "Z2 + siła na niskiej kadencji",
     "duration_min": 75,
     "bike": "Dogma na suchą szosę > 5 °C; Checkpoint na mokro, sól, szuter",
     "fallback_workout_id": null
@@ -5656,8 +5656,8 @@
    "week_type": "build",
    "day_type": "easy",
    "bike": {
-    "workout_id": "Z2",
-    "name": "Baza tlenowa Z2",
+    "workout_id": "Z2_FORCE",
+    "name": "Z2 + siła na niskiej kadencji",
     "duration_min": 75,
     "bike": "Checkpoint (zima, błotniki)",
     "fallback_workout_id": null
@@ -6392,8 +6392,8 @@
    "week_type": "build",
    "day_type": "easy",
    "bike": {
-    "workout_id": "Z2",
-    "name": "Baza tlenowa Z2",
+    "workout_id": "Z2_FORCE",
+    "name": "Z2 + siła na niskiej kadencji",
     "duration_min": 75,
     "bike": "Checkpoint (zima, błotniki)",
     "fallback_workout_id": null
@@ -7156,8 +7156,8 @@
    "week_type": "build",
    "day_type": "easy",
    "bike": {
-    "workout_id": "Z2",
-    "name": "Baza tlenowa Z2",
+    "workout_id": "Z2_FORCE",
+    "name": "Z2 + siła na niskiej kadencji",
     "duration_min": 75,
     "bike": "Checkpoint (zima, błotniki)",
     "fallback_workout_id": null
@@ -7892,8 +7892,8 @@
    "week_type": "build",
    "day_type": "easy",
    "bike": {
-    "workout_id": "Z2",
-    "name": "Baza tlenowa Z2",
+    "workout_id": "Z2_FORCE",
+    "name": "Z2 + siła na niskiej kadencji",
     "duration_min": 90,
     "bike": "Checkpoint (zima, błotniki)",
     "fallback_workout_id": null

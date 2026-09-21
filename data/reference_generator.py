@@ -17,7 +17,7 @@ import json, datetime as dt, os, copy
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 D = dt.date
-PROGRAM_VERSION = "2026.09.20-1"
+PROGRAM_VERSION = "2026.09.22-1"
 
 DEFAULT_SETTINGS = {
     "program_start": "2026-09-14",          # poniedziałek tygodnia 1
@@ -107,6 +107,7 @@ add(endurance("Z1_RECOVERY", "Jazda regeneracyjna", 45, "Z1", "Bardzo luźno, mi
 add(endurance("Z2", "Baza tlenowa Z2", 60, "Z2", "Równe tempo w Z2, możesz rozmawiać pełnymi zdaniami. Kadencja 85–95. Bez zatrzymywania się w chłodzie.", "endurance"))
 z2c = endurance("Z2_CADENCE", "Z2 + praca nad kadencją", 60, "Z2", "Z2 z blokiem kadencji: po 15 min jazdy 5×2 min przy 100–110 rpm (tętno nadal w Z2) / 2 min swobodnie. Cel: nawyk 85–92 rpm na płaskim.", "endurance")
 add(z2c)
+add(endurance("Z2_FORCE", "Z2 + siła na niskiej kadencji", 75, "Z2", "Z2 z blokami siły: 4×5 min w górnej Z2/dolnej Z3 na twardym biegu przy 55–65 rpm (siedząc, tułów spokojny, nacisk przez całe koło) / 5 min Z2 przy 85–95 rpm. Buduje siłę specyficzną bez dodatkowego zmęczenia układu krążenia. Kolana bez bólu – inaczej wyższa kadencja.", "endurance", extras={"insert": repeat(4, [step("Siła 55–65 rpm", 5, "Z3", "active", [55, 65], "Twardy bieg, siedząc; tętno może zostać w Z2 – liczy się nacisk na pedał."), step("Z2 swobodnie", 5, "Z2", "recover", [85, 95])])}))
 add(endurance("Z2_HEAT", "Z2 w upale (adaptacja cieplna)", 75, "Z2", "Jazda w najcieplejszej porze dnia (≥25 °C). Tętno w Z2 – prędkość będzie niższa, to normalne. 750 ml płynu/h + elektrolity. Przerwij przy zawrotach głowy.", "endurance"))
 add(endurance("LONG", "Długa jazda", 150, "Z2", "Główny trening objętościowy. Z2, podjazdy spokojnie (max górna Z3). Jedz od 45. minuty: 60–80 g węglowodanów/h, 500–750 ml/h. Na płaskich prostych ćwicz pozycję z przedramionami równolegle do ziemi.", "long"))
 add(endurance("LONG_TEMPO", "Długa jazda z tempem 30 km/h", 210, "Z2", "Z2 z blokiem tempa: w środku jazdy 3×15 min w Z3 (cel 30–32 km/h na płaskim, pozycja aero na klamkach, kadencja 88–95) / 5 min Z2. Jedzenie jak w długiej jeździe.", "long", extras={"insert": repeat(3, [step("Tempo 30–32 km/h", 15, "Z3", "tempo", [88, 95]), step("Z2", 5, "Z2", "recover", [85, 95])])}))
@@ -363,12 +364,12 @@ WEEKS = {
        notes="Do 18.10 kup lampę przednią ≥ 800 lm i tył z radarem – od zmiany czasu (25.10) wtorki i czwartki jedziesz po ciemku."),
  6:  W(phase="I", type="deload", tue=("Z2", 60), wed=("REST", 0), thu=("Z2", 60), fri=("REST", 0), sat=("LONG", 90), sun=("REST", 0), gym_stage="I_a"),
  7:  W(phase="I", type="build", tue=("Z2_CADENCE", 75), wed=("REST", 0), thu=("SS_3x12", None), fri=("REST", 0), sat=("LONG", 165), sun=("REST", 0), gym_stage="I_b"),
- 8:  W(phase="I", type="build", tue=("Z2", 75), wed=("REST", 0), thu=("SS_2x20", None), fri=("REST", 0), sat=("LONG", 180), sun=("REST", 0), gym_stage="I_b"),
+ 8:  W(phase="I", type="build", tue=("Z2_FORCE", 75), wed=("REST", 0), thu=("SS_2x20", None), fri=("REST", 0), sat=("LONG", 180), sun=("REST", 0), gym_stage="I_b"),
  9:  W(phase="I", type="build", tue=("Z2", 90), wed=("REST", 0), thu=("SS_3x15", None), fri=("REST", 0), sat=("LONG", 195), sun=("REST", 0), gym_stage="I_b"),
  10: W(phase="I", type="deload", tue=("Z2", 60), wed=("REST", 0), thu=("Z2", 60), fri=("REST", 0), sat=("LONG", 120), sun=("REST", 0), gym_stage="I_b",
        notes="Przed zimą: pełne błotniki SKS Bluemels 45, odzież (merino, rękawice trójpalczaste, ochraniacze na buty), ciśnienie w oponach −0,3 bara."),
  11: W(phase="I", type="build", tue=("Z2", 75), wed=("REST", 0), thu=("SS_3x15", None), fri=("REST", 0), sat=("LONG", 180), sun=("REST", 0), gym_stage="transition"),
- 12: W(phase="I", type="build", tue=("Z2", 75), wed=("REST", 0), thu=("SS_2x20", None), fri=("REST", 0), sat=("LONG", 180), sun=("REST", 0), gym_stage="II_a"),
+ 12: W(phase="I", type="build", tue=("Z2_FORCE", 75), wed=("REST", 0), thu=("SS_2x20", None), fri=("REST", 0), sat=("LONG", 180), sun=("REST", 0), gym_stage="II_a"),
  13: W(phase="I", type="build", tue=("Z2", 90), wed=("REST", 0), thu=("SS_3x20", None), fri=("REST", 0), sat=("LONG", 210), sun=("REST", 0), gym_stage="II_a",
        notes="Największy tydzień fazy. Jeśli pogoda go zabierze, przenieś 3:30 na tydzień wcześniej i potraktuj ten jako rozładowanie. Nie odrabiaj straconych godzin."),
  14: W(phase="I", type="test", tue=("Z2", 75), wed=("REST", 0), thu=("Z2", 60), fri=("REST", 0), sat=("FTP_TEST", None), sun=("REST", 0), gym_stage="II_a",
@@ -377,13 +378,13 @@ WEEKS = {
  # poniżej −10 °C / gołoledź – 4×4 min na rowerku przed Sesją A (przycisk „pod dachem”).
  15: W(phase="II", type="deload", tue=("Z2", 60), wed=("REST", 0), thu=("Z2", 60), fri=("REST", 0), sat=("LONG", 120), sun=("REST", 0), gym_stage="II_a",
        notes="Święta – tydzień lżejszy. Zima: domyślnie Checkpoint z błotnikami. Czwartek poniżej −10 °C lub gołoledź = INDOOR_4x4 przed Sesją A."),
- 16: W(phase="II", type="build", tue=("Z2", 75), wed=("REST", 0), thu=("SS_2x15", None), fri=("REST", 0), sat=("LONG", 135), sun=("REST", 0), gym_stage="II_b"),
+ 16: W(phase="II", type="build", tue=("Z2_FORCE", 75), wed=("REST", 0), thu=("SS_2x15", None), fri=("REST", 0), sat=("LONG", 135), sun=("REST", 0), gym_stage="II_b"),
  17: W(phase="II", type="build", tue=("Z2", 75), wed=("REST", 0), thu=("SS_3x12", None), fri=("REST", 0), sat=("LONG", 150), sun=("REST", 0), gym_stage="II_b"),
- 18: W(phase="II", type="build", tue=("Z2", 75), wed=("REST", 0), thu=("SS_2x20", None), fri=("REST", 0), sat=("LONG", 150), sun=("REST", 0), gym_stage="II_b"),
+ 18: W(phase="II", type="build", tue=("Z2_FORCE", 75), wed=("REST", 0), thu=("SS_2x20", None), fri=("REST", 0), sat=("LONG", 150), sun=("REST", 0), gym_stage="II_b"),
  19: W(phase="II", type="deload", tue=("Z2", 60), wed=("REST", 0), thu=("Z2", 60), fri=("REST", 0), sat=("LONG", 120), sun=("REST", 0), gym_stage="II_b"),
- 20: W(phase="II", type="build", tue=("Z2", 75), wed=("REST", 0), thu=("SS_3x15", None), fri=("REST", 0), sat=("LONG", 150), sun=("REST", 0), gym_stage="II_c"),
+ 20: W(phase="II", type="build", tue=("Z2_FORCE", 75), wed=("REST", 0), thu=("SS_3x15", None), fri=("REST", 0), sat=("LONG", 150), sun=("REST", 0), gym_stage="II_c"),
  21: W(phase="II", type="build", tue=("Z2", 90), wed=("REST", 0), thu=("SS_2x20", None), fri=("REST", 0), sat=("LONG", 150), sun=("REST", 0), gym_stage="II_c"),
- 22: W(phase="II", type="build", tue=("Z2", 90), wed=("REST", 0), thu=("SS_3x20", None), fri=("REST", 0), sat=("LONG", 150), sun=("REST", 0), gym_stage="II_c"),
+ 22: W(phase="II", type="build", tue=("Z2_FORCE", 90), wed=("REST", 0), thu=("SS_3x20", None), fri=("REST", 0), sat=("LONG", 150), sun=("REST", 0), gym_stage="II_c"),
  23: W(phase="II", type="deload", tue=("Z2", 60), wed=("REST", 0), thu=("Z2", 60), fri=("REST", 0), sat=("LONG", 120), sun=("REST", 0), gym_stage="II_c"),
  24: W(phase="II", type="test", tue=("FTP_TEST", None), wed=("REST", 0), thu=("Z2", 60), fri=("REST", 0), sat=("LONG", 150), sun=("REST", 0), gym_stage="test",
        notes="Tydzień sprawdzianów: wtorek test FTP (świeże nogi po wolnym poniedziałku; przy gołoledzi Wattbike), środa sprawdzian siłowy (przysiad i trap bar 1×5 RIR 1). Kryteria wejścia do fazy III: ≥ 2,7 dnia jazdy/tydz. (śr. z 12 tyg.), FTP ≥ 200 W, masa ≤ 102 kg, kadencja na podjazdach ≥ 78 rpm, 3,5 h Z2 pod Łodzią zimą. Przy 2–3 spełnionych przesuń fazę III o 3–4 tygodnie i skróć IV."),

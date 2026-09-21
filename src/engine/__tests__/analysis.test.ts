@@ -93,6 +93,13 @@ describe('matchSteps', () => {
     const withStops = samples(cum + 600, (t) => ({ watts: 100, hr: 120, moving: t % 100 >= 20 }))
     expect(matchSteps(ss, withStops).moving_s).toBeLessThan(cum + 600)
   })
+  it('kadencja kroku: średnia bez zer i % w celu ± 5 rpm', () => {
+    const s = samples(1800, (t) => ({ watts: 150, hr: 130, cad: t % 20 === 0 ? 0 : 88 }))
+    const m = matchSteps(ss, s)
+    expect(m.steps[0]!.avg_cadence).toBe(88)
+    expect(m.steps[0]!.cadence_target).toEqual([85, 95])
+    expect(m.steps[0]!.cadence_in_target_pct).toBe(100)
+  })
   it('chartSeries daje punkt co 30 s z pasem celu', () => {
     const s = samples(600, () => ({ watts: 150, hr: 130 }))
     const m = matchSteps(ss, s)

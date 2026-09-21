@@ -68,7 +68,7 @@ export function StravaActivities({ date, zones, lthr, extra, workout, ftp }: { d
       </div>
       <RideLoadLine a={a} ftp={ftp ?? null} lthr={lthr} zones={zones} />
       {a.hr_histogram && lthr ? <div className="mt-1"><ZoneBar histogram={a.hr_histogram} zones={zones} lthr={lthr} /></div> : a.hr_histogram ? <p className="text-xs text-slate-400 dark:text-slate-500">Strefy po wpisaniu LTHR.</p> : null}
-      {workout && <RideAnalysis a={a} workout={workout} ftp={ftp ?? null} date={date} />}
+      {workout && <RideAnalysis a={a} workout={workout} ftp={ftp ?? null} date={date} lthr={lthr} />}
       {moving === a.id ? (
         <div className="mt-2 flex flex-wrap items-center gap-2">
           <Input type="date" aria-label="Nowa data jazdy" className="min-w-0 flex-1" value={target} onChange={(e) => setTarget(e.target.value)} />

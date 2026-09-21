@@ -1,5 +1,5 @@
 {
- "version": "2026.09.20-1",
+ "version": "2026.09.22-1",
  "default_settings": {
   "program_start": "2026-09-14",
   "trip_start": "2027-09-11",
@@ -345,6 +345,81 @@
    "duration_min": 60,
    "description": "Z2 z blokiem kadencji: po 15 min jazdy 5×2 min przy 100–110 rpm (tętno nadal w Z2) / 2 min swobodnie. Cel: nawyk 85–92 rpm na płaskim.",
    "parametric_duration": true
+  },
+  "Z2_FORCE": {
+   "id": "Z2_FORCE",
+   "name": "Z2 + siła na niskiej kadencji",
+   "category": "endurance",
+   "key": false,
+   "steps": [
+    {
+     "name": "Z2 + siła na niskiej kadencji",
+     "duration_s": 4500,
+     "zone": "Z2",
+     "target": {
+      "type": "threshold_hr",
+      "low": 0.81,
+      "high": 0.89
+     },
+     "rpe": [
+      3,
+      4
+     ],
+     "intensity_type": "active",
+     "cadence_rpm": [
+      85,
+      95
+     ],
+     "note": "Z2 z blokami siły: 4×5 min w górnej Z2/dolnej Z3 na twardym biegu przy 55–65 rpm (siedząc, tułów spokojny, nacisk przez całe koło) / 5 min Z2 przy 85–95 rpm. Buduje siłę specyficzną bez dodatkowego zmęczenia układu krążenia. Kolana bez bólu – inaczej wyższa kadencja."
+    }
+   ],
+   "duration_min": 75,
+   "description": "Z2 z blokami siły: 4×5 min w górnej Z2/dolnej Z3 na twardym biegu przy 55–65 rpm (siedząc, tułów spokojny, nacisk przez całe koło) / 5 min Z2 przy 85–95 rpm. Buduje siłę specyficzną bez dodatkowego zmęczenia układu krążenia. Kolana bez bólu – inaczej wyższa kadencja.",
+   "parametric_duration": true,
+   "insert": {
+    "repeat": 4,
+    "steps": [
+     {
+      "name": "Siła 55–65 rpm",
+      "duration_s": 300,
+      "zone": "Z3",
+      "target": {
+       "type": "threshold_hr",
+       "low": 0.9,
+       "high": 0.93
+      },
+      "rpe": [
+       5,
+       6
+      ],
+      "intensity_type": "active",
+      "cadence_rpm": [
+       55,
+       65
+      ],
+      "note": "Twardy bieg, siedząc; tętno może zostać w Z2 – liczy się nacisk na pedał."
+     },
+     {
+      "name": "Z2 swobodnie",
+      "duration_s": 300,
+      "zone": "Z2",
+      "target": {
+       "type": "threshold_hr",
+       "low": 0.81,
+       "high": 0.89
+      },
+      "rpe": [
+       3,
+       4
+      ],
+      "intensity_type": "recover",
+      "cadence_rpm": [
+       85,
+       95
+      ]
+     }
+    ]
+   }
   },
   "Z2_HEAT": {
    "id": "Z2_HEAT",
@@ -3351,7 +3426,7 @@
    "phase": "I",
    "type": "build",
    "tue": [
-    "Z2",
+    "Z2_FORCE",
     75
    ],
    "wed": [
@@ -3468,7 +3543,7 @@
    "phase": "I",
    "type": "build",
    "tue": [
-    "Z2",
+    "Z2_FORCE",
     75
    ],
    "wed": [
@@ -3587,7 +3662,7 @@
    "phase": "II",
    "type": "build",
    "tue": [
-    "Z2",
+    "Z2_FORCE",
     75
    ],
    "wed": [
@@ -3645,7 +3720,7 @@
    "phase": "II",
    "type": "build",
    "tue": [
-    "Z2",
+    "Z2_FORCE",
     75
    ],
    "wed": [
@@ -3703,7 +3778,7 @@
    "phase": "II",
    "type": "build",
    "tue": [
-    "Z2",
+    "Z2_FORCE",
     75
    ],
    "wed": [
@@ -3761,7 +3836,7 @@
    "phase": "II",
    "type": "build",
    "tue": [
-    "Z2",
+    "Z2_FORCE",
     90
    ],
    "wed": [

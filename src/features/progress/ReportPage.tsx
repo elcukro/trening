@@ -7,6 +7,7 @@ import { useDailyLoad } from '@/app/useLoad'
 import { addDays, isValidISODate, mondayOf, type ISODate } from '@/engine/dates'
 import { rangeReport, weeksIn, weightChange, type DayOutcome, type ReportDay } from '@/engine/report'
 import { effectiveLthr } from '@/engine/progress'
+import { cadenceTrend, lowCadenceWarning } from '@/engine/cadence'
 import { ZoneBar } from '@/features/today/StravaCard'
 import { Badge, Button, Card, CardSection, CardTitle, Empty, Inset, PageTitle, Row } from '@/components/ui'
 import { hours, minutes, num } from '@/lib/format'
@@ -65,6 +66,10 @@ function Report({ kind, from, to, today }: { kind: 'week' | 'month'; from: ISODa
     }
     return h.length ? Array.from(h, (v) => v ?? 0) : null
   }, [acts])
+  const cadAll = useLiveQuery(() => db.strava_activities.where('date').between(addDays(from, -21), to, true, true).toArray(), [from, to], [] as StravaActivity[])
+  const cadTrend = useMemo(() => cadenceTrend(cadAll.filter((a) => !a.deleted_at && a.is_ride), to, kind === 'week' ? 3 : 6), [cadAll, to, kind])
+  const cadWarning = useMemo(() => lowCadenceWarning(cadTrend), [cadTrend])
+  const cadThis = cadTrend.at(-1)?.avg_rpm ?? null
   const nextKey = nextView.days.find((d) => d.day_type === 'key' && d.bike)
   const weekNo = view.days[0]?.week
   const title = kind === 'week' ? `Przegląd tygodnia${weekNo != null ? ` ${weekNo}` : ''}` : `Przegląd miesiąca`
@@ -100,11 +105,17 @@ function Report({ kind, from, to, today }: { kind: 'week' | 'month'; from: ISODa
             </div>
             <div className="mt-2 divide-y divide-slate-100 tabular-nums dark:divide-slate-700/80">
               <Row label="Zgodność z planem (kroki w celu)">{report.score != null ? `${report.score} %` : 'brak analiz'}</Row>
+              <Row label="Kadencja (śr.)">{cadThis != null ? `${cadThis} rpm` : '—'}</Row>
               <Row label="Masa (śr. 7 dni)">
                 {weight.end != null ? `${num(weight.end)} kg` : '—'}
                 {weight.delta != null ? ` (${weight.delta > 0 ? '+' : ''}${num(weight.delta)} kg)` : ''}
               </Row>
             </div>
+            {cadWarning && (
+              <Inset tone="warn" className="mt-2 text-xs">
+                {cadWarning}
+              </Inset>
+            )}
             {zoneHist && lthr ? (
               <CardSection>
                 <p className="mb-1 text-xs font-medium text-slate-500 dark:text-slate-400">Czas w strefach (Strava, LTHR {lthr})</p>

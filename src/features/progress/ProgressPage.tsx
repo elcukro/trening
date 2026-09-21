@@ -18,6 +18,7 @@ import { BaselineCard } from './BaselineCard'
 import { LoadCard } from './LoadCard'
 import { PowerCard } from './PowerCard'
 import { PmcCard } from './PmcCard'
+import { CadenceCard } from './CadenceCard'
 import { FtpSuggestionCard } from './FtpSuggestionCard'
 import { goalPower } from '@/engine/baseline'
 
@@ -186,6 +187,7 @@ export function ProgressPage() {
 
       <div className="min-w-0 space-y-3 lg:space-y-4">
       <PmcCard engine={engine} />
+      <CadenceCard acts={allActs} today={today} />
       <LoadCard acts={allActs} logs={rides} ftp={lastFtp} lthr={lastLthr ?? null} zones={engine.ctx.program.hr_zones_lthr_fraction} today={today} />
       <Card>
         <CardTitle icon="⏱️" right={comp != null ? <Metric>zgodność {comp} %</Metric> : undefined}>
