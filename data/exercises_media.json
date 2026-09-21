@@ -1,0 +1,27 @@
+{
+  "_comment": "Pkt 8 planu usprawnień: schemat (SVG z scripts/exercise-diagrams.py, offline), link do techniki na YouTube (wyszukiwanie – bez ryzyka martwych linków; `video_id` nadpisuje, gdy wybierzesz konkretny film) i gryf do kalkulatora talerzy (kg, null = bez kalkulatora).",
+  "exercises": {
+    "back_squat": { "search": "how to back squat technique Alan Thrall", "bar_kg": 20 },
+    "rdl": { "search": "romanian deadlift technique", "bar_kg": 20 },
+    "trap_bar_deadlift": { "search": "trap bar deadlift how to", "bar_kg": 25 },
+    "db_row": { "search": "one arm dumbbell row technique", "bar_kg": null },
+    "calf_raise": { "search": "standing calf raise machine technique", "bar_kg": null },
+    "pallof_press": { "search": "pallof press how to", "bar_kg": null },
+    "dead_bug": { "search": "dead bug exercise correct form", "bar_kg": null },
+    "side_plank": { "search": "side plank correct form", "bar_kg": null },
+    "step_up": { "search": "dumbbell step up technique", "bar_kg": null },
+    "bulgarian_split_squat": { "search": "bulgarian split squat technique", "bar_kg": null },
+    "hip_thrust": { "search": "barbell hip thrust technique Bret Contreras", "bar_kg": 20 },
+    "pull_up": { "search": "pull up technique beginner band", "bar_kg": null },
+    "push_up": { "search": "push up correct form", "bar_kg": null },
+    "farmer_walk": { "search": "farmers walk technique", "bar_kg": null },
+    "back_extension": { "search": "back extension roman chair technique", "bar_kg": null },
+    "copenhagen_plank": { "search": "copenhagen plank how to", "bar_kg": null },
+    "plank_reach": { "search": "plank shoulder tap arm reach form", "bar_kg": null },
+    "jump_squat": { "search": "dumbbell jump squat technique", "bar_kg": null },
+    "kb_swing": { "search": "kettlebell swing technique hinge", "bar_kg": null },
+    "box_jump": { "search": "box jump technique landing", "bar_kg": null },
+    "mobility_circuit": { "search": "cycling hip mobility warm up routine", "bar_kg": null },
+    "cooldown_stretch": { "search": "hip flexor stretch after cycling", "bar_kg": null }
+  }
+}

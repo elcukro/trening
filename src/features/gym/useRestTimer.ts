@@ -1,5 +1,19 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 
+/** Koniec przerwy przy zgaszonym ekranie / innej aplikacji: wibracja (Android) i powiadomienie systemowe z service workera, jeśli jest zgoda. */
+function notifyRestOver(): void {
+  try {
+    navigator.vibrate?.([200, 100, 200])
+  } catch {
+    /* brak wibracji */
+  }
+  if (typeof document !== 'undefined' && document.visibilityState === 'visible') return
+  if (typeof Notification === 'undefined' || Notification.permission !== 'granted' || !('serviceWorker' in navigator)) return
+  navigator.serviceWorker.ready
+    .then((reg) => reg.showNotification('Koniec przerwy', { body: 'Do boju! Następna seria.', tag: 'rest', icon: '/pwa-192.png', badge: '/pwa-192.png', data: { url: location.pathname } }))
+    .catch(() => undefined)
+}
+
 /** Timer przerwy z sygnałem Web Audio (iOS PWA nie wibruje). */
 export function useRestTimer() {
   const [remaining, setRemaining] = useState<number | null>(null)
@@ -67,6 +81,7 @@ export function useRestTimer() {
       if (left === 0) {
         endAt.current = null
         beep()
+        notifyRestOver()
         setTimeout(() => setRemaining(null), 1500)
         clearInterval(id)
       }

@@ -117,3 +117,60 @@ export function warmupSets(workingKg: number, barKg = 20): { weight_kg: number; 
     { weight_kg: roundTo(workingKg * 0.85, 2.5), reps: 2 },
   ]
 }
+
+// ---------------------------------------------------------------- kalkulator talerzy (pkt 8)
+export const PLATES_KG = [25, 20, 15, 10, 5, 2.5, 1.25]
+
+/** Talerze na jedną stronę gryfu (zachłannie od najcięższych); null, gdy ciężar poniżej gryfu. */
+export function platesFor(totalKg: number, barKg = 20, plates: number[] = PLATES_KG): { per_side: number[]; achieved_kg: number; remainder_kg: number } | null {
+  if (!Number.isFinite(totalKg) || totalKg < barKg) return null
+  let side = (totalKg - barKg) / 2
+  const out: number[] = []
+  for (const pl of plates) {
+    while (side >= pl - 1e-9) {
+      out.push(pl)
+      side -= pl
+    }
+  }
+  const achieved = barKg + 2 * out.reduce((a, b) => a + b, 0)
+  return { per_side: out, achieved_kg: achieved, remainder_kg: Math.round((totalKg - achieved) * 100) / 100 }
+}
+
+// ---------------------------------------------------------------- plateau (pkt 8)
+export interface PlateauInfo {
+  /** ile ostatnich sesji bez poprawy e1RM */
+  stalled_sessions: number
+  best_e1rm: number
+  best_date: string
+  message: string
+}
+
+/** e1RM najlepszej serii roboczej sesji. */
+export function sessionBestE1rm(sets: { weight_kg: number | null; reps: number | null; is_warmup?: boolean }[]): number {
+  let best = 0
+  for (const s of sets) {
+    if (s.is_warmup || !s.weight_kg || !s.reps) continue
+    best = Math.max(best, epley1RM(s.weight_kg, s.reps))
+  }
+  return best
+}
+
+/**
+ * Plateau: trzy ostatnie sesje (chronologicznie) nie przebiły najlepszego e1RM sprzed nich.
+ * Propozycja zależy od RIR celu: jeśli ≥ 2 – zejść o 1 RIR, inaczej dołożyć serię albo zmienić zakres powtórzeń.
+ */
+export function detectPlateau(history: { date: string; sets: { weight_kg: number | null; reps: number | null; is_warmup?: boolean }[] }[], targetRir: number | null, minSessions = 4): PlateauInfo | null {
+  const pts = history.map((h) => ({ date: h.date, e1rm: sessionBestE1rm(h.sets) })).filter((p) => p.e1rm > 0).toSorted((a, b) => (a.date < b.date ? -1 : 1))
+  if (pts.length < minSessions) return null
+  const recent = pts.slice(-3)
+  const before = pts.slice(0, -3)
+  const bestBefore = before.reduce((b, p) => (p.e1rm > b.e1rm ? p : b), before[0]!)
+  if (recent.some((p) => p.e1rm > bestBefore.e1rm * 1.01)) return null
+  const tip = targetRir != null && targetRir >= 2 ? 'zejdź o 1 RIR (bliżej upadku) przez 2 tygodnie' : 'dołóż jedną serię albo zmień zakres powtórzeń (np. 5×5 zamiast 3×8) na 3 tygodnie'
+  return {
+    stalled_sessions: 3,
+    best_e1rm: Math.round(bestBefore.e1rm),
+    best_date: bestBefore.date,
+    message: `Trzy sesje bez poprawy e1RM (rekord ${Math.round(bestBefore.e1rm)} kg z ${bestBefore.date.slice(5)}) – ${tip}.`,
+  }
+}

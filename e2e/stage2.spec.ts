@@ -66,13 +66,16 @@ test('tryb siłowni: serie, timer przerwy, podsumowanie, status', async ({ page 
   await page.getByLabel('kg').fill('60')
   await page.getByLabel('powt.').fill('10')
   await page.getByLabel('RIR').fill('4')
+  // kalkulator talerzy: 60 kg na gryfie 20 = 20 kg na stronę
+  await expect(page.getByTestId('plates')).toHaveText(/gryf 20 kg\): 20$/)
   await page.getByRole('button', { name: /Zalicz serię/ }).click()
   await expect(page.getByRole('dialog', { name: 'Przerwa' })).toBeVisible()
   await expect(page.getByText(/^1:5\d$/)).toBeVisible()
   await page.getByRole('button', { name: 'Pomiń' }).click()
   await expect(page.getByText('Seria 2 z 2')).toBeVisible()
   await expect(page.getByLabel('kg')).toHaveValue('60')
-  await page.getByRole('button', { name: /Zalicz serię/ }).click()
+  // seria 2 jednym dotknięciem – powtórka poprzedniej
+  await page.getByRole('button', { name: /Powtórz poprzednią serię \(60 kg × 10\)/ }).click()
   await page.getByRole('button', { name: 'Pomiń' }).click()
   await page.screenshot({ path: 'test-results/gym-mode.png', fullPage: true })
   // przeładowanie – sesja trwa, serie zapisane

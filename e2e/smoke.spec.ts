@@ -90,6 +90,9 @@ test('Biblioteka, strefy, zasady, sezon', async ({ page }) => {
   await page.getByRole('button', { name: 'Ćwiczenia' }).click()
   await page.getByText('Przysiad ze sztangą na plecach').click()
   await expect(page.getByRole('heading', { name: 'Technika' })).toBeVisible()
+  // schemat ćwiczenia i link do filmu (pkt 8)
+  await expect(page.getByRole('img', { name: /Schemat: Przysiad/ })).toBeVisible()
+  await expect(page.getByRole('link', { name: /Pokaż technikę/ })).toHaveAttribute('href', /youtube\.com/)
   await page.goto('/biblioteka/strefy')
   await expect(page.getByText('Sweet spot').first()).toBeVisible()
   // kolumna W: Z2 z FTP 220 W (szacunek) = 56–75 % → 123–165

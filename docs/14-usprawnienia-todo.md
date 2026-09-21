@@ -95,13 +95,12 @@ Kolejność wynika z zależności: wszystko, co „analizuje”, potrzebuje stru
 - [x] Checklista „trening na Bolcie ✓” w odprawie (pkt 6).
 
 ### 8. Siłownia: obraz ćwiczenia, film, mniej wpisywania
-- [ ] `data/exercises_media.json`: dla każdego ćwiczenia (`program.json → exercises`, np. `back_squat`, `rdl`, `trap_bar_deadlift`)
-      **diagram/zdjęcie** (własny prosty rysunek SVG lub zdjęcie w `public/exercises/`, offline) + **link do krótkiego filmu YT**
-      z techniką (otwierany na zewnątrz, nie osadzony – offline i prywatność) + 3–4 punkty techniczne.
-- [ ] Karta ćwiczenia w Bibliotece i w trybie siłowni: obraz na górze, „Pokaż technikę ▶”.
-- [ ] Kalkulator talerzy przy sugerowanym ciężarze (gryf 20 kg, talerze 1,25–25), „powtórz ostatnią serię” jednym dotknięciem.
-- [ ] Wykrywanie plateau (3 sesje bez progresu e1RM → propozycja zmiany RIR/objętości), wykres e1RM w karcie ćwiczenia.
-- [ ] Timer przerwy z powiadomieniem systemowym przy zgaszonym ekranie (Notification z SW, tag `rest`).
+- [x] Schematy: `scripts/exercise-diagrams.py` generuje 22 SVG (patyczak z kątów, pozycja start → koniec) do `public/exercises/` – offline, w precache PWA. `data/exercises_media.json`: link do techniki na YouTube jako **wyszukiwanie** (bez martwych linków; pole `video_id` nadpisuje konkretnym filmem) + gryf do kalkulatora (`bar_kg`: 20 sztanga, 25 trap bar, null = brak).
+- [x] Karta ćwiczenia w Bibliotece (schemat + „▶ Pokaż technikę (YouTube)” na górze, karta „Twoje wyniki (e1RM)” z wykresem) i w trybie siłowni (w rozwijanym „Technika i po co”).
+- [x] Kalkulator talerzy pod polem ciężaru (zachłannie 25→1,25 na stronę, z resztą i najbliższym możliwym ciężarem); „↻ Powtórz poprzednią serię” jednym dotknięciem (zapisuje i startuje przerwę).
+- [x] Plateau (`detectPlateau`): 3 ostatnie sesje bez przebicia rekordu e1RM (> 1 %) → podpowiedź zależna od RIR (≥ 2: zejdź o 1 RIR; inaczej: dołóż serię / zmień zakres) – w trybie siłowni i na karcie ćwiczenia.
+- [x] Koniec przerwy przy zgaszonym ekranie: wibracja (Android) + powiadomienie z service workera (tag `rest`), gdy karta jest ukryta i jest zgoda na powiadomienia. Na iOS w tle JS śpi – działa dźwięk, gdy ekran włączony (Wake Lock trzyma go w sesji).
+- [ ] Wymiana wyszukiwań YT na konkretne, sprawdzone filmy (`video_id`) – gdy wybierzesz ulubione.
 
 ### 9. Kadencja i technika pedałowania
 - [ ] Po jeździe: rozkład kadencji wg stref, średnia w interwałach siłowych vs cel, trend w Z2 (cel ≥ 78 rpm).
@@ -124,6 +123,8 @@ Kolejność wynika z zależności: wszystko, co „analizuje”, potrzebuje stru
 - **22.09.2026** – pkt 6 wdrożony: `src/engine/weather.ts` (+ testy), `src/sync/weather.ts`, `BriefingCard` na ekranie dnia, `WeatherSettings`, `data/clothing.json`.
 
 - **22.09.2026** – pkt 7 wdrożony: migracja `20260921140000_wahoo_workouts.sql`, `wahoo-push` tryb `completed`, `WahooStatus.tsx` (stan na Bolcie, wykonane wg Bolta), Dexie v7 (`wahoo_pushes`, `wahoo_workouts`).
+
+- **22.09.2026** – pkt 8 wdrożony: `scripts/exercise-diagrams.py` + `public/exercises/*.svg`, `data/exercises_media.json`, `src/data/exercisesMedia.ts`, `ExerciseMedia.tsx`, `platesFor`/`detectPlateau` w `src/engine/load.ts` (+ testy), tryb siłowni i karta ćwiczenia.
 
 ## Pracochłonność (orientacyjnie)
 | # | Zakres | Nakład |

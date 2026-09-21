@@ -4,7 +4,9 @@ import { useLiveQuery } from 'dexie-react-hooks'
 import { useEngine } from '@/app/useSettings'
 import { getDayPlan } from '@/engine/plan'
 import { isValidISODate } from '@/engine/dates'
-import { epley1RM, suggestLoad, warmupSets, type LoadSuggestion } from '@/engine/load'
+import { detectPlateau, epley1RM, platesFor, suggestLoad, warmupSets, type LoadSuggestion } from '@/engine/load'
+import { mediaFor } from '@/data/exercisesMedia'
+import { ExerciseMedia } from '@/features/library/ExerciseMedia'
 import { tonnage } from '@/engine/progress'
 import type { GymItem, GymSession } from '@/engine/schema'
 import { db, newId, type SessionLog, type SetLog } from '@/db'
@@ -160,6 +162,8 @@ function ExerciseStep({ step, session, log, sets, week, deload, last: lastValues
       { deload, intro: week <= 2 },
     )
   }, [history, item, loggable, targetReps, targetRir, deload, week])
+  const plateau = useMemo(() => (loggable ? detectPlateau(history, targetRir) : null), [history, loggable, targetRir])
+  const media = mediaFor(item.exercise)
   const prevSet = mySets.filter((s) => s.set_no < step.setNo).at(-1)
   const defaultWeight = existing?.weight_kg ?? prevSet?.weight_kg ?? (lastValues ? Number(lastValues.weight.replace(',', '.')) || null : null) ?? suggestion?.weight_kg ?? null
   const [weight, setWeight] = useState(defaultWeight != null ? String(defaultWeight) : '')
@@ -167,6 +171,8 @@ function ExerciseStep({ step, session, log, sets, week, deload, last: lastValues
   const [rir, setRir] = useState(existing?.rir != null ? String(existing.rir) : targetRir != null ? String(targetRir) : (lastValues?.rir ?? ''))
   const [showCues, setShowCues] = useState(false)
   const last = history.at(-1)
+  const weightNum = Number(weight.replace(',', '.'))
+  const plates = media?.bar_kg && ex?.load_unit !== 'min' && Number.isFinite(weightNum) && weightNum > 0 ? platesFor(weightNum, media.bar_kg) : null
 
   async function logSet() {
     const n = (v: string) => (v.trim() === '' ? null : Number(v.replace(',', '.')))
@@ -205,6 +211,7 @@ function ExerciseStep({ step, session, log, sets, week, deload, last: lastValues
               Ostatnio ({last.date}): {last.sets.map((s) => `${num(s.weight_kg ?? 0)}×${s.reps ?? '–'}${s.rir != null ? `@${s.rir}` : ''}`).join(', ')}
             </p>
           )}
+          {plateau && <p className="mt-1 text-xs text-amber-700 dark:text-amber-300">⚠️ {plateau.message}</p>}
           {item.block === '1' && step.setNo === 1 && weight && Number(weight.replace(',', '.')) > 20 && (
             <p className="mt-1 text-xs text-slate-500 tabular-nums dark:text-slate-400">Serie wstępne: {warmupSets(Number(weight.replace(',', '.'))).map((w) => `${num(w.weight_kg)}×${w.reps}`).join(' → ')}</p>
           )}
@@ -233,10 +240,32 @@ function ExerciseStep({ step, session, log, sets, week, deload, last: lastValues
         ) : (
           <p className="text-sm text-slate-500 dark:text-slate-400">{item.rx.note ?? 'Odhacz po wykonaniu.'}</p>
         )}
+        {plates && (
+          <p className="mt-2 text-center text-xs text-slate-500 tabular-nums dark:text-slate-400" data-testid="plates">
+            Talerze na stronę (gryf {media!.bar_kg} kg): {plates.per_side.length ? plates.per_side.map((p) => num(p, p % 1 ? 2 : 0)).join(' + ') : 'pusty gryf'}
+            {plates.remainder_kg > 0 ? ` (brakuje ${num(plates.remainder_kg, 2)} kg – najbliżej ${num(plates.achieved_kg)} kg)` : ''}
+          </p>
+        )}
         <Button onClick={logSet} className="mt-3 min-h-12 w-full text-base">
           ✓ {existing ? 'Zapisz poprawkę' : 'Zalicz serię'}
           {item.rx.rest_s ? ` · przerwa ${seconds(item.rx.rest_s)}` : ''}
         </Button>
+        {loggable && prevSet && !existing && (
+          <Button
+            variant="ghost"
+            className="mt-1 w-full"
+            onClick={async () => {
+              const n = (v: number | null | undefined) => (v == null ? '' : String(v))
+              setWeight(n(prevSet.weight_kg))
+              setReps(n(prevSet.reps))
+              setRir(n(prevSet.rir))
+              await putSet({ id: newId(), session_log_id: log.id, exercise_id: item.exercise, set_no: step.setNo, weight_kg: prevSet.weight_kg ?? null, reps: prevSet.reps ?? null, rir: prevSet.rir ?? null, is_warmup: false })
+              onLogged(item.rx.rest_s ?? 60, { weight: n(prevSet.weight_kg), reps: n(prevSet.reps), rir: n(prevSet.rir) })
+            }}
+          >
+            ↻ Powtórz poprzednią serię ({num(prevSet.weight_kg ?? 0)} kg × {prevSet.reps ?? '–'})
+          </Button>
+        )}
       </Card>
       {mySets.length > 0 && (
         <ul className="flex flex-wrap gap-1 text-xs">
@@ -254,6 +283,9 @@ function ExerciseStep({ step, session, log, sets, week, deload, last: lastValues
       {ex && (
         <details open={showCues} onToggle={(e) => setShowCues((e.target as HTMLDetailsElement).open)} className="text-sm">
           <summary className="min-h-11 cursor-pointer py-2 font-medium">Technika i po co</summary>
+          <div className="mb-2">
+            <ExerciseMedia exerciseId={item.exercise} name={ex.name} compact />
+          </div>
           <ol className="list-decimal space-y-1 pl-5">
             {ex.cues.map((c, i) => (
               <li key={i}>{c}</li>
