@@ -3,7 +3,7 @@ import { useDayView } from '@/app/usePlan'
 import { todayISO } from '@/lib/dates'
 import { fmtDate } from '@/lib/dates'
 import { DayView } from './DayView'
-import { Card } from '@/components/ui'
+import { Card, Inset } from '@/components/ui'
 
 export function TodayPage() {
   const today = todayISO()
@@ -17,7 +17,7 @@ export function TodayPage() {
         <p className="mt-1 text-sm">
           Plan obejmuje dni od {fmtDate(program_start)} (tydzień 0 od 3 dni wcześniej) do {fmtDate(trip_start)}. Dziś jest {fmtDate(today)}.
         </p>
-        <Link to="/wiecej/ustawienia" className="mt-3 inline-block text-sm font-semibold text-sky-600">
+        <Link to="/wiecej/ustawienia" className="mt-3 inline-block text-sm font-semibold text-sky-700 hover:underline dark:text-sky-300">
           Zmień daty w ustawieniach →
         </Link>
       </Card>
@@ -25,7 +25,11 @@ export function TodayPage() {
   }
   return (
     <>
-      {engine.settingsError && <p className="mb-2 rounded-lg bg-red-100 px-3 py-2 text-xs text-red-800">{engine.settingsError}</p>}
+      {engine.settingsError && (
+        <Inset tone="error" className="mb-2 text-xs">
+          {engine.settingsError}
+        </Inset>
+      )}
       <DayView day={day} engine={engine} warnings={view.warnings} overrides={view.overrides} onAction={view.applyAction} onUndo={view.undo} />
     </>
   )

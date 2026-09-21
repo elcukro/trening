@@ -33,9 +33,32 @@ function StatusDot({ status }: { status: SessionStatus | null }) {
   return <Dot color={STATUS_COLOR[status]} title={STATUS_LABEL[status]} className="ring-2 ring-white dark:ring-slate-800" />
 }
 
+/** Krótkie nazwy faz do wąskiego paska tygodnia (3,5 rem) */
+const PHASE_RAIL: Record<string, string> = { PREP: 'Prep', I: 'F I', II: 'F II', III: 'F III', IV: 'F IV', V: 'F V', TAPER: 'Taper' }
+
+/** Jedna pozycja w komórce: kolorowa kropka, nazwa (z wielokropkiem), pod nią czas i status – nic nie wystaje poza komórkę. */
+function CellItem({ color, name, title, meta, status }: { color: string; name: string; title?: string; meta?: string; status?: SessionStatus | null }) {
+  return (
+    <div className="hidden min-w-0 items-start gap-1.5 lg:flex">
+      <span className={`mt-1.5 h-2 w-2 shrink-0 rounded-full ${color}`} aria-hidden />
+      <div className="min-w-0 flex-1 leading-4">
+        <div className="truncate text-xs font-medium" title={title ?? name}>
+          {name}
+        </div>
+        {(meta || status) && (
+          <div className="flex items-center gap-1 text-xs text-slate-500 dark:text-slate-400">
+            {meta && <span className="truncate tabular-nums">{meta}</span>}
+            {status && <StatusDot status={status} />}
+          </div>
+        )}
+      </div>
+    </div>
+  )
+}
+
 function DayCell({ date, day, inMonth, today, logs, hasOverride }: { date: ISODate; day: DayPlan | undefined; inMonth: boolean; today: boolean; logs: SessionLog[]; hasOverride: boolean }) {
   const num = Number(date.slice(8))
-  const base = 'relative flex min-h-16 flex-col gap-1 rounded-lg p-1 text-left lg:min-h-28 lg:gap-1.5 lg:p-2'
+  const base = 'relative flex min-h-16 min-w-0 flex-col gap-1 overflow-hidden rounded-lg p-1 text-left lg:min-h-28 lg:gap-1.5 lg:p-2'
   if (!day) {
     return (
       <div className={`${base} bg-slate-100/60 text-slate-300 dark:bg-slate-800/40 dark:text-slate-600`} aria-label={`${date} – poza planem`}>
@@ -52,7 +75,7 @@ function DayCell({ date, day, inMonth, today, logs, hasOverride }: { date: ISODa
     <Link
       to={`/dzien/${date}`}
       aria-label={`${WEEKDAY_LONG[day.weekday]} ${date}`}
-      className={`${base} border transition-colors ${today ? 'border-sky-500 ring-2 ring-sky-500/40' : 'border-slate-200 dark:border-slate-700'} ${tone}`}
+      className={`${base} border shadow-card transition-colors ${today ? 'border-sky-500 ring-2 ring-sky-500/40' : 'border-slate-200 dark:border-slate-700'} ${tone}`}
     >
       <div className="flex items-center justify-between gap-1">
         <span className={`text-xs font-semibold tabular-nums lg:text-sm ${today ? 'rounded-full bg-sky-600 px-1.5 text-white' : ''}`}>{num}</span>
@@ -65,36 +88,24 @@ function DayCell({ date, day, inMonth, today, logs, hasOverride }: { date: ISODa
         </span>
       </div>
 
-      {/* telefon: kolorowe paski; komputer: nazwy */}
+      {/* telefon: kolorowe paski; komputer: nazwy z czasem pod spodem */}
       {ride && (
-        <div className="flex items-center gap-1.5">
-          <span className={`h-1.5 w-full rounded-full lg:h-2.5 lg:w-2.5 lg:shrink-0 ${DAY_TYPE_COLOR[day.day_type]}`} />
-          <span className="hidden min-w-0 flex-1 truncate text-xs lg:block" title={ride.name}>
-            {ride.name}
-          </span>
-          <span className="hidden shrink-0 text-xs tabular-nums text-slate-500 lg:block">{minutes(ride.duration_min)}</span>
-          <span className="hidden lg:block">
-            <StatusDot status={bikeStatus} />
-          </span>
-        </div>
+        <>
+          <span className={`h-1.5 w-full rounded-full lg:hidden ${DAY_TYPE_COLOR[day.day_type]}`} />
+          <CellItem color={DAY_TYPE_COLOR[day.day_type]} name={ride.name} meta={minutes(ride.duration_min)} status={bikeStatus} />
+        </>
       )}
       {travel && (
-        <div className="flex items-center gap-1.5">
-          <span className={`h-1.5 w-full rounded-full lg:h-2.5 lg:w-2.5 lg:shrink-0 ${DAY_TYPE_COLOR.trip}`} />
-          <span className="hidden min-w-0 flex-1 truncate text-xs lg:block">{travel.workout_id === 'TRIP' ? 'Alpy' : 'Dojazd'}</span>
-        </div>
+        <>
+          <span className={`h-1.5 w-full rounded-full lg:hidden ${DAY_TYPE_COLOR.trip}`} />
+          <CellItem color={DAY_TYPE_COLOR.trip} name={travel.workout_id === 'TRIP' ? 'Alpy' : 'Dojazd'} title={travel.name} />
+        </>
       )}
       {day.gym && (
-        <div className="flex items-center gap-1.5">
-          <span className={`h-1.5 w-1/2 rounded-full lg:h-2.5 lg:w-2.5 lg:shrink-0 ${GYM_COLOR}`} />
-          <span className="hidden min-w-0 flex-1 truncate text-xs lg:block" title={day.gym.name}>
-            {gymShort(day.gym.name)}
-          </span>
-          <span className="hidden shrink-0 text-xs tabular-nums text-slate-500 lg:block">~{day.gym.est_min} min</span>
-          <span className="hidden lg:block">
-            <StatusDot status={gymStatus} />
-          </span>
-        </div>
+        <>
+          <span className={`h-1.5 w-1/2 rounded-full lg:hidden ${GYM_COLOR}`} />
+          <CellItem color={GYM_COLOR} name={gymShort(day.gym.name)} title={day.gym.name} meta={`~${day.gym.est_min} min`} status={gymStatus} />
+        </>
       )}
       {!ride && !travel && !day.gym && <span className="hidden text-xs text-slate-400 lg:block">Wolne</span>}
 
@@ -106,20 +117,22 @@ function DayCell({ date, day, inMonth, today, logs, hasOverride }: { date: ISODa
         </span>
       )}
 
-      {/* komputer: znaczniki i wydarzenie tekstem */}
-      <div className="mt-auto hidden flex-wrap gap-1 lg:flex">
-        {day.flags.map((f) => (
-          <span key={f} className={`rounded px-1 text-[10px] font-medium leading-4 text-white ${FLAG_COLOR[f]}`}>
-            {FLAG_LABEL[f]}
-          </span>
-        ))}
-        {hasOverride && <span className="rounded bg-sky-600 px-1 text-[10px] font-medium leading-4 text-white">zmienione</span>}
-        {day.event && (
-          <span className="w-full truncate text-[11px] font-medium text-orange-600 dark:text-orange-400" title={day.event}>
-            {day.event}
-          </span>
-        )}
-      </div>
+      {/* komputer: znaczniki i wydarzenie tekstem – każdy skracany z wielokropkiem, pełna treść w title */}
+      {(day.flags.length > 0 || hasOverride || day.event) && (
+        <div className="mt-auto hidden min-w-0 flex-wrap gap-1 lg:flex">
+          {day.flags.map((f) => (
+            <span key={f} className={`max-w-full truncate rounded px-1 text-xs font-medium leading-4 text-white ${FLAG_COLOR[f]}`} title={FLAG_LABEL[f]}>
+              {FLAG_LABEL[f]}
+            </span>
+          ))}
+          {hasOverride && <span className="max-w-full truncate rounded bg-sky-600 px-1 text-xs font-medium leading-4 text-white">zmienione</span>}
+          {day.event && (
+            <span className="w-full truncate text-xs font-medium text-orange-600 dark:text-orange-400" title={day.event}>
+              {day.event}
+            </span>
+          )}
+        </div>
+      )}
     </Link>
   )
 }
@@ -155,15 +168,15 @@ export function CalendarPage() {
     <div className="space-y-3 lg:space-y-4">
       <header className="flex flex-wrap items-center gap-2">
         <div className="flex items-center gap-1">
-          <Button variant="ghost" ariaLabel="Poprzedni miesiąc" onClick={() => go(addMonths(first, -1))} className="px-3">
+          <Button variant="ghost" ariaLabel="Poprzedni miesiąc" onClick={() => go(addMonths(first, -1))} className="w-11 px-0 text-xl">
             ‹
           </Button>
-          <h1 className="min-w-40 text-center text-xl font-bold tracking-tight first-letter:uppercase lg:min-w-56 lg:text-3xl">{fmtMonth(first)}</h1>
-          <Button variant="ghost" ariaLabel="Następny miesiąc" onClick={() => go(addMonths(first, 1))} className="px-3">
+          <h1 className="min-w-40 text-center text-2xl font-bold tracking-tight first-letter:uppercase lg:min-w-56">{fmtMonth(first)}</h1>
+          <Button variant="ghost" ariaLabel="Następny miesiąc" onClick={() => go(addMonths(first, 1))} className="w-11 px-0 text-xl">
             ›
           </Button>
         </div>
-        <Button variant="secondary" onClick={() => go(today)} className="ml-auto min-h-10 px-3">
+        <Button variant="secondary" size="sm" onClick={() => go(today)} className="ml-auto">
           Dziś
         </Button>
         {summary.rides > 0 && (
@@ -180,13 +193,14 @@ export function CalendarPage() {
       )}
 
       <div className="grid grid-cols-[1.5rem_repeat(7,minmax(0,1fr))] gap-0.5 lg:grid-cols-[3.5rem_repeat(7,minmax(0,1fr))] lg:gap-1" role="grid" aria-label={`Kalendarz: ${fmtMonth(first)}`}>
-        <div className="text-[10px] text-slate-400 lg:text-xs" aria-hidden>
+        <div className="text-xs text-slate-400" aria-hidden>
           <span className="hidden lg:inline">Tydz.</span>
         </div>
         {WEEKDAYS.map((wd) => (
-          <div key={wd} className={`pb-1 text-center text-[11px] font-semibold uppercase tracking-wide lg:text-xs ${wd === 'sat' || wd === 'sun' ? 'text-orange-600 dark:text-orange-400' : 'text-slate-500'}`}>
-            <span className="lg:hidden">{WEEKDAY_SHORT[wd]}</span>
-            <span className="hidden lg:inline">{WEEKDAY_LONG[wd]}</span>
+          <div key={wd} className={`min-w-0 truncate pb-1 text-center text-xs font-semibold uppercase tracking-wide ${wd === 'sat' || wd === 'sun' ? 'text-orange-600 dark:text-orange-400' : 'text-slate-500 dark:text-slate-400'}`} title={WEEKDAY_LONG[wd]}>
+            {/* pełna nazwa dopiero od 1280 px – przy 1024 px „poniedziałek” nie mieści się w kolumnie */}
+            <span className="xl:hidden">{WEEKDAY_SHORT[wd]}</span>
+            <span className="hidden xl:inline">{WEEKDAY_LONG[wd]}</span>
           </div>
         ))}
         {weeks.map((week) => {
@@ -199,10 +213,10 @@ export function CalendarPage() {
                   to={`/tydzien/${monday}`}
                   title={`Tydzień ${planned.week} · ${PHASE_SHORT[planned.phase]}`}
                   aria-label={`Tydzień ${planned.week} · ${PHASE_SHORT[planned.phase]}`}
-                  className={`flex flex-col items-center justify-center gap-1 rounded-lg py-1 text-[10px] font-semibold text-white lg:text-xs ${PHASE_COLOR[planned.phase]}`}
+                  className={`flex min-w-0 flex-col items-center justify-center gap-0.5 overflow-hidden rounded-lg px-0.5 py-1 text-xs font-semibold text-white transition-opacity hover:opacity-90 ${PHASE_COLOR[planned.phase]}`}
                 >
-                  <span className="tabular-nums">{planned.week}</span>
-                  <span className="hidden text-[10px] font-normal opacity-90 lg:block">{PHASE_SHORT[planned.phase].replace('Faza ', 'F')}</span>
+                  <span className="tabular-nums lg:text-sm">{planned.week}</span>
+                  <span className="hidden max-w-full truncate text-xs font-medium opacity-90 lg:block">{PHASE_RAIL[planned.phase] ?? planned.phase}</span>
                 </Link>
               ) : (
                 <div className="rounded-lg bg-slate-100 dark:bg-slate-800/40" />

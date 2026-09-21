@@ -4,7 +4,7 @@ import { useSyncRunner } from '@/sync/useSync'
 import { resetSyncCursors, runSync } from '@/sync/sync'
 import { db, SYNC_TABLES } from '@/db'
 import { loadProgram } from '@/data/program'
-import { Button, Card, CardTitle, Row } from '@/components/ui'
+import { Actions, Button, Card, CardTitle, Field, Input, Inset, Row, Textarea } from '@/components/ui'
 import { useToast } from '@/components/Toast'
 
 const STATE_LABEL: Record<string, string> = { idle: 'Zsynchronizowano', syncing: 'Synchronizuję…', error: 'Błąd', offline: 'Offline', unauthenticated: 'Niezalogowany', disabled: 'Wyłączona (brak konfiguracji)' }
@@ -18,7 +18,6 @@ export function AccountSection() {
   const [code, setCode] = useState('')
   const [sent, setSent] = useState(false)
   const [msg, setMsg] = useState<string | null>(auth.urlError)
-  const inputCls = 'mt-1 min-h-11 w-full rounded-lg border border-slate-300 bg-white px-3 dark:border-slate-600 dark:bg-slate-900'
 
   async function send() {
     setMsg(null)
@@ -55,15 +54,17 @@ export function AccountSection() {
     <Card>
       <CardTitle icon="☁️">Konto i synchronizacja</CardTitle>
       {!auth.configured ? (
-        <p className="text-sm text-slate-500">Brak konfiguracji Supabase (`VITE_SUPABASE_URL`, `VITE_SUPABASE_PUBLISHABLE_KEY`). Aplikacja działa tylko lokalnie – dane są w tej przeglądarce. Instrukcja: docs/09-supabase.md.</p>
+        <p className="text-sm text-slate-500 dark:text-slate-400">Brak konfiguracji Supabase (`VITE_SUPABASE_URL`, `VITE_SUPABASE_PUBLISHABLE_KEY`). Aplikacja działa tylko lokalnie – dane są w tej przeglądarce. Instrukcja: docs/09-supabase.md.</p>
       ) : auth.session ? (
         <>
-          <Row label="Zalogowany">{auth.session.user.email}</Row>
-          <Row label="Stan">{STATE_LABEL[sync.state] ?? sync.state}</Row>
-          {sync.last_sync && <Row label="Ostatnia synchronizacja">{new Date(sync.last_sync).toLocaleString('pl-PL')}</Row>}
-          <Row label="W kolejce">{sync.pending} zmian</Row>
-          {sync.error && <p className="mt-1 text-xs text-red-600">{sync.error}</p>}
-          <div className="mt-2 flex gap-2">
+          <div className="divide-y divide-slate-100 dark:divide-slate-700/80">
+            <Row label="Zalogowany">{auth.session.user.email}</Row>
+            <Row label="Stan">{STATE_LABEL[sync.state] ?? sync.state}</Row>
+            {sync.last_sync && <Row label="Ostatnia synchronizacja">{new Date(sync.last_sync).toLocaleString('pl-PL')}</Row>}
+            <Row label="W kolejce">{sync.pending} zmian</Row>
+          </div>
+          {sync.error && <p className="mt-1 text-xs text-red-600 dark:text-red-400">{sync.error}</p>}
+          <Actions className="mt-3">
             <Button variant="secondary" disabled={toast.busy} onClick={() => toast.run('Synchronizuję…', () => runSync({ programVersion: loadProgram().version }), () => 'Zsynchronizowano')}>
               Synchronizuj teraz
             </Button>
@@ -82,36 +83,34 @@ export function AccountSection() {
             >
               Wyloguj
             </Button>
-          </div>
+          </Actions>
         </>
       ) : (
         <>
-          <label className="block">
-            <span className="text-xs text-slate-500">E-mail (magic link)</span>
-            <input className={inputCls} type="email" inputMode="email" autoComplete="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="twoj@adres.pl" />
-          </label>
-          <Button onClick={send} disabled={!email.includes('@')} className="mt-2 w-full">
+          <Field label="E-mail (magic link)">
+            <Input type="email" inputMode="email" autoComplete="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="twoj@adres.pl" />
+          </Field>
+          <Button onClick={send} disabled={!email.includes('@')} className="mt-3 w-full">
             Wyślij link logowania
           </Button>
           {msg && <p className="mt-2 text-sm">{msg}</p>}
-          <div className={`mt-3 rounded-xl p-3 ${sent ? 'bg-sky-50 dark:bg-sky-950/40' : 'bg-slate-100 dark:bg-slate-700/40'}`}>
-              <label className="block">
-                <span className="text-xs text-slate-500">Kod z maila (8 cyfr)</span>
-                <input className={`${inputCls} text-center text-2xl tracking-[0.3em]`} inputMode="numeric" autoComplete="one-time-code" maxLength={8} value={code} onChange={(e) => setCode(e.target.value)} placeholder="········" />
-              </label>
-              <Button onClick={useCode} disabled={code.replace(/\D/g, '').length < 6 || !email.includes('@')} className="mt-2 w-full">
-                Zaloguj kodem
-              </Button>
-              {!sent && <p className="mt-1 text-xs text-slate-500">Najpierw wyślij mail przyciskiem wyżej, potem przepisz kod z maila. E-mail musi być wpisany.</p>}
-          </div>
+          <Inset tone={sent ? 'info' : 'default'} className="mt-3 py-3">
+            <Field label="Kod z maila (8 cyfr)">
+              <Input className="text-center text-2xl tracking-[0.3em]" inputMode="numeric" autoComplete="one-time-code" maxLength={8} value={code} onChange={(e) => setCode(e.target.value)} placeholder="········" />
+            </Field>
+            <Button onClick={useCode} disabled={code.replace(/\D/g, '').length < 6 || !email.includes('@')} className="mt-3 w-full">
+              Zaloguj kodem
+            </Button>
+            {!sent && <p className="mt-2 text-xs text-slate-500 dark:text-slate-400">Najpierw wyślij mail przyciskiem wyżej, potem przepisz kod z maila. E-mail musi być wpisany.</p>}
+          </Inset>
           <details className="mt-3">
             <summary className="min-h-11 cursor-pointer py-2 text-sm font-medium">Mam link z maila – wklej go tutaj</summary>
-            <textarea className={`${inputCls} min-h-20 text-xs`} value={link} onChange={(e) => setLink(e.target.value)} placeholder="https://kgllegvlnmchdvkkbitt.supabase.co/auth/v1/verify?token=…" />
-            <Button variant="secondary" onClick={useLink} disabled={!link.includes('token')} className="mt-2 w-full">
+            <Textarea className="text-xs" value={link} onChange={(e) => setLink(e.target.value)} placeholder="https://kgllegvlnmchdvkkbitt.supabase.co/auth/v1/verify?token=…" aria-label="Link z maila" />
+            <Button variant="secondary" onClick={useLink} disabled={!link.includes('token')} className="mt-3 w-full">
               Zaloguj wklejonym linkiem
             </Button>
           </details>
-          <p className="mt-2 text-xs text-slate-500">Kod i link działają raz, przez godzinę. Nie otwieraj podglądu linku w Gmailu – to go zużywa. Bez logowania wszystko działa lokalnie.</p>
+          <p className="mt-3 text-xs text-slate-500 dark:text-slate-400">Kod i link działają raz, przez godzinę. Nie otwieraj podglądu linku w Gmailu – to go zużywa. Bez logowania wszystko działa lokalnie.</p>
         </>
       )}
     </Card>
@@ -188,7 +187,7 @@ export function BackupSection() {
   return (
     <Card>
       <CardTitle icon="💾">Kopia zapasowa</CardTitle>
-      <div className="flex gap-2">
+      <Actions>
         <Button variant="secondary" onClick={() => toast.run('Przygotowuję kopię…', exportJson, () => 'Kopia gotowa')} className="flex-1">
           Eksport JSON
         </Button>
@@ -196,9 +195,9 @@ export function BackupSection() {
           Import JSON
         </Button>
         <input ref={fileRef} type="file" accept="application/json,.json" className="hidden" onChange={(e) => e.target.files?.[0] && importJson(e.target.files[0])} />
-      </div>
+      </Actions>
       {msg && <p className="mt-2 text-sm">{msg}</p>}
-      <p className="mt-2 text-xs text-slate-500">Kopia zawiera ustawienia, check-iny, logi jazd i siłowni oraz wyniki testów. Import scala po dacie zmiany.</p>
+      <p className="mt-3 text-xs text-slate-500 dark:text-slate-400">Kopia zawiera ustawienia, check-iny, logi jazd i siłowni oraz wyniki testów. Import scala po dacie zmiany.</p>
     </Card>
   )
 }

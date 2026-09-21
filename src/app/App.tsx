@@ -62,7 +62,7 @@ function BottomNav() {
               to={t.to}
               end={t.end}
               className={({ isActive }) =>
-                `flex min-h-14 flex-col items-center justify-center gap-0.5 text-[11px] font-medium ${isActive ? 'text-sky-600 dark:text-sky-400' : 'text-slate-500 dark:text-slate-400'}`
+                `flex min-h-14 flex-col items-center justify-center gap-0.5 text-xs font-medium ${isActive ? 'text-sky-600 dark:text-sky-400' : 'text-slate-500 dark:text-slate-400'}`
               }
             >
               <span className="text-xl leading-none" aria-hidden>
@@ -98,10 +98,10 @@ function SeasonStrip() {
   const left = diffDays(trip_start, today)
   const currentPhase = engine.weeks.find((w) => today >= w.monday && today <= addDays(w.monday, 6))
   return (
-    <div className="mt-auto rounded-xl border border-slate-200 bg-slate-50 p-3 dark:border-slate-700 dark:bg-slate-800/60">
-      <div className="flex items-baseline justify-between">
-        <span className="text-xs font-semibold uppercase tracking-wide text-slate-500">Alpy 2027</span>
-        <span className="text-xs tabular-nums text-slate-500">{Math.round((elapsed / span) * 100)} %</span>
+    <div className="mt-auto rounded-xl border border-slate-200 bg-slate-50 p-3 shadow-card dark:border-slate-700 dark:bg-slate-800">
+      <div className="flex items-baseline justify-between gap-2">
+        <span className="text-xs font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">Alpy 2027</span>
+        <span className="text-xs tabular-nums text-slate-500 dark:text-slate-400">{Math.round((elapsed / span) * 100)} %</span>
       </div>
       <p className="mt-0.5 text-sm font-semibold">{left > 0 ? `za ${daysLabel(left)}` : left === 0 ? 'Dziś wyjazd!' : 'Wyjazd trwa'}</p>
       <div className="relative mt-2 flex h-2 w-full overflow-hidden rounded-full">
@@ -110,7 +110,7 @@ function SeasonStrip() {
         ))}
         <span className="absolute top-0 h-2 w-0.5 bg-slate-900 dark:bg-white" style={{ left: `${(elapsed / span) * 100}%` }} aria-hidden />
       </div>
-      {currentPhase && <p className="mt-1.5 text-[11px] text-slate-500">{PHASE_SHORT[currentPhase.phase]} · tydzień {currentPhase.week}</p>}
+      {currentPhase && <p className="mt-1.5 truncate text-xs text-slate-500 dark:text-slate-400">{PHASE_SHORT[currentPhase.phase]} · tydzień {currentPhase.week}</p>}
     </div>
   )
 }
@@ -121,7 +121,7 @@ function SideNav() {
     <nav className="sticky top-0 hidden h-dvh w-64 shrink-0 flex-col border-r border-slate-200 bg-white px-4 py-6 lg:flex dark:border-slate-700 dark:bg-slate-900" aria-label="Nawigacja główna">
       <div className="mb-6 px-3">
         <div className="text-xl font-bold tracking-tight">Trening</div>
-        <div className="text-xs text-slate-500">Alpy 2027</div>
+        <div className="text-xs text-slate-500 dark:text-slate-400">Alpy 2027</div>
       </div>
       <ul className="space-y-1">
         {SIDE_MAIN.map((t) => (
@@ -141,7 +141,7 @@ function SideNav() {
           </li>
         ))}
       </ul>
-      <p className="mt-6 mb-1 px-3 text-[11px] font-semibold uppercase tracking-wide text-slate-400">Więcej</p>
+      <p className="mt-6 mb-1 px-3 text-xs font-semibold uppercase tracking-wide text-slate-400 dark:text-slate-500">Więcej</p>
       <ul className="space-y-0.5 text-sm">
         {SIDE_MORE.map((t) => (
           <li key={t.to}>
@@ -167,7 +167,7 @@ function Layout() {
   return (
     <div className="flex w-full flex-1">
       <SideNav />
-      <div className="safe-top mx-auto w-full max-w-lg flex-1 lg:max-w-[1600px]">
+      <div className="safe-top mx-auto w-full min-w-0 max-w-lg flex-1 lg:max-w-[1600px]">
         <main className="pb-nav px-4 pt-3 lg:px-10 lg:pt-8 lg:pb-12">
           <Outlet />
         </main>
@@ -188,7 +188,7 @@ class ErrorBoundary extends Component<{ children: ReactNode }, { error: Error | 
         <div className="p-6">
           <h1 className="text-lg font-bold">Coś poszło nie tak</h1>
           <pre className="mt-2 whitespace-pre-wrap text-xs text-red-600">{this.state.error.message}</pre>
-          <button className="mt-4 rounded-xl bg-sky-600 px-4 py-2 text-white" onClick={() => location.reload()}>
+          <button className="mt-4 min-h-11 rounded-xl bg-sky-600 px-4 text-sm font-semibold text-white hover:bg-sky-500" onClick={() => location.reload()}>
             Odśwież
           </button>
         </div>

@@ -19,18 +19,20 @@ export function MorePage() {
   return (
     <div>
       <PageTitle sub={`Program ${engine.ctx.program.version}`}>Więcej</PageTitle>
-      <ul className="divide-y divide-slate-200 overflow-hidden rounded-2xl border border-slate-200 bg-white lg:grid lg:grid-cols-2 lg:gap-3 lg:divide-y-0 lg:border-0 lg:bg-transparent dark:divide-slate-700 dark:border-slate-700 dark:bg-slate-800 lg:dark:bg-transparent">
+      <ul className="divide-y divide-slate-200 overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-card lg:grid lg:grid-cols-2 lg:gap-3 lg:divide-y-0 lg:border-0 lg:bg-transparent lg:shadow-none dark:divide-slate-700 dark:border-slate-700 dark:bg-slate-800 lg:dark:bg-transparent">
         {ITEMS.map((it) => (
-          <li key={it.to} className="lg:rounded-2xl lg:border lg:border-slate-200 lg:bg-white lg:shadow-sm lg:transition-colors lg:hover:bg-sky-50 lg:dark:border-slate-700 lg:dark:bg-slate-800 lg:dark:hover:bg-slate-700">
-            <Link to={it.to} className="flex min-h-14 items-center gap-3 px-4 py-3 lg:py-4">
-              <span className="text-xl" aria-hidden>
+          <li key={it.to} className="lg:rounded-2xl lg:border lg:border-slate-200 lg:bg-white lg:shadow-card lg:transition-colors lg:hover:bg-sky-50 lg:dark:border-slate-700 lg:dark:bg-slate-800 lg:dark:hover:bg-slate-700">
+            <Link to={it.to} className="flex min-h-14 items-center gap-3 px-4 py-3 transition-colors hover:bg-sky-50 lg:py-4 dark:hover:bg-slate-700">
+              <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-slate-100 text-base leading-none dark:bg-slate-700" aria-hidden>
                 {it.icon}
               </span>
-              <span className="flex-1">
+              <span className="min-w-0 flex-1">
                 <span className="block text-sm font-semibold">{it.label}</span>
-                <span className="block text-xs text-slate-500">{it.sub}</span>
+                <span className="block text-xs text-slate-500 dark:text-slate-400">{it.sub}</span>
               </span>
-              <span className="text-slate-400">›</span>
+              <span className="text-slate-400" aria-hidden>
+                ›
+              </span>
             </Link>
           </li>
         ))}
@@ -41,7 +43,7 @@ export function MorePage() {
             </span>
             <span className="flex-1">
               <span className="block text-sm font-semibold">{it.label}</span>
-              <span className="block text-xs text-slate-500">{it.sub}</span>
+              <span className="block text-xs text-slate-500 dark:text-slate-400">{it.sub}</span>
             </span>
           </li>
         ))}

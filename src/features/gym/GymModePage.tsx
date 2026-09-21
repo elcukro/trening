@@ -9,7 +9,7 @@ import { tonnage } from '@/engine/progress'
 import type { GymItem, GymSession } from '@/engine/schema'
 import { db, newId, type SessionLog, type SetLog } from '@/db'
 import { exerciseHistory, putSet, setsForSession, softDelete, upsertSessionLog } from '@/db/repo'
-import { Button, Card, Empty } from '@/components/ui'
+import { Button, Card, CardTitle, Empty, Inset } from '@/components/ui'
 import { useToast } from '@/components/Toast'
 import { num, seconds } from '@/lib/format'
 import { rxLabel } from '@/features/today/GymItems'
@@ -17,7 +17,7 @@ import { buildSequence, isLoggable, parseReps, parseRir, setsOf, type SeqStep } 
 import { useRestTimer, useWakeLock } from './useRestTimer'
 
 const MAIN_LIFTS = ['back_squat', 'trap_bar_deadlift', 'hip_thrust', 'step_up', 'rdl', 'bulgarian_split_squat']
-const inputCls = 'min-h-12 w-full rounded-xl border border-slate-300 bg-white px-2 text-center text-lg font-semibold tabular-nums dark:border-slate-600 dark:bg-slate-900'
+const inputCls = 'mt-1 block min-h-12 w-full rounded-xl border border-slate-300 bg-white px-2 text-center text-xl font-semibold tabular-nums transition-colors focus:border-sky-500 focus:ring-2 focus:ring-sky-500/25 focus:outline-none dark:border-slate-600 dark:bg-slate-900'
 
 function useGymLog(date: string) {
   return useLiveQuery(async () => (await db.session_logs.where('[date+kind]').equals([date, 'gym']).toArray()).find((r) => !r.deleted_at), [date])
@@ -47,13 +47,13 @@ export function GymModePage() {
   if (!log || log.status === 'planned' || log.status === 'skipped') {
     return (
       <div className="safe-top mx-auto max-w-lg space-y-3 px-4 pt-3 pb-8">
-        <Link to={`/dzien/${date}`} className="text-sm text-sky-600">
+        <Link to={`/dzien/${date}`} className="inline-flex min-h-11 items-center text-sm font-medium text-sky-700 hover:underline dark:text-sky-300">
           ‹ Wróć
         </Link>
-        <h1 className="text-2xl font-bold">{session.name}</h1>
-        <p className="text-sm text-slate-500">~{session.est_min} min · {session.items.filter(isLoggable).length} ćwiczeń</p>
+        <h1 className="text-2xl font-bold tracking-tight">{session.name}</h1>
+        <p className="text-sm text-slate-500 tabular-nums dark:text-slate-400">~{session.est_min} min · {session.items.filter(isLoggable).length} ćwiczeń</p>
         <Card>
-          <h2 className="mb-2 font-semibold">Rozgrzewka (10–12 min)</h2>
+          <CardTitle icon="🔥">Rozgrzewka (10–12 min)</CardTitle>
           <ol className="list-decimal space-y-1 pl-5 text-sm">
             {engine.ctx.program.exercises.mobility_circuit?.cues.map((c, i) => (
               <li key={i}>{c}</li>
@@ -63,7 +63,7 @@ export function GymModePage() {
         <Button onClick={start} className="w-full text-base">
           ▶ Start sesji
         </Button>
-        <p className="text-xs text-slate-400">Ekran nie zgaśnie w trakcie sesji. Serie zapisują się lokalnie, bez sieci; synchronizacja po powrocie zasięgu.</p>
+        <p className="text-xs text-slate-400 dark:text-slate-500">Ekran nie zgaśnie w trakcie sesji. Serie zapisują się lokalnie, bez sieci; synchronizacja po powrocie zasięgu.</p>
       </div>
     )
   }
@@ -99,15 +99,15 @@ function ActiveSession({ date, session, log, sets, timer, week, deload, justStar
   return (
     <div className="safe-top mx-auto flex min-h-dvh max-w-lg flex-col px-4 pt-2 pb-6">
       <header className="mb-2 flex items-center justify-between text-sm">
-        <Link to={`/dzien/${date}`} className="min-h-11 py-2 text-sky-600">
+        <Link to={`/dzien/${date}`} className="flex min-h-11 items-center font-medium text-sky-700 dark:text-sky-300">
           ‹ Dzień
         </Link>
-        <span className="text-slate-500">{session.session} · {progressPct}%</span>
-        <button className="min-h-11 py-2 text-sky-600" onClick={() => setShowSummary(true)}>
+        <span className="text-slate-500 tabular-nums dark:text-slate-400">{session.session} · {progressPct}%</span>
+        <button className="min-h-11 font-medium text-sky-700 dark:text-sky-300" onClick={() => setShowSummary(true)}>
           Podsumuj
         </button>
       </header>
-      <div className="mb-3 h-1.5 w-full overflow-hidden rounded bg-slate-200 dark:bg-slate-700">
+      <div className="mb-3 h-1.5 w-full overflow-hidden rounded-full bg-slate-200 dark:bg-slate-700">
         <div className="h-full bg-sky-500" style={{ width: `${progressPct}%` }} />
       </div>
       <ExerciseStep
@@ -126,10 +126,10 @@ function ActiveSession({ date, session, log, sets, timer, week, deload, justStar
         }}
       />
       <nav className="mt-auto flex justify-between pt-3 text-sm">
-        <button className="min-h-11 px-2 text-slate-500 disabled:opacity-30" disabled={idx === 0} onClick={() => setIdx((i) => i - 1)}>
+        <button className="min-h-11 rounded-xl px-2 text-slate-500 hover:bg-slate-100 disabled:opacity-30 dark:text-slate-400 dark:hover:bg-slate-800" disabled={idx === 0} onClick={() => setIdx((i) => i - 1)}>
           ‹ Poprzednia seria
         </button>
-        <button className="min-h-11 px-2 text-slate-500" onClick={() => setIdx((i) => Math.min(i + 1, seq.length - 1))}>
+        <button className="min-h-11 rounded-xl px-2 text-slate-500 hover:bg-slate-100 dark:text-slate-400 dark:hover:bg-slate-800" onClick={() => setIdx((i) => Math.min(i + 1, seq.length - 1))}>
           Dalej ›
         </button>
       </nav>
@@ -177,71 +177,71 @@ function ExerciseStep({ step, session, log, sets, week, deload, last: lastValues
   return (
     <div className="flex-1 space-y-3">
       <div>
-        <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">
+        <p className="text-xs font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">
           {item.block ? `Blok ${item.block}` : ''} {item.circuit ? '· obwód' : ''} {step.groupIndexes.length > 1 ? '· superseria' : ''}
         </p>
-        <h1 className="text-2xl font-bold leading-tight">{ex?.name ?? item.exercise}</h1>
-        <p className="text-sm text-slate-600 dark:text-slate-300">
+        <h1 className="text-2xl font-bold leading-8 tracking-tight">{ex?.name ?? item.exercise}</h1>
+        <p className="text-sm text-slate-600 tabular-nums dark:text-slate-300">
           {rxLabel(item.rx)}
           {item.rx.load_hint && <> · {item.rx.load_hint}</>}
         </p>
-        {item.rx.note && <p className="text-xs text-slate-500">{item.rx.note}</p>}
+        {item.rx.note && <p className="text-xs text-slate-500 dark:text-slate-400">{item.rx.note}</p>}
       </div>
       {step.groupIndexes.length > 1 && (
-        <p className="text-xs text-slate-500">
+        <p className="text-xs text-slate-500 dark:text-slate-400">
           Naprzemiennie z: {step.groupIndexes.filter((i) => i !== step.itemIndex).map((i) => engine.ctx.program.exercises[session.items[i]!.exercise]?.name ?? session.items[i]!.exercise).join(', ')}
         </p>
       )}
       {loggable && (
-        <div className="rounded-xl bg-slate-100 p-3 text-sm dark:bg-slate-700/50">
+        <Inset className="py-3">
           {suggestion && (
             <p>
               <b>Sugestia: {suggestion.weight_kg != null ? `${num(suggestion.weight_kg)} kg` : 'ustal ciężar startowy'}</b>
-              <span className="block text-xs text-slate-500">{suggestion.reason}</span>
+              <span className="block text-xs text-slate-500 dark:text-slate-400">{suggestion.reason}</span>
             </p>
           )}
           {last && (
-            <p className="mt-1 text-xs text-slate-500">
+            <p className="mt-1 text-xs text-slate-500 tabular-nums dark:text-slate-400">
               Ostatnio ({last.date}): {last.sets.map((s) => `${num(s.weight_kg ?? 0)}×${s.reps ?? '–'}${s.rir != null ? `@${s.rir}` : ''}`).join(', ')}
             </p>
           )}
           {item.block === '1' && step.setNo === 1 && weight && Number(weight.replace(',', '.')) > 20 && (
-            <p className="mt-1 text-xs text-slate-500">Serie wstępne: {warmupSets(Number(weight.replace(',', '.'))).map((w) => `${num(w.weight_kg)}×${w.reps}`).join(' → ')}</p>
+            <p className="mt-1 text-xs text-slate-500 tabular-nums dark:text-slate-400">Serie wstępne: {warmupSets(Number(weight.replace(',', '.'))).map((w) => `${num(w.weight_kg)}×${w.reps}`).join(' → ')}</p>
           )}
-        </div>
+        </Inset>
       )}
-      <div className="rounded-2xl border border-slate-200 p-3 dark:border-slate-700">
-        <p className="mb-2 text-sm font-semibold">
+      <Card>
+        <p className="mb-2 text-sm font-semibold tabular-nums">
           Seria {step.setNo} z {step.totalSets}
-          {existing && <span className="ml-2 text-xs font-normal text-emerald-600">zapisana – możesz poprawić</span>}
+          {existing && <span className="ml-2 text-xs font-normal text-emerald-600 dark:text-emerald-400">zapisana – możesz poprawić</span>}
         </p>
         {loggable ? (
           <div className="grid grid-cols-3 gap-2">
-            <label className="text-center text-xs text-slate-500">
+            <label className="block text-center text-xs font-medium text-slate-500 dark:text-slate-400">
               {ex?.load_unit === 'min' ? 'min' : 'kg'}
               <input className={inputCls} inputMode="decimal" value={weight} onChange={(e) => setWeight(e.target.value)} />
             </label>
-            <label className="text-center text-xs text-slate-500">
+            <label className="block text-center text-xs font-medium text-slate-500 dark:text-slate-400">
               powt.
               <input className={inputCls} inputMode="numeric" value={reps} onChange={(e) => setReps(e.target.value)} />
             </label>
-            <label className="text-center text-xs text-slate-500">
+            <label className="block text-center text-xs font-medium text-slate-500 dark:text-slate-400">
               RIR
               <input className={inputCls} inputMode="numeric" value={rir} onChange={(e) => setRir(e.target.value)} />
             </label>
           </div>
         ) : (
-          <p className="text-sm text-slate-500">{item.rx.note ?? 'Odhacz po wykonaniu.'}</p>
+          <p className="text-sm text-slate-500 dark:text-slate-400">{item.rx.note ?? 'Odhacz po wykonaniu.'}</p>
         )}
-        <Button onClick={logSet} className="mt-3 w-full text-base">
+        <Button onClick={logSet} className="mt-3 min-h-12 w-full text-base">
           ✓ {existing ? 'Zapisz poprawkę' : 'Zalicz serię'}
           {item.rx.rest_s ? ` · przerwa ${seconds(item.rx.rest_s)}` : ''}
         </Button>
-      </div>
+      </Card>
       {mySets.length > 0 && (
         <ul className="flex flex-wrap gap-1 text-xs">
           {mySets.map((s) => (
-            <li key={s.id} className="rounded-full bg-emerald-100 px-2 py-1 text-emerald-800 dark:bg-emerald-900/40 dark:text-emerald-200">
+            <li key={s.id} className="rounded-full bg-emerald-100 px-2 py-1 tabular-nums text-emerald-800 dark:bg-emerald-900/40 dark:text-emerald-200">
               #{s.set_no} {s.weight_kg != null ? `${num(s.weight_kg)} kg × ${s.reps ?? '–'}` : 'ok'}
               {s.rir != null && ` @${s.rir}`}
               <button aria-label="Usuń serię" className="ml-1 text-emerald-600" onClick={() => softDelete('set_logs', s.id)}>
@@ -260,7 +260,7 @@ function ExerciseStep({ step, session, log, sets, week, deload, last: lastValues
             ))}
           </ol>
           <p className="mt-2 text-slate-600 dark:text-slate-300">{ex.why}</p>
-          {ex.alternatives.length > 0 && <p className="mt-1 text-xs text-slate-500">Zamienniki: {ex.alternatives.join(', ')}</p>}
+          {ex.alternatives.length > 0 && <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">Zamienniki: {ex.alternatives.join(', ')}</p>}
         </details>
       )}
     </div>
@@ -273,7 +273,7 @@ function RestOverlay({ remaining, total, onSkip, onAdd }: { remaining: number; t
   const s = remaining % 60
   return (
     <div className="fixed inset-0 z-30 flex flex-col items-center justify-center bg-slate-900/95 text-white" role="dialog" aria-label="Przerwa">
-      <p className="text-lg uppercase tracking-widest text-slate-400">{remaining === 0 ? 'Do boju!' : 'Przerwa'}</p>
+      <p className="text-xl uppercase tracking-widest text-slate-400">{remaining === 0 ? 'Do boju!' : 'Przerwa'}</p>
       <p className="my-4 text-[6rem] font-bold leading-none tabular-nums">
         {m}:{String(s).padStart(2, '0')}
       </p>
@@ -281,10 +281,10 @@ function RestOverlay({ remaining, total, onSkip, onAdd }: { remaining: number; t
         <div className="h-full bg-sky-400 transition-all" style={{ width: `${pct}%` }} />
       </div>
       <div className="flex gap-3">
-        <button onClick={onAdd} className="min-h-14 rounded-2xl bg-slate-700 px-6 text-lg font-semibold">
+        <button onClick={onAdd} className="min-h-14 rounded-2xl bg-slate-700 px-6 text-xl font-semibold tabular-nums transition-colors hover:bg-slate-600">
           +30 s
         </button>
-        <button onClick={onSkip} className="min-h-14 rounded-2xl bg-sky-500 px-6 text-lg font-semibold">
+        <button onClick={onSkip} className="min-h-14 rounded-2xl bg-sky-500 px-6 text-xl font-semibold transition-colors hover:bg-sky-400">
           Pomiń
         </button>
       </div>
@@ -318,29 +318,29 @@ function Summary({ date, session, log, sets, week, deload, onBack, onFinish }: {
 
   return (
     <div className="safe-top mx-auto max-w-lg space-y-3 px-4 pt-3 pb-8">
-      <button className="text-sm text-sky-600" onClick={onBack}>
+      <button className="inline-flex min-h-11 items-center text-sm font-medium text-sky-700 hover:underline dark:text-sky-300" onClick={onBack}>
         ‹ Wróć do serii
       </button>
-      <h1 className="text-2xl font-bold">Podsumowanie</h1>
+      <h1 className="text-2xl font-bold tracking-tight">Podsumowanie</h1>
       <Card>
         <div className="grid grid-cols-3 gap-2 text-center">
-          <div>
+          <div className="min-w-0">
             <div className="text-2xl font-bold tabular-nums">{doneLoggable}/{planned}</div>
-            <div className="text-xs text-slate-500">serii</div>
+            <div className="text-xs text-slate-500 dark:text-slate-400">serii</div>
           </div>
-          <div>
+          <div className="min-w-0">
             <div className="text-2xl font-bold tabular-nums">{num(total / 1000, 1)} t</div>
-            <div className="text-xs text-slate-500">tonaż</div>
+            <div className="text-xs text-slate-500 dark:text-slate-400">tonaż</div>
           </div>
-          <div>
+          <div className="min-w-0">
             <div className="text-2xl font-bold tabular-nums">{prev ? `${total - prev.tonnage >= 0 ? '+' : ''}${num((total - prev.tonnage) / 1000, 1)} t` : '—'}</div>
-            <div className="text-xs text-slate-500">{prev ? `vs ${prev.date.slice(5)}` : 'brak poprzedniej'}</div>
+            <div className="truncate text-xs text-slate-500 dark:text-slate-400">{prev ? `vs ${prev.date.slice(5)}` : 'brak poprzedniej'}</div>
           </div>
         </div>
       </Card>
       <Card>
-        <h2 className="mb-2 font-semibold">Ćwiczenia główne (e1RM Epley) i sugestie na następny tydzień</h2>
-        <ul className="divide-y divide-slate-100 text-sm dark:divide-slate-700">
+        <CardTitle icon="🏋️">Ćwiczenia główne (e1RM Epley) i sugestie na następny tydzień</CardTitle>
+        <ul className="divide-y divide-slate-100 text-sm dark:divide-slate-700/80">
           {session.items.filter(isLoggable).map((it) => {
             const mine = sets.filter((s) => s.exercise_id === it.exercise && s.weight_kg && s.reps)
             const best = mine.reduce((b, s) => Math.max(b, epley1RM(s.weight_kg!, s.reps!)), 0)
@@ -350,21 +350,23 @@ function Summary({ date, session, log, sets, week, deload, onBack, onFinish }: {
             const sugg = targetReps != null && hist.length ? suggestLoad(it.exercise, hist.map((h) => ({ date: h.date, rx: { sets: h.sets.length, reps: h.sets[0]?.reps ?? targetReps, rir: targetRir }, sets: h.sets.map((s) => ({ weight_kg: s.weight_kg ?? 0, reps: s.reps ?? 0, rir: s.rir })) })), { sets: setsOf(it), reps: targetReps, rir: targetRir }, { deload: false, intro: week < 2 }) : null
             return (
               <li key={it.exercise} className="py-2">
-                <div className="flex justify-between">
-                  <span className="font-medium">{program.exercises[it.exercise]?.name ?? it.exercise}</span>
-                  <span className="tabular-nums text-slate-600 dark:text-slate-300">{mine.length ? `${mine.map((s) => `${num(s.weight_kg!)}×${s.reps}`).join(', ')}` : 'brak serii'}</span>
+                <div className="flex justify-between gap-3">
+                  <span className="min-w-0 font-medium">{program.exercises[it.exercise]?.name ?? it.exercise}</span>
+                  <span className="text-right tabular-nums text-slate-600 dark:text-slate-300">{mine.length ? `${mine.map((s) => `${num(s.weight_kg!)}×${s.reps}`).join(', ')}` : 'brak serii'}</span>
                 </div>
-                {MAIN_LIFTS.includes(it.exercise) && best > 0 && <div className="text-xs text-slate-500">e1RM ≈ {num(best, 0)} kg</div>}
+                {MAIN_LIFTS.includes(it.exercise) && best > 0 && <div className="text-xs text-slate-500 tabular-nums dark:text-slate-400">e1RM ≈ {num(best, 0)} kg</div>}
                 {sugg && sugg.weight_kg != null && <div className="text-xs text-sky-700 dark:text-sky-300">Następnym razem: {num(sugg.weight_kg)} kg – {sugg.reason}</div>}
               </li>
             )
           })}
         </ul>
-        {deload && <p className="mt-2 text-xs text-slate-500">Tydzień rozładowania – sugestie liczone dla pełnego ciężaru w kolejnym tygodniu.</p>}
+        {deload && <p className="mt-2 text-xs text-slate-500 dark:text-slate-400">Tydzień rozładowania – sugestie liczone dla pełnego ciężaru w kolejnym tygodniu.</p>}
       </Card>
       <div className="grid grid-cols-2 gap-2">
-        <Button onClick={() => finish('done')}>✓ Zakończ: wykonane</Button>
-        <Button variant="secondary" onClick={() => finish('modified')}>
+        <Button onClick={() => finish('done')} className="whitespace-normal px-2">
+          ✓ Zakończ: wykonane
+        </Button>
+        <Button variant="secondary" onClick={() => finish('modified')} className="whitespace-normal px-2">
           ± Zakończ: zmienione
         </Button>
       </div>

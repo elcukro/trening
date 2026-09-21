@@ -7,7 +7,7 @@ import { autoPushEnabled, lastAttempt, lastAutoPush, pushItemsFrom, removeDatesF
 import { runSync } from '@/sync/sync'
 import { loadProgram } from '@/data/program'
 import { todayISO, fmtDayMonth } from '@/lib/dates'
-import { Button, Card, CardTitle, Row } from '@/components/ui'
+import { Actions, Button, Card, CardTitle, Checkbox, Inset, Row } from '@/components/ui'
 import { useToast } from '@/components/Toast'
 
 function useOAuthResult(key: 'strava' | 'wahoo'): string | null {
@@ -52,7 +52,7 @@ export function IntegrationsSection() {
     return (
       <Card>
         <CardTitle icon="🔗">Integracje</CardTitle>
-        <p className="text-sm text-slate-500">Zaloguj się, żeby połączyć Stravę i Wahoo (tokeny są przechowywane tylko na serwerze).</p>
+        <p className="text-sm text-slate-500 dark:text-slate-400">Zaloguj się, żeby połączyć Stravę i Wahoo (tokeny są przechowywane tylko na serwerze).</p>
       </Card>
     )
   }
@@ -87,7 +87,7 @@ function StravaCard() {
       <CardTitle icon="🟠">Strava</CardTitle>
       <Row label="Stan">{status ? (status.connected ? `połączona (atleta ${status.athlete_id})` : 'niepołączona') : '…'}</Row>
       {status?.connected && <Row label="Zaimportowane jazdy">{status.activities}</Row>}
-      <div className="mt-2 flex flex-wrap gap-2">
+      <Actions className="mt-3">
         {status && !status.connected && (
           <Button
             disabled={busy}
@@ -133,9 +133,9 @@ function StravaCard() {
             </Button>
           </>
         )}
-      </div>
+      </Actions>
       {msg && <p className="mt-2 text-sm">{msg}</p>}
-      <p className="mt-2 text-xs text-slate-500">Nowe jazdy pojawiają się automatycznie w ciągu kilku minut od wgrania na Stravę.</p>
+      <p className="mt-3 text-xs text-slate-500 dark:text-slate-400">Nowe jazdy pojawiają się automatycznie w ciągu kilku minut od wgrania na Stravę.</p>
     </Card>
   )
 }
@@ -177,9 +177,9 @@ function WahooCard() {
       <CardTitle icon="⌚">Wahoo ELEMNT Bolt</CardTitle>
       <Row label="Stan">{status ? (status.connected ? 'połączone' : 'niepołączone') : '…'}</Row>
       {status?.connected && (status.missing_scopes?.length ?? 0) > 0 && (
-        <p className="mt-1 rounded-lg bg-amber-100 px-3 py-2 text-xs text-amber-900 dark:bg-amber-950/40 dark:text-amber-200">
+        <Inset tone="warn" className="mt-2 text-xs">
           Brakuje uprawnień: {status!.missing_scopes!.join(', ')}. Kliknij „Rozłącz”, a potem „Połącz z Wahoo”, żeby je nadać.
-        </p>
+        </Inset>
       )}
       {status?.connected && <Row label="Wysłane treningi">{sent.length > 0 ? sent.map((p) => fmtDayMonth(p.date)).join(', ') : 'brak'}</Row>}
       {status?.connected && lastPush && <Row label="Ostatnia wysyłka">{new Date(lastPush).toLocaleString('pl-PL', { timeZone: 'Europe/Warsaw' })}</Row>}
@@ -188,8 +188,8 @@ function WahooCard() {
           {new Date(attempt.at).toLocaleTimeString('pl-PL', { timeZone: 'Europe/Warsaw' })} · {attempt.items} dni · {attempt.outcome}
         </Row>
       )}
-      {failed.length > 0 && <p className="text-xs text-red-600">Błędy: {failed.map((p) => `${fmtDayMonth(p.date)} – ${p.error}`).join('; ')}</p>}
-      <div className="mt-2 flex flex-wrap gap-2">
+      {failed.length > 0 && <p className="text-xs text-red-600 dark:text-red-400">Błędy: {failed.map((p) => `${fmtDayMonth(p.date)} – ${p.error}`).join('; ')}</p>}
+      <Actions className="mt-3">
         {status && (!status.connected || (status.missing_scopes?.length ?? 0) > 0) && (
           <Button
             disabled={busy}
@@ -284,35 +284,36 @@ function WahooCard() {
             </Button>
           </>
         )}
-      </div>
+      </Actions>
       {status?.connected && (
-        <label className="mt-2 flex min-h-11 items-center gap-2 text-sm">
-          <input
-            type="checkbox"
-            className="h-5 w-5"
-            checked={auto}
-            onChange={async (e) => {
-              setAuto(e.target.checked)
-              await setAutoPush(e.target.checked)
-            }}
-          />
-          Wysyłaj automatycznie raz dziennie {last && <span className="text-xs text-slate-500">(ostatnio {fmtDayMonth(last)})</span>}
-        </label>
+        <Checkbox
+          label={
+            <>
+              Wysyłaj automatycznie raz dziennie {last && <span className="text-xs text-slate-500 dark:text-slate-400">(ostatnio {fmtDayMonth(last)})</span>}
+            </>
+          }
+          checked={auto}
+          onChange={async (e) => {
+            setAuto(e.target.checked)
+            await setAutoPush(e.target.checked)
+          }}
+          className="mt-1"
+        />
       )}
       {msg && <p className="mt-2 text-sm">{msg}</p>}
       {report && (
         <div className="mt-2">
           <div className="flex items-center justify-between">
-            <span className="text-xs font-semibold text-slate-500">Raport diagnostyczny</span>
-            <button className="min-h-9 text-xs underline" onClick={() => navigator.clipboard?.writeText(report)}>
+            <span className="text-xs font-semibold text-slate-500 dark:text-slate-400">Raport diagnostyczny</span>
+            <Button variant="ghost" size="sm" onClick={() => navigator.clipboard?.writeText(report)}>
               kopiuj
-            </button>
+            </Button>
           </div>
-          <pre className="mt-1 max-h-72 overflow-auto rounded-lg bg-slate-900 p-2 text-[10px] leading-tight text-slate-100">{report}</pre>
+          <pre className="mt-1 max-h-72 overflow-auto rounded-xl bg-slate-900 p-2 text-xs leading-4 text-slate-100">{report}</pre>
         </div>
       )}
-      {status && !status.connected && <p className="mt-2 text-xs text-slate-500">W portalu Wahoo dodaj adres zwrotny: <code className="break-all">{status.redirect_uri}</code></p>}
-      <p className="mt-2 text-xs text-slate-500">Treningi trafiają do „Planned Workouts” na Bolcie po synchronizacji zegarka (Wi-Fi lub aplikacja ELEMNT). „Wyślij od zera” kasuje treningi z Wahoo i tworzy je na nowo – użyj, gdy aplikacja ELEMNT pokazuje nieaktualne dane treningu.</p>
+      {status && !status.connected && <p className="mt-3 text-xs text-slate-500 dark:text-slate-400">W portalu Wahoo dodaj adres zwrotny: <code className="break-all">{status.redirect_uri}</code></p>}
+      <p className="mt-3 text-xs text-slate-500 dark:text-slate-400">Treningi trafiają do „Planned Workouts” na Bolcie po synchronizacji zegarka (Wi-Fi lub aplikacja ELEMNT). „Wyślij od zera” kasuje treningi z Wahoo i tworzy je na nowo – użyj, gdy aplikacja ELEMNT pokazuje nieaktualne dane treningu.</p>
     </Card>
   )
 }

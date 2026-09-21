@@ -5,7 +5,7 @@ import { HIERARCHY, PASS_STRATEGY, RULES } from '@/data/rules'
 export function RulesPage() {
   return (
     <div className="space-y-3">
-      <Link to="/biblioteka" className="text-sm text-sky-600">
+      <Link to="/biblioteka" className="inline-flex min-h-11 items-center text-sm font-medium text-sky-700 hover:underline dark:text-sky-300">
         ‹ Biblioteka
       </Link>
       <PageTitle sub="Co robić, gdy życie nie idzie zgodnie z planem">Zasady</PageTitle>
@@ -27,10 +27,7 @@ export function RulesPage() {
       </Card>
       {RULES.map((r) => (
         <Card key={r.id}>
-          <CardTitle>
-            <span className="mr-2 rounded bg-slate-200 px-1.5 py-0.5 font-mono text-xs dark:bg-slate-700">{r.id}</span>
-            {r.title}
-          </CardTitle>
+          <CardTitle icon={<span className="font-mono text-xs font-semibold">{r.id}</span>}>{r.title}</CardTitle>
           <p className="text-sm">{r.text}</p>
         </Card>
       ))}

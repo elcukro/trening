@@ -12,14 +12,14 @@ export function DayPage() {
   const { engine, day } = view
   return (
     <>
-      <nav className="mb-2 flex items-center justify-between text-sm">
-        <Link to={`/dzien/${addDays(date, -1)}`} className="min-h-11 py-2 font-medium text-sky-600">
+      <nav className="mb-2 flex items-center justify-between text-sm" aria-label="Sąsiednie dni">
+        <Link to={`/dzien/${addDays(date, -1)}`} className="flex min-h-11 items-center font-medium text-sky-700 hover:underline dark:text-sky-300">
           ‹ Poprzedni
         </Link>
-        <Link to={`/tydzien/${mondayOf(date)}`} className="min-h-11 py-2 text-slate-500">
+        <Link to={`/tydzien/${mondayOf(date)}`} className="flex min-h-11 items-center text-slate-500 hover:underline dark:text-slate-400">
           Tydzień
         </Link>
-        <Link to={`/dzien/${addDays(date, 1)}`} className="min-h-11 py-2 font-medium text-sky-600">
+        <Link to={`/dzien/${addDays(date, 1)}`} className="flex min-h-11 items-center font-medium text-sky-700 hover:underline dark:text-sky-300">
           Następny ›
         </Link>
       </nav>

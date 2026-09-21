@@ -4,7 +4,7 @@ import { db, type TestResult } from '@/db'
 import { saveTestResult } from '@/db/repo'
 import { computeZones } from '@/engine/zones'
 import type { Program } from '@/engine/schema'
-import { Button, Card, CardTitle } from '@/components/ui'
+import { Button, Card, CardTitle, Field, Input, Inset } from '@/components/ui'
 import { useToast } from '@/components/Toast'
 import { num } from '@/lib/format'
 import { fmtDate } from '@/lib/dates'
@@ -25,18 +25,21 @@ export function TestResultForm({ date, protocol, program, previousLthr, onSaved 
   const zones = lthr ? computeZones(program.hr_zones_lthr_fraction, lthr) : null
 
   async function save() {
-    await toast.run('Zapisuję wynik testu…', () => saveTestResult({ date, protocol, lthr_bpm: lthr, avg_hr: avgHr, avg_power_w: avgPower, ftp_w: ftp, avg_speed_kmh: n(f.avg_speed_kmh), distance_km: n(f.distance_km), route: f.route || null, bike: f.bike || null, temp_c: n(f.temp_c), wind: f.wind || null, notes: f.notes || null }), () => `Zapisano. LTHR ${lthr} bpm – nowe strefy od jutra.`)
+    await toast.run(
+      'Zapisuję wynik testu…',
+      () => saveTestResult({ date, protocol, lthr_bpm: lthr, avg_hr: avgHr, avg_power_w: avgPower, ftp_w: ftp, avg_speed_kmh: n(f.avg_speed_kmh), distance_km: n(f.distance_km), route: f.route || null, bike: f.bike || null, temp_c: n(f.temp_c), wind: f.wind || null, notes: f.notes || null }),
+      () => `Zapisano. LTHR ${lthr} bpm – nowe strefy od jutra.`,
+    )
     onSaved?.()
   }
   const input = (key: keyof typeof f, label: string, mode: 'numeric' | 'decimal' | 'text' = 'numeric', placeholder = '') => (
-    <label className="block">
-      <span className="text-xs text-slate-500">{label}</span>
-      <input className="mt-1 min-h-11 w-full rounded-lg border border-slate-300 bg-white px-3 dark:border-slate-600 dark:bg-slate-900" inputMode={mode} placeholder={placeholder} value={f[key]} onChange={(e) => setF((x) => ({ ...x, [key]: e.target.value }))} />
-    </label>
+    <Field label={label}>
+      <Input inputMode={mode} placeholder={placeholder} value={f[key]} onChange={(e) => setF((x) => ({ ...x, [key]: e.target.value }))} />
+    </Field>
   )
   return (
     <div>
-      <div className="grid grid-cols-2 gap-2">
+      <div className="grid grid-cols-2 gap-3">
         {input('avg_hr', protocol === 'WATTBIKE_TEST' ? 'Śr. tętno z 20 min' : protocol === 'FTP_TEST' ? 'Śr. tętno z ostatnich 10 min' : 'Śr. tętno z minut 10–30', 'numeric', 'np. 160')}
         {hasPower && input('avg_power_w', 'Śr. moc z 20 min (W)', 'numeric', 'np. 235')}
         {protocol !== 'WATTBIKE_TEST' && input('avg_speed_kmh', 'Śr. prędkość (km/h)', 'decimal', 'np. 31,5')}
@@ -45,32 +48,35 @@ export function TestResultForm({ date, protocol, program, previousLthr, onSaved 
         {input('bike', 'Rower', 'text', protocol === 'WATTBIKE_TEST' ? 'Wattbike' : 'Dogma')}
         {protocol !== 'WATTBIKE_TEST' && input('temp_c', 'Temperatura (°C)', 'decimal')}
         {protocol !== 'WATTBIKE_TEST' && input('wind', 'Wiatr', 'text', 'słaby / silny, kierunek')}
-        <label className="col-span-2 block">
-          <span className="text-xs text-slate-500">Notatka</span>
-          <input className="mt-1 min-h-11 w-full rounded-lg border border-slate-300 bg-white px-3 dark:border-slate-600 dark:bg-slate-900" value={f.notes} onChange={(e) => setF((x) => ({ ...x, notes: e.target.value }))} />
-        </label>
+        <Field label="Notatka" className="col-span-2">
+          <Input value={f.notes} onChange={(e) => setF((x) => ({ ...x, notes: e.target.value }))} />
+        </Field>
       </div>
       {lthr && (
-        <div className="mt-3 rounded-lg bg-sky-50 p-3 text-sm dark:bg-sky-950/40">
-          <p>
+        <Inset tone="info" className="mt-3">
+          <p className="tabular-nums">
             <b>LTHR = {lthr} bpm</b>
-            {protocol === 'WATTBIKE_TEST' && <span className="text-xs text-slate-500"> (0,97 × {avgHr})</span>}
+            {protocol === 'WATTBIKE_TEST' && <span className="text-xs text-slate-500 dark:text-slate-400"> (0,97 × {avgHr})</span>}
             {previousLthr && (
               <span className="ml-2 text-xs">
                 poprzednio {previousLthr} ({lthr - previousLthr >= 0 ? '+' : ''}
                 {lthr - previousLthr})
               </span>
             )}
-            {ftp && <span className="ml-2"><b>FTP = {ftp} W</b></span>}
+            {ftp && (
+              <span className="ml-2">
+                <b>FTP = {ftp} W</b>
+              </span>
+            )}
           </p>
           {zones && (
             <p className="mt-1 text-xs text-slate-600 dark:text-slate-300">
               Nowe strefy od jutra: Z2 {zones[1]!.low_bpm}–{zones[1]!.high_bpm} · SS {zones[3]!.low_bpm}–{zones[3]!.high_bpm} · THR {zones[5]!.low_bpm}–{zones[5]!.high_bpm}. Ustaw też strefy w aplikacji ELEMNT.
             </p>
           )}
-        </div>
+        </Inset>
       )}
-      {protocol === 'FTP_TEST' && <p className="mt-2 text-xs text-slate-500">Bez miernika mocy wpisz samo tętno – zapisze się LTHR, FTP zostanie bez zmian.</p>}
+      {protocol === 'FTP_TEST' && <p className="mt-2 text-xs text-slate-500 dark:text-slate-400">Bez miernika mocy wpisz samo tętno – zapisze się LTHR, FTP zostanie bez zmian.</p>}
       <Button onClick={save} disabled={!lthr && !ftp} className="mt-3 w-full">
         Zapisz wynik testu
       </Button>
@@ -92,17 +98,17 @@ export function TestResultCard({ date, protocol, program, previousLthr }: { date
 export function TestSummary({ t, onEdit }: { t: TestResult; onEdit?: () => void }) {
   return (
     <div className="text-sm">
-      <p>
+      <p className="tabular-nums">
         {fmtDate(t.date)} · <b>LTHR {t.lthr_bpm} bpm</b>
         {t.ftp_w && <> · FTP {t.ftp_w} W</>}
         {t.avg_speed_kmh != null && <> · {num(t.avg_speed_kmh)} km/h</>}
-        {t.avg_hr && <span className="text-slate-500"> · śr. tętno {t.avg_hr}</span>}
+        {t.avg_hr && <span className="text-slate-500 dark:text-slate-400"> · śr. tętno {t.avg_hr}</span>}
       </p>
-      {(t.route || t.bike || t.temp_c != null) && <p className="text-xs text-slate-500">{[t.route, t.bike, t.temp_c != null ? `${num(t.temp_c)} °C` : null, t.wind].filter(Boolean).join(' · ')}</p>}
+      {(t.route || t.bike || t.temp_c != null) && <p className="text-xs text-slate-500 dark:text-slate-400">{[t.route, t.bike, t.temp_c != null ? `${num(t.temp_c)} °C` : null, t.wind].filter(Boolean).join(' · ')}</p>}
       {onEdit && (
-        <button onClick={onEdit} className="mt-1 min-h-11 text-sky-600">
+        <Button variant="ghost" size="sm" onClick={onEdit} className="mt-1 -ml-3">
           Popraw
-        </button>
+        </Button>
       )}
     </div>
   )

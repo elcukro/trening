@@ -9,7 +9,7 @@ export function ExercisePage() {
   if (!e) return <Empty>Nie ma takiego ćwiczenia.</Empty>
   return (
     <div className="space-y-3">
-      <Link to="/biblioteka" className="text-sm text-sky-600">
+      <Link to="/biblioteka" className="inline-flex min-h-11 items-center text-sm font-medium text-sky-700 hover:underline dark:text-sky-300">
         ‹ Biblioteka
       </Link>
       <PageTitle sub={`${e.pattern} · ${e.equipment.join(', ')}${e.per_side ? ' · na stronę' : ''}`}>{e.name}</PageTitle>

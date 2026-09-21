@@ -8,7 +8,7 @@ import { addDays } from '@/engine/dates'
 import { buildCalendar } from '@/engine/calendar'
 import { estimateClimb } from '@/engine/climb'
 import { compliance, e1rmSeries, weeklyVolume, weightSeries, weightTrend } from '@/engine/progress'
-import { Card, CardTitle, PageTitle, Row } from '@/components/ui'
+import { Button, Card, CardSection, CardTitle, Input, Metric, PageTitle, Row, Select } from '@/components/ui'
 import { hours, num } from '@/lib/format'
 import { fmtDayMonth, todayISO } from '@/lib/dates'
 import { TestResultForm, TestSummary } from '@/features/today/TestResultCard'
@@ -81,9 +81,9 @@ export function ProgressPage() {
 
       {/* na komputerze dwie kolumny: masa + testy + kalkulator | objętość + siła */}
       <div className="space-y-3 lg:grid lg:grid-cols-2 lg:items-start lg:gap-6 lg:space-y-0">
-      <div className="space-y-3 lg:space-y-4">
+      <div className="min-w-0 space-y-3 lg:space-y-4">
       <Card>
-        <CardTitle icon="⚖️" right={<span className="text-sm tabular-nums">{num(avg7)} kg</span>}>
+        <CardTitle icon="⚖️" right={<Metric>{num(avg7)} kg</Metric>}>
           Masa
         </CardTitle>
         {wSeries.length >= 2 ? (
@@ -101,53 +101,53 @@ export function ProgressPage() {
             </ResponsiveContainer>
           </div>
         ) : (
-          <p className="text-sm text-slate-500">Wpisuj wagę w porannym check-inie – wykres pojawi się po 2 pomiarach, średnia 7-dniowa po 3.</p>
+          <p className="text-sm text-slate-500 dark:text-slate-400">Wpisuj wagę w porannym check-inie – wykres pojawi się po 2 pomiarach, średnia 7-dniowa po 3.</p>
         )}
-        {trend && (
-          <Row label="Tempo">
-            {trend.kg_per_week > 0 ? '+' : ''}
-            {num(trend.kg_per_week, 2)} kg/tydz. ({num(trend.pct_per_week, 1)} %)
+        <div className="mt-2 divide-y divide-slate-100 tabular-nums dark:divide-slate-700/80">
+          {trend && (
+            <Row label="Tempo">
+              {trend.kg_per_week > 0 ? '+' : ''}
+              {num(trend.kg_per_week, 2)} kg/tydz. ({num(trend.pct_per_week, 1)} %)
+            </Row>
+          )}
+          <Row label="Cel">
+            {s.body_weight_target_kg} kg (0,45 kg/tydz. od {s.body_weight_start_kg} kg)
           </Row>
-        )}
+        </div>
         {trend?.warning && <p className="mt-1 text-xs text-amber-700 dark:text-amber-300">{trend.warning}</p>}
-        <Row label="Cel">
-          {s.body_weight_target_kg} kg (0,45 kg/tydz. od {s.body_weight_start_kg} kg)
-        </Row>
       </Card>
 
       <Card>
-        <CardTitle icon="🧪" right={<button className="text-sm text-sky-600" onClick={() => setShowTestForm((v) => !v)}>{showTestForm ? 'Zamknij' : '+ Dodaj wynik'}</button>}>
+        <CardTitle
+          icon="🧪"
+          right={
+            <Button variant="ghost" size="sm" onClick={() => setShowTestForm((v) => !v)}>
+              {showTestForm ? 'Zamknij' : '+ Dodaj wynik'}
+            </Button>
+          }
+        >
           Testy
         </CardTitle>
         <div className="grid grid-cols-3 gap-2 text-center">
-          <div>
-            <div className="text-xl font-bold tabular-nums">{lastLthr ?? '—'}</div>
-            <div className="text-xs text-slate-500">LTHR bpm</div>
-          </div>
-          <div>
-            <div className="text-xl font-bold tabular-nums">{lastFtp}</div>
-            <div className="text-xs text-slate-500">FTP W{!activeTests.some((t) => t.ftp_w) && ' (szac.)'}</div>
-          </div>
-          <div>
-            <div className="text-xl font-bold tabular-nums">{num(lastFtp / avg7, 2)}</div>
-            <div className="text-xs text-slate-500">W/kg (cel 2,8)</div>
-          </div>
+          <Stat value={lastLthr ?? '—'} label="LTHR bpm" />
+          <Stat value={lastFtp} label={`FTP W${!activeTests.some((t) => t.ftp_w) ? ' (szac.)' : ''}`} />
+          <Stat value={num(lastFtp / avg7, 2)} label="W/kg (cel 2,8)" />
         </div>
         {showTestForm && (
-          <div className="mt-3 border-t border-slate-100 pt-3 dark:border-slate-700">
-            <div className="mb-2 grid grid-cols-2 gap-2">
-              <select className="min-h-11 rounded-lg border border-slate-300 bg-white px-2 dark:border-slate-600 dark:bg-slate-900" value={protocol} onChange={(e) => setProtocol(e.target.value as typeof protocol)}>
+          <CardSection>
+            <div className="mb-3 grid grid-cols-2 gap-3">
+              <Select aria-label="Protokół testu" value={protocol} onChange={(e) => setProtocol(e.target.value as typeof protocol)}>
                 <option value="FTP_TEST">Test FTP 20 min (moc)</option>
                 <option value="TEST_LTHR">Test terenowy 30 min (tętno)</option>
                 <option value="WATTBIKE_TEST">Wattbike 20 min</option>
-              </select>
-              <input type="date" className="min-h-11 rounded-lg border border-slate-300 bg-white px-2 dark:border-slate-600 dark:bg-slate-900" value={testDate} onChange={(e) => setTestDate(e.target.value)} />
+              </Select>
+              <Input type="date" aria-label="Data testu" value={testDate} onChange={(e) => setTestDate(e.target.value)} />
             </div>
             <TestResultForm date={testDate} protocol={protocol} program={engine.ctx.program} previousLthr={lastLthr ?? null} onSaved={() => setShowTestForm(false)} />
-          </div>
+          </CardSection>
         )}
         {activeTests.length > 0 && (
-          <ul className="mt-3 divide-y divide-slate-100 dark:divide-slate-700">
+          <ul className="mt-3 divide-y divide-slate-100 dark:divide-slate-700/80">
             {activeTests.toReversed().map((t) => (
               <li key={t.id} className="py-2">
                 <TestSummary t={t} />
@@ -156,16 +156,16 @@ export function ProgressPage() {
           </ul>
         )}
         {lastTest && (
-          <p className="mt-2 text-xs text-slate-500">Strefy liczone z ostatniego testu ({fmtDayMonth(lastTest.date)}) obowiązują od dnia po teście (R11).</p>
+          <p className="mt-2 text-xs text-slate-500 dark:text-slate-400">Strefy liczone z ostatniego testu ({fmtDayMonth(lastTest.date)}) obowiązują od dnia po teście (R11).</p>
         )}
       </Card>
 
       <ClimbCalculator riderKg={avg7} watts={lastFtp} bikeKg={s.bike_and_kit_kg} targetKg={s.body_weight_target_kg} targetW={s.ftp_w_goal} />
       </div>
 
-      <div className="space-y-3 lg:space-y-4">
+      <div className="min-w-0 space-y-3 lg:space-y-4">
       <Card>
-        <CardTitle icon="⏱️" right={comp != null ? <span className="text-sm">zgodność {comp} %</span> : undefined}>
+        <CardTitle icon="⏱️" right={comp != null ? <Metric>zgodność {comp} %</Metric> : undefined}>
           Objętość (8 tygodni)
         </CardTitle>
         {volumes.length > 0 ? (
@@ -182,37 +182,37 @@ export function ProgressPage() {
             </ResponsiveContainer>
           </div>
         ) : (
-          <p className="text-sm text-slate-500">Brak tygodni w planie.</p>
+          <p className="text-sm text-slate-500 dark:text-slate-400">Brak tygodni w planie.</p>
         )}
-        <p className="mt-1 text-xs text-slate-500">
+        <p className="mt-1 text-xs text-slate-500 tabular-nums dark:text-slate-400">
           Ten tydzień: plan {hours(volumes.at(-1)?.planned_min ?? 0)}, wykonanie {hours(volumes.at(-1)?.done_min ?? 0)}.
         </p>
         {zoneHist && lastLthr ? (
-          <div className="mt-3">
-            <p className="mb-1 text-xs font-medium text-slate-500">Czas w strefach – ostatnie 4 tygodnie (Strava, LTHR {lastLthr})</p>
+          <CardSection>
+            <p className="mb-1 text-xs font-medium text-slate-500 dark:text-slate-400">Czas w strefach – ostatnie 4 tygodnie (Strava, LTHR {lastLthr})</p>
             <ZoneBar histogram={zoneHist} zones={engine.ctx.program.hr_zones_lthr_fraction} lthr={lastLthr} />
-          </div>
+          </CardSection>
         ) : (
-          <p className="mt-2 text-xs text-slate-400">Rozkład czasu w strefach pojawi się po połączeniu ze Stravą{lastLthr ? '' : ' i wpisaniu LTHR'}.</p>
+          <p className="mt-2 text-xs text-slate-400 dark:text-slate-500">Rozkład czasu w strefach pojawi się po połączeniu ze Stravą{lastLthr ? '' : ' i wpisaniu LTHR'}.</p>
         )}
       </Card>
 
       <Card>
         <CardTitle icon="🏋️">Siła (e1RM)</CardTitle>
         {strength.length === 0 ? (
-          <p className="text-sm text-slate-500">Zapisuj serie w trybie siłowni – tu pojawi się e1RM przysiadu, trap bara, hip thrustu i step-upu.</p>
+          <p className="text-sm text-slate-500 dark:text-slate-400">Zapisuj serie w trybie siłowni – tu pojawi się e1RM przysiadu, trap bara, hip thrustu i step-upu.</p>
         ) : (
-          <ul className="space-y-2">
+          <ul className="divide-y divide-slate-100 dark:divide-slate-700/80">
             {MAIN.map((m) => {
               const pts = strength.filter((p) => p.exercise_id === m.id)
               if (pts.length === 0) return null
               const last = pts.at(-1)!
               return (
-                <li key={m.id} className="text-sm">
-                  <div className="flex justify-between">
+                <li key={m.id} className="py-2 text-sm">
+                  <div className="flex justify-between gap-2">
                     <span className="font-medium">{m.label}</span>
-                    <span className="tabular-nums">
-                      {num(last.e1rm, 0)} kg <span className="text-xs text-slate-500">({num(last.best_set.weight_kg)}×{last.best_set.reps}, {fmtDayMonth(last.date)})</span>
+                    <span className="text-right tabular-nums">
+                      {num(last.e1rm, 0)} kg <span className="text-xs text-slate-500 dark:text-slate-400">({num(last.best_set.weight_kg)}×{last.best_set.reps}, {fmtDayMonth(last.date)})</span>
                     </span>
                   </div>
                   {pts.length >= 2 && (
@@ -228,7 +228,7 @@ export function ProgressPage() {
                       </ResponsiveContainer>
                     </div>
                   )}
-                  {m.goal && <div className="text-xs text-slate-500">Cel na koniec lutego: {m.goal[0]}–{m.goal[1]} × masa ciała (5 powt.) ≈ {Math.round(m.goal[0] * 95)}–{Math.round(m.goal[1] * 95)} kg przy 95 kg</div>}
+                  {m.goal && <div className="text-xs text-slate-500 dark:text-slate-400">Cel na koniec lutego: {m.goal[0]}–{m.goal[1]} × masa ciała (5 powt.) ≈ {Math.round(m.goal[0] * 95)}–{Math.round(m.goal[1] * 95)} kg przy 95 kg</div>}
                 </li>
               )
             })}
@@ -256,7 +256,7 @@ function ClimbCalculator({ riderKg, watts, bikeKg, targetKg, targetW }: { riderK
           {num(value, 1)} {unit}
         </b>
       </span>
-      <input type="range" className="mt-1 w-full" min={min} max={max} step={step} value={value} onChange={(e) => set(Number(e.target.value))} />
+      <input type="range" className="mt-1 block min-h-8 w-full accent-sky-600" min={min} max={max} step={step} value={value} onChange={(e) => set(Number(e.target.value))} />
     </label>
   )
   return (
@@ -269,20 +269,32 @@ function ClimbCalculator({ riderKg, watts, bikeKg, targetKg, targetW }: { riderK
         {slider('Nachylenie', grade, setGrade, 2, 15, 0.1, '%')}
       </div>
       <div className="mt-3 grid grid-cols-2 gap-2 text-center">
-        <div className="rounded-xl bg-slate-100 p-2 dark:bg-slate-700/50">
+        <div className="min-w-0 rounded-xl bg-slate-100 p-3 dark:bg-slate-900/60">
           <div className="text-2xl font-bold tabular-nums">{Math.round(now.minutes)} min</div>
-          <div className="text-xs text-slate-500">
+          <div className="text-xs text-slate-500 tabular-nums dark:text-slate-400">
             teraz · {num(now.kmh, 1)} km/h · {num(now.wkg, 2)} W/kg
           </div>
         </div>
-        <div className="rounded-xl bg-sky-50 p-2 dark:bg-sky-950/40">
+        <div className="min-w-0 rounded-xl bg-sky-50 p-3 dark:bg-sky-950/50">
           <div className="text-2xl font-bold tabular-nums">{Math.round(goal.minutes)} min</div>
-          <div className="text-xs text-slate-500">
+          <div className="text-xs text-slate-500 tabular-nums dark:text-slate-400">
             cel: {targetKg} kg / {targetW} W · {num(goal.kmh, 1)} km/h
           </div>
         </div>
       </div>
-      <p className="mt-2 text-xs text-slate-500">Rower + bagaż {num(bikeKg)} kg, Crr 0,005, CdA 0,45 m². Czas zmieniają tylko moc i masa – przełożenie 40/50 daje kadencję, nie prędkość.</p>
+      <p className="mt-3 text-xs text-slate-500 dark:text-slate-400">Rower + bagaż {num(bikeKg)} kg, Crr 0,005, CdA 0,45 m². Czas zmieniają tylko moc i masa – przełożenie 40/50 daje kadencję, nie prędkość.</p>
     </Card>
+  )
+}
+
+/** Duża liczba z podpisem – w kartach Testy i Podsumowanie. */
+function Stat({ value, label }: { value: string | number; label: string }) {
+  return (
+    <div className="min-w-0">
+      <div className="truncate text-xl leading-7 font-bold tabular-nums">{value}</div>
+      <div className="truncate text-xs text-slate-500 dark:text-slate-400" title={label}>
+        {label}
+      </div>
+    </div>
   )
 }

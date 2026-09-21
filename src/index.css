@@ -7,6 +7,12 @@
   --font-sans: -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
   --color-bg: #f8fafc;
   --color-bg-dark: #0f172a;
+  /* cień karty: wyraźny, ale subtelny; w ciemnym motywie granicę robi obramowanie */
+  --shadow-card: 0 1px 2px rgb(15 23 42 / 0.05), 0 1px 3px rgb(15 23 42 / 0.06);
+}
+
+html.dark .shadow-card {
+  box-shadow: 0 1px 2px rgb(0 0 0 / 0.35);
 }
 
 :root {
@@ -47,11 +53,15 @@ html.dark body {
   padding-bottom: calc(4.5rem + env(safe-area-inset-bottom, 0px));
 }
 
-input[type='number'],
-input[type='date'],
-input[type='text'],
-select {
+input:not([type='checkbox']):not([type='radio']):not([type='range']),
+select,
+textarea {
   font-size: 16px; /* iOS: brak auto-zoomu */
+}
+
+/* Długie nazwy (np. wydarzenia z „→”) nigdy nie wypychają układu */
+body {
+  overflow-wrap: anywhere;
 }
 
 button,

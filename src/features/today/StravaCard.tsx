@@ -7,7 +7,7 @@ import type { HrZone } from '@/engine/schema'
 import { addDays, isValidISODate } from '@/engine/dates'
 import { zoneColor } from '@/lib/zones'
 import { minutes, num, seconds } from '@/lib/format'
-import { Button, Card, CardTitle } from '@/components/ui'
+import { Button, Card, CardSection, CardTitle, Input } from '@/components/ui'
 import { useToast } from '@/components/Toast'
 
 export function useActivities(date: string): StravaActivity[] {
@@ -24,7 +24,7 @@ export function ZoneBar({ histogram, zones, lthr }: { histogram: number[]; zones
           <div key={z.id} className={zoneColor(z.id)} style={{ width: `${(z.seconds / total) * 100}%` }} title={`${z.id}: ${seconds(Math.round(z.seconds / 60) * 60)}`} />
         ))}
       </div>
-      <div className="mt-1 flex flex-wrap gap-x-3 text-[11px] text-slate-500">
+      <div className="mt-1 flex flex-wrap gap-x-3 text-xs tabular-nums text-slate-500 dark:text-slate-400">
         {dist.map((z) => (
           <span key={z.id}>
             {z.id} {z.pct}%
@@ -50,12 +50,12 @@ export function StravaActivities({ date, zones, lthr, extra }: { date: string; z
   }
 
   const body = acts.map((a) => (
-    <div key={a.id} className="border-t border-slate-100 pt-2 first:border-t-0 first:pt-0 dark:border-slate-700">
+    <div key={a.id} className="border-t border-slate-200/80 pt-2 first:border-t-0 first:pt-0 dark:border-slate-700">
       <div className="flex items-baseline justify-between gap-2 text-sm">
-        <span className="truncate font-medium">🟠 {a.name ?? 'Jazda'}</span>
+        <span className="min-w-0 truncate font-medium" title={a.name ?? 'Jazda'}>🟠 {a.name ?? 'Jazda'}</span>
         <span className="shrink-0 tabular-nums">{minutes(Math.round(a.moving_time_s / 60))}</span>
       </div>
-      <div className="flex flex-wrap gap-x-3 text-xs text-slate-600 dark:text-slate-300">
+      <div className="flex flex-wrap gap-x-3 text-xs tabular-nums text-slate-600 dark:text-slate-300">
         {a.distance_m != null && <span>{num(a.distance_m / 1000)} km</span>}
         {a.elevation_m != null && <span>{Math.round(a.elevation_m)} m ↑</span>}
         {a.avg_hr != null && <span>śr. {a.avg_hr} bpm</span>}
@@ -64,10 +64,10 @@ export function StravaActivities({ date, zones, lthr, extra }: { date: string; z
         {a.avg_speed_ms != null && <span>{num(a.avg_speed_ms * 3.6)} km/h</span>}
         {a.avg_watts != null && <span>{a.avg_watts} W</span>}
       </div>
-      {a.hr_histogram && lthr ? <div className="mt-1"><ZoneBar histogram={a.hr_histogram} zones={zones} lthr={lthr} /></div> : a.hr_histogram ? <p className="text-xs text-slate-400">Strefy po wpisaniu LTHR.</p> : null}
+      {a.hr_histogram && lthr ? <div className="mt-1"><ZoneBar histogram={a.hr_histogram} zones={zones} lthr={lthr} /></div> : a.hr_histogram ? <p className="text-xs text-slate-400 dark:text-slate-500">Strefy po wpisaniu LTHR.</p> : null}
       {moving === a.id ? (
-        <div className="mt-2 flex items-center gap-2">
-          <input type="date" className="min-h-11 flex-1 rounded-lg border border-slate-300 bg-white px-2 text-sm dark:border-slate-600 dark:bg-slate-900" value={target} onChange={(e) => setTarget(e.target.value)} />
+        <div className="mt-2 flex flex-wrap items-center gap-2">
+          <Input type="date" aria-label="Nowa data jazdy" className="min-w-0 flex-1" value={target} onChange={(e) => setTarget(e.target.value)} />
           <Button onClick={() => move(a)} disabled={target === a.date}>
             Przenieś
           </Button>
@@ -76,15 +76,17 @@ export function StravaActivities({ date, zones, lthr, extra }: { date: string; z
           </Button>
         </div>
       ) : (
-        <button
-          className="mt-1 min-h-9 text-xs text-sky-600"
+        <Button
+          variant="ghost"
+          size="sm"
+          className="mt-1 -ml-3"
           onClick={() => {
             setMoving(a.id)
             setTarget(addDays(a.date, 0))
           }}
         >
           Przenieś na inny dzień
-        </button>
+        </Button>
       )}
     </div>
   ))
@@ -93,10 +95,10 @@ export function StravaActivities({ date, zones, lthr, extra }: { date: string; z
     return (
       <Card tone="accent">
         <CardTitle icon="🚴">Jazda dodatkowa (Strava)</CardTitle>
-        <p className="mb-2 text-xs text-slate-500">Na ten dzień nie było zaplanowanej jazdy.</p>
+        <p className="mb-2 text-xs text-slate-500 dark:text-slate-400">Na ten dzień nie było zaplanowanej jazdy.</p>
         <div className="space-y-2">{body}</div>
       </Card>
     )
   }
-  return <div className="mt-3 space-y-2 border-t border-slate-100 pt-3 dark:border-slate-700">{body}</div>
+  return <CardSection className="space-y-2">{body}</CardSection>
 }

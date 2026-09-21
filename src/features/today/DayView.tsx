@@ -1,7 +1,7 @@
 import { Link } from 'react-router'
 import type { DayPlan } from '@/engine/plan'
 import type { Engine } from '@/app/useSettings'
-import { Badge, Card, CardTitle, Row } from '@/components/ui'
+import { Badge, Button, buttonClass, Card, CardSection, CardTitle, Inset, Metric, Row } from '@/components/ui'
 import { StepList, TimelineBar } from '@/components/StepTimeline'
 import { fmtLong } from '@/lib/dates'
 import { days, minutes, num } from '@/lib/format'
@@ -25,13 +25,14 @@ function typeBadges(day: DayPlan) {
   return out
 }
 
+/** Hierarchia: data (podpis) → tydzień i faza (tytuł) → typ tygodnia i odliczanie. */
 export function DayHeader({ day }: { day: DayPlan }) {
   const countdown = day.days_to_trip > 0 ? `${days(day.days_to_trip)} do wyjazdu` : day.days_to_trip === 0 ? 'Dzień wyjazdu!' : 'Wyjazd trwa'
   return (
     <header className="mb-3 lg:mb-5 lg:border-b lg:border-slate-200 lg:pb-4 lg:dark:border-slate-700">
-      <p className="text-sm text-slate-500 dark:text-slate-400 first-letter:uppercase lg:text-base">{fmtLong(day.date)}</p>
-      <div className="mt-1 flex flex-wrap items-center gap-2">
-        <h1 className="text-2xl font-bold tracking-tight lg:text-3xl">Tydzień {day.week}</h1>
+      <p className="text-sm font-medium text-slate-500 first-letter:uppercase dark:text-slate-400">{fmtLong(day.date)}</p>
+      <div className="mt-1 flex min-w-0 flex-wrap items-center gap-2">
+        <h1 className="text-2xl font-bold tracking-tight">Tydzień {day.week}</h1>
         <Badge color={PHASE_COLOR[day.phase]}>{day.phase_name.replace(/ – .*/, '')}</Badge>
         {typeBadges(day).map((b) => (
           <Badge key={b.label} color={b.color}>
@@ -39,11 +40,10 @@ export function DayHeader({ day }: { day: DayPlan }) {
           </Badge>
         ))}
       </div>
-      <p className="mt-1 flex flex-wrap items-center gap-x-2 text-sm text-slate-600 dark:text-slate-300 lg:mt-2">
+      <div className="mt-2 flex flex-wrap items-center gap-2 text-sm text-slate-600 dark:text-slate-300">
         <span>{WEEK_TYPE_LABEL[day.week_type]}</span>
-        <span aria-hidden>·</span>
-        <span className="font-semibold text-sky-700 tabular-nums dark:text-sky-300 lg:rounded-full lg:bg-sky-100 lg:px-3 lg:py-0.5 lg:text-base lg:dark:bg-sky-900/40">{countdown}</span>
-      </p>
+        <span className="rounded-full bg-sky-100 px-3 py-0.5 text-sm font-semibold tabular-nums text-sky-800 dark:bg-sky-900/50 dark:text-sky-200">{countdown}</span>
+      </div>
     </header>
   )
 }
@@ -56,9 +56,7 @@ export function BikeCard({ day, engine, onAction }: { day: DayPlan; engine: Engi
       <>
         <Card tone="muted">
           <CardTitle icon="🛋️">Dzień wolny</CardTitle>
-          <p className="text-sm text-slate-600 dark:text-slate-300">
-            {day.gym ? 'Dziś bez roweru – tylko siłownia.' : 'Pełny odpoczynek. Spacer, sen, 5 min rozciągania zginaczy bioder.'}
-          </p>
+          <p className="text-sm text-slate-600 dark:text-slate-300">{day.gym ? 'Dziś bez roweru – tylko siłownia.' : 'Pełny odpoczynek. Spacer, sen, 5 min rozciągania zginaczy bioder.'}</p>
         </Card>
         <StravaActivities date={day.date} zones={program.hr_zones_lthr_fraction} lthr={day.lthr} extra />
       </>
@@ -84,27 +82,31 @@ export function BikeCard({ day, engine, onAction }: { day: DayPlan; engine: Engi
   const carbs = day.nutrition.on_bike_carbs_g_per_h
   return (
     <Card>
-      <CardTitle icon="🚴" right={<span className="text-sm font-semibold tabular-nums">{minutes(day.bike.duration_min)}</span>}>
+      <CardTitle icon="🚴" right={<Metric>{minutes(day.bike.duration_min)}</Metric>}>
         {w.name}
       </CardTitle>
-      <p className="mb-2 text-xs text-slate-500 dark:text-slate-400">Rower: {day.bike.bike}</p>
+      <p className="mb-3 text-xs leading-4 text-slate-500 dark:text-slate-400">Rower: {day.bike.bike}</p>
       <TimelineBar steps={w.steps} />
       {!lthr && !day.ftp && (
-        <Link to="/wiecej/ustawienia" className="mt-2 block rounded-lg bg-amber-100 px-3 py-2 text-xs font-medium text-amber-900 dark:bg-amber-900/40 dark:text-amber-200">
-          Zrób test i wpisz LTHR, żeby zobaczyć tętno w bpm. Do tego czasu jedź po RPE.
+        <Link to="/wiecej/ustawienia" className="mt-3 block">
+          <Inset tone="warn" className="font-medium hover:underline">
+            Zrób test i wpisz LTHR, żeby zobaczyć tętno w bpm. Do tego czasu jedź po RPE.
+          </Inset>
         </Link>
       )}
       <div className="mt-2">
         <StepList workout={w} compact={w.steps.length > 6} />
       </div>
-      <p className="mt-2 text-sm text-slate-600 dark:text-slate-300">{w.description}</p>
-      <div className="mt-2 flex flex-wrap gap-x-4 text-xs text-slate-500">
-        {carbs[1] > 0 && <span>Jedzenie: {carbs[0]}–{carbs[1]} g węgli/h</span>}
-        {day.bike.duration_min >= 60 && <span>Picie: 500–750 ml/h</span>}
-      </div>
+      <CardSection>
+        <p className="text-sm text-slate-600 dark:text-slate-300">{w.description}</p>
+        <div className="mt-2 flex flex-wrap gap-x-4 gap-y-1 text-xs text-slate-500 dark:text-slate-400">
+          {carbs[1] > 0 && <span>Jedzenie: {carbs[0]}–{carbs[1]} g węgli/h</span>}
+          {day.bike.duration_min >= 60 && <span>Picie: 500–750 ml/h</span>}
+        </div>
+      </CardSection>
       {day.fallback_workout && (
-        <details className="mt-3 rounded-lg bg-slate-100 p-3 text-sm dark:bg-slate-700/50">
-          <summary className="cursor-pointer font-medium">🧊 Wersja pod dachem: {day.fallback_workout.name}</summary>
+        <details className="mt-3 rounded-xl bg-slate-100 p-3 text-sm dark:bg-slate-900/60">
+          <summary className="min-h-6 cursor-pointer font-medium">🧊 Wersja pod dachem: {day.fallback_workout.name}</summary>
           <div className="mt-2">
             <TimelineBar steps={day.fallback_workout.steps} />
             <StepList workout={day.fallback_workout} compact />
@@ -113,12 +115,12 @@ export function BikeCard({ day, engine, onAction }: { day: DayPlan; engine: Engi
       )}
       {onAction && (
         <div className="mt-3 grid grid-cols-2 gap-2">
-          <button onClick={() => onAction({ kind: 'indoor', date: day.date, label: '', payload: {} })} className="min-h-11 rounded-xl border border-slate-300 bg-slate-100 text-sm font-semibold transition-colors hover:bg-slate-200 dark:border-slate-600 dark:bg-slate-700 dark:hover:bg-slate-600">
+          <Button variant="secondary" onClick={() => onAction({ kind: 'indoor', date: day.date, label: '', payload: {} })} className="whitespace-normal">
             🧊 Gołoledź / pod dachem
-          </button>
-          <button onClick={() => onAction({ kind: 'sick', date: day.date, label: '', payload: { level: 'cold' } })} className="min-h-11 rounded-xl border border-slate-300 bg-slate-100 text-sm font-semibold transition-colors hover:bg-slate-200 dark:border-slate-600 dark:bg-slate-700 dark:hover:bg-slate-600">
+          </Button>
+          <Button variant="secondary" onClick={() => onAction({ kind: 'sick', date: day.date, label: '', payload: { level: 'cold' } })} className="whitespace-normal">
             🤒 Choroba
-          </button>
+          </Button>
         </div>
       )}
       <WahooButton day={day} />
@@ -131,18 +133,19 @@ export function BikeCard({ day, engine, onAction }: { day: DayPlan; engine: Engi
 export function GymCard({ day, engine }: { day: DayPlan; engine: Engine }) {
   const log = useLiveQuery(async () => (await db.session_logs.where('[date+kind]').equals([day.date, 'gym']).toArray()).find((r) => !r.deleted_at), [day.date])
   if (!day.gym) return null
+  const label = log && log.status !== 'planned' && log.status !== 'skipped' ? (log.status === 'in_progress' ? 'Kontynuuj sesję' : 'Otwórz sesję') : 'Start sesji'
   return (
     <Card>
-      <CardTitle icon="🏋️" right={<span className="text-sm font-semibold tabular-nums">~{day.gym.est_min} min</span>}>
+      <CardTitle icon="🏋️" right={<Metric>~{day.gym.est_min} min</Metric>}>
         {day.gym.name}
       </CardTitle>
       <GymItems session={day.gym} program={engine.ctx.program} />
-      <div className="mt-3 flex items-center gap-3">
-        <Link to={`/silownia/${day.date}`} className="flex min-h-12 flex-1 items-center justify-center rounded-xl bg-sky-600 text-sm font-semibold text-white transition-colors hover:bg-sky-500">
-          {log && log.status !== 'planned' && log.status !== 'skipped' ? (log.status === 'in_progress' ? 'Kontynuuj sesję' : 'Otwórz sesję') : 'Start sesji'}
+      <CardSection className="flex items-center gap-3">
+        <Link to={`/silownia/${day.date}`} className={buttonClass('primary', 'md', 'min-h-12 flex-1')}>
+          {label}
         </Link>
         {log && log.status !== 'planned' && <StatusBadge status={log.status} />}
-      </div>
+      </CardSection>
     </Card>
   )
 }
@@ -155,11 +158,19 @@ export function NutritionCard({ day, engine }: { day: DayPlan; engine: Engine })
     <Card tone={tone}>
       <CardTitle icon="🍽️">Żywienie</CardTitle>
       <p className="text-sm font-medium">{n.label}</p>
-      <Row label="Białko">
-        {day.protein_g} g <span className="text-xs font-normal text-slate-500">({num(n.protein_g_per_kg)} g/kg × {target} kg)</span>
-      </Row>
-      {n.on_bike_carbs_g_per_h[1] > 0 && <Row label="Na rowerze">{n.on_bike_carbs_g_per_h[0]}–{n.on_bike_carbs_g_per_h[1]} g węgli/h</Row>}
-      {n.post_workout && <Row label="Po treningu">{n.post_workout}</Row>}
+      <div className="mt-1 divide-y divide-slate-200/70 dark:divide-slate-700/80">
+        <Row label="Białko">
+          <span className="tabular-nums">{day.protein_g} g</span> <span className="text-xs font-normal text-slate-500 dark:text-slate-400">({num(n.protein_g_per_kg)} g/kg × {target} kg)</span>
+        </Row>
+        {n.on_bike_carbs_g_per_h[1] > 0 && (
+          <Row label="Na rowerze">
+            <span className="tabular-nums">
+              {n.on_bike_carbs_g_per_h[0]}–{n.on_bike_carbs_g_per_h[1]} g węgli/h
+            </span>
+          </Row>
+        )}
+        {n.post_workout && <Row label="Po treningu">{n.post_workout}</Row>}
+      </div>
     </Card>
   )
 }
@@ -191,12 +202,12 @@ export function DayView({ day, engine, warnings = [], overrides = [], onAction, 
       {onAction && onUndo && <RulesCard warnings={warnings} overrides={overrides} onAction={onAction} onUndo={onUndo} />}
       <NotesCard day={day} />
       {/* na komputerze: rower (szerszy) po lewej, siłownia i żywienie po prawej */}
-      <div className="grid gap-3 lg:grid-cols-[minmax(0,3fr)_minmax(0,2fr)] lg:items-start lg:gap-5">
-        <div className="space-y-3 lg:space-y-4">
+      <div className="grid min-w-0 gap-3 lg:grid-cols-[minmax(0,3fr)_minmax(0,2fr)] lg:items-start lg:gap-5">
+        <div className="min-w-0 space-y-3 lg:space-y-4">
           <BikeCard day={day} engine={engine} onAction={onAction} />
           {testProtocol && <TestResultCard date={day.date} protocol={testProtocol} program={engine.ctx.program} previousLthr={day.lthr} />}
         </div>
-        <div className="space-y-3 lg:space-y-4">
+        <div className="min-w-0 space-y-3 lg:space-y-4">
           <GymCard day={day} engine={engine} />
           <NutritionCard day={day} engine={engine} />
         </div>

@@ -13,7 +13,7 @@ export function WorkoutPage() {
   const r = resolveWorkout(w, w.duration_min, engine.ctx.settings.lthr_bpm)
   return (
     <div className="space-y-3">
-      <Link to="/biblioteka" className="text-sm text-sky-600">
+      <Link to="/biblioteka" className="inline-flex min-h-11 items-center text-sm font-medium text-sky-700 hover:underline dark:text-sky-300">
         ‹ Biblioteka
       </Link>
       <PageTitle sub={`${w.id} · ${w.parametric_duration ? 'czas z kalendarza, domyślnie ' : ''}${minutes(w.duration_min)}`}>{w.name}</PageTitle>
@@ -25,7 +25,7 @@ export function WorkoutPage() {
       </Card>
       <Card tone="muted">
         <p className="text-sm">{w.description}</p>
-        {!engine.ctx.settings.lthr_bpm && <p className="mt-2 text-xs text-amber-700 dark:text-amber-300">Cele w bpm pojawią się po wpisaniu LTHR w ustawieniach.</p>}
+        {!engine.ctx.settings.lthr_bpm && <p className="mt-2 text-xs text-amber-800 dark:text-amber-300">Cele w bpm pojawią się po wpisaniu LTHR w ustawieniach.</p>}
       </Card>
     </div>
   )
