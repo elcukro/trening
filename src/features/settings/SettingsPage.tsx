@@ -12,6 +12,7 @@ import { useToast } from '@/components/Toast'
 import { getThemePref, setThemePref, type ThemePref } from '@/lib/theme'
 import { IntegrationsSection } from './IntegrationsSection'
 import { PushSection } from './PushSection'
+import { WeatherSettings } from './WeatherSettings'
 
 type Form = {
   athlete_name: string
@@ -228,6 +229,7 @@ function SettingsForm({ engine, saved, setSaved }: { engine: ReturnType<typeof u
             <CardTitle icon="🌗">Wygląd</CardTitle>
             <ThemePicker />
           </Card>
+          <WeatherSettings />
           <Card>
             <CardTitle icon="🏋️">Siłownia i objętość</CardTitle>
             <div className="space-y-3">

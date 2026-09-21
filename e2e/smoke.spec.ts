@@ -51,6 +51,18 @@ test('Przegląd tygodnia i miesiąca: podsumowanie, co poszło nie tak, przyszł
   await expect(page.getByText(/Tydzień 3/)).toBeVisible()
 })
 
+test('Odprawa przed jazdą: ubiór i żywienie bez prognozy, ustawienia pogody', async ({ page }) => {
+  // Playwright bez sieci do Open-Meteo? – blokujemy API, żeby test był deterministyczny
+  await page.route('**/api.open-meteo.com/**', (r) => r.abort())
+  await page.goto('/?today=2026-10-03')
+  await expect(page.getByRole('heading', { name: 'Odprawa przed jazdą' })).toBeVisible()
+  await expect(page.getByText(/Żywienie na \d+ min/)).toBeVisible()
+  await expect(page.getByText(/g węgli ≈ \d+ porcji/)).toBeVisible()
+  await page.goto('/wiecej/ustawienia')
+  await expect(page.getByRole('heading', { name: 'Pogoda i pora jazdy' })).toBeVisible()
+  await expect(page.getByText(/Prognoza dla: Łódź/)).toBeVisible()
+})
+
 test('Ustawienia: LTHR 160 daje bpm na ekranie Dziś', async ({ page }) => {
   await page.goto('/wiecej/ustawienia?today=2026-10-01')
   await page.getByLabel('LTHR (bpm)').fill('160')

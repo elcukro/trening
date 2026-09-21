@@ -1,0 +1,17 @@
+{
+  "_comment": "Ubiór wg temperatury odczuwalnej (°C) – pkt 6 planu usprawnień. Progi od najzimniejszego; wiatr > 25 km/h i deszcz dodają warstwę (patrz src/engine/weather.ts).",
+  "bands": [
+    { "max_c": -5, "label": "Mróz", "items": ["długie spodnie zimowe z membraną", "koszulka termo + polar + kurtka zimowa", "ochraniacze na buty zimowe", "rękawice zimowe (lobster)", "czapka pod kask + komin na twarz"] },
+    { "max_c": 3, "label": "Zimno", "items": ["długie spodnie ocieplane", "koszulka termo + kurtka softshell", "ochraniacze na buty", "rękawice ocieplane", "czapka pod kask + komin"] },
+    { "max_c": 9, "label": "Chłodno", "items": ["długie spodnie lub nogawki", "koszulka termo + bluza z długim rękawem + kamizelka", "ochraniacze na buty", "rękawice pełne", "opaska na uszy" ] },
+    { "max_c": 14, "label": "Rześko", "items": ["nogawki lub spodenki + ocieplacze", "koszulka + rękawki + kamizelka", "cienkie ochraniacze na buty", "rękawice pełne cienkie"] },
+    { "max_c": 19, "label": "Umiarkowanie", "items": ["spodenki", "koszulka + rękawki na start", "kamizelka na zjazdy i pierwsze 20 min"] },
+    { "max_c": 25, "label": "Ciepło", "items": ["spodenki", "koszulka", "rękawiczki letnie"] },
+    { "max_c": 99, "label": "Upał", "items": ["spodenki", "koszulka jasna, rozpięta na podjazdach", "krem z filtrem", "drugi bidon + sól"] }
+  ],
+  "extras": {
+    "rain": ["kurtka przeciwdeszczowa", "czapka z daszkiem pod kask", "światła włączone"],
+    "wind": ["kamizelka wiatrówka (nawet gdy ciepło)"],
+    "dark": ["światła przód i tył", "elementy odblaskowe"]
+  }
+}

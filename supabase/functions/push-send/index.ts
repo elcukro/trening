@@ -102,8 +102,8 @@ Deno.serve(async (req) => {
       if (subs.length === 0) continue
       const payload = body.payloads?.[userId] ?? {
         title: kind === 'morning' ? 'Plan na dziś' : kind === 'evening' ? 'Odhacz dzisiejszy trening' : 'Przegląd tygodnia',
-        body: kind === 'morning' ? 'Otwórz aplikację, żeby zobaczyć dzisiejszy trening.' : kind === 'evening' ? 'Zapisz, jak poszło: rower i siłownia.' : 'Godziny, TSS, co poszło i co czeka w przyszłym tygodniu.',
-        url: kind === 'weekly' ? `/postep/tydzien/${weekMonday}` : '/',
+        body: kind === 'morning' ? 'Otwórz aplikację, żeby zobaczyć dzisiejszy trening i odprawę (pogoda, ubiór, jedzenie).' : kind === 'evening' ? 'Wpisz RPE i jedno zdanie o jeździe – zajmie 20 s.' : 'Godziny, TSS, co poszło i co czeka w przyszłym tygodniu.',
+        url: kind === 'weekly' ? `/postep/tydzien/${weekMonday}` : kind === 'evening' ? `/dzien/${date}` : '/',
         tag: `${kind}-${date}`,
       }
       const res = await sendTo(admin, subs, payload)

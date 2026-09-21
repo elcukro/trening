@@ -83,11 +83,10 @@ Kolejność wynika z zależności: wszystko, co „analizuje”, potrzebuje stru
 - [x] Tydzień: czerwona krawędź i etykieta „Klucz”; Kalendarz: ★ przed nazwą i legenda.
 
 ### 6. Odprawa przed jazdą i podsumowanie po niej (ekran Dziś)
-- [ ] Pogoda (Open-Meteo, bez klucza; Edge Function jako proxy z pamięcią podręczną): temperatura, wiatr, opady,
-      zachód słońca → automatyczne propozycje `heat` / `indoor` (progi z planu: < −10 °C 4×4 pod dachem, −5…−10 °C krótszy SS).
-- [ ] Ubiór wg temperatury (tabela w `data/`), żywienie w liczbach na czas treningu (g węglowodanów/h, ml/h),
-      checklista „trening na Bolcie ✓” (pkt 7).
-- [ ] Wieczorne powiadomienie linkuje do konkretnej jazdy z prośbą o RPE i komentarz (pkt 1).
+- [x] Pogoda: Open-Meteo wprost z klienta (CORS, bez klucza, bez Edge Function), bufor 3 h w `kv`, lokalizacja i godziny startu (tydzień/weekend) w Ustawieniach → „Pogoda i pora jazdy”. `src/engine/weather.ts`: okno treningu → propozycje: pod dachem (< −10 °C odczuwalne, gołoledź = opady ≤ 1 °C) z przyciskiem „Zastosuj”, krótszy sweet spot (−5…−10 °C), upał ≥ 28 °C (R13), deszcz ≥ 50 %, wiatr ≥ 30 km/h / porywy ≥ 50, koniec po zachodzie → światła.
+- [x] Ubiór wg temperatury odczuwalnej (`data/clothing.json`, 7 pasów + dodatki na deszcz/wiatr/ciemność), żywienie w liczbach (g węgli i ml na cały trening, liczba porcji ≈ 25 g, upał podnosi płyny).
+- [x] Wieczorne powiadomienie prowadzi do `/dzien/<data>` z prośbą o RPE i zdanie; poranne wspomina odprawę.
+- [ ] Checklista „trening na Bolcie ✓” – razem z pkt 7.
 
 ### 7. Bolt w obie strony
 - [ ] `wahoo-push`: odczyt wykonanych treningów (`workouts_read`, `GET /v1/workouts?…`) → status dnia, gdy Stravy brak.
@@ -121,6 +120,8 @@ Kolejność wynika z zależności: wszystko, co „analizuje”, potrzebuje stru
 - **21.09.2026** – pkt 4 wdrożony: `src/engine/pmc.ts` (+ testy), hook `src/app/useLoad.ts` (faktyczny TSS per dzień), `PmcCard`, TSS w podsumowaniu tygodnia.
 
 - **21.09.2026** – pkt 5 wdrożony: migracja `20260921130000_weekly_push.sql`, `push-send` z rodzajem `weekly`, `src/engine/report.ts` (+ testy), `ReportPage`.
+
+- **22.09.2026** – pkt 6 wdrożony: `src/engine/weather.ts` (+ testy), `src/sync/weather.ts`, `BriefingCard` na ekranie dnia, `WeatherSettings`, `data/clothing.json`.
 
 ## Pracochłonność (orientacyjnie)
 | # | Zakres | Nakład |

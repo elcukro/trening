@@ -13,6 +13,7 @@ import { TestResultCard } from './TestResultCard'
 import { StravaActivities } from './StravaCard'
 import { effectiveFtp } from '@/engine/progress'
 import { RulesCard } from './RulesCard'
+import { BriefingCard } from './BriefingCard'
 import { FtpSuggestionCard } from '@/features/progress/FtpSuggestionCard'
 import { todayISO } from '@/lib/dates'
 import { addDays } from '@/engine/dates'
@@ -209,6 +210,7 @@ export function DayView({ day, engine, warnings = [], overrides = [], onAction, 
       {/* na komputerze: rower (szerszy) po lewej, siłownia i żywienie po prawej */}
       <div className="grid min-w-0 gap-3 lg:grid-cols-[minmax(0,3fr)_minmax(0,2fr)] lg:items-start lg:gap-5">
         <div className="min-w-0 space-y-3 lg:space-y-4">
+          <BriefingCard day={day} onAction={onAction} hasOverride={overrides.some((o) => o.date === day.date && o.kind === 'indoor')} />
           <BikeCard day={day} engine={engine} onAction={onAction} />
           {testProtocol && <TestResultCard date={day.date} protocol={testProtocol} program={engine.ctx.program} previousLthr={day.lthr} />}
         </div>
