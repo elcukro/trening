@@ -1,11 +1,15 @@
-import { useMemo } from 'react'
+import { useCallback, useMemo } from 'react'
 import { Link, useLocation, useNavigate, useParams } from 'react-router'
 import { useRangeView } from '@/app/usePlan'
-import type { SessionLog, SessionStatus } from '@/db'
+import { addOverride, removeOverride } from '@/db/repo'
+import { validateMove } from '@/engine/rules'
+import type { PlanOverrideRow, SessionLog, SessionStatus } from '@/db'
 import { addDays, mondayOf, type ISODate } from '@/engine/dates'
 import type { DayPlan } from '@/engine/plan'
-import { Button, Dot, Empty } from '@/components/ui'
-import { addMonths, fmtMonth, monthEnd, monthStart, todayISO } from '@/lib/dates'
+import { Button, Dot, Empty, Inset } from '@/components/ui'
+import { useToast } from '@/components/Toast'
+import { useDragMove, type DragMove } from './useDragMove'
+import { addMonths, fmtDayMonth, fmtMonth, monthEnd, monthStart, todayISO } from '@/lib/dates'
 import { hours, minutes } from '@/lib/format'
 import { DAY_TYPE_COLOR, FLAG_COLOR, FLAG_LABEL, PHASE_COLOR, PHASE_SHORT, WEEKDAY_LONG, WEEKDAY_SHORT } from '@/lib/labels'
 import { WEEKDAYS } from '@/engine/dates'
@@ -56,12 +60,19 @@ function CellItem({ color, name, title, meta, status }: { color: string; name: s
   )
 }
 
-function DayCell({ date, day, inMonth, today, logs, hasOverride }: { date: ISODate; day: DayPlan | undefined; inMonth: boolean; today: boolean; logs: SessionLog[]; hasOverride: boolean }) {
+interface DragApi {
+  drag: DragMove | null
+  onPointerDown: (e: React.PointerEvent, from: ISODate, label: string) => void
+  handleClick: (date: ISODate) => boolean
+  canDrop: (from: ISODate, to: ISODate) => boolean
+}
+
+function DayCell({ date, day, inMonth, today, logs, hasOverride, dragApi }: { date: ISODate; day: DayPlan | undefined; inMonth: boolean; today: boolean; logs: SessionLog[]; hasOverride: boolean; dragApi: DragApi }) {
   const num = Number(date.slice(8))
   const base = 'relative flex min-h-16 min-w-0 flex-col gap-1 overflow-hidden rounded-lg p-1 text-left lg:min-h-28 lg:gap-1.5 lg:p-2'
   if (!day) {
     return (
-      <div className={`${base} bg-slate-100/60 text-slate-300 dark:bg-slate-800/40 dark:text-slate-600`} aria-label={`${date} – poza planem`}>
+      <div data-date={date} className={`${base} bg-slate-100/60 text-slate-300 dark:bg-slate-800/40 dark:text-slate-600`} aria-label={`${date} – poza planem`}>
         <span className="text-xs tabular-nums lg:text-sm">{num}</span>
       </div>
     )
@@ -71,11 +82,29 @@ function DayCell({ date, day, inMonth, today, logs, hasOverride }: { date: ISODa
   const ride = day.bike && !isTravel(day) ? day.bike : null
   const travel = day.bike && isTravel(day) ? day.bike : null
   const tone = inMonth ? 'bg-white hover:bg-sky-50 dark:bg-slate-800 dark:hover:bg-slate-700' : 'bg-white/60 text-slate-500 hover:bg-sky-50 dark:bg-slate-800/50 dark:hover:bg-slate-700'
+  const { drag } = dragApi
+  const movable = !!ride
+  const isSource = drag?.from === date
+  const isTarget = !!drag && !isSource && dragApi.canDrop(drag.from, date)
+  const isOver = drag?.over === date
+  const dragCls = isSource
+    ? 'opacity-60 ring-2 ring-sky-500'
+    : isOver
+      ? 'ring-2 ring-emerald-500 bg-emerald-100 dark:bg-emerald-900/50'
+      : isTarget
+        ? 'ring-2 ring-emerald-400/70 bg-emerald-50 dark:bg-emerald-950/40'
+        : ''
   return (
     <Link
       to={`/dzien/${date}`}
-      aria-label={`${WEEKDAY_LONG[day.weekday]} ${date}`}
-      className={`${base} border shadow-card transition-colors ${today ? 'border-sky-500 ring-2 ring-sky-500/40' : 'border-slate-200 dark:border-slate-700'} ${tone}`}
+      data-date={date}
+      aria-label={`${WEEKDAY_LONG[day.weekday]} ${date}${isTarget ? ' – wolny, można tu przenieść' : ''}`}
+      onPointerDown={movable ? (e) => dragApi.onPointerDown(e, date, ride.name) : undefined}
+      onClick={(e) => {
+        if (dragApi.handleClick(date)) e.preventDefault()
+      }}
+      onDragStart={(e) => e.preventDefault()}
+      className={`${base} border shadow-card transition-colors ${today ? 'border-sky-500 ring-2 ring-sky-500/40' : 'border-slate-200 dark:border-slate-700'} ${tone} ${dragCls} ${drag && !drag.armed ? 'touch-none select-none' : ''}`}
     >
       <div className="flex items-center justify-between gap-1">
         <span className={`text-xs font-semibold tabular-nums lg:text-sm ${today ? 'rounded-full bg-sky-600 px-1.5 text-white' : ''}`}>{num}</span>
@@ -163,6 +192,29 @@ export function CalendarPage() {
 
   const go = (iso: ISODate) => navigate(`/kalendarz/${iso.slice(0, 7)}${search}`)
   const { program_start, trip_start } = engine.ctx.settings
+  const toast = useToast()
+
+  // przenoszenie jazdy: przytrzymaj kafelek z jazdą i upuść na dniu wolnym tego samego miesiąca (R15)
+  const canDrop = useCallback((from: ISODate, to: ISODate) => validateMove(from, to, days, { today }).ok, [days, today])
+  const onDrop = useCallback(
+    (from: ISODate, to: ISODate) => {
+      const v = validateMove(from, to, days, { today })
+      if (!v.ok) {
+        toast.notify(v.reason ?? 'Nie można tu przenieść.', 'error')
+        return
+      }
+      void toast.run(
+        'Przenoszę trening…',
+        () => addOverride(from, 'move', { to, what: 'bike' }),
+        () => `Przeniesione na ${fmtDayMonth(to)}. Wyślij 7 dni na Bolta, jeśli to najbliższe dni.`,
+      )
+      if (v.warning) toast.notify(v.warning, 'info')
+    },
+    [days, today, toast],
+  )
+  const { drag, onPointerDown, handleClick, cancel } = useDragMove({ canDrop, onDrop })
+  const dragApi = useMemo(() => ({ drag, onPointerDown, handleClick, canDrop }), [drag, onPointerDown, handleClick, canDrop])
+  const moves = useMemo(() => overrides.filter((o: PlanOverrideRow) => o.kind === 'move'), [overrides])
 
   return (
     <div className="space-y-3 lg:space-y-4">
@@ -185,6 +237,25 @@ export function CalendarPage() {
           </p>
         )}
       </header>
+
+      {/* pasek nie może przesuwać siatki w trakcie przeciągania – dlatego jest przypięty do dołu ekranu */}
+      {drag && (
+        <div className="pb-nav fixed inset-x-0 bottom-2 z-40 px-4 lg:bottom-6">
+          <Inset tone="info" className="mx-auto flex max-w-md flex-wrap items-center justify-between gap-2 shadow-lg" role="status">
+            <span className="min-w-0">
+              Przenoszę: <b>{drag.label}</b> – {drag.armed ? 'dotknij dnia wolnego' : 'upuść na dniu wolnym'} (zielone ramki).
+            </span>
+            <Button size="sm" variant="ghost" onClick={cancel}>
+              Anuluj
+            </Button>
+          </Inset>
+        </div>
+      )}
+      {drag?.point && (
+        <div className="pointer-events-none fixed z-50 max-w-40 truncate rounded-lg bg-sky-600 px-2 py-1 text-xs font-semibold text-white shadow-lg" style={{ left: drag.point.x + 12, top: drag.point.y - 12 }} aria-hidden>
+          {drag.label}
+        </div>
+      )}
 
       {days.length === 0 && (
         <Empty>
@@ -222,12 +293,30 @@ export function CalendarPage() {
                 <div className="rounded-lg bg-slate-100 dark:bg-slate-800/40" />
               )}
               {week.map((date) => (
-                <DayCell key={date} date={date} day={byDate.get(date)} inMonth={date >= first && date <= last} today={date === today} logs={logs} hasOverride={overrides.some((o) => o.date === date)} />
+                <DayCell key={date} date={date} day={byDate.get(date)} inMonth={date >= first && date <= last} today={date === today} logs={logs} hasOverride={overrides.some((o) => o.date === date)} dragApi={dragApi} />
               ))}
             </div>
           )
         })}
       </div>
+
+      {moves.length > 0 && (
+        <div className="flex flex-wrap items-center gap-2 text-xs">
+          <span className="text-slate-500 dark:text-slate-400">Przeniesione:</span>
+          {moves.map((o) => (
+            <button
+              key={o.id}
+              className="inline-flex min-h-8 items-center gap-1 rounded-full bg-sky-100 px-2 font-medium text-sky-800 hover:bg-sky-200 dark:bg-sky-900/60 dark:text-sky-200"
+              onClick={() => void toast.run('Cofam przeniesienie…', () => removeOverride(o.id), () => 'Przywrócono plan')}
+            >
+              {fmtDayMonth(o.date)} → {fmtDayMonth(String(o.payload.to ?? ''))} <span aria-hidden>✕</span>
+              <span className="sr-only">cofnij</span>
+            </button>
+          ))}
+        </div>
+      )}
+
+      <p className="text-xs text-slate-400 dark:text-slate-500">Przytrzymaj kafelek z jazdą i przeciągnij na dzień wolny tego samego miesiąca, żeby ją przenieść (albo puść i dotknij celu).</p>
 
       <ul className="flex flex-wrap gap-x-4 gap-y-1 text-xs text-slate-500 dark:text-slate-400" aria-label="Legenda">
         <li className="flex items-center gap-1.5">

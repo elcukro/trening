@@ -383,6 +383,50 @@ export function warningsFor(date: ISODate, window: CalendarDay[], ctx: RuleConte
 }
 
 /** Walidacja zamiany dni (R15): w obrębie tygodnia, bez dwóch akcentów pod rząd, z pilnowaniem R9. */
+const NON_MOVABLE = new Set(['TRIP', 'TRAVEL_REST', 'REST'])
+
+/** Dzień „Wolne” w kalendarzu: bez jazdy i bez siłowni – jedyny dozwolony cel przeniesienia. */
+export function isFreeDay(day: CalendarDay): boolean {
+  return !day.bike && !day.gym
+}
+
+/**
+ * R15 dla przeciągnięcia jazdy w kalendarzu: cel musi być dniem wolnym w tym samym miesiącu i nie w przeszłości;
+ * po przeniesieniu nie mogą wypaść dwa akcenty dzień po dniu ani Sesja nóg mniej niż 48 h przed ciężkim dniem.
+ * `warning` nie blokuje – informuje (R2: opuszczonej jednostki nie odrabiamy).
+ */
+export function validateMove(from: ISODate, to: ISODate, window: CalendarDay[], opts: { today?: ISODate } = {}): { ok: boolean; reason?: string; warning?: string } {
+  const F = window.find((d) => d.date === from)
+  const T = window.find((d) => d.date === to)
+  if (!F?.bike || NON_MOVABLE.has(F.bike.workout_id)) return { ok: false, reason: 'Ten dzień nie ma jazdy do przeniesienia.' }
+  if (!T) return { ok: false, reason: 'Cel jest poza planem.' }
+  if (from === to) return { ok: false, reason: 'To ten sam dzień.' }
+  if (from.slice(0, 7) !== to.slice(0, 7)) return { ok: false, reason: 'Przenoś tylko w obrębie jednego miesiąca.' }
+  if (!isFreeDay(T)) return { ok: false, reason: 'Celem może być tylko dzień wolny (bez jazdy i bez siłowni).' }
+  if (opts.today && compareISO(to, opts.today) < 0) return { ok: false, reason: 'Nie przenoś treningu w przeszłość.' }
+
+  const moved = sessionFlags(F)
+  const after = window.map((d) =>
+    d.date === from
+      ? { ...d, bike: null, day_type: d.gym ? ('gym' as const) : ('rest' as const), flags: weekFlags(d) }
+      : d.date === to
+        ? { ...d, bike: F.bike, day_type: F.day_type, flags: withSessionFlags(d, moved) }
+        : d,
+  )
+  for (let i = 1; i < after.length; i++) {
+    if (isKeyDay(after[i]!) && isKeyDay(after[i - 1]!)) return { ok: false, reason: 'Po przeniesieniu dwa akcenty wypadłyby dzień po dniu.' }
+  }
+  for (const d of after) {
+    if (!d.gym || !LEG_SESSIONS.has(d.gym.session)) continue
+    for (let i = 1; i <= 2; i++) {
+      const next = after.find((x) => x.date === addDays(d.date, i))
+      if (next && isProtectedDay(next)) return { ok: false, reason: `Po przeniesieniu Sesja ${d.gym.session} wypadłaby mniej niż 48 h przed ciężkim dniem (${next.date.slice(8)}.${next.date.slice(5, 7)}).` }
+    }
+  }
+  const warning = opts.today && compareISO(from, opts.today) < 0 ? 'To jednostka z przeszłości – R2 mówi, żeby jej nie odrabiać. Przenoś tylko, jeśli świadomie zmieniasz układ tygodnia.' : undefined
+  return { ok: true, warning }
+}
+
 export function validateSwap(a: ISODate, b: ISODate, window: CalendarDay[]): { ok: boolean; reason?: string } {
   const A = window.find((d) => d.date === a)
   const B = window.find((d) => d.date === b)

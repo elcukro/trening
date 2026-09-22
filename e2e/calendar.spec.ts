@@ -63,4 +63,42 @@ test.describe('kalendarz na komputerze', () => {
     await rail.click()
     await expect(page.getByRole('heading', { name: 'Tydzień 35' })).toBeVisible()
   })
+
+  test('przeciągnięcie jazdy na dzień wolny i cofnięcie', async ({ page }) => {
+    await page.goto('/kalendarz/2026-10?today=2026-09-29')
+    const src = page.getByRole('link', { name: /czwartek 2026-10-01/ })
+    const dst = page.getByRole('link', { name: /poniedziałek 2026-10-05/ })
+    await expect(src).toContainText('Sweet spot')
+    const a = (await src.boundingBox())!
+    const b = (await dst.boundingBox())!
+    // przytrzymanie „podnosi” trening, dopiero wtedy przeciągamy
+    await page.mouse.move(a.x + a.width / 2, a.y + a.height / 2)
+    await page.mouse.down()
+    await page.waitForTimeout(450)
+    await expect(page.getByText(/Przenoszę:/)).toBeVisible()
+    await page.mouse.move(b.x + b.width / 2, b.y + b.height / 2, { steps: 12 })
+    await page.mouse.up()
+    await expect(dst).toContainText('Sweet spot')
+    await expect(src).not.toContainText('Sweet spot')
+    await page.screenshot({ path: 'test-results/calendar-move.png', fullPage: true })
+    // cofnięcie przywraca plan
+    await page.getByRole('button', { name: /1\.10 → 5\.10/ }).click()
+    await expect(src).toContainText('Sweet spot')
+    await expect(dst).not.toContainText('Sweet spot')
+  })
+
+  test('sobota (zajęta) nie jest celem przeniesienia', async ({ page }) => {
+    await page.goto('/kalendarz/2026-10?today=2026-09-29')
+    const src = page.getByRole('link', { name: /czwartek 2026-10-01/ })
+    const busy = page.getByRole('link', { name: /sobota 2026-10-03/ })
+    const a = (await src.boundingBox())!
+    const b = (await busy.boundingBox())!
+    await page.mouse.move(a.x + a.width / 2, a.y + a.height / 2)
+    await page.mouse.down()
+    await page.waitForTimeout(450)
+    await page.mouse.move(b.x + b.width / 2, b.y + b.height / 2, { steps: 12 })
+    await page.mouse.up()
+    await expect(src).toContainText('Sweet spot')
+    await expect(page.getByText(/Przenoszę:/)).toHaveCount(0)
+  })
 })
