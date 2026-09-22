@@ -1,5 +1,6 @@
 import type { BikeWorkout, Exercise, GymSession } from './schema'
-import type { CalendarDay, EngineContext, LayoutWeek, ResolvedWorkout, ZoneBpm } from './types'
+import type { CalendarDay, EngineContext, LayoutWeek, PlanOverride, ResolvedWorkout, ZoneBpm } from './types'
+import { applyOverrides } from './rules'
 import { addDays, diffDays, mondayOf, type ISODate } from './dates'
 import { buildCalendar, getCalendarDay, getCalendarWeek } from './calendar'
 import { layoutWeeks } from './layout'
@@ -65,6 +66,24 @@ export function enrichDay(day: CalendarDay, ctx: EngineContext): DayPlan {
     protein_g: proteinGrams(day.nutrition, settings.body_weight_target_kg),
     warnings,
   }
+}
+
+/**
+ * Dni `[from, from + days)` po nałożeniu nadpisań – wspólna ścieżka dla UI i dla wysyłki na Bolta.
+ * Margines musi objąć drugi koniec przeniesienia (do miesiąca), inaczej `move` nie ma czego przenieść.
+ */
+export const OVERRIDE_PAD_DAYS = 40
+
+export function planWindow(from: ISODate, days: number, ctx: EngineContext, weeks?: LayoutWeek[], overrides: PlanOverride[] = [], pad = OVERRIDE_PAD_DAYS): DayPlan[] {
+  const to = addDays(from, days - 1)
+  const base: CalendarDay[] = []
+  for (let i = -pad; i < days + pad; i++) {
+    const d = getCalendarDay(addDays(from, i), ctx, weeks)
+    if (d) base.push(d)
+  }
+  return applyOverrides(base, overrides, ctx.program)
+    .filter((d) => d.date >= from && d.date <= to)
+    .map((d) => enrichDay(d, ctx))
 }
 
 export function getWeekPlan(weekStart: ISODate, ctx: EngineContext, weeks?: LayoutWeek[]): DayPlan[] {

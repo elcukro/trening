@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { useEngine } from '@/app/useSettings'
 import type { DayPlan } from '@/engine/plan'
 import { isPushable } from '@/engine/wahoo'
-import { pushItemFor, wahoo } from '@/sync/wahoo'
+import { pushItemForDay, wahoo } from '@/sync/wahoo'
 import { supabase } from '@/sync/supabase'
 import { useToast } from '@/components/Toast'
 import { Button } from '@/components/ui'
@@ -24,7 +24,7 @@ export function WahooButton({ day }: { day: DayPlan }) {
       'Wysyłam trening na Wahoo…',
       async () => {
         if (!supabase) throw new Error('Aplikacja działa lokalnie – wysyłka wymaga konfiguracji Supabase.')
-        const item = pushItemFor(day.date, engine.ctx, engine.weeks)
+        const item = pushItemForDay(day, engine.ctx)
         if (!item) throw new Error('Tego dnia nie ma czego wysłać.')
         const res = await wahoo.push([item])
         const r = res.results[0]

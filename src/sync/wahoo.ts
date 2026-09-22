@@ -1,9 +1,9 @@
 import { supabase } from './supabase'
 import { db } from '@/db'
 import { buildWahooPlan, externalId, isIndoor, isPushable, planMinutes, WORKOUT_TYPE_ID_INDOOR, WORKOUT_TYPE_ID_OUTDOOR, type WahooPlan } from '@/engine/wahoo'
-import { getDayPlan } from '@/engine/plan'
+import { planWindow, OVERRIDE_PAD_DAYS, type DayPlan } from '@/engine/plan'
 import { addDays, type ISODate } from '@/engine/dates'
-import type { EngineContext, LayoutWeek } from '@/engine/types'
+import type { EngineContext, LayoutWeek, PlanOverride } from '@/engine/types'
 import { localTimeISO } from '@/lib/dates'
 
 export interface WahooPush {
@@ -70,10 +70,9 @@ async function call<T>(fn: 'wahoo-oauth' | 'wahoo-push', body: Record<string, un
   return data as T
 }
 
-/** Element wysyłki dla jednego dnia planu, albo `null` gdy tego dnia nie wysyłamy na Bolta. */
-export function pushItemFor(date: ISODate, ctx: EngineContext, weeks?: LayoutWeek[]): PushItem | null {
-  const day = getDayPlan(date, ctx, weeks)
-  if (!day?.bike || !isPushable(day.bike.workout_id)) return null
+/** Element wysyłki z gotowego dnia planu (już po nadpisaniach), albo `null` gdy tego dnia nie wysyłamy na Bolta. */
+export function pushItemForDay(day: DayPlan, ctx: EngineContext): PushItem | null {
+  if (!day.bike || !isPushable(day.bike.workout_id)) return null
   const workout = ctx.program.bike_workouts[day.bike.workout_id]
   if (!workout) return null
   const plan = buildWahooPlan(workout, {
@@ -87,35 +86,51 @@ export function pushItemFor(date: ISODate, ctx: EngineContext, weeks?: LayoutWee
     programVersion: ctx.program.version,
   })
   return {
-    date,
+    date: day.date,
     workout_id: day.bike.workout_id,
     name: day.bike.name,
     minutes: planMinutes(plan),
     workout_type_id: isIndoor(day.bike.workout_id) ? WORKOUT_TYPE_ID_INDOOR : WORKOUT_TYPE_ID_OUTDOOR,
-    external_id: externalId(date, day.bike.workout_id, ctx.program.version),
-    starts: localTimeISO(date, 6),
+    external_id: externalId(day.date, day.bike.workout_id, ctx.program.version),
+    starts: localTimeISO(day.date, 6),
     plan,
   }
 }
 
+/** Element wysyłki dla jednego dnia planu (z nadpisaniami, jeśli przekazane). */
+export function pushItemFor(date: ISODate, ctx: EngineContext, weeks?: LayoutWeek[], overrides: PlanOverride[] = []): PushItem | null {
+  const day = planWindow(date, 1, ctx, weeks, overrides)[0]
+  return day ? pushItemForDay(day, ctx) : null
+}
+
 /** Dziś + kolejne dni (domyślnie tydzień). */
-export function pushItemsFrom(from: ISODate, days: number, ctx: EngineContext, weeks?: LayoutWeek[]): PushItem[] {
-  const out: PushItem[] = []
+export function pushItemsFrom(from: ISODate, days: number, ctx: EngineContext, weeks?: LayoutWeek[], overrides: PlanOverride[] = []): PushItem[] {
+  return planWindow(from, days, ctx, weeks, overrides)
+    .map((d) => pushItemForDay(d, ctx))
+    .filter((i): i is PushItem => !!i)
+}
+
+/** Dni w oknie bez jazdy do wysłania – po zmianie planu trzeba z Wahoo skasować to, co tam zostało. */
+export function removeDatesFrom(from: ISODate, days: number, ctx: EngineContext, weeks?: LayoutWeek[], overrides: PlanOverride[] = []): ISODate[] {
+  const keep = new Set(pushItemsFrom(from, days, ctx, weeks, overrides).map((i) => i.date))
+  const out: ISODate[] = []
   for (let i = 0; i < days; i++) {
-    const item = pushItemFor(addDays(from, i), ctx, weeks)
-    if (item) out.push(item)
+    const d = addDays(from, i)
+    if (!keep.has(d)) out.push(d)
   }
   return out
 }
 
-/** Dni w oknie bez jazdy do wysłania – po zmianie planu trzeba z Wahoo skasować to, co tam zostało. */
-export function removeDatesFrom(from: ISODate, days: number, ctx: EngineContext, weeks?: LayoutWeek[]): ISODate[] {
-  const out: ISODate[] = []
-  for (let i = 0; i < days; i++) {
-    const d = addDays(from, i)
-    if (!pushItemFor(d, ctx, weeks)) out.push(d)
-  }
-  return out
+/** Nadpisania z bazy obejmujące okno wysyłki razem z marginesem (drugi koniec przeniesienia). */
+export async function loadOverridesFor(from: ISODate, days: number): Promise<PlanOverride[]> {
+  const rows = await db.plan_overrides.where('date').between(addDays(from, -OVERRIDE_PAD_DAYS), addDays(from, days + OVERRIDE_PAD_DAYS), true, true).toArray()
+  return rows.filter((o) => !o.deleted_at).map((o) => ({ id: o.id, date: o.date, kind: o.kind, payload: o.payload }))
+}
+
+/** Gotowa paczka do wysyłki: treningi do wgrania i dni do skasowania, z uwzględnieniem nadpisań. */
+export async function pushPayloadFor(from: ISODate, days: number, ctx: EngineContext, weeks?: LayoutWeek[]): Promise<{ items: PushItem[]; remove: ISODate[] }> {
+  const overrides = await loadOverridesFor(from, days)
+  return { items: pushItemsFrom(from, days, ctx, weeks, overrides), remove: removeDatesFrom(from, days, ctx, weeks, overrides) }
 }
 
 export interface PushResponse {
@@ -194,9 +209,9 @@ export async function maybeAutoPush(today: ISODate, ctx: EngineContext, weeks?: 
   if (!data.session) return null
   const status = await wahoo.status().catch(() => null)
   if (!status?.connected) return null
-  const items = pushItemsFrom(today, 7, ctx, weeks)
+  const { items, remove } = await pushPayloadFor(today, 7, ctx, weeks)
   if (items.length === 0) return null
-  const res = await wahoo.push(items, 'update', removeDatesFrom(today, 7, ctx, weeks))
+  const res = await wahoo.push(items, 'update', remove)
   // w drugą stronę: wykonane treningi z Bolta (jedno zapytanie dziennie; błąd nie blokuje wysyłki)
   await wahoo.completed(3).catch((e) => console.warn('Wahoo completed:', e))
   // Znaczymy dzień niezależnie od wyniku: przy niepowodzeniu ponawianie przy każdym uruchomieniu

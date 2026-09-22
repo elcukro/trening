@@ -3,7 +3,7 @@ import { useSearchParams } from 'react-router'
 import { useAuth } from '@/sync/auth'
 import { useEngine } from '@/app/useSettings'
 import { strava, type StravaStatus } from '@/sync/strava'
-import { autoPushEnabled, lastAttempt, lastAutoPush, pushItemsFrom, removeDatesFrom, setAutoPush, wahoo, type PushAttempt, type WahooStatus } from '@/sync/wahoo'
+import { autoPushEnabled, lastAttempt, lastAutoPush, pushPayloadFor, setAutoPush, wahoo, type PushAttempt, type WahooStatus } from '@/sync/wahoo'
 import { runSync } from '@/sync/sync'
 import { loadProgram } from '@/data/program'
 import { todayISO, fmtDayMonth } from '@/lib/dates'
@@ -210,9 +210,9 @@ function WahooCard() {
               disabled={busy}
               onClick={() =>
                 run('Wysyłam 7 dni na Bolta', async () => {
-                  const items = pushItemsFrom(today, 7, engine.ctx, engine.weeks)
+                  const { items, remove } = await pushPayloadFor(today, 7, engine.ctx, engine.weeks)
                   if (items.length === 0) return 'Na najbliższy tydzień nie ma treningów do wysłania.'
-                  const r = await wahoo.push(items, 'update', removeDatesFrom(today, 7, engine.ctx, engine.weeks))
+                  const r = await wahoo.push(items, 'update', remove)
                   const err = r.results.filter((x) => x.status === 'error')
                   if (r.rate_limited) throw new Error(`Wahoo odmówiło: limit zapytań wyczerpany (sandbox: 25 na 5 minut, 250 na dobę). Wysłano ${r.pushed} z ${items.length}. Spróbuj za kilka minut.`)
                   if (err.length) throw new Error(`Wysłano ${r.pushed} z ${items.length}. ${err.map((x) => `${x.date}: ${x.error}`).join('; ')}`)
@@ -229,9 +229,9 @@ function WahooCard() {
               disabled={busy}
               onClick={() =>
                 run('Wysyłam od zera', async () => {
-                  const items = pushItemsFrom(today, 7, engine.ctx, engine.weeks)
+                  const { items, remove } = await pushPayloadFor(today, 7, engine.ctx, engine.weeks)
                   if (items.length === 0) return 'Na najbliższy tydzień nie ma treningów do wysłania.'
-                  const r = await wahoo.push(items, 'replace', removeDatesFrom(today, 7, engine.ctx, engine.weeks))
+                  const r = await wahoo.push(items, 'replace', remove)
                   const err = r.results.filter((x) => x.status === 'error')
                   if (r.rate_limited) throw new Error(`Wahoo odmówiło: limit zapytań wyczerpany (sandbox: 25 na 5 minut, 250 na dobę). Utworzono ${r.pushed} z ${items.length}. Spróbuj za kilka minut.`)
                   if (err.length) throw new Error(`Wysłano ${r.pushed} z ${items.length}. ${err.map((x) => `${x.date}: ${x.error}`).join('; ')}`)
@@ -273,7 +273,7 @@ function WahooCard() {
               disabled={busy}
               onClick={() =>
                 run('Sprawdzam format planu', async () => {
-                  const items = pushItemsFrom(today, 7, engine.ctx, engine.weeks)
+                  const { items } = await pushPayloadFor(today, 7, engine.ctx, engine.weeks)
                   if (items.length === 0) throw new Error('Brak treningu do sprawdzenia.')
                   const r = await wahoo.diagnose(items.slice(0, 1))
                   setReport(JSON.stringify(r, null, 1))

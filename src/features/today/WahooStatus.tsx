@@ -3,7 +3,7 @@ import { db, type WahooPushRow, type WahooWorkout } from '@/db'
 import { useEngine } from '@/app/useSettings'
 import type { DayPlan } from '@/engine/plan'
 import { isPushable } from '@/engine/wahoo'
-import { pushItemFor } from '@/sync/wahoo'
+import { pushItemForDay } from '@/sync/wahoo'
 import { fmtDayMonth } from '@/lib/dates'
 import { num } from '@/lib/format'
 
@@ -16,7 +16,7 @@ export function useBoltState(day: DayPlan): BoltState {
   if (!day.bike || !isPushable(day.bike.workout_id)) return { kind: 'na' }
   if (!row) return { kind: 'missing' }
   if (row.status === 'error') return { kind: 'error', error: row.error ?? 'błąd wysyłki' }
-  const current = pushItemFor(day.date, engine.ctx, engine.weeks)
+  const current = pushItemForDay(day, engine.ctx)
   if (current && row.external_id && row.external_id !== current.external_id) return { kind: 'stale', when: row.updated_at }
   return { kind: 'ok', when: row.updated_at }
 }
