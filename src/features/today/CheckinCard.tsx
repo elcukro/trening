@@ -93,7 +93,7 @@ export function CheckinCard({ date }: { date: string }) {
     <Card>
       <CardTitle icon="☀️">Poranny check-in</CardTitle>
       <div className="grid grid-cols-2 gap-3">
-        <Field label="Waga (kg)">
+        <Field label="Waga (kg)" hint="co drugi dzień wystarczy – pole możesz zostawić puste">
           <Input inputMode="decimal" placeholder={checkin?.weight_kg != null ? String(checkin.weight_kg) : 'np. 104,5'} value={weight} onChange={(e) => setWeight(e.target.value)} />
         </Field>
         <Field label="Tętno spoczynkowe">

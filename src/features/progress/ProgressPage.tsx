@@ -123,7 +123,7 @@ export function ProgressPage() {
             </ResponsiveContainer>
           </div>
         ) : (
-          <p className="text-sm text-slate-500 dark:text-slate-400">Wpisuj wagę w porannym check-inie – wykres pojawi się po 2 pomiarach, średnia 7-dniowa po 3.</p>
+          <p className="text-sm text-slate-500 dark:text-slate-400">Ważenie co drugi dzień rano wystarczy (dzienne wahania to woda) – wykres po 2 pomiarach, średnia 7-dniowa po 3.</p>
         )}
         <div className="mt-2 divide-y divide-slate-100 tabular-nums dark:divide-slate-700/80">
           {trend && (
