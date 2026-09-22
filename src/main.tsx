@@ -8,7 +8,14 @@ applyTheme()
 watchSystemTheme()
 import { App } from './app/App'
 
-registerSW({ immediate: true })
+// autoUpdate przeładowuje stronę, gdy nowy service worker przejmie kontrolę;
+// dodatkowe sprawdzanie co godzinę skraca okno, w którym otwarta karta trzyma starą wersję
+registerSW({
+  immediate: true,
+  onRegisteredSW(_url, r) {
+    if (r) setInterval(() => void r.update(), 60 * 60 * 1000)
+  },
+})
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
