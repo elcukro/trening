@@ -9,7 +9,7 @@ const ctx = { program, settings: program.default_settings }
 describe('planWindow', () => {
   it('bez nadpisań zwraca czysty plan okna', () => {
     const w = planWindow('2026-09-22', 7, ctx)
-    expect(w.map((d) => d.bike?.workout_id ?? null)).toEqual(['Z2', null, null, 'Z2', 'FTP_TEST', null, null])
+    expect(w.map((d) => d.bike?.workout_id ?? null)).toEqual(['Z2', 'Z2', null, 'Z2', 'FTP_TEST', null, null])
   })
   it('przeniesienie jazdy przenosi ją w oknie wysyłki (piątek → czwartek)', () => {
     const ov: PlanOverride[] = [{ id: '1', date: '2026-09-25', kind: 'move', payload: { to: '2026-09-24', what: 'bike' } }]

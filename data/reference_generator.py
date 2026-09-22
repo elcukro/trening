@@ -17,7 +17,7 @@ import json, datetime as dt, os, copy
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 D = dt.date
-PROGRAM_VERSION = "2026.09.22-2"
+PROGRAM_VERSION = "2026.09.22-3"
 
 DEFAULT_SETTINGS = {
     "program_start": "2026-09-14",          # poniedziałek tygodnia 1
@@ -355,8 +355,8 @@ WEEKS = {
        notes="Tydzień przygotowawczy: zamów/zamontuj napęd, ustaw aplikację i profil, sprawdź wagę startową."),
  1:  W(phase="PREP", type="prep", tue=("Z2", 60), wed=("REST", 0), thu=("Z2", 45), fri=("REST", 0), sat=("LONG", 120), sun=("Z2", 90), gym_stage="intro",
        notes="Wyjście ze zmęczenia po Great Escape. Jedź lekko, siłownia celowo lekko (RIR 4)."),
- 2:  W(phase="PREP", type="test", tue=("Z2", 45), wed=("REST", 0), thu=("REST", 0), fri=("Z2", 50), sat=("FTP_TEST", None), sun=("REST", 0), gym_stage="intro", gym_only="A",
-       notes="Tydzień resetu przed fazą: Sesja A lekko (RIR 4, o serię mniej), w sobotę test FTP 20 min. Zważ się rano na czczo trzy razy – to punkt zero redukcji. Skalibruj miernik (zeruj offset przed każdą jazdą). Jeśli nogi ciężkie – test w niedzielę i faza tydzień później."),
+ 2:  W(phase="PREP", type="test", tue=("Z2", 45), wed=("Z2", 60), thu=("REST", 0), fri=("Z2", 50), sat=("FTP_TEST", None), sun=("REST", 0), gym_stage=None,
+       notes="Tydzień resetu przed fazą: trzy spokojne jazdy (wt/śr/pt, wszystkie w Z2 – żadnych interwałów), bez siłowni, w sobotę test FTP 20 min. Zważ się rano na czczo trzy razy – to punkt zero redukcji. Skalibruj miernik (zeruj offset przed każdą jazdą). Jeśli nogi ciężkie – test w niedzielę i faza tydzień później."),
  # Blok 5 jazd bez siłowni (28.09–15.11): korzystamy z ostatnich tygodni, w których da się jeździć na zewnątrz.
  # Rytm: pn wolne, wt Z2, śr akcent, czw wolne, pt Z2 lekko, sb długa, nd Z2. Siłownia wraca w tygodniu 10 (16.11).
  3:  W(phase="I", type="build", tue=("Z2_CADENCE", 60), wed=("SS_2x12", None), thu=("REST", 0), fri=("Z2", 60), sat=("LONG", 120), sun=("Z2", 75), gym_stage=None,

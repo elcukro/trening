@@ -1,5 +1,5 @@
 {
- "version": "2026.09.22-2",
+ "version": "2026.09.22-3",
  "settings": {
   "program_start": "2026-09-14",
   "trip_start": "2027-09-11",
@@ -500,7 +500,7 @@
     "post_workout": null
    },
    "flags": [],
-   "week_notes": "Tydzień resetu przed fazą: Sesja A lekko (RIR 4, o serię mniej), w sobotę test FTP 20 min. Zważ się rano na czczo trzy razy – to punkt zero redukcji. Skalibruj miernik (zeruj offset przed każdą jazdą). Jeśli nogi ciężkie – test w niedzielę i faza tydzień później."
+   "week_notes": "Tydzień resetu przed fazą: trzy spokojne jazdy (wt/śr/pt, wszystkie w Z2 – żadnych interwałów), bez siłowni, w sobotę test FTP 20 min. Zważ się rano na czczo trzy razy – to punkt zero redukcji. Skalibruj miernik (zeruj offset przed każdą jazdą). Jeśli nogi ciężkie – test w niedzielę i faza tydzień później."
   },
   {
    "date": "2026-09-22",
@@ -535,111 +535,24 @@
    "week": 2,
    "phase": "PREP",
    "week_type": "test",
-   "day_type": "gym",
-   "bike": null,
-   "gym": {
-    "session": "A",
-    "name": "Sesja A – Siła nóg (ciężka)",
-    "est_min": 70,
-    "items": [
-     {
-      "exercise": "mobility_circuit",
-      "rx": {
-       "sets": 2,
-       "reps": "obwód",
-       "note": "5 min rowerek/wioślarz luźno + 2 rundy obwodu. Serie wstępne do 1. ćwiczenia: pusta sztanga×8 → 50%×5 → 70%×3 → 85%×1–2."
-      }
-     },
-     {
-      "exercise": "back_squat",
-      "rx": {
-       "sets": 2,
-       "reps": 10,
-       "rir": 4,
-       "rest_s": 120
-      },
-      "block": "1"
-     },
-     {
-      "exercise": "rdl",
-      "rx": {
-       "sets": 2,
-       "reps": 10,
-       "rir": 4,
-       "rest_s": 120
-      },
-      "block": "2"
-     },
-     {
-      "exercise": "db_row",
-      "rx": {
-       "sets": 2,
-       "reps": 10,
-       "rir": 2,
-       "rest_s": 60,
-       "note": "superseria 3A/3B"
-      },
-      "block": "3A"
-     },
-     {
-      "exercise": "calf_raise",
-      "rx": {
-       "sets": 2,
-       "reps": 15,
-       "rir": 2,
-       "rest_s": 60,
-       "note": "pauza 1 s na górze"
-      },
-      "block": "3B"
-     },
-     {
-      "exercise": "pallof_press",
-      "rx": {
-       "sets": 2,
-       "reps": 10,
-       "rest_s": 30
-      },
-      "block": "4",
-      "circuit": "core_A"
-     },
-     {
-      "exercise": "dead_bug",
-      "rx": {
-       "sets": 2,
-       "reps": 8,
-       "rest_s": 30
-      },
-      "block": "4",
-      "circuit": "core_A"
-     },
-     {
-      "exercise": "side_plank",
-      "rx": {
-       "sets": 2,
-       "reps": "30 s",
-       "rest_s": 30
-      },
-      "block": "4",
-      "circuit": "core_A"
-     },
-     {
-      "exercise": "cooldown_stretch",
-      "rx": {
-       "sets": 1,
-       "reps": "4–5 min"
-      }
-     }
-    ]
+   "day_type": "easy",
+   "bike": {
+    "workout_id": "Z2",
+    "name": "Baza tlenowa Z2",
+    "duration_min": 60,
+    "bike": "Dogma na suchą szosę > 5 °C; Checkpoint na mokro, sól, szuter",
+    "fallback_workout_id": null
    },
+   "gym": null,
    "nutrition": {
-    "energy": "deficit_500",
-    "label": "Dzień lekki: deficyt ok. 500 kcal",
+    "energy": "deficit_300",
+    "label": "Deficyt ok. 300 kcal",
     "protein_g_per_kg": 1.8,
     "on_bike_carbs_g_per_h": [
-     0,
-     0
+     30,
+     40
     ],
-    "post_workout": null
+    "post_workout": "30–40 g białka + węglowodany w ciągu 1–2 h"
    },
    "flags": []
   },
