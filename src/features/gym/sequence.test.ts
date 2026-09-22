@@ -7,7 +7,7 @@ const program = parseProgram(programJson)
 
 describe('kolejność serii w sesji', () => {
   it('Sesja A: superseria 3A/3B i obwód core przeplatają się', () => {
-    const a = program.gym_prescriptions['3']!.wed!
+    const a = program.gym_prescriptions['11']!.wed!
     const seq = buildSequence(a)
     const names = seq.map((s) => `${a.items[s.itemIndex]!.exercise}#${s.setNo}`)
     expect(names.slice(0, 4)).toEqual(['mobility_circuit#1', 'mobility_circuit#2', 'back_squat#1', 'back_squat#2'])

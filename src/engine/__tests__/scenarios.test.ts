@@ -39,12 +39,18 @@ describe('scenariusze ze specyfikacji §10', () => {
     expect(t.nutrition.energy).toBe('maintenance')
     expect(t.warnings.some((w) => w.rule === 'LTHR')).toBe(true)
   })
-  it('1b. Faza I: wt Z2, śr Sesja A, czw akcent, pt Sesja B, sb długa, nd wolne', () => {
+  it('1b. Blok 5 jazd (tyg. 3): wt Z2, śr akcent, czw wolne, pt Z2, sb długa, nd Z2, bez siłowni', () => {
     const ids = ['2026-09-28', '2026-09-29', '2026-09-30', '2026-10-01', '2026-10-02', '2026-10-03', '2026-10-04'].map((x) => getDayPlan(x, base)!)
-    expect(ids.map((d) => d.bike?.workout_id ?? null)).toEqual([null, 'Z2_CADENCE', null, 'SS_2x12', null, 'LONG', null])
-    expect(ids.map((d) => d.gym?.session ?? null)).toEqual([null, null, 'A', null, 'B', null, null])
-    expect(ids[3]!.day_type).toBe('key')
-    expect(ids[0]!.week_notes).toContain('3 jazdy + 2 siłownie')
+    expect(ids.map((d) => d.bike?.workout_id ?? null)).toEqual([null, 'Z2_CADENCE', 'SS_2x12', null, 'Z2', 'LONG', 'Z2'])
+    expect(ids.map((d) => d.gym?.session ?? null)).toEqual([null, null, null, null, null, null, null])
+    expect(ids[2]!.day_type).toBe('key')
+    expect(ids[0]!.week_notes).toContain('5 jazd bez siłowni')
+  })
+
+  it('1c. Siłownia wraca w tygodniu 10 (16.11), plan schodzi do 3 jazd', () => {
+    const ids = ['2026-11-17', '2026-11-18', '2026-11-19', '2026-11-20'].map((x) => getDayPlan(x, base)!)
+    expect(ids.map((d) => d.bike?.workout_id ?? null)).toEqual(['Z2', null, 'Z2', null])
+    expect(ids.map((d) => d.gym?.session ?? null)).toEqual([null, 'A', null, 'B'])
   })
 
   it('2. 18.09.2026: brak jazdy, Sesja B step-up 2×8 RIR 4, deficyt 500', () => {
@@ -128,10 +134,10 @@ describe('scenariusze ze specyfikacji §10', () => {
     const z = computeZones(program.hr_zones_lthr_fraction, 160)
     expect(z.find((x) => x.id === 'Z2')).toMatchObject({ low_bpm: 130, high_bpm: 142 })
     expect(z.find((x) => x.id === 'SS')).toMatchObject({ low_bpm: 147, high_bpm: 154 })
-    const d160 = getDayPlan('2026-10-01', withLthr(160))!
+    const d160 = getDayPlan('2026-09-30', withLthr(160))!
     const ss = d160.workout!.steps.find((s) => s.zone === 'SS')!
     expect(ss.bpm).toEqual([147, 154])
-    const d165 = getDayPlan('2026-10-01', withLthr(165))!
+    const d165 = getDayPlan('2026-09-30', withLthr(165))!
     expect(d165.workout!.steps.find((s) => s.zone === 'SS')!.bpm).toEqual([152, 158])
     expect(d165.warnings).toHaveLength(0)
     expect(d165.zones).not.toBeNull()

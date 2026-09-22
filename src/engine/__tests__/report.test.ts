@@ -16,8 +16,7 @@ describe('rangeReport', () => {
       program,
       logs: [
         { date: '2026-09-29', kind: 'bike', status: 'done', duration_min: 80 },
-        { date: '2026-09-30', kind: 'gym', status: 'done' },
-        { date: '2026-10-01', kind: 'bike', status: 'skipped' },
+        { date: '2026-09-30', kind: 'bike', status: 'skipped' },
         { date: '2026-09-28', kind: 'bike', status: 'done', duration_min: 40 }, // poniedziałek wolny – jazda dodatkowa
       ],
       tss: new Map([
@@ -27,22 +26,22 @@ describe('rangeReport', () => {
       scores: new Map([['2026-09-29', 90]]),
     })
     expect(r.days.length).toBe(7)
-    expect(r.bike_planned).toBe(3)
+    expect(r.bike_planned).toBe(5)
     expect(r.bike_done).toBe(1)
-    expect(r.gym_planned).toBe(2)
-    expect(r.gym_done).toBe(1)
+    expect(r.gym_planned).toBe(0)
+    expect(r.gym_done).toBe(0)
     expect(r.done_min).toBe(120)
     expect(r.done_tss).toBe(75)
     expect(r.planned_tss).toBeGreaterThan(100)
     expect(r.score).toBe(90)
     expect(r.extra_rides).toBe(1)
-    const thu = r.days.find((d) => d.date === '2026-10-01')!
-    expect(thu.key).toBe(true)
-    expect(thu.bike).toBe('skipped')
-    expect(r.days.find((d) => d.date === '2026-10-02')!.gym).toBe('missed')
+    const wed = r.days.find((d) => d.date === '2026-09-30')!
+    expect(wed.key).toBe(true)
+    expect(wed.bike).toBe('skipped')
+    expect(r.days.find((d) => d.date === '2026-10-01')!.bike).toBe('rest') // czwartek wolny
+    expect(r.days.find((d) => d.date === '2026-10-02')!.bike).toBe('missed') // piątek bez wpisu
     expect(r.days.find((d) => d.date === '2026-10-03')!.bike).toBe('upcoming')
-    expect(r.days.find((d) => d.date === '2026-10-04')!.bike).toBe('rest')
-    expect(r.issues.map((d) => d.date)).toEqual(['2026-10-01', '2026-10-02'])
+    expect(r.issues.map((d) => d.date)).toEqual(['2026-09-30', '2026-10-02'])
   })
 })
 

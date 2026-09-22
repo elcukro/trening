@@ -43,7 +43,7 @@ test('wynik testu FTP: strefy od następnego dnia (R11)', async ({ page }) => {
   // ten sam dzień – jeszcze RPE
   await expect(page.getByText(/Zrób test i wpisz LTHR/)).toBeVisible()
   // następny akcent – bpm
-  await page.goto('/?today=2026-10-01')
+  await page.goto('/?today=2026-09-30')
   await expect(page.getByText('147–154 bpm').first()).toBeVisible()
   await page.goto('/postep?today=2026-10-01')
   await expect(page.getByText('LTHR bpm')).toBeVisible()
@@ -105,7 +105,7 @@ test('kalkulator podjazdu i konto bez konfiguracji', async ({ page }) => {
 })
 
 test('Wahoo: przycisk wysyłki na dniu z treningiem, sekcja w Integracjach', async ({ page }) => {
-  await page.goto('/?today=2026-10-01')
+  await page.goto('/?today=2026-09-30')
   await expect(page.getByRole('button', { name: /Wyślij na Wahoo/ })).toBeVisible()
   // stan na Bolcie: lokalnie nic nie wysłano – na karcie i w odprawie
   await expect(page.getByTestId('bolt-state')).toHaveText('nie wysłano na Bolta')

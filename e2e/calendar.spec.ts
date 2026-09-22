@@ -65,9 +65,9 @@ test.describe('kalendarz na komputerze', () => {
   })
 
   test('przeciągnięcie jazdy na dzień wolny i cofnięcie', async ({ page }) => {
-    await page.goto('/kalendarz/2026-10?today=2026-09-29')
-    const src = page.getByRole('link', { name: /czwartek 2026-10-01/ })
-    const dst = page.getByRole('link', { name: /poniedziałek 2026-10-05/ })
+    await page.goto('/kalendarz/2026-10?today=2026-10-05')
+    const src = page.getByRole('link', { name: /środa 2026-10-07/ })
+    const dst = page.getByRole('link', { name: /czwartek 2026-10-08/ })
     await expect(src).toContainText('Sweet spot')
     const a = (await src.boundingBox())!
     const b = (await dst.boundingBox())!
@@ -82,15 +82,15 @@ test.describe('kalendarz na komputerze', () => {
     await expect(src).not.toContainText('Sweet spot')
     await page.screenshot({ path: 'test-results/calendar-move.png', fullPage: true })
     // cofnięcie przywraca plan
-    await page.getByRole('button', { name: /1\.10 → 5\.10/ }).click()
+    await page.getByRole('button', { name: /7\.10 → 8\.10/ }).click()
     await expect(src).toContainText('Sweet spot')
     await expect(dst).not.toContainText('Sweet spot')
   })
 
   test('sobota (zajęta) nie jest celem przeniesienia', async ({ page }) => {
-    await page.goto('/kalendarz/2026-10?today=2026-09-29')
-    const src = page.getByRole('link', { name: /czwartek 2026-10-01/ })
-    const busy = page.getByRole('link', { name: /sobota 2026-10-03/ })
+    await page.goto('/kalendarz/2026-10?today=2026-10-05')
+    const src = page.getByRole('link', { name: /środa 2026-10-07/ })
+    const busy = page.getByRole('link', { name: /sobota 2026-10-10/ })
     const a = (await src.boundingBox())!
     const b = (await busy.boundingBox())!
     await page.mouse.move(a.x + a.width / 2, a.y + a.height / 2)

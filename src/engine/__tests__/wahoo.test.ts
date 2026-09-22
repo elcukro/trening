@@ -147,10 +147,10 @@ describe('cele mocy (miernik)', () => {
 })
 
 describe('dni bez jazdy w oknie wysyłki (nowy plan)', () => {
-  it('w fazie I środa, piątek i niedziela nie mają jazdy do wysłania', async () => {
+  it('w bloku 5 jazd bez jazdy są tylko poniedziałek i czwartek', async () => {
     const { getDayPlan } = await import('../plan')
     const ctx = { program, settings: program.default_settings }
     const empties = ['2026-09-28', '2026-09-29', '2026-09-30', '2026-10-01', '2026-10-02', '2026-10-03', '2026-10-04'].filter((d) => !isPushable(getDayPlan(d, ctx)?.bike?.workout_id))
-    expect(empties).toEqual(['2026-09-28', '2026-09-30', '2026-10-02', '2026-10-04'])
+    expect(empties).toEqual(['2026-09-28', '2026-10-01'])
   })
 })

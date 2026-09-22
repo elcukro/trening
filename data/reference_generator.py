@@ -17,7 +17,7 @@ import json, datetime as dt, os, copy
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 D = dt.date
-PROGRAM_VERSION = "2026.09.22-1"
+PROGRAM_VERSION = "2026.09.22-2"
 
 DEFAULT_SETTINGS = {
     "program_start": "2026-09-14",          # poniedziałek tygodnia 1
@@ -357,19 +357,24 @@ WEEKS = {
        notes="Wyjście ze zmęczenia po Great Escape. Jedź lekko, siłownia celowo lekko (RIR 4)."),
  2:  W(phase="PREP", type="test", tue=("Z2", 45), wed=("REST", 0), thu=("REST", 0), fri=("Z2", 50), sat=("FTP_TEST", None), sun=("REST", 0), gym_stage="intro", gym_only="A",
        notes="Tydzień resetu przed fazą: Sesja A lekko (RIR 4, o serię mniej), w sobotę test FTP 20 min. Zważ się rano na czczo trzy razy – to punkt zero redukcji. Skalibruj miernik (zeruj offset przed każdą jazdą). Jeśli nogi ciężkie – test w niedzielę i faza tydzień później."),
- 3:  W(phase="I", type="build", tue=("Z2_CADENCE", 75), wed=("REST", 0), thu=("SS_2x12", None), fri=("REST", 0), sat=("LONG", 120), sun=("REST", 0), gym_stage="I_a",
-       notes="Start fazy: 3 jazdy + 2 siłownie. Z2 ma być nudne – rozmowa pełnymi zdaniami. Czwartek to jedyna jazda, na której wolno się zmęczyć. Kadencja na każdym podjeździe min. 75 rpm (38×46). Minimalna jazda 40 min Z2 liczy się jako wykonana."),
- 4:  W(phase="I", type="build", tue=("Z2_CADENCE", 75), wed=("REST", 0), thu=("SS_2x15", None), fri=("REST", 0), sat=("LONG", 135), sun=("REST", 0), gym_stage="I_a"),
- 5:  W(phase="I", type="build", tue=("Z2_CADENCE", 75), wed=("REST", 0), thu=("SS_2x15", None), fri=("REST", 0), sat=("LONG", 150), sun=("REST", 0), gym_stage="I_a",
-       notes="Do 18.10 kup lampę przednią ≥ 800 lm i tył z radarem – od zmiany czasu (25.10) wtorki i czwartki jedziesz po ciemku."),
- 6:  W(phase="I", type="deload", tue=("Z2", 60), wed=("REST", 0), thu=("Z2", 60), fri=("REST", 0), sat=("LONG", 90), sun=("REST", 0), gym_stage="I_a"),
- 7:  W(phase="I", type="build", tue=("Z2_CADENCE", 75), wed=("REST", 0), thu=("SS_3x12", None), fri=("REST", 0), sat=("LONG", 165), sun=("REST", 0), gym_stage="I_b"),
- 8:  W(phase="I", type="build", tue=("Z2_FORCE", 75), wed=("REST", 0), thu=("SS_2x20", None), fri=("REST", 0), sat=("LONG", 180), sun=("REST", 0), gym_stage="I_b"),
- 9:  W(phase="I", type="build", tue=("Z2", 90), wed=("REST", 0), thu=("SS_3x15", None), fri=("REST", 0), sat=("LONG", 195), sun=("REST", 0), gym_stage="I_b"),
- 10: W(phase="I", type="deload", tue=("Z2", 60), wed=("REST", 0), thu=("Z2", 60), fri=("REST", 0), sat=("LONG", 120), sun=("REST", 0), gym_stage="I_b",
+ # Blok 5 jazd bez siłowni (28.09–15.11): korzystamy z ostatnich tygodni, w których da się jeździć na zewnątrz.
+ # Rytm: pn wolne, wt Z2, śr akcent, czw wolne, pt Z2 lekko, sb długa, nd Z2. Siłownia wraca w tygodniu 10 (16.11).
+ 3:  W(phase="I", type="build", tue=("Z2_CADENCE", 60), wed=("SS_2x12", None), thu=("REST", 0), fri=("Z2", 60), sat=("LONG", 120), sun=("Z2", 75), gym_stage=None,
+       notes="Start bloku 5 jazd bez siłowni – jeździmy, póki pogoda pozwala (do 15.11). Jedyny dzień, na którym wolno się zmęczyć, to środa; wtorek, piątek i niedziela mają być nudne (rozmowa pełnymi zdaniami). Kadencja na każdym podjeździe min. 75 rpm (38×46). Minimalna jazda 40 min Z2 liczy się jako wykonana."),
+ 4:  W(phase="I", type="build", tue=("Z2_CADENCE", 60), wed=("SS_2x15", None), thu=("REST", 0), fri=("Z2", 60), sat=("LONG", 135), sun=("Z2", 90), gym_stage=None),
+ 5:  W(phase="I", type="build", tue=("Z2_FORCE", 75), wed=("SS_2x15", None), thu=("REST", 0), fri=("Z2", 60), sat=("LONG", 150), sun=("Z2", 90), gym_stage=None,
+       notes="Do 18.10 kup lampę przednią ≥ 800 lm i tył z radarem – od zmiany czasu (25.10) wtorek, środa i piątek to jazda po ciemku."),
+ 6:  W(phase="I", type="deload", tue=("Z2", 60), wed=("Z2", 60), thu=("REST", 0), fri=("REST", 0), sat=("LONG", 90), sun=("Z2", 60), gym_stage=None,
+       notes="Tydzień lżejszy: cztery jazdy, żadnych interwałów. Po nim wracamy do akcentów w środy."),
+ 7:  W(phase="I", type="build", tue=("Z2_CADENCE", 60), wed=("SS_3x12", None), thu=("REST", 0), fri=("Z2", 60), sat=("LONG", 150), sun=("Z2", 90), gym_stage=None),
+ 8:  W(phase="I", type="build", tue=("Z2_FORCE", 75), wed=("SS_2x20", None), thu=("REST", 0), fri=("Z2", 60), sat=("LONG", 165), sun=("Z2", 90), gym_stage=None),
+ 9:  W(phase="I", type="build", tue=("Z2_CADENCE", 60), wed=("SS_3x15", None), thu=("REST", 0), fri=("Z2", 60), sat=("LONG", 165), sun=("Z2", 90), gym_stage=None,
+       notes="Ostatni tydzień bloku 5 jazd. Od 16.11 wracają dwie sesje siłowni i plan schodzi do 3 jazd – zimą i tak nie wyjedziesz pięć razy w tygodniu."),
+ 10: W(phase="I", type="deload", tue=("Z2", 60), wed=("REST", 0), thu=("Z2", 60), fri=("REST", 0), sat=("LONG", 120), sun=("REST", 0), gym_stage="intro",
        notes="Przed zimą: pełne błotniki SKS Bluemels 45, odzież (merino, rękawice trójpalczaste, ochraniacze na buty), ciśnienie w oponach −0,3 bara."),
- 11: W(phase="I", type="build", tue=("Z2", 75), wed=("REST", 0), thu=("SS_3x15", None), fri=("REST", 0), sat=("LONG", 180), sun=("REST", 0), gym_stage="transition"),
- 12: W(phase="I", type="build", tue=("Z2_FORCE", 75), wed=("REST", 0), thu=("SS_2x20", None), fri=("REST", 0), sat=("LONG", 180), sun=("REST", 0), gym_stage="II_a"),
+ 11: W(phase="I", type="build", tue=("Z2", 75), wed=("REST", 0), thu=("SS_3x15", None), fri=("REST", 0), sat=("LONG", 180), sun=("REST", 0), gym_stage="I_a",
+       notes="Powrót do siły po siedmiu tygodniach przerwy: zacznij o 20 % lżej niż we wrześniu, RIR 4. Ciężary dobiera aplikacja z tego, co wpiszesz."),
+ 12: W(phase="I", type="build", tue=("Z2_FORCE", 75), wed=("REST", 0), thu=("SS_2x20", None), fri=("REST", 0), sat=("LONG", 180), sun=("REST", 0), gym_stage="I_b"),
  13: W(phase="I", type="build", tue=("Z2", 90), wed=("REST", 0), thu=("SS_3x20", None), fri=("REST", 0), sat=("LONG", 210), sun=("REST", 0), gym_stage="II_a",
        notes="Największy tydzień fazy. Jeśli pogoda go zabierze, przenieś 3:30 na tydzień wcześniej i potraktuj ten jako rozładowanie. Nie odrabiaj straconych godzin."),
  14: W(phase="I", type="test", tue=("Z2", 75), wed=("REST", 0), thu=("Z2", 60), fri=("REST", 0), sat=("FTP_TEST", None), sun=("REST", 0), gym_stage="II_a",

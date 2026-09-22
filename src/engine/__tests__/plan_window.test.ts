@@ -18,8 +18,8 @@ describe('planWindow', () => {
     expect(w.find((d) => d.date === '2026-09-25')?.bike).toBeNull()
   })
   it('widzi drugi koniec przeniesienia spoza okna (margines 40 dni)', () => {
-    // akcent z 1.10 przeniesiony na 26.10 – okno zaczyna się dopiero 20.10
-    const ov: PlanOverride[] = [{ id: '1', date: '2026-10-01', kind: 'move', payload: { to: '2026-10-26', what: 'bike' } }]
+    // akcent ze środy 30.09 przeniesiony na 26.10 – okno zaczyna się dopiero 20.10
+    const ov: PlanOverride[] = [{ id: '1', date: '2026-09-30', kind: 'move', payload: { to: '2026-10-26', what: 'bike' } }]
     const w = planWindow('2026-10-20', 7, ctx, undefined, ov)
     expect(w.find((d) => d.date === '2026-10-26')?.bike?.workout_id).toMatch(/^SS_/)
   })

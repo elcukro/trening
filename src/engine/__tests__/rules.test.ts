@@ -99,16 +99,17 @@ describe('R5 – choroba', () => {
 
 describe('R6 – słaby check-in', () => {
   it('suma ocen ≤ 6 obniża akcent do Z2 60 i sesję o serię', () => {
-    const w = week('2026-10-01', 2, 2)
-    const checkins: CheckinLike[] = [{ date: '2026-10-01', sleep: 2, legs: 2, motivation: 2 }]
-    const warn = warningsFor('2026-10-01', w, rules({ today: '2026-10-01', checkins })).find((x) => x.rule === 'R6')!
+    const w = week('2026-09-30', 2, 2) // akcent jest w środę (blok 5 jazd)
+    const checkins: CheckinLike[] = [{ date: '2026-09-30', sleep: 2, legs: 2, motivation: 2 }]
+    const warn = warningsFor('2026-09-30', w, rules({ today: '2026-09-30', checkins })).find((x) => x.rule === 'R6')!
     expect(warn.severity).toBe('warn')
     expect(warn.actions![0]!.kind).toBe('downgrade')
-    const [after] = applyOverrides([w.find((d) => d.date === '2026-10-01')!], [ov('2026-10-01', 'downgrade')], program)
+    const [after] = applyOverrides([w.find((d) => d.date === '2026-09-30')!], [ov('2026-09-30', 'downgrade')], program)
     expect(after!.bike?.workout_id).toBe('Z2')
     expect(after!.bike?.duration_min).toBe(60)
-    const [gym] = applyOverrides([w.find((d) => d.date === '2026-09-30')!], [ov('2026-09-30', 'downgrade')], program)
-    expect(rx(gym, 'back_squat')).toMatchObject({ sets: 2, rir: 4 }) // z 3×10 RIR 3
+    // siłownia wraca dopiero 16.11 – obniżenie sesji sprawdzamy na środzie tygodnia 11
+    const [gym] = applyOverrides([ALL.find((d) => d.date === '2026-11-25')!], [ov('2026-11-25', 'downgrade')], program)
+    expect(rx(gym, 'back_squat')).toMatchObject({ sets: 3, rir: 4 }) // z 4×8 RIR 3
   })
   it('tętno spoczynkowe +7 przez dwa dni z rzędu', () => {
     const base: CheckinLike[] = [
@@ -124,7 +125,7 @@ describe('R6 – słaby check-in', () => {
     expect(restingHrAlarm(base.slice(0, 2), '2026-09-11')).toBe(false)
   })
   it('lżejsza sesja zdejmuje serię i podnosi RIR, także w zakresach', () => {
-    const s = ALL.find((d) => d.date === '2026-11-04')!.gym!
+    const s = ALL.find((d) => d.date === '2026-11-25')!.gym!
     const light = lighterSession(s)
     const before = s.items.find((i) => i.exercise === 'back_squat')!.rx
     const after = light.items.find((i) => i.exercise === 'back_squat')!.rx
@@ -184,12 +185,13 @@ describe('R15 – zamiana dni', () => {
 
 describe('R7, R12, R13', () => {
   it('dwa nieudane akcenty sugerują mniej serii', () => {
-    const w = week('2026-11-06', 14, 2) // R7 patrzy dwa tygodnie wstecz; akcenty w czwartki, ostrzeżenie w dzień siłowni
+    // R7 ostrzega w dzień siłowni, a ta wraca dopiero 16.11 – bierzemy piątek tygodnia 12 i akcenty z czwartków
+    const w = week('2026-12-04', 14, 2)
     const logs: LogLike[] = [
-      { date: '2026-10-29', kind: 'bike', status: 'modified', rpe: 9 },
-      { date: '2026-11-05', kind: 'bike', status: 'skipped' },
+      { date: '2026-11-26', kind: 'bike', status: 'modified', rpe: 9 },
+      { date: '2026-12-03', kind: 'bike', status: 'skipped' },
     ]
-    const warn = warningsFor('2026-11-06', w, rules({ today: '2026-11-06', logs })).find((x) => x.rule === 'R7')
+    const warn = warningsFor('2026-12-04', w, rules({ today: '2026-12-04', logs })).find((x) => x.rule === 'R7')
     expect(warn?.message).toContain('o jedną serię mniej')
   })
   it('tydzień rozładowania i upał mają komunikaty', () => {

@@ -32,11 +32,11 @@ describe('pmcSeries', () => {
     expect(s[1]!.load).toBe(60)
     expect(s[1]!.actual).toBe(60)
     expect(s[2]!.load).toBe(0) // dzień bez jazdy w przeszłości
-    const future = s.find((p) => p.date === '2026-10-01')!
+    const future = s.find((p) => p.date === '2026-09-30')!
     expect(future.future).toBe(true)
     expect(future.actual).toBeNull()
     expect(future.load).toBe(future.planned)
-    expect(future.planned).toBeGreaterThan(0) // czwartek – sweet spot
+    expect(future.planned).toBeGreaterThan(0) // środa – sweet spot
     expect(s[3]!.atl).toBeGreaterThan(s[3]!.ctl)
     expect(s[0]!.tsb).toBe(0)
     expect(s[2]!.tsb).toBeLessThan(0)

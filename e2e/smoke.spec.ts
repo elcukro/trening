@@ -1,17 +1,18 @@
 import { expect, test } from '@playwright/test'
 
-test('Dziś 01.10.2026: tydzień 3, akcent sweet spot w czwartek; 30.09 Sesja A', async ({ page }) => {
-  await page.goto('/?today=2026-10-01')
+test('Dziś 30.09.2026: tydzień 3, akcent sweet spot w środę; 25.11 Sesja A po powrocie siłowni', async ({ page }) => {
+  await page.goto('/?today=2026-09-30')
   await expect(page.getByRole('heading', { name: 'Tydzień 3' })).toBeVisible()
   await expect(page.getByText('Sweet spot 2×12 min')).toBeVisible()
   await expect(page.getByText('Dzień ciężki: bez deficytu, paliwo na trening')).toBeVisible()
-  await expect(page.getByText('345 dni do wyjazdu')).toBeVisible()
+  await expect(page.getByText('346 dni do wyjazdu')).toBeVisible()
   await expect(page.getByText(/Zrób test i wpisz LTHR/)).toBeVisible()
-  await page.screenshot({ path: 'test-results/today-2026-10-01.png', fullPage: true })
-  await page.goto('/?today=2026-09-30')
+  await page.screenshot({ path: 'test-results/today-2026-09-30.png', fullPage: true })
+  // w bloku 5 jazd nie ma siłowni – wraca 16.11
+  await page.goto('/?today=2026-11-25')
   await expect(page.getByText('Sesja A – Siła nóg (ciężka)')).toBeVisible()
   await expect(page.getByText('Przysiad ze sztangą na plecach')).toBeVisible()
-  await expect(page.getByText('3×10 · RIR 3 · 120 s').first()).toBeVisible()
+  await expect(page.getByText('4×8 · RIR 3 · 120 s').first()).toBeVisible()
   await expect(page.getByText('Dzień lekki: deficyt ok. 500 kcal')).toBeVisible()
 })
 
@@ -36,7 +37,7 @@ test('Tydzień: nawigacja i suma godzin', async ({ page }) => {
 })
 
 test('Przegląd tygodnia i miesiąca: podsumowanie, co poszło nie tak, przyszły tydzień', async ({ page }) => {
-  await page.goto('/?today=2026-10-01')
+  await page.goto('/?today=2026-09-30')
   await page.getByRole('button', { name: '✕ Pominięte' }).click()
   await page.getByRole('button', { name: 'Zapisz' }).click()
   await expect(page.getByText('Pominięte', { exact: true })).toBeVisible()
@@ -64,11 +65,11 @@ test('Odprawa przed jazdą: ubiór i żywienie bez prognozy, ustawienia pogody',
 })
 
 test('Ustawienia: LTHR 160 daje bpm na ekranie Dziś', async ({ page }) => {
-  await page.goto('/wiecej/ustawienia?today=2026-10-01')
+  await page.goto('/wiecej/ustawienia?today=2026-09-30')
   await page.getByLabel('LTHR (bpm)').fill('160')
   await page.getByRole('button', { name: 'Zapisz' }).click()
   await expect(page.getByRole('button', { name: 'Zapisano ✓' })).toBeVisible()
-  await page.goto('/?today=2026-10-01')
+  await page.goto('/?today=2026-09-30')
   await expect(page.getByText('Sweet spot 2×12 min')).toBeVisible()
   await expect(page.getByText('147–154 bpm').first()).toBeVisible()
   await expect(page.getByText(/Zrób test i wpisz LTHR/)).toHaveCount(0)
