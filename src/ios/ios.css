@@ -1,0 +1,444 @@
+/*
+ * Warstwa wyglądu „jak natywny iOS” – tylko dla interfejsu z `src/ios`.
+ * Kolory i skala pisma odwzorowują systemowe (System Grouped Background, Label,
+ * Separator, SF Pro). Motyw ciemny steruje klasa `dark` na <html>, tak jak w reszcie aplikacji.
+ */
+
+.ios {
+  --bg: #f2f2f7;
+  --bg-elevated: #ffffff;
+  --card: #ffffff;
+  --card-2: #f2f2f7;
+  --label: #000000;
+  --label-2: rgb(60 60 67 / 0.6);
+  --label-3: rgb(60 60 67 / 0.3);
+  --separator: rgb(60 60 67 / 0.18);
+  --fill: rgb(120 120 128 / 0.12);
+  --fill-2: rgb(120 120 128 / 0.16);
+  --blue: #007aff;
+  --green: #34c759;
+  --red: #ff3b30;
+  --orange: #ff9500;
+  --yellow: #ffcc00;
+  --purple: #af52de;
+  --teal: #30b0c7;
+  --indigo: #5856d6;
+  --pink: #ff2d55;
+  --bar: rgb(249 249 249 / 0.82);
+  --shadow: 0 1px 3px rgb(0 0 0 / 0.06);
+
+  background: var(--bg);
+  color: var(--label);
+  -webkit-font-smoothing: antialiased;
+  font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'Segoe UI', Roboto, sans-serif;
+  min-height: 100dvh;
+  /* `anywhere` z globalnego arkusza pozwala złamać nawet „kg” w środku – tu wystarczy łamanie długich słów */
+  overflow-wrap: break-word;
+}
+
+html.dark .ios {
+  --bg: #000000;
+  --bg-elevated: #1c1c1e;
+  --card: #1c1c1e;
+  --card-2: #2c2c2e;
+  --label: #ffffff;
+  --label-2: rgb(235 235 245 / 0.6);
+  --label-3: rgb(235 235 245 / 0.3);
+  --separator: rgb(84 84 88 / 0.65);
+  --fill: rgb(120 120 128 / 0.24);
+  --fill-2: rgb(120 120 128 / 0.32);
+  --blue: #0a84ff;
+  --green: #30d158;
+  --red: #ff453a;
+  --orange: #ff9f0a;
+  --yellow: #ffd60a;
+  --purple: #bf5af2;
+  --teal: #40cbe0;
+  --indigo: #5e5ce6;
+  --pink: #ff375f;
+  --bar: rgb(24 24 26 / 0.8);
+  --shadow: none;
+}
+
+/* ---------------------------------------------------------------- typografia */
+.ios-large-title {
+  font-size: 34px;
+  line-height: 41px;
+  font-weight: 700;
+  letter-spacing: -0.5px;
+}
+.ios-title2 {
+  font-size: 22px;
+  line-height: 28px;
+  font-weight: 700;
+  letter-spacing: -0.4px;
+}
+.ios-title3 {
+  font-size: 20px;
+  line-height: 25px;
+  font-weight: 600;
+  letter-spacing: -0.45px;
+}
+.ios-headline {
+  font-size: 17px;
+  line-height: 22px;
+  font-weight: 600;
+  letter-spacing: -0.43px;
+}
+.ios-body {
+  font-size: 17px;
+  line-height: 22px;
+  letter-spacing: -0.43px;
+}
+.ios-subhead {
+  font-size: 15px;
+  line-height: 20px;
+  letter-spacing: -0.23px;
+}
+.ios-foot {
+  font-size: 13px;
+  line-height: 18px;
+  letter-spacing: -0.08px;
+}
+.ios-caption {
+  font-size: 12px;
+  line-height: 16px;
+}
+.ios-dim {
+  color: var(--label-2);
+}
+.ios-dim-3 {
+  color: var(--label-3);
+}
+.ios-num {
+  font-variant-numeric: tabular-nums;
+}
+
+/* ---------------------------------------------------------------- pasek nawigacji */
+.ios-nav {
+  position: sticky;
+  top: 0;
+  z-index: 30;
+  padding-top: env(safe-area-inset-top, 0px);
+  background: transparent;
+  transition: background-color 0.2s ease;
+}
+.ios-nav[data-scrolled='true'] {
+  background: var(--bar);
+  -webkit-backdrop-filter: saturate(180%) blur(20px);
+  backdrop-filter: saturate(180%) blur(20px);
+  box-shadow: inset 0 -0.5px 0 var(--separator);
+}
+.ios-nav-inner {
+  position: relative;
+  display: flex;
+  align-items: center;
+  height: 44px;
+  padding: 0 8px;
+}
+.ios-nav-title {
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+  max-width: 55%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 17px;
+  font-weight: 600;
+  letter-spacing: -0.43px;
+  opacity: 0;
+  transition: opacity 0.2s ease;
+  pointer-events: none;
+}
+.ios-nav[data-scrolled='true'] .ios-nav-title {
+  opacity: 1;
+}
+.ios-back {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  min-height: 44px;
+  padding-right: 8px;
+  color: var(--blue);
+  font-size: 17px;
+  letter-spacing: -0.43px;
+  background: none;
+  border: 0;
+}
+.ios-nav-action {
+  min-height: 44px;
+  display: inline-flex;
+  align-items: center;
+  padding: 0 8px;
+  color: var(--blue);
+  font-size: 17px;
+  letter-spacing: -0.43px;
+  background: none;
+  border: 0;
+}
+
+/* ---------------------------------------------------------------- listy „inset grouped” */
+.ios-section {
+  margin: 0 0 32px;
+}
+.ios-section-header {
+  padding: 10px 32px 7px 32px;
+  font-size: 13px;
+  line-height: 18px;
+  color: var(--label-2);
+}
+.ios-section-footer {
+  padding: 7px 32px 0 32px;
+  font-size: 13px;
+  line-height: 18px;
+  color: var(--label-2);
+}
+.ios-list {
+  margin: 0 16px;
+  border-radius: 12px;
+  background: var(--card);
+  box-shadow: var(--shadow);
+  overflow: hidden;
+}
+.ios-row {
+  position: relative;
+  display: flex;
+  width: 100%;
+  align-items: center;
+  gap: 12px;
+  min-height: 44px;
+  padding: 11px 16px;
+  text-align: left;
+  color: inherit;
+  background: none;
+  border: 0;
+}
+.ios-row + .ios-row::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 16px;
+  right: 0;
+  height: 0.5px;
+  background: var(--separator);
+}
+.ios-row.ios-row-icon + .ios-row.ios-row-icon::before {
+  left: 60px;
+}
+button.ios-row:active,
+a.ios-row:active {
+  background: var(--fill);
+}
+.ios-icon-tile {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 30px;
+  height: 30px;
+  flex: none;
+  border-radius: 7px;
+  color: #fff;
+}
+
+/* ---------------------------------------------------------------- karty */
+.ios-cell {
+  position: relative;
+}
+.ios-cell + .ios-cell::before,
+.ios-row + .ios-cell::before,
+.ios-cell + .ios-row::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 16px;
+  right: 0;
+  height: 0.5px;
+  background: var(--separator);
+}
+
+.ios-card {
+  margin: 0 16px;
+  border-radius: 16px;
+  background: var(--card);
+  box-shadow: var(--shadow);
+  overflow: hidden;
+}
+
+/* ---------------------------------------------------------------- przyciski */
+.ios-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-height: 50px;
+  padding: 0 20px;
+  border: 0;
+  border-radius: 14px;
+  font-size: 17px;
+  font-weight: 600;
+  letter-spacing: -0.43px;
+  transition: transform 0.12s ease, opacity 0.12s ease;
+}
+.ios-btn:active {
+  transform: scale(0.97);
+  opacity: 0.85;
+}
+.ios-btn:disabled {
+  opacity: 0.4;
+  transform: none;
+}
+.ios-btn-filled {
+  background: var(--blue);
+  color: #fff;
+}
+.ios-btn-tinted {
+  background: color-mix(in srgb, var(--blue) 14%, transparent);
+  color: var(--blue);
+}
+.ios-btn-gray {
+  background: var(--fill);
+  color: var(--label);
+}
+.ios-btn-plain {
+  background: none;
+  color: var(--blue);
+  min-height: 44px;
+}
+.ios-btn-sm {
+  min-height: 34px;
+  border-radius: 10px;
+  font-size: 15px;
+  padding: 0 14px;
+}
+
+/* ---------------------------------------------------------------- segmented control */
+.ios-seg {
+  display: grid;
+  gap: 2px;
+  padding: 2px;
+  border-radius: 9px;
+  background: var(--fill);
+}
+.ios-seg button {
+  min-height: 32px;
+  border: 0;
+  border-radius: 7px;
+  background: none;
+  color: var(--label);
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: -0.08px;
+}
+.ios-seg button[aria-selected='true'] {
+  background: var(--bg-elevated);
+  box-shadow: 0 1px 3px rgb(0 0 0 / 0.12);
+}
+html.dark .ios-seg button[aria-selected='true'] {
+  background: #636366;
+}
+
+/* ---------------------------------------------------------------- pasek zakładek */
+.ios-tabbar {
+  position: fixed;
+  inset: auto 0 0 0;
+  z-index: 40;
+  display: flex;
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+  background: var(--bar);
+  -webkit-backdrop-filter: saturate(180%) blur(20px);
+  backdrop-filter: saturate(180%) blur(20px);
+  box-shadow: inset 0 0.5px 0 var(--separator);
+}
+.ios-tab {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+  min-height: 49px;
+  padding-top: 6px;
+  color: var(--label-2);
+  font-size: 10px;
+  font-weight: 500;
+  letter-spacing: 0.06px;
+}
+.ios-tab[aria-current='page'] {
+  color: var(--blue);
+}
+.ios-pb-tab {
+  padding-bottom: calc(49px + env(safe-area-inset-bottom, 0px) + 24px);
+}
+
+/* ---------------------------------------------------------------- arkusz (sheet) */
+.ios-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 50;
+  background: rgb(0 0 0 / 0.4);
+  animation: ios-fade 0.25s ease;
+}
+.ios-sheet {
+  position: fixed;
+  inset: auto 0 0 0;
+  z-index: 51;
+  max-height: 92dvh;
+  display: flex;
+  flex-direction: column;
+  border-radius: 12px 12px 0 0;
+  background: var(--bg);
+  animation: ios-up 0.3s cubic-bezier(0.32, 0.72, 0, 1);
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+}
+.ios-grabber {
+  width: 36px;
+  height: 5px;
+  border-radius: 3px;
+  background: var(--label-3);
+  margin: 6px auto 0;
+  flex: none;
+}
+@keyframes ios-up {
+  from {
+    transform: translateY(100%);
+  }
+}
+@keyframes ios-fade {
+  from {
+    opacity: 0;
+  }
+}
+
+/* ---------------------------------------------------------------- pola */
+.ios-input {
+  min-height: 44px;
+  border: 0;
+  border-radius: 10px;
+  background: var(--fill);
+  padding: 0 12px;
+  color: var(--label);
+  font-size: 17px;
+  letter-spacing: -0.43px;
+}
+.ios-input-block {
+  width: 100%;
+}
+.ios-input::placeholder {
+  color: var(--label-3);
+}
+.ios-input:focus {
+  outline: 2px solid var(--blue);
+  outline-offset: -1px;
+}
+
+/* ---------------------------------------------------------------- drobiazgi */
+.ios-press {
+  transition: transform 0.12s ease;
+}
+.ios-press:active {
+  transform: scale(0.98);
+}
+.ios-hairline-t {
+  box-shadow: inset 0 0.5px 0 var(--separator);
+}

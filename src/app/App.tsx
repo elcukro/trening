@@ -25,8 +25,10 @@ import { addDays, diffDays } from '@/engine/dates'
 import { days as daysLabel } from '@/lib/format'
 import { PHASE_COLOR, PHASE_SHORT } from '@/lib/labels'
 import type { PhaseId } from '@/engine/types'
+import { FULL_ESCAPE, useUiMode } from '@/ios/useIos'
 
 const ProgressPage = lazy(() => import('@/features/progress/ProgressPage').then((m) => ({ default: m.ProgressPage })))
+const IosApp = lazy(() => import('@/ios/IosApp').then((m) => ({ default: m.IosApp })))
 const ReportPage = lazy(() => import('@/features/progress/ReportPage').then((m) => ({ default: m.ReportPage })))
 
 /** Dolny pasek na telefonie – bez zmian; Kalendarz jest dostępny przez „Więcej”. */
@@ -163,6 +165,24 @@ function SideNav() {
   )
 }
 
+/**
+ * Start aplikacji: gdy wybrany jest uproszczony widok (iPhone), ekran główny przekierowuje do `/i`.
+ * „Otwórz pełną aplikację” ustawia znacznik w sessionStorage, więc przekierowanie odpuszcza do końca sesji.
+ */
+function ModeGate({ children }: { children: ReactNode }) {
+  const { mode, loaded } = useUiMode()
+  const search = typeof window === 'undefined' ? '' : window.location.search
+  let escaped = false
+  try {
+    escaped = sessionStorage.getItem(FULL_ESCAPE) === '1'
+  } catch {
+    /* prywatne okno */
+  }
+  if (!loaded) return null
+  if (mode === 'ios' && !escaped) return <Navigate to={{ pathname: '/i', search }} replace />
+  return <>{children}</>
+}
+
 function Layout() {
   useSyncRunner()
   useWahooAutoPush()
@@ -208,7 +228,7 @@ export function App() {
         <BrowserRouter>
           <Routes>
             <Route element={<Layout />}>
-              <Route index element={<TodayPage />} />
+              <Route index element={<ModeGate><TodayPage /></ModeGate>} />
               <Route path="dzien/:date" element={<DayPage />} />
               <Route path="tydzien" element={<WeekPage />} />
               <Route path="tydzien/:date" element={<WeekPage />} />
@@ -230,6 +250,7 @@ export function App() {
               <Route path="*" element={<Navigate to="/" replace />} />
             </Route>
             <Route path="silownia/:date" element={<GymModePage />} />
+            <Route path="i/*" element={<Suspense fallback={null}><IosApp /></Suspense>} />
           </Routes>
         </BrowserRouter>
       </ToastProvider>
