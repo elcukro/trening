@@ -1,5 +1,12 @@
 import { expect, test } from '@playwright/test'
 
+// Testy pełnej aplikacji startują z `/`, a na telefonie start przekierowuje do uproszczonego widoku (`/i`).
+// Znacznik w sessionStorage to ta sama ucieczka, której używa przycisk „Otwórz pełną aplikację”.
+test.beforeEach(async ({ page }) => {
+  await page.addInitScript(() => sessionStorage.setItem('trening:full-ui', '1'))
+})
+
+
 test('Dziś 30.09.2026: tydzień 3, akcent sweet spot w środę; 25.11 Sesja A po powrocie siłowni', async ({ page }) => {
   await page.goto('/?today=2026-09-30')
   await expect(page.getByRole('heading', { name: 'Tydzień 3' })).toBeVisible()

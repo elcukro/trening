@@ -54,17 +54,26 @@ test('Tydzień i Postęp: liczby i nawigacja zakładkami', async ({ page }) => {
   await expect(page.getByText('FTP', { exact: true })).toBeVisible()
 })
 
-test('Więcej: domyślny widok i powrót do pełnej aplikacji', async ({ page }) => {
-  await page.goto('/i/wiecej?today=2026-09-23')
-  await page.getByRole('button', { name: 'Otwieraj ten widok domyślnie' }).click()
-  await expect(page.getByRole('button', { name: 'Nie otwieraj domyślnie' })).toBeVisible()
+test('Na telefonie start otwiera prosty widok; da się przejść do pełnej aplikacji i wrócić', async ({ page }) => {
+  // domyślnie (bez żadnego ustawienia) telefon startuje w uproszczonym widoku
   await page.goto('/?today=2026-09-23')
   await expect(page).toHaveURL(/\/i\?/)
+
   await page.getByRole('link', { name: 'Więcej' }).click()
+  await expect(page.getByRole('button', { name: 'Nie otwieraj domyślnie' })).toBeVisible()
   await page.getByText('Otwórz pełną aplikację').click()
   await expect(page.getByRole('heading', { name: 'Tydzień 2' })).toBeVisible()
+
   // z pełnej aplikacji da się wrócić do prostego widoku
   await page.getByRole('link', { name: 'Więcej' }).click()
   await page.getByText("Prosty widok na iPhone'a").click()
   await expect(page.getByRole('heading', { name: 'Dziś' })).toBeVisible()
+})
+
+test('Wyłączenie domyślnego widoku zostawia start w pełnej aplikacji', async ({ page }) => {
+  await page.goto('/i/wiecej?today=2026-09-23')
+  await page.getByRole('button', { name: 'Nie otwieraj domyślnie' }).click()
+  await expect(page.getByRole('button', { name: 'Otwieraj ten widok domyślnie' })).toBeVisible()
+  await page.goto('/?today=2026-09-23')
+  await expect(page.getByRole('heading', { name: 'Tydzień 2' })).toBeVisible()
 })

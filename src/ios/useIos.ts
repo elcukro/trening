@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { useNavigate } from 'react-router'
 import { useLiveQuery } from 'dexie-react-hooks'
-import { db, type BaselineEntry, type Checkin, type KeyValueRow, type SessionLog, type StravaActivity, type WahooPushRow } from '@/db'
+import { db, type BaselineEntry, type Checkin, type KeyValueRow, type SessionLog, type StravaActivity, type WahooPushRow, type WahooWorkout } from '@/db'
 import { upsertCheckin, upsertSessionLog, findSessionLog } from '@/db/repo'
 import { useDayView } from '@/app/usePlan'
 import { useDailyLoad } from '@/app/useLoad'
@@ -18,6 +18,7 @@ import { pmcSeries, weekTss } from '@/engine/pmc'
 import { effectiveFtp, effectiveLthr, weightTrend } from '@/engine/progress'
 import { cdaFromRide, goalPower } from '@/engine/baseline'
 import { suggestFtp, type FtpSuggestion } from '@/engine/power'
+import { onSyncStatus, type SyncStatus } from '@/sync/sync'
 import { todayISO } from '@/lib/dates'
 import { dayFlow, weighDue, type DayFlow, type LogState } from './dayState'
 import type { BoltState } from '@/features/today/WahooStatus'
@@ -28,8 +29,16 @@ export type UiMode = 'classic' | 'ios'
 const UI_MODE_KEY = 'ui_mode'
 /** Ucieczka do pełnej aplikacji na czas sesji – żeby przekierowanie nie odsyłało z powrotem. */
 export const FULL_ESCAPE = 'trening:full-ui'
+/** Ten sam próg co `lg:` w pełnej aplikacji – powyżej jest boczna nawigacja i układ na komputer. */
+const PHONE_MAX_PX = 1024
 
-export function useUiMode(): { mode: UiMode; loaded: boolean; set: (m: UiMode) => Promise<void> } {
+/**
+ * Domyślnie: telefon i tablet otwierają uproszczony interfejs, komputer – pełną aplikację.
+ * Szerokość czytamy raz przy wczytaniu modułu, żeby obracanie ekranu nie przerzucało widoku w trakcie pracy.
+ */
+const DEFAULT_MODE: UiMode = typeof window !== 'undefined' && window.innerWidth < PHONE_MAX_PX ? 'ios' : 'classic'
+
+export function useUiMode(): { mode: UiMode; loaded: boolean; explicit: boolean; set: (m: UiMode) => Promise<void> } {
   // `?? null` jest konieczne: brak wiersza też zwraca `undefined`, a po tym rozpoznajemy „jeszcze nie wczytane”
   const row = useLiveQuery(async () => (await db.kv.get(UI_MODE_KEY)) ?? null, [], undefined)
   const set = useCallback(async (m: UiMode) => {
@@ -40,7 +49,15 @@ export function useUiMode(): { mode: UiMode; loaded: boolean; set: (m: UiMode) =
       /* prywatne okno */
     }
   }, [])
-  return { mode: (row?.value as UiMode) === 'ios' ? 'ios' : 'classic', loaded: row !== undefined, set }
+  const saved = row?.value === 'ios' || row?.value === 'classic' ? (row.value as UiMode) : null
+  return { mode: saved ?? DEFAULT_MODE, loaded: row !== undefined, explicit: saved !== null, set }
+}
+
+/** Stan synchronizacji z Supabase – do pokazania w „Więcej”. */
+export function useSyncStatus(): SyncStatus {
+  const [s, setS] = useState<SyncStatus>({ state: 'idle', last_sync: null, pending: 0 })
+  useEffect(() => onSyncStatus(setS), [])
+  return s
 }
 
 /** Przejście do pełnej aplikacji – zaznacza, że przekierowanie na uproszczony widok ma odpuścić do końca sesji. */
@@ -94,7 +111,9 @@ export interface IosDay {
   bolt: BoltState
   ftp: number | null
   lthr: number | null
-  load: { tss: number; method: RideLoad['method'] } | null
+  loadOf: (a: StravaActivity) => RideLoad | null
+  /** trening zapisany przez Bolta – pokazujemy, gdy tego dnia nie ma jazdy ze Stravy */
+  boltWorkouts: WahooWorkout[]
   saveCheckin: (patch: Partial<Checkin>) => Promise<void>
   logRide: (status: 'done' | 'modified' | 'skipped', extra?: { rpe?: number | null; notes?: string | null }) => Promise<void>
   sendToBolt: () => Promise<'created' | 'updated'>
@@ -112,32 +131,29 @@ export function useIosDay(date: ISODate): IosDay {
     const rows = (await db.checkins.where('date').belowOrEqual(date).toArray()).filter((c) => !c.deleted_at && c.weight_kg != null)
     return rows.toSorted((a, b) => (a.date < b.date ? 1 : -1))[0]?.date ?? null
   }, [date], null as ISODate | null)
+  const boltWorkouts = useLiveQuery(async () => (await db.wahoo_workouts.where('date').equals(date).toArray()).filter((w) => !w.deleted_at), [date], [] as WahooWorkout[])
   const bolt = useBolt(day)
 
   const { settings, tests } = engine.ctx
   const ftp = settings.power_meter ? effectiveFtp(date, settings.ftp_w_estimate, tests ?? []).ftp : null
   const lthr = effectiveLthr(date, settings.lthr_bpm, (tests ?? []).filter((t): t is { date: string; lthr_bpm: number } => !!t.lthr_bpm)).lthr
 
-  /** Obciążenie dnia: suma TSS po jazdach (dwie jazdy w jednym dniu liczą się osobno, nie jako jedna długa). */
-  const load = useMemo(() => {
-    const parts = activities
-      .map((a) =>
-        rideLoad({
-          moving_s: a.moving_time_s,
-          device_watts: a.device_watts,
-          np_w: a.np_w,
-          avg_watts: a.avg_watts,
-          ftp,
-          hr_histogram: a.hr_histogram,
-          zones: engine.ctx.program.hr_zones_lthr_fraction,
-          lthr,
-          rpe: rideLog?.rpe ?? undefined,
-        }),
-      )
-      .filter((x): x is RideLoad => !!x)
-    if (parts.length === 0) return null
-    return { tss: Math.round(parts.reduce((sum, x) => sum + x.tss, 0)), method: parts[0]!.method }
-  }, [activities, ftp, lthr, engine.ctx.program.hr_zones_lthr_fraction, rideLog?.rpe])
+  /** Obciążenie pojedynczej jazdy (moc → tętno → RPE). Dwie jazdy w jednym dniu liczą się osobno. */
+  const loadOf = useCallback(
+    (a: StravaActivity): RideLoad | null =>
+      rideLoad({
+        moving_s: a.moving_time_s,
+        device_watts: a.device_watts,
+        np_w: a.np_w,
+        avg_watts: a.avg_watts,
+        ftp,
+        hr_histogram: a.hr_histogram,
+        zones: engine.ctx.program.hr_zones_lthr_fraction,
+        lthr,
+        rpe: rideLog?.rpe ?? undefined,
+      }),
+    [ftp, lthr, engine.ctx.program.hr_zones_lthr_fraction, rideLog?.rpe],
+  )
 
   const flow = useMemo(
     () =>
@@ -198,7 +214,8 @@ export function useIosDay(date: ISODate): IosDay {
     bolt,
     ftp,
     lthr,
-    load,
+    loadOf,
+    boltWorkouts,
     saveCheckin,
     logRide,
     sendToBolt,

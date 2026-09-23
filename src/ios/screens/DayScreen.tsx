@@ -123,6 +123,74 @@ function HeroRest({ day }: { day: DayPlan }) {
   )
 }
 
+/** Karta wyniku treningu – te same pola dla jazdy ze Stravy i dla treningu odczytanego z Bolta. */
+function RideResult({
+  name,
+  minutes: activeMin,
+  powerW,
+  powerLabel,
+  avgHr,
+  maxHr,
+  km,
+  tss,
+  speedKmh,
+  cadence,
+  ascentM,
+  decoupling,
+  score,
+  className = '',
+}: {
+  name: string
+  minutes: number
+  powerW: number | null
+  powerLabel: string
+  avgHr: number | null
+  maxHr: number | null
+  km: number | null
+  tss: number | null
+  speedKmh: number | null
+  cadence: number | null
+  ascentM: number | null
+  decoupling: number | null
+  score: number | null
+  className?: string
+}) {
+  const verdict = rideVerdict(score)
+  const details = [
+    speedKmh != null ? `${num(speedKmh, 1)} km/h` : null,
+    cadence ? `${cadence} rpm` : null,
+    avgHr ? `${avgHr}${maxHr ? `/${maxHr}` : ''} bpm` : null,
+    ascentM ? `${Math.round(ascentM)} m w górę` : null,
+  ].filter(Boolean)
+  return (
+    <Card className={className}>
+      <div className="p-4">
+        <div className="mb-3 flex items-center justify-between gap-2">
+          <span className="ios-headline truncate">{name}</span>
+          {verdict && (
+            <Pill color="#fff" bg={verdict.tone === 'good' ? 'var(--green)' : verdict.tone === 'ok' ? 'var(--orange)' : 'var(--red)'}>
+              {score} %
+            </Pill>
+          )}
+        </div>
+        <div className="grid grid-cols-4 gap-2">
+          <Stat size="sm" value={activeMin} unit="min" label="czas" />
+          <Stat size="sm" value={powerW ?? avgHr ?? '—'} unit={powerW ? 'W' : avgHr ? 'bpm' : undefined} label={powerW ? powerLabel : 'śr. tętno'} />
+          <Stat size="sm" value={km != null ? num(km, 1) : '—'} unit={km != null ? 'km' : undefined} label="dystans" />
+          <Stat size="sm" value={tss ?? '—'} label="TSS" />
+        </div>
+        {details.length > 0 && <p className="ios-foot ios-dim ios-num mt-3">{details.join(' · ')}</p>}
+        {decoupling != null && (
+          <p className="ios-foot ios-dim ios-num mt-1">
+            Pw:HR {num(decoupling, 1)} % · {decouplingNote(decoupling)}
+          </p>
+        )}
+        {verdict && <p className="ios-foot ios-dim mt-1">{verdict.text}</p>}
+      </div>
+    </Card>
+  )
+}
+
 const STEP_ICON: Record<string, { color: string; icon: typeof IconSun }> = {
   checkin: { color: 'var(--orange)', icon: IconSun },
   bolt: { color: 'var(--teal)', icon: IconWatch },
@@ -191,9 +259,6 @@ export function DayScreen() {
   }
 
   const rideStatus = d.rideLog?.status
-  const verdict = rideVerdict(score)
-  const act = d.activities[0]
-  const totalMovingS = d.activities.reduce((s, a) => s + a.moving_time_s, 0)
   const warnings = d.view.warnings
 
   return (
@@ -224,34 +289,51 @@ export function DayScreen() {
         <div className="mb-8" />
       )}
 
-      {act && (
-        <Section header="Po treningu" footer={verdict ? undefined : act.has_streams ? 'Zgodność z planem policzy się po pobraniu strumieni.' : undefined}>
-          <Card>
-            <div className="p-4">
-              <div className="mb-3 flex items-center justify-between gap-2">
-                <span className="ios-headline truncate">{act.name ?? 'Jazda'}</span>
-                {verdict && (
-                  <Pill color="#fff" bg={verdict.tone === 'good' ? 'var(--green)' : verdict.tone === 'ok' ? 'var(--orange)' : 'var(--red)'}>
-                    {score} %
-                  </Pill>
-                )}
-              </div>
-              <div className="grid grid-cols-4 gap-2">
-                <Stat size="sm" value={Math.round(totalMovingS / 60)} unit="min" label="czas" />
-                <Stat size="sm" value={act.device_watts && (act.np_w || act.avg_watts) ? (act.np_w ?? act.avg_watts) : act.avg_hr ? act.avg_hr : '—'} unit={act.device_watts && (act.np_w || act.avg_watts) ? 'W' : act.avg_hr ? 'bpm' : undefined} label={act.device_watts && act.np_w ? 'NP' : act.device_watts ? 'śr. moc' : 'śr. tętno'} />
-                <Stat size="sm" value={act.distance_m ? num(act.distance_m / 1000, 1) : '—'} unit={act.distance_m ? 'km' : undefined} label="dystans" />
-                <Stat size="sm" value={d.load?.tss ?? '—'} label="TSS" />
-              </div>
-              {verdict && <p className="ios-foot ios-dim mt-3">{verdict.text}</p>}
-              {act.decoupling_pct != null && (
-                <p className="ios-foot ios-dim mt-1">
-                  Pw:HR {num(act.decoupling_pct, 1)} % · {decouplingNote(act.decoupling_pct)}
-                </p>
-              )}
-            </div>
-          </Card>
+      {d.activities.length > 0 ? (
+        <Section header="Po treningu">
+          {d.activities.map((a, i) => (
+            <RideResult
+              key={a.id}
+              className={i > 0 ? 'mt-3' : ''}
+              name={a.name ?? 'Jazda'}
+              minutes={Math.round(a.moving_time_s / 60)}
+              powerW={a.device_watts ? (a.np_w ?? a.avg_watts ?? null) : null}
+              powerLabel={a.np_w ? 'NP' : 'śr. moc'}
+              avgHr={a.avg_hr ?? null}
+              maxHr={a.max_hr ?? null}
+              km={a.distance_m != null ? a.distance_m / 1000 : null}
+              tss={d.loadOf(a)?.tss ?? null}
+              speedKmh={a.avg_speed_ms != null ? a.avg_speed_ms * 3.6 : null}
+              cadence={a.avg_cadence ?? null}
+              ascentM={a.elevation_m ?? null}
+              decoupling={i === 0 ? (a.decoupling_pct ?? null) : null}
+              score={i === 0 ? score : null}
+            />
+          ))}
         </Section>
-      )}
+      ) : d.boltWorkouts.length > 0 ? (
+        <Section header="Po treningu" footer="Liczby z licznika. Gdy jazda dotrze ze Stravy, zastąpi te dane.">
+          {d.boltWorkouts.map((w, i) => (
+            <RideResult
+              key={w.id}
+              className={i > 0 ? 'mt-3' : ''}
+              name={w.name ?? 'Trening z Bolta'}
+              minutes={w.minutes_active}
+              powerW={w.np_w ?? w.avg_power ?? null}
+              powerLabel={w.np_w ? 'NP' : 'śr. moc'}
+              avgHr={w.avg_hr ?? null}
+              maxHr={null}
+              km={w.distance_km ?? null}
+              tss={null}
+              speedKmh={w.avg_speed_kmh ?? null}
+              cadence={w.avg_cadence ?? null}
+              ascentM={w.ascent_m ?? null}
+              decoupling={null}
+              score={null}
+            />
+          ))}
+        </Section>
+      ) : null}
 
       <Section header="Dzisiaj">
         <List>

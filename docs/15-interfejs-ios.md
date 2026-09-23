@@ -33,9 +33,32 @@ interfejs po prostu do niego prowadzi.
 - Cztery zakładki: **Dziś**, **Tydzień**, **Postęp**, **Więcej**.
 - `/i` – dziś, `/i/dzien/:date` – dowolny dzień (ten sam ekran), `/i/trening/:date` – szczegóły jazdy,
   `/i/tydzien/:monday`, `/i/postep`, `/i/wiecej`.
-- Ustawienie `ui_mode` w `kv` (`classic` | `ios`) decyduje, czy start aplikacji (`/`) przekierowuje do `/i`
+- **Domyślnie** (bez zapisanego ustawienia) start aplikacji (`/`) przekierowuje do `/i` na ekranach węższych
+  niż 1024 px, a na komputerze zostaje pełna aplikacja z boczną nawigacją. Szerokość czytamy raz przy
+  wczytaniu modułu, żeby obrót ekranu nie przerzucał widoku w trakcie pracy.
+- Ustawienie `ui_mode` w `kv` (`classic` | `ios`) nadpisuje domyślne zachowanie w obie strony
   (`ModeGate` w `App.tsx`). „Otwórz pełną aplikację” ustawia znacznik `trening:full-ui` w `sessionStorage`,
   więc przekierowanie odpuszcza do końca sesji; „Prosty widok na iPhone'a” w Więcej kasuje znacznik.
+  Tego samego znacznika używają testy e2e pełnej aplikacji (`page.addInitScript` w `beforeEach`).
+
+## Konto, Strava i Wahoo
+
+Uproszczony interfejs to ta sama aplikacja pod tym samym adresem: sesja Supabase (localStorage), baza lokalna
+(IndexedDB) i połączenia ze Stravą i Wahoo są wspólne – **nic nie trzeba łączyć ani logować drugi raz**.
+`IosApp` uruchamia te same hooki co `Layout`: `useSyncRunner` (push outboxa + pull zmian), `useWahooAutoPush`
+(dzienna wysyłka 7 dni na Bolta) i `usePushKeepalive` (odnawianie subskrypcji powiadomień).
+
+Dane z integracji na ekranach `/i`:
+
+- **Strava** – karta „Po treningu” na ekranie dnia: nazwa, czas, NP albo średnia moc, dystans, TSS, a niżej
+  prędkość średnia, kadencja, tętno średnie/maksymalne, przewyższenie, odsprzężenie Pw:HR i zgodność z planem
+  (liczona ze strumieni i zapamiętana w `kv` pod tym samym kluczem co w pełnej aplikacji). Kilka jazd jednego
+  dnia = kilka kart, każda z własnym TSS. W Postępie lista ostatnich jazd z TSS i zgodnością.
+- **Wahoo** – krok „Plan na Bolcie” (stan wysyłki wg `external_id`) i przycisk wysyłki na ekranie treningu;
+  gdy dnia nie ma jazdy ze Stravy, karta „Po treningu” pokazuje trening odczytany z licznika (`wahoo_workouts`).
+- **Konto i synchronizacja** w Więcej: zalogowany e-mail, data ostatniej synchronizacji, liczba zapisów
+  czekających w kolejce oraz stan połączeń Strava/Wahoo. Logowanie, ponowne łączenie i pobieranie historii
+  zostają w pełnej aplikacji.
 
 ## Przepływ dnia
 

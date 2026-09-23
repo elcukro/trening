@@ -6,9 +6,11 @@ import { pushStatus, subscribePush, unsubscribePush, type PushStatus } from '@/s
 import { getThemePref, setThemePref, type ThemePref } from '@/lib/theme'
 import { useToast } from '@/components/Toast'
 import { num } from '@/lib/format'
-import { useOpenFull, useUiMode } from '../useIos'
+import { useAuth } from '@/sync/auth'
+import { fmtDayMonth } from '@/lib/dates'
+import { useOpenFull, useSyncStatus, useUiMode } from '../useIos'
 import { Btn, List, Row, RowIcon, Screen, Section, Seg, Sheet } from '../components/Chrome'
-import { IconBolt, IconChevron, IconGear, IconHeart, IconSun, IconWatch } from '../components/Icons'
+import { IconBolt, IconCheck, IconChevron, IconGear, IconHeart, IconSun, IconWatch } from '../components/Icons'
 
 /** Moje liczby: FTP i LTHR – jedyne ustawienia, które zmienia się często (po każdym teście). */
 function NumbersSheet({ onClose }: { onClose: () => void }) {
@@ -80,11 +82,22 @@ function linkLabel(x: StravaStatus | WahooStatus | 'error' | null): string {
   return x === null ? '…' : x === 'error' ? 'brak danych' : x.connected ? 'połączone' : 'brak'
 }
 
+const SYNC_FOOTER: Record<string, string> = {
+  idle: 'Konto, połączenia i dane są wspólne z pełną aplikacją – nic nie trzeba łączyć drugi raz.',
+  syncing: 'Synchronizuję…',
+  offline: 'Brak sieci. Zapisy czekają w kolejce i pojadą po powrocie zasięgu.',
+  unauthenticated: 'Bez logowania aplikacja działa offline: plan i zapisy zostają na telefonie.',
+  disabled: 'Aplikacja działa lokalnie – bez konfiguracji Supabase nie ma synchronizacji.',
+  error: 'Ostatnia synchronizacja się nie udała. Szczegóły w pełnej aplikacji.',
+}
+
 export function MoreScreen() {
   const engine = useEngine()
   const toast = useToast()
   const openFull = useOpenFull()
   const ui = useUiMode()
+  const auth = useAuth()
+  const sync = useSyncStatus()
   const [theme, setTheme] = useState<ThemePref>(getThemePref())
   const [sheet, setSheet] = useState<'numbers' | null>(null)
   const [sv, setSv] = useState<StravaStatus | 'error' | null>(null)
@@ -124,6 +137,28 @@ export function MoreScreen() {
 
   return (
     <Screen title="Więcej" subtitle={`Program ${engine.ctx.program.version}`}>
+      <Section header="Konto i synchronizacja" footer={SYNC_FOOTER[sync.state]}>
+        <List>
+          {auth.session ? (
+            <Row
+              icon={<RowIcon color="var(--green)"><IconCheck size={18} /></RowIcon>}
+              title="Zalogowany"
+              subtitle={auth.session.user.email ?? undefined}
+              value={sync.last_sync ? fmtDayMonth(sync.last_sync.slice(0, 10)) : '—'}
+            />
+          ) : (
+            <Row
+              icon={<RowIcon color="var(--red)"><IconGear size={18} /></RowIcon>}
+              title={auth.loading ? 'Sprawdzam konto…' : 'Nie jesteś zalogowany'}
+              subtitle={auth.loading ? undefined : 'Dane zostają na telefonie i nie synchronizują się'}
+              onClick={() => openFull('/wiecej/ustawienia')}
+              accessory={<span className="ios-dim-3"><IconChevron size={18} /></span>}
+            />
+          )}
+          {sync.pending > 0 && <Row title="Czeka na wysłanie" value={`${sync.pending}`} />}
+        </List>
+      </Section>
+
       <Section header="Moje liczby">
         <List>
           <Row
@@ -205,7 +240,7 @@ export function MoreScreen() {
         </List>
       </Section>
 
-      <Section footer={ui.mode === 'ios' ? 'Ten widok otwiera się domyślnie. Możesz to wyłączyć – wtedy start trafia do pełnej aplikacji.' : 'Włącz, żeby ten widok otwierał się domyślnie po uruchomieniu.'}>
+      <Section footer={ui.mode === 'ios' ? 'Ten widok otwiera się domyślnie na telefonie i tablecie; na komputerze zawsze startuje pełna aplikacja.' : 'Włącz, żeby ten widok otwierał się domyślnie po uruchomieniu.'}>
         <div className="px-4">
           <Btn kind="gray" className="w-full" onClick={() => void ui.set(ui.mode === 'ios' ? 'classic' : 'ios')}>
             {ui.mode === 'ios' ? 'Nie otwieraj domyślnie' : 'Otwieraj ten widok domyślnie'}
