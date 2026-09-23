@@ -94,7 +94,7 @@ export interface IosDay {
   bolt: BoltState
   ftp: number | null
   lthr: number | null
-  load: RideLoad | null
+  load: { tss: number; method: RideLoad['method'] } | null
   saveCheckin: (patch: Partial<Checkin>) => Promise<void>
   logRide: (status: 'done' | 'modified' | 'skipped', extra?: { rpe?: number | null; notes?: string | null }) => Promise<void>
   sendToBolt: () => Promise<'created' | 'updated'>
@@ -118,20 +118,25 @@ export function useIosDay(date: ISODate): IosDay {
   const ftp = settings.power_meter ? effectiveFtp(date, settings.ftp_w_estimate, tests ?? []).ftp : null
   const lthr = effectiveLthr(date, settings.lthr_bpm, (tests ?? []).filter((t): t is { date: string; lthr_bpm: number } => !!t.lthr_bpm)).lthr
 
+  /** Obciążenie dnia: suma TSS po jazdach (dwie jazdy w jednym dniu liczą się osobno, nie jako jedna długa). */
   const load = useMemo(() => {
-    const a = activities[0]
-    if (!a) return null
-    return rideLoad({
-      moving_s: activities.reduce((s, x) => s + x.moving_time_s, 0),
-      device_watts: a.device_watts,
-      np_w: a.np_w,
-      avg_watts: a.avg_watts,
-      ftp,
-      hr_histogram: a.hr_histogram,
-      zones: engine.ctx.program.hr_zones_lthr_fraction,
-      lthr,
-      rpe: rideLog?.rpe ?? undefined,
-    })
+    const parts = activities
+      .map((a) =>
+        rideLoad({
+          moving_s: a.moving_time_s,
+          device_watts: a.device_watts,
+          np_w: a.np_w,
+          avg_watts: a.avg_watts,
+          ftp,
+          hr_histogram: a.hr_histogram,
+          zones: engine.ctx.program.hr_zones_lthr_fraction,
+          lthr,
+          rpe: rideLog?.rpe ?? undefined,
+        }),
+      )
+      .filter((x): x is RideLoad => !!x)
+    if (parts.length === 0) return null
+    return { tss: Math.round(parts.reduce((sum, x) => sum + x.tss, 0)), method: parts[0]!.method }
   }, [activities, ftp, lthr, engine.ctx.program.hr_zones_lthr_fraction, rideLog?.rpe])
 
   const flow = useMemo(

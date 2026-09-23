@@ -245,7 +245,7 @@ export function DayScreen() {
               {verdict && <p className="ios-foot ios-dim mt-3">{verdict.text}</p>}
               {act.decoupling_pct != null && (
                 <p className="ios-foot ios-dim mt-1">
-                  Pw:HR {num(act.decoupling_pct, 1)} % {act.decoupling_pct < 5 ? '· bardzo dobra baza tlenowa' : '· tętno rosło przy stałej mocy'}
+                  Pw:HR {num(act.decoupling_pct, 1)} % · {decouplingNote(act.decoupling_pct)}
                 </p>
               )}
             </div>
@@ -346,6 +346,13 @@ export function DayScreen() {
       {sheet === 'brief' && brief && <BriefingSheet b={brief} onClose={() => setSheet(null)} onIndoor={() => { void d.view.applyAction({ kind: 'indoor', date, label: '', payload: {} }); setSheet(null) }} />}
     </Screen>
   )
+}
+
+/** Odsprzężenie moc:tętno – ile tętno „ucieka” przy stałej mocy w drugiej połowie jazdy. */
+function decouplingNote(pct: number): string {
+  if (pct < 5) return 'bardzo dobra baza tlenowa'
+  if (pct < 10) return 'w normie'
+  return 'tętno mocno rosło – zmęczenie, upał albo za wysokie tempo'
 }
 
 const OVERRIDE_LABEL: Record<string, string> = {
