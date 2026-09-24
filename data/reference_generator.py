@@ -17,7 +17,7 @@ import json, datetime as dt, os, copy
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 D = dt.date
-PROGRAM_VERSION = "2026.09.24-2"
+PROGRAM_VERSION = "2026.09.24-3"
 
 DEFAULT_SETTINGS = {
     "program_start": "2026-09-14",          # poniedziałek tygodnia 1
@@ -510,7 +510,9 @@ def bike_suggestion(phase, wid):
     if wid in ("WATTBIKE_TEST", "INDOOR_4x4"): return "Wattbike / rowerek na siłowni"
     if phase == "II": return "Checkpoint (zima, błotniki)"
     if phase in ("V", "TAPER"): return "Checkpoint (docelowy rower wyjazdowy)"
-    return "Dogma na suchą szosę > 5 °C; Checkpoint na mokro, sól, szuter"
+    # Wszystkie treningy na gravelu (decyzja 24.09.2026). Dogma zostaje w garażu do czasu,
+    # aż pojawi się rower endurance – raczej przyszły sezon.
+    return "Checkpoint (gravel)"
 
 def build_calendar(settings=DEFAULT_SETTINGS):
     start = D.fromisoformat(settings["program_start"])

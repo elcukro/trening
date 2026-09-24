@@ -39,7 +39,8 @@ export function bikeSuggestion(phase: PhaseId, workoutId: string): string {
   if (['WATTBIKE_TEST', 'INDOOR_4x4'].includes(workoutId)) return 'Wattbike / rowerek na siłowni'
   if (phase === 'II') return 'Checkpoint (zima, błotniki)'
   if (phase === 'V' || phase === 'TAPER') return 'Checkpoint (docelowy rower wyjazdowy)'
-  return 'Dogma na suchą szosę > 5 °C; Checkpoint na mokro, sól, szuter'
+  // Wszystkie treningy na gravelu (decyzja 24.09.2026); Dogma czeka, aż pojawi się rower endurance
+  return 'Checkpoint (gravel)'
 }
 
 /** Sesja siłowa na dany dzień: slot „wed” → dzień z gym_days (A/C), slot „fri” → Sesja B. */

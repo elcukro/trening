@@ -1,5 +1,5 @@
 {
- "version": "2026.09.24-2",
+ "version": "2026.09.24-3",
  "settings": {
   "program_start": "2026-09-14",
   "trip_start": "2027-09-11",
@@ -34,7 +34,7 @@
     "workout_id": "Z2",
     "name": "Baza tlenowa Z2",
     "duration_min": 60,
-    "bike": "Dogma na suchą szosę > 5 °C; Checkpoint na mokro, sól, szuter",
+    "bike": "Checkpoint (gravel)",
     "fallback_workout_id": null
    },
    "gym": null,
@@ -61,7 +61,7 @@
     "workout_id": "LONG",
     "name": "Długa jazda",
     "duration_min": 120,
-    "bike": "Dogma na suchą szosę > 5 °C; Checkpoint na mokro, sól, szuter",
+    "bike": "Checkpoint (gravel)",
     "fallback_workout_id": null
    },
    "gym": null,
@@ -88,7 +88,7 @@
     "workout_id": "Z2",
     "name": "Baza tlenowa Z2",
     "duration_min": 90,
-    "bike": "Dogma na suchą szosę > 5 °C; Checkpoint na mokro, sól, szuter",
+    "bike": "Checkpoint (gravel)",
     "fallback_workout_id": null
    },
    "gym": null,
@@ -137,7 +137,7 @@
     "workout_id": "Z2",
     "name": "Baza tlenowa Z2",
     "duration_min": 60,
-    "bike": "Dogma na suchą szosę > 5 °C; Checkpoint na mokro, sól, szuter",
+    "bike": "Checkpoint (gravel)",
     "fallback_workout_id": null
    },
    "gym": null,
@@ -278,7 +278,7 @@
     "workout_id": "Z2",
     "name": "Baza tlenowa Z2",
     "duration_min": 45,
-    "bike": "Dogma na suchą szosę > 5 °C; Checkpoint na mokro, sól, szuter",
+    "bike": "Checkpoint (gravel)",
     "fallback_workout_id": null
    },
    "gym": null,
@@ -437,7 +437,7 @@
     "workout_id": "LONG",
     "name": "Długa jazda",
     "duration_min": 120,
-    "bike": "Dogma na suchą szosę > 5 °C; Checkpoint na mokro, sól, szuter",
+    "bike": "Checkpoint (gravel)",
     "fallback_workout_id": null
    },
    "gym": null,
@@ -464,7 +464,7 @@
     "workout_id": "Z2",
     "name": "Baza tlenowa Z2",
     "duration_min": 90,
-    "bike": "Dogma na suchą szosę > 5 °C; Checkpoint na mokro, sól, szuter",
+    "bike": "Checkpoint (gravel)",
     "fallback_workout_id": null
    },
    "gym": null,
@@ -513,7 +513,7 @@
     "workout_id": "Z2",
     "name": "Baza tlenowa Z2",
     "duration_min": 45,
-    "bike": "Dogma na suchą szosę > 5 °C; Checkpoint na mokro, sól, szuter",
+    "bike": "Checkpoint (gravel)",
     "fallback_workout_id": null
    },
    "gym": null,
@@ -540,7 +540,7 @@
     "workout_id": "Z2",
     "name": "Baza tlenowa Z2",
     "duration_min": 60,
-    "bike": "Dogma na suchą szosę > 5 °C; Checkpoint na mokro, sól, szuter",
+    "bike": "Checkpoint (gravel)",
     "fallback_workout_id": null
    },
    "gym": null,
@@ -588,7 +588,7 @@
     "workout_id": "Z2",
     "name": "Baza tlenowa Z2",
     "duration_min": 50,
-    "bike": "Dogma na suchą szosę > 5 °C; Checkpoint na mokro, sól, szuter",
+    "bike": "Checkpoint (gravel)",
     "fallback_workout_id": null
    },
    "gym": null,
@@ -615,7 +615,7 @@
     "workout_id": "FTP_TEST",
     "name": "Test FTP 20 min (moc)",
     "duration_min": 65,
-    "bike": "Dogma na suchą szosę > 5 °C; Checkpoint na mokro, sól, szuter",
+    "bike": "Checkpoint (gravel)",
     "fallback_workout_id": null
    },
    "gym": null,
@@ -687,7 +687,7 @@
     "workout_id": "Z2",
     "name": "Baza tlenowa Z2",
     "duration_min": 60,
-    "bike": "Dogma na suchą szosę > 5 °C; Checkpoint na mokro, sól, szuter",
+    "bike": "Checkpoint (gravel)",
     "fallback_workout_id": null
    },
    "gym": null,
@@ -714,7 +714,7 @@
     "workout_id": "SS_2x12",
     "name": "Sweet spot 2×12 min",
     "duration_min": 59,
-    "bike": "Dogma na suchą szosę > 5 °C; Checkpoint na mokro, sól, szuter",
+    "bike": "Checkpoint (gravel)",
     "fallback_workout_id": null
    },
    "gym": null,
@@ -762,7 +762,7 @@
     "workout_id": "Z2",
     "name": "Baza tlenowa Z2",
     "duration_min": 60,
-    "bike": "Dogma na suchą szosę > 5 °C; Checkpoint na mokro, sól, szuter",
+    "bike": "Checkpoint (gravel)",
     "fallback_workout_id": null
    },
    "gym": null,
@@ -789,7 +789,7 @@
     "workout_id": "LONG",
     "name": "Długa jazda",
     "duration_min": 120,
-    "bike": "Dogma na suchą szosę > 5 °C; Checkpoint na mokro, sól, szuter",
+    "bike": "Checkpoint (gravel)",
     "fallback_workout_id": null
    },
    "gym": null,
@@ -816,7 +816,7 @@
     "workout_id": "Z2",
     "name": "Baza tlenowa Z2",
     "duration_min": 75,
-    "bike": "Dogma na suchą szosę > 5 °C; Checkpoint na mokro, sól, szuter",
+    "bike": "Checkpoint (gravel)",
     "fallback_workout_id": null
    },
    "gym": null,
@@ -864,7 +864,7 @@
     "workout_id": "Z2",
     "name": "Baza tlenowa Z2",
     "duration_min": 60,
-    "bike": "Dogma na suchą szosę > 5 °C; Checkpoint na mokro, sól, szuter",
+    "bike": "Checkpoint (gravel)",
     "fallback_workout_id": null
    },
    "gym": null,
@@ -891,7 +891,7 @@
     "workout_id": "SS_2x15",
     "name": "Sweet spot 2×15 min",
     "duration_min": 65,
-    "bike": "Dogma na suchą szosę > 5 °C; Checkpoint na mokro, sól, szuter",
+    "bike": "Checkpoint (gravel)",
     "fallback_workout_id": null
    },
    "gym": null,
@@ -939,7 +939,7 @@
     "workout_id": "Z2",
     "name": "Baza tlenowa Z2",
     "duration_min": 60,
-    "bike": "Dogma na suchą szosę > 5 °C; Checkpoint na mokro, sól, szuter",
+    "bike": "Checkpoint (gravel)",
     "fallback_workout_id": null
    },
    "gym": null,
@@ -966,7 +966,7 @@
     "workout_id": "LONG",
     "name": "Długa jazda",
     "duration_min": 135,
-    "bike": "Dogma na suchą szosę > 5 °C; Checkpoint na mokro, sól, szuter",
+    "bike": "Checkpoint (gravel)",
     "fallback_workout_id": null
    },
    "gym": null,
@@ -993,7 +993,7 @@
     "workout_id": "Z2",
     "name": "Baza tlenowa Z2",
     "duration_min": 90,
-    "bike": "Dogma na suchą szosę > 5 °C; Checkpoint na mokro, sól, szuter",
+    "bike": "Checkpoint (gravel)",
     "fallback_workout_id": null
    },
    "gym": null,
@@ -1042,7 +1042,7 @@
     "workout_id": "Z2_FORCE",
     "name": "Z2 + siła na niskiej kadencji",
     "duration_min": 75,
-    "bike": "Dogma na suchą szosę > 5 °C; Checkpoint na mokro, sól, szuter",
+    "bike": "Checkpoint (gravel)",
     "fallback_workout_id": null
    },
    "gym": null,
@@ -1069,7 +1069,7 @@
     "workout_id": "SS_2x15",
     "name": "Sweet spot 2×15 min",
     "duration_min": 65,
-    "bike": "Dogma na suchą szosę > 5 °C; Checkpoint na mokro, sól, szuter",
+    "bike": "Checkpoint (gravel)",
     "fallback_workout_id": null
    },
    "gym": null,
@@ -1117,7 +1117,7 @@
     "workout_id": "Z2",
     "name": "Baza tlenowa Z2",
     "duration_min": 60,
-    "bike": "Dogma na suchą szosę > 5 °C; Checkpoint na mokro, sól, szuter",
+    "bike": "Checkpoint (gravel)",
     "fallback_workout_id": null
    },
    "gym": null,
@@ -1144,7 +1144,7 @@
     "workout_id": "LONG",
     "name": "Długa jazda",
     "duration_min": 150,
-    "bike": "Dogma na suchą szosę > 5 °C; Checkpoint na mokro, sól, szuter",
+    "bike": "Checkpoint (gravel)",
     "fallback_workout_id": null
    },
    "gym": null,
@@ -1171,7 +1171,7 @@
     "workout_id": "Z2",
     "name": "Baza tlenowa Z2",
     "duration_min": 90,
-    "bike": "Dogma na suchą szosę > 5 °C; Checkpoint na mokro, sól, szuter",
+    "bike": "Checkpoint (gravel)",
     "fallback_workout_id": null
    },
    "gym": null,
@@ -1222,7 +1222,7 @@
     "workout_id": "Z2",
     "name": "Baza tlenowa Z2",
     "duration_min": 60,
-    "bike": "Dogma na suchą szosę > 5 °C; Checkpoint na mokro, sól, szuter",
+    "bike": "Checkpoint (gravel)",
     "fallback_workout_id": null
    },
    "gym": null,
@@ -1251,7 +1251,7 @@
     "workout_id": "Z2",
     "name": "Baza tlenowa Z2",
     "duration_min": 60,
-    "bike": "Dogma na suchą szosę > 5 °C; Checkpoint na mokro, sól, szuter",
+    "bike": "Checkpoint (gravel)",
     "fallback_workout_id": null
    },
    "gym": null,
@@ -1326,7 +1326,7 @@
     "workout_id": "LONG",
     "name": "Długa jazda",
     "duration_min": 90,
-    "bike": "Dogma na suchą szosę > 5 °C; Checkpoint na mokro, sól, szuter",
+    "bike": "Checkpoint (gravel)",
     "fallback_workout_id": null
    },
    "gym": null,
@@ -1355,7 +1355,7 @@
     "workout_id": "Z2",
     "name": "Baza tlenowa Z2",
     "duration_min": 60,
-    "bike": "Dogma na suchą szosę > 5 °C; Checkpoint na mokro, sól, szuter",
+    "bike": "Checkpoint (gravel)",
     "fallback_workout_id": null
    },
    "gym": null,
@@ -1405,7 +1405,7 @@
     "workout_id": "Z2",
     "name": "Baza tlenowa Z2",
     "duration_min": 60,
-    "bike": "Dogma na suchą szosę > 5 °C; Checkpoint na mokro, sól, szuter",
+    "bike": "Checkpoint (gravel)",
     "fallback_workout_id": null
    },
    "gym": null,
@@ -1432,7 +1432,7 @@
     "workout_id": "SS_3x12",
     "name": "Sweet spot 3×12 min",
     "duration_min": 76,
-    "bike": "Dogma na suchą szosę > 5 °C; Checkpoint na mokro, sól, szuter",
+    "bike": "Checkpoint (gravel)",
     "fallback_workout_id": null
    },
    "gym": null,
@@ -1480,7 +1480,7 @@
     "workout_id": "Z2",
     "name": "Baza tlenowa Z2",
     "duration_min": 60,
-    "bike": "Dogma na suchą szosę > 5 °C; Checkpoint na mokro, sól, szuter",
+    "bike": "Checkpoint (gravel)",
     "fallback_workout_id": null
    },
    "gym": null,
@@ -1507,7 +1507,7 @@
     "workout_id": "LONG",
     "name": "Długa jazda",
     "duration_min": 150,
-    "bike": "Dogma na suchą szosę > 5 °C; Checkpoint na mokro, sól, szuter",
+    "bike": "Checkpoint (gravel)",
     "fallback_workout_id": null
    },
    "gym": null,
@@ -1534,7 +1534,7 @@
     "workout_id": "Z2",
     "name": "Baza tlenowa Z2",
     "duration_min": 90,
-    "bike": "Dogma na suchą szosę > 5 °C; Checkpoint na mokro, sól, szuter",
+    "bike": "Checkpoint (gravel)",
     "fallback_workout_id": null
    },
    "gym": null,
@@ -1582,7 +1582,7 @@
     "workout_id": "Z2_FORCE",
     "name": "Z2 + siła na niskiej kadencji",
     "duration_min": 75,
-    "bike": "Dogma na suchą szosę > 5 °C; Checkpoint na mokro, sól, szuter",
+    "bike": "Checkpoint (gravel)",
     "fallback_workout_id": null
    },
    "gym": null,
@@ -1609,7 +1609,7 @@
     "workout_id": "SS_2x20",
     "name": "Sweet spot 2×20 min",
     "duration_min": 75,
-    "bike": "Dogma na suchą szosę > 5 °C; Checkpoint na mokro, sól, szuter",
+    "bike": "Checkpoint (gravel)",
     "fallback_workout_id": null
    },
    "gym": null,
@@ -1657,7 +1657,7 @@
     "workout_id": "Z2",
     "name": "Baza tlenowa Z2",
     "duration_min": 60,
-    "bike": "Dogma na suchą szosę > 5 °C; Checkpoint na mokro, sól, szuter",
+    "bike": "Checkpoint (gravel)",
     "fallback_workout_id": null
    },
    "gym": null,
@@ -1684,7 +1684,7 @@
     "workout_id": "LONG",
     "name": "Długa jazda",
     "duration_min": 165,
-    "bike": "Dogma na suchą szosę > 5 °C; Checkpoint na mokro, sól, szuter",
+    "bike": "Checkpoint (gravel)",
     "fallback_workout_id": null
    },
    "gym": null,
@@ -1711,7 +1711,7 @@
     "workout_id": "Z2",
     "name": "Baza tlenowa Z2",
     "duration_min": 90,
-    "bike": "Dogma na suchą szosę > 5 °C; Checkpoint na mokro, sól, szuter",
+    "bike": "Checkpoint (gravel)",
     "fallback_workout_id": null
    },
    "gym": null,
@@ -1760,7 +1760,7 @@
     "workout_id": "Z2",
     "name": "Baza tlenowa Z2",
     "duration_min": 60,
-    "bike": "Dogma na suchą szosę > 5 °C; Checkpoint na mokro, sól, szuter",
+    "bike": "Checkpoint (gravel)",
     "fallback_workout_id": null
    },
    "gym": null,
@@ -1787,7 +1787,7 @@
     "workout_id": "SS_3x15",
     "name": "Sweet spot 3×15 min",
     "duration_min": 85,
-    "bike": "Dogma na suchą szosę > 5 °C; Checkpoint na mokro, sól, szuter",
+    "bike": "Checkpoint (gravel)",
     "fallback_workout_id": null
    },
    "gym": null,
@@ -1835,7 +1835,7 @@
     "workout_id": "Z2",
     "name": "Baza tlenowa Z2",
     "duration_min": 60,
-    "bike": "Dogma na suchą szosę > 5 °C; Checkpoint na mokro, sól, szuter",
+    "bike": "Checkpoint (gravel)",
     "fallback_workout_id": null
    },
    "gym": null,
@@ -1862,7 +1862,7 @@
     "workout_id": "LONG",
     "name": "Długa jazda",
     "duration_min": 165,
-    "bike": "Dogma na suchą szosę > 5 °C; Checkpoint na mokro, sól, szuter",
+    "bike": "Checkpoint (gravel)",
     "fallback_workout_id": null
    },
    "gym": null,
@@ -1889,7 +1889,7 @@
     "workout_id": "Z2",
     "name": "Baza tlenowa Z2",
     "duration_min": 90,
-    "bike": "Dogma na suchą szosę > 5 °C; Checkpoint na mokro, sól, szuter",
+    "bike": "Checkpoint (gravel)",
     "fallback_workout_id": null
    },
    "gym": null,
@@ -1940,7 +1940,7 @@
     "workout_id": "Z2",
     "name": "Baza tlenowa Z2",
     "duration_min": 60,
-    "bike": "Dogma na suchą szosę > 5 °C; Checkpoint na mokro, sól, szuter",
+    "bike": "Checkpoint (gravel)",
     "fallback_workout_id": null
    },
    "gym": null,
@@ -2090,7 +2090,7 @@
     "workout_id": "Z2",
     "name": "Baza tlenowa Z2",
     "duration_min": 60,
-    "bike": "Dogma na suchą szosę > 5 °C; Checkpoint na mokro, sól, szuter",
+    "bike": "Checkpoint (gravel)",
     "fallback_workout_id": null
    },
    "gym": null,
@@ -2260,7 +2260,7 @@
     "workout_id": "LONG",
     "name": "Długa jazda",
     "duration_min": 120,
-    "bike": "Dogma na suchą szosę > 5 °C; Checkpoint na mokro, sól, szuter",
+    "bike": "Checkpoint (gravel)",
     "fallback_workout_id": null
    },
    "gym": null,
@@ -2334,7 +2334,7 @@
     "workout_id": "Z2",
     "name": "Baza tlenowa Z2",
     "duration_min": 75,
-    "bike": "Dogma na suchą szosę > 5 °C; Checkpoint na mokro, sól, szuter",
+    "bike": "Checkpoint (gravel)",
     "fallback_workout_id": null
    },
    "gym": null,
@@ -2475,7 +2475,7 @@
     "workout_id": "SS_3x15",
     "name": "Sweet spot 3×15 min",
     "duration_min": 85,
-    "bike": "Dogma na suchą szosę > 5 °C; Checkpoint na mokro, sól, szuter",
+    "bike": "Checkpoint (gravel)",
     "fallback_workout_id": null
    },
    "gym": null,
@@ -2634,7 +2634,7 @@
     "workout_id": "LONG",
     "name": "Długa jazda",
     "duration_min": 180,
-    "bike": "Dogma na suchą szosę > 5 °C; Checkpoint na mokro, sól, szuter",
+    "bike": "Checkpoint (gravel)",
     "fallback_workout_id": null
    },
    "gym": null,
@@ -2703,7 +2703,7 @@
     "workout_id": "Z2_FORCE",
     "name": "Z2 + siła na niskiej kadencji",
     "duration_min": 75,
-    "bike": "Dogma na suchą szosę > 5 °C; Checkpoint na mokro, sól, szuter",
+    "bike": "Checkpoint (gravel)",
     "fallback_workout_id": null
    },
    "gym": null,
@@ -2844,7 +2844,7 @@
     "workout_id": "SS_2x20",
     "name": "Sweet spot 2×20 min",
     "duration_min": 75,
-    "bike": "Dogma na suchą szosę > 5 °C; Checkpoint na mokro, sól, szuter",
+    "bike": "Checkpoint (gravel)",
     "fallback_workout_id": null
    },
    "gym": null,
@@ -3003,7 +3003,7 @@
     "workout_id": "LONG",
     "name": "Długa jazda",
     "duration_min": 180,
-    "bike": "Dogma na suchą szosę > 5 °C; Checkpoint na mokro, sól, szuter",
+    "bike": "Checkpoint (gravel)",
     "fallback_workout_id": null
    },
    "gym": null,
@@ -3073,7 +3073,7 @@
     "workout_id": "Z2",
     "name": "Baza tlenowa Z2",
     "duration_min": 90,
-    "bike": "Dogma na suchą szosę > 5 °C; Checkpoint na mokro, sól, szuter",
+    "bike": "Checkpoint (gravel)",
     "fallback_workout_id": null
    },
    "gym": null,
@@ -3214,7 +3214,7 @@
     "workout_id": "SS_3x20",
     "name": "Sweet spot 3×20 min",
     "duration_min": 100,
-    "bike": "Dogma na suchą szosę > 5 °C; Checkpoint na mokro, sól, szuter",
+    "bike": "Checkpoint (gravel)",
     "fallback_workout_id": null
    },
    "gym": null,
@@ -3374,7 +3374,7 @@
     "workout_id": "LONG",
     "name": "Długa jazda",
     "duration_min": 210,
-    "bike": "Dogma na suchą szosę > 5 °C; Checkpoint na mokro, sól, szuter",
+    "bike": "Checkpoint (gravel)",
     "fallback_workout_id": null
    },
    "gym": null,
@@ -3444,7 +3444,7 @@
     "workout_id": "Z2",
     "name": "Baza tlenowa Z2",
     "duration_min": 75,
-    "bike": "Dogma na suchą szosę > 5 °C; Checkpoint na mokro, sól, szuter",
+    "bike": "Checkpoint (gravel)",
     "fallback_workout_id": null
    },
    "gym": null,
@@ -3585,7 +3585,7 @@
     "workout_id": "Z2",
     "name": "Baza tlenowa Z2",
     "duration_min": 60,
-    "bike": "Dogma na suchą szosę > 5 °C; Checkpoint na mokro, sól, szuter",
+    "bike": "Checkpoint (gravel)",
     "fallback_workout_id": null
    },
    "gym": null,
@@ -3745,7 +3745,7 @@
     "workout_id": "FTP_TEST",
     "name": "Test FTP 20 min (moc)",
     "duration_min": 65,
-    "bike": "Dogma na suchą szosę > 5 °C; Checkpoint na mokro, sól, szuter",
+    "bike": "Checkpoint (gravel)",
     "fallback_workout_id": null
    },
    "gym": null,
@@ -7586,7 +7586,7 @@
     "workout_id": "Z2",
     "name": "Baza tlenowa Z2",
     "duration_min": 75,
-    "bike": "Dogma na suchą szosę > 5 °C; Checkpoint na mokro, sól, szuter",
+    "bike": "Checkpoint (gravel)",
     "fallback_workout_id": null
    },
    "gym": null,
@@ -7613,7 +7613,7 @@
     "workout_id": "THR_4x6",
     "name": "Próg pod górę 4×6 min",
     "duration_min": 65,
-    "bike": "Dogma na suchą szosę > 5 °C; Checkpoint na mokro, sól, szuter",
+    "bike": "Checkpoint (gravel)",
     "fallback_workout_id": null
    },
    "gym": {
@@ -7753,7 +7753,7 @@
     "workout_id": "Z2",
     "name": "Baza tlenowa Z2",
     "duration_min": 60,
-    "bike": "Dogma na suchą szosę > 5 °C; Checkpoint na mokro, sól, szuter",
+    "bike": "Checkpoint (gravel)",
     "fallback_workout_id": null
    },
    "gym": null,
@@ -7921,7 +7921,7 @@
     "workout_id": "LONG_TEMPO",
     "name": "Długa jazda z tempem 30 km/h",
     "duration_min": 180,
-    "bike": "Dogma na suchą szosę > 5 °C; Checkpoint na mokro, sól, szuter",
+    "bike": "Checkpoint (gravel)",
     "fallback_workout_id": null
    },
    "gym": null,
@@ -7948,7 +7948,7 @@
     "workout_id": "HILLS",
     "name": "Pagórki / gravel",
     "duration_min": 120,
-    "bike": "Dogma na suchą szosę > 5 °C; Checkpoint na mokro, sól, szuter",
+    "bike": "Checkpoint (gravel)",
     "fallback_workout_id": null
    },
    "gym": null,
@@ -7996,7 +7996,7 @@
     "workout_id": "Z2",
     "name": "Baza tlenowa Z2",
     "duration_min": 90,
-    "bike": "Dogma na suchą szosę > 5 °C; Checkpoint na mokro, sól, szuter",
+    "bike": "Checkpoint (gravel)",
     "fallback_workout_id": null
    },
    "gym": null,
@@ -8023,7 +8023,7 @@
     "workout_id": "THR_4x8",
     "name": "Próg pod górę 4×8 min",
     "duration_min": 73,
-    "bike": "Dogma na suchą szosę > 5 °C; Checkpoint na mokro, sól, szuter",
+    "bike": "Checkpoint (gravel)",
     "fallback_workout_id": null
    },
    "gym": {
@@ -8163,7 +8163,7 @@
     "workout_id": "Z2",
     "name": "Baza tlenowa Z2",
     "duration_min": 60,
-    "bike": "Dogma na suchą szosę > 5 °C; Checkpoint na mokro, sól, szuter",
+    "bike": "Checkpoint (gravel)",
     "fallback_workout_id": null
    },
    "gym": null,
@@ -8331,7 +8331,7 @@
     "workout_id": "LONG_TEMPO",
     "name": "Długa jazda z tempem 30 km/h",
     "duration_min": 195,
-    "bike": "Dogma na suchą szosę > 5 °C; Checkpoint na mokro, sól, szuter",
+    "bike": "Checkpoint (gravel)",
     "fallback_workout_id": null
    },
    "gym": null,
@@ -8358,7 +8358,7 @@
     "workout_id": "HILLS",
     "name": "Pagórki / gravel",
     "duration_min": 135,
-    "bike": "Dogma na suchą szosę > 5 °C; Checkpoint na mokro, sól, szuter",
+    "bike": "Checkpoint (gravel)",
     "fallback_workout_id": null
    },
    "gym": null,
@@ -8407,7 +8407,7 @@
     "workout_id": "Z2",
     "name": "Baza tlenowa Z2",
     "duration_min": 90,
-    "bike": "Dogma na suchą szosę > 5 °C; Checkpoint na mokro, sól, szuter",
+    "bike": "Checkpoint (gravel)",
     "fallback_workout_id": null
    },
    "gym": null,
@@ -8434,7 +8434,7 @@
     "workout_id": "THR_3x12",
     "name": "Próg pod górę 3×12 min",
     "duration_min": 76,
-    "bike": "Dogma na suchą szosę > 5 °C; Checkpoint na mokro, sól, szuter",
+    "bike": "Checkpoint (gravel)",
     "fallback_workout_id": null
    },
    "gym": {
@@ -8574,7 +8574,7 @@
     "workout_id": "Z2",
     "name": "Baza tlenowa Z2",
     "duration_min": 60,
-    "bike": "Dogma na suchą szosę > 5 °C; Checkpoint na mokro, sól, szuter",
+    "bike": "Checkpoint (gravel)",
     "fallback_workout_id": null
    },
    "gym": null,
@@ -8742,7 +8742,7 @@
     "workout_id": "LONG_TEMPO",
     "name": "Długa jazda z tempem 30 km/h",
     "duration_min": 210,
-    "bike": "Dogma na suchą szosę > 5 °C; Checkpoint na mokro, sól, szuter",
+    "bike": "Checkpoint (gravel)",
     "fallback_workout_id": null
    },
    "gym": null,
@@ -8769,7 +8769,7 @@
     "workout_id": "HILLS",
     "name": "Pagórki / gravel",
     "duration_min": 135,
-    "bike": "Dogma na suchą szosę > 5 °C; Checkpoint na mokro, sól, szuter",
+    "bike": "Checkpoint (gravel)",
     "fallback_workout_id": null
    },
    "gym": null,
@@ -8819,7 +8819,7 @@
     "workout_id": "Z2",
     "name": "Baza tlenowa Z2",
     "duration_min": 60,
-    "bike": "Dogma na suchą szosę > 5 °C; Checkpoint na mokro, sól, szuter",
+    "bike": "Checkpoint (gravel)",
     "fallback_workout_id": null
    },
    "gym": null,
@@ -8848,7 +8848,7 @@
     "workout_id": "DELOAD_WED",
     "name": "Tydzień lżejszy: Z2 z pobudzeniem",
     "duration_min": 60,
-    "bike": "Dogma na suchą szosę > 5 °C; Checkpoint na mokro, sól, szuter",
+    "bike": "Checkpoint (gravel)",
     "fallback_workout_id": null
    },
    "gym": {
@@ -9172,7 +9172,7 @@
     "workout_id": "LONG",
     "name": "Długa jazda",
     "duration_min": 135,
-    "bike": "Dogma na suchą szosę > 5 °C; Checkpoint na mokro, sól, szuter",
+    "bike": "Checkpoint (gravel)",
     "fallback_workout_id": null
    },
    "gym": null,
@@ -9201,7 +9201,7 @@
     "workout_id": "Z2",
     "name": "Baza tlenowa Z2",
     "duration_min": 90,
-    "bike": "Dogma na suchą szosę > 5 °C; Checkpoint na mokro, sól, szuter",
+    "bike": "Checkpoint (gravel)",
     "fallback_workout_id": null
    },
    "gym": null,
@@ -9252,7 +9252,7 @@
     "workout_id": "Z2",
     "name": "Baza tlenowa Z2",
     "duration_min": 90,
-    "bike": "Dogma na suchą szosę > 5 °C; Checkpoint na mokro, sól, szuter",
+    "bike": "Checkpoint (gravel)",
     "fallback_workout_id": null
    },
    "gym": null,
@@ -9279,7 +9279,7 @@
     "workout_id": "TEST_LTHR",
     "name": "Test progowy 30 min (LTHR)",
     "duration_min": 60,
-    "bike": "Dogma na suchą szosę > 5 °C; Checkpoint na mokro, sól, szuter",
+    "bike": "Checkpoint (gravel)",
     "fallback_workout_id": null
    },
    "gym": {
@@ -9393,7 +9393,7 @@
     "workout_id": "Z2",
     "name": "Baza tlenowa Z2",
     "duration_min": 60,
-    "bike": "Dogma na suchą szosę > 5 °C; Checkpoint na mokro, sól, szuter",
+    "bike": "Checkpoint (gravel)",
     "fallback_workout_id": null
    },
    "gym": null,
@@ -9420,7 +9420,7 @@
     "workout_id": "Z1_RECOVERY",
     "name": "Jazda regeneracyjna",
     "duration_min": 45,
-    "bike": "Dogma na suchą szosę > 5 °C; Checkpoint na mokro, sól, szuter",
+    "bike": "Checkpoint (gravel)",
     "fallback_workout_id": null
    },
    "gym": null,
@@ -9447,7 +9447,7 @@
     "workout_id": "LONG_TEMPO",
     "name": "Długa jazda z tempem 30 km/h",
     "duration_min": 210,
-    "bike": "Dogma na suchą szosę > 5 °C; Checkpoint na mokro, sól, szuter",
+    "bike": "Checkpoint (gravel)",
     "fallback_workout_id": null
    },
    "gym": null,
@@ -9474,7 +9474,7 @@
     "workout_id": "HILLS",
     "name": "Pagórki / gravel",
     "duration_min": 150,
-    "bike": "Dogma na suchą szosę > 5 °C; Checkpoint na mokro, sól, szuter",
+    "bike": "Checkpoint (gravel)",
     "fallback_workout_id": null
    },
    "gym": null,
@@ -9523,7 +9523,7 @@
     "workout_id": "Z2",
     "name": "Baza tlenowa Z2",
     "duration_min": 90,
-    "bike": "Dogma na suchą szosę > 5 °C; Checkpoint na mokro, sól, szuter",
+    "bike": "Checkpoint (gravel)",
     "fallback_workout_id": null
    },
    "gym": null,
@@ -9550,7 +9550,7 @@
     "workout_id": "THR_2x20",
     "name": "Próg pod górę 2×20 min",
     "duration_min": 77,
-    "bike": "Dogma na suchą szosę > 5 °C; Checkpoint na mokro, sól, szuter",
+    "bike": "Checkpoint (gravel)",
     "fallback_workout_id": null
    },
    "gym": {
@@ -9662,7 +9662,7 @@
     "workout_id": "Z2",
     "name": "Baza tlenowa Z2",
     "duration_min": 60,
-    "bike": "Dogma na suchą szosę > 5 °C; Checkpoint na mokro, sól, szuter",
+    "bike": "Checkpoint (gravel)",
     "fallback_workout_id": null
    },
    "gym": null,
@@ -9689,7 +9689,7 @@
     "workout_id": "Z1_RECOVERY",
     "name": "Jazda regeneracyjna",
     "duration_min": 45,
-    "bike": "Dogma na suchą szosę > 5 °C; Checkpoint na mokro, sól, szuter",
+    "bike": "Checkpoint (gravel)",
     "fallback_workout_id": null
    },
    "gym": null,
@@ -9716,7 +9716,7 @@
     "workout_id": "LONG_TEMPO",
     "name": "Długa jazda z tempem 30 km/h",
     "duration_min": 210,
-    "bike": "Dogma na suchą szosę > 5 °C; Checkpoint na mokro, sól, szuter",
+    "bike": "Checkpoint (gravel)",
     "fallback_workout_id": null
    },
    "gym": null,
@@ -9743,7 +9743,7 @@
     "workout_id": "HILLS",
     "name": "Pagórki / gravel",
     "duration_min": 150,
-    "bike": "Dogma na suchą szosę > 5 °C; Checkpoint na mokro, sól, szuter",
+    "bike": "Checkpoint (gravel)",
     "fallback_workout_id": null
    },
    "gym": null,
@@ -9791,7 +9791,7 @@
     "workout_id": "Z2",
     "name": "Baza tlenowa Z2",
     "duration_min": 90,
-    "bike": "Dogma na suchą szosę > 5 °C; Checkpoint na mokro, sól, szuter",
+    "bike": "Checkpoint (gravel)",
     "fallback_workout_id": null
    },
    "gym": null,
@@ -9818,7 +9818,7 @@
     "workout_id": "VO2_5x3",
     "name": "VO2max 5×3 min",
     "duration_min": 60,
-    "bike": "Dogma na suchą szosę > 5 °C; Checkpoint na mokro, sól, szuter",
+    "bike": "Checkpoint (gravel)",
     "fallback_workout_id": null
    },
    "gym": {
@@ -9930,7 +9930,7 @@
     "workout_id": "Z2",
     "name": "Baza tlenowa Z2",
     "duration_min": 60,
-    "bike": "Dogma na suchą szosę > 5 °C; Checkpoint na mokro, sól, szuter",
+    "bike": "Checkpoint (gravel)",
     "fallback_workout_id": null
    },
    "gym": null,
@@ -9957,7 +9957,7 @@
     "workout_id": "Z1_RECOVERY",
     "name": "Jazda regeneracyjna",
     "duration_min": 45,
-    "bike": "Dogma na suchą szosę > 5 °C; Checkpoint na mokro, sól, szuter",
+    "bike": "Checkpoint (gravel)",
     "fallback_workout_id": null
    },
    "gym": null,
@@ -9984,7 +9984,7 @@
     "workout_id": "LONG_TEMPO",
     "name": "Długa jazda z tempem 30 km/h",
     "duration_min": 225,
-    "bike": "Dogma na suchą szosę > 5 °C; Checkpoint na mokro, sól, szuter",
+    "bike": "Checkpoint (gravel)",
     "fallback_workout_id": null
    },
    "gym": null,
@@ -10011,7 +10011,7 @@
     "workout_id": "HILLS",
     "name": "Pagórki / gravel",
     "duration_min": 150,
-    "bike": "Dogma na suchą szosę > 5 °C; Checkpoint na mokro, sól, szuter",
+    "bike": "Checkpoint (gravel)",
     "fallback_workout_id": null
    },
    "gym": null,
@@ -10061,7 +10061,7 @@
     "workout_id": "Z2",
     "name": "Baza tlenowa Z2",
     "duration_min": 60,
-    "bike": "Dogma na suchą szosę > 5 °C; Checkpoint na mokro, sól, szuter",
+    "bike": "Checkpoint (gravel)",
     "fallback_workout_id": null
    },
    "gym": null,
@@ -10090,7 +10090,7 @@
     "workout_id": "DELOAD_WED",
     "name": "Tydzień lżejszy: Z2 z pobudzeniem",
     "duration_min": 60,
-    "bike": "Dogma na suchą szosę > 5 °C; Checkpoint na mokro, sól, szuter",
+    "bike": "Checkpoint (gravel)",
     "fallback_workout_id": null
    },
    "gym": {
@@ -10241,7 +10241,7 @@
     "workout_id": "LONG",
     "name": "Długa jazda",
     "duration_min": 135,
-    "bike": "Dogma na suchą szosę > 5 °C; Checkpoint na mokro, sól, szuter",
+    "bike": "Checkpoint (gravel)",
     "fallback_workout_id": null
    },
    "gym": null,
@@ -10270,7 +10270,7 @@
     "workout_id": "Z2",
     "name": "Baza tlenowa Z2",
     "duration_min": 90,
-    "bike": "Dogma na suchą szosę > 5 °C; Checkpoint na mokro, sól, szuter",
+    "bike": "Checkpoint (gravel)",
     "fallback_workout_id": null
    },
    "gym": null,
@@ -10321,7 +10321,7 @@
     "workout_id": "Z2",
     "name": "Baza tlenowa Z2",
     "duration_min": 90,
-    "bike": "Dogma na suchą szosę > 5 °C; Checkpoint na mokro, sól, szuter",
+    "bike": "Checkpoint (gravel)",
     "fallback_workout_id": null
    },
    "gym": null,
@@ -10348,7 +10348,7 @@
     "workout_id": "THR_3x12",
     "name": "Próg pod górę 3×12 min",
     "duration_min": 76,
-    "bike": "Dogma na suchą szosę > 5 °C; Checkpoint na mokro, sól, szuter",
+    "bike": "Checkpoint (gravel)",
     "fallback_workout_id": null
    },
    "gym": {
@@ -10460,7 +10460,7 @@
     "workout_id": "Z2",
     "name": "Baza tlenowa Z2",
     "duration_min": 60,
-    "bike": "Dogma na suchą szosę > 5 °C; Checkpoint na mokro, sól, szuter",
+    "bike": "Checkpoint (gravel)",
     "fallback_workout_id": null
    },
    "gym": null,
@@ -10508,7 +10508,7 @@
     "workout_id": "LONG",
     "name": "Długa jazda",
     "duration_min": 240,
-    "bike": "Dogma na suchą szosę > 5 °C; Checkpoint na mokro, sól, szuter",
+    "bike": "Checkpoint (gravel)",
     "fallback_workout_id": null
    },
    "gym": null,
@@ -10535,7 +10535,7 @@
     "workout_id": "HILLS",
     "name": "Pagórki / gravel",
     "duration_min": 150,
-    "bike": "Dogma na suchą szosę > 5 °C; Checkpoint na mokro, sól, szuter",
+    "bike": "Checkpoint (gravel)",
     "fallback_workout_id": null
    },
    "gym": null,
@@ -10583,7 +10583,7 @@
     "workout_id": "Z2",
     "name": "Baza tlenowa Z2",
     "duration_min": 90,
-    "bike": "Dogma na suchą szosę > 5 °C; Checkpoint na mokro, sól, szuter",
+    "bike": "Checkpoint (gravel)",
     "fallback_workout_id": null
    },
    "gym": null,
@@ -10610,7 +10610,7 @@
     "workout_id": "VO2_5x3",
     "name": "VO2max 5×3 min",
     "duration_min": 60,
-    "bike": "Dogma na suchą szosę > 5 °C; Checkpoint na mokro, sól, szuter",
+    "bike": "Checkpoint (gravel)",
     "fallback_workout_id": null
    },
    "gym": {
@@ -10713,7 +10713,7 @@
     "workout_id": "Z2",
     "name": "Baza tlenowa Z2",
     "duration_min": 60,
-    "bike": "Dogma na suchą szosę > 5 °C; Checkpoint na mokro, sól, szuter",
+    "bike": "Checkpoint (gravel)",
     "fallback_workout_id": null
    },
    "gym": null,
@@ -10761,7 +10761,7 @@
     "workout_id": "LONG",
     "name": "Długa jazda",
     "duration_min": 240,
-    "bike": "Dogma na suchą szosę > 5 °C; Checkpoint na mokro, sól, szuter",
+    "bike": "Checkpoint (gravel)",
     "fallback_workout_id": null
    },
    "gym": null,
@@ -10788,7 +10788,7 @@
     "workout_id": "HILLS",
     "name": "Pagórki / gravel",
     "duration_min": 180,
-    "bike": "Dogma na suchą szosę > 5 °C; Checkpoint na mokro, sól, szuter",
+    "bike": "Checkpoint (gravel)",
     "fallback_workout_id": null
    },
    "gym": null,
@@ -10836,7 +10836,7 @@
     "workout_id": "Z2",
     "name": "Baza tlenowa Z2",
     "duration_min": 90,
-    "bike": "Dogma na suchą szosę > 5 °C; Checkpoint na mokro, sól, szuter",
+    "bike": "Checkpoint (gravel)",
     "fallback_workout_id": null
    },
    "gym": null,
@@ -10863,7 +10863,7 @@
     "workout_id": "THR_3x12",
     "name": "Próg pod górę 3×12 min",
     "duration_min": 76,
-    "bike": "Dogma na suchą szosę > 5 °C; Checkpoint na mokro, sól, szuter",
+    "bike": "Checkpoint (gravel)",
     "fallback_workout_id": null
    },
    "gym": {
@@ -10966,7 +10966,7 @@
     "workout_id": "Z2",
     "name": "Baza tlenowa Z2",
     "duration_min": 45,
-    "bike": "Dogma na suchą szosę > 5 °C; Checkpoint na mokro, sól, szuter",
+    "bike": "Checkpoint (gravel)",
     "fallback_workout_id": null
    },
    "gym": null,
@@ -10993,7 +10993,7 @@
     "workout_id": "TRAVEL_REST",
     "name": "Odpoczynek / dojazd",
     "duration_min": 0,
-    "bike": "Dogma na suchą szosę > 5 °C; Checkpoint na mokro, sól, szuter",
+    "bike": "Checkpoint (gravel)",
     "fallback_workout_id": null
    },
    "gym": null,
@@ -11102,7 +11102,7 @@
     "workout_id": "Z2",
     "name": "Baza tlenowa Z2",
     "duration_min": 60,
-    "bike": "Dogma na suchą szosę > 5 °C; Checkpoint na mokro, sól, szuter",
+    "bike": "Checkpoint (gravel)",
     "fallback_workout_id": null
    },
    "gym": null,
@@ -11131,7 +11131,7 @@
     "workout_id": "DELOAD_WED",
     "name": "Tydzień lżejszy: Z2 z pobudzeniem",
     "duration_min": 60,
-    "bike": "Dogma na suchą szosę > 5 °C; Checkpoint na mokro, sól, szuter",
+    "bike": "Checkpoint (gravel)",
     "fallback_workout_id": null
    },
    "gym": {
@@ -11282,7 +11282,7 @@
     "workout_id": "LONG",
     "name": "Długa jazda",
     "duration_min": 150,
-    "bike": "Dogma na suchą szosę > 5 °C; Checkpoint na mokro, sól, szuter",
+    "bike": "Checkpoint (gravel)",
     "fallback_workout_id": null
    },
    "gym": null,
@@ -11311,7 +11311,7 @@
     "workout_id": "Z2",
     "name": "Baza tlenowa Z2",
     "duration_min": 90,
-    "bike": "Dogma na suchą szosę > 5 °C; Checkpoint na mokro, sól, szuter",
+    "bike": "Checkpoint (gravel)",
     "fallback_workout_id": null
    },
    "gym": null,
@@ -11361,7 +11361,7 @@
     "workout_id": "Z2",
     "name": "Baza tlenowa Z2",
     "duration_min": 90,
-    "bike": "Dogma na suchą szosę > 5 °C; Checkpoint na mokro, sól, szuter",
+    "bike": "Checkpoint (gravel)",
     "fallback_workout_id": null
    },
    "gym": null,
@@ -11388,7 +11388,7 @@
     "workout_id": "TEST_LTHR",
     "name": "Test progowy 30 min (LTHR)",
     "duration_min": 60,
-    "bike": "Dogma na suchą szosę > 5 °C; Checkpoint na mokro, sól, szuter",
+    "bike": "Checkpoint (gravel)",
     "fallback_workout_id": null
    },
    "gym": {
@@ -11493,7 +11493,7 @@
     "workout_id": "Z2",
     "name": "Baza tlenowa Z2",
     "duration_min": 60,
-    "bike": "Dogma na suchą szosę > 5 °C; Checkpoint na mokro, sól, szuter",
+    "bike": "Checkpoint (gravel)",
     "fallback_workout_id": null
    },
    "gym": null,
@@ -11541,7 +11541,7 @@
     "workout_id": "LONG",
     "name": "Długa jazda",
     "duration_min": 270,
-    "bike": "Dogma na suchą szosę > 5 °C; Checkpoint na mokro, sól, szuter",
+    "bike": "Checkpoint (gravel)",
     "fallback_workout_id": null
    },
    "gym": null,
@@ -11568,7 +11568,7 @@
     "workout_id": "HILLS",
     "name": "Pagórki / gravel",
     "duration_min": 180,
-    "bike": "Dogma na suchą szosę > 5 °C; Checkpoint na mokro, sól, szuter",
+    "bike": "Checkpoint (gravel)",
     "fallback_workout_id": null
    },
    "gym": null,
@@ -11616,7 +11616,7 @@
     "workout_id": "Z2_HEAT",
     "name": "Z2 w upale (adaptacja cieplna)",
     "duration_min": 90,
-    "bike": "Dogma na suchą szosę > 5 °C; Checkpoint na mokro, sól, szuter",
+    "bike": "Checkpoint (gravel)",
     "fallback_workout_id": null
    },
    "gym": null,
@@ -11645,7 +11645,7 @@
     "workout_id": "VO2_5x3",
     "name": "VO2max 5×3 min",
     "duration_min": 60,
-    "bike": "Dogma na suchą szosę > 5 °C; Checkpoint na mokro, sól, szuter",
+    "bike": "Checkpoint (gravel)",
     "fallback_workout_id": null
    },
    "gym": {
@@ -11748,7 +11748,7 @@
     "workout_id": "Z2",
     "name": "Baza tlenowa Z2",
     "duration_min": 60,
-    "bike": "Dogma na suchą szosę > 5 °C; Checkpoint na mokro, sól, szuter",
+    "bike": "Checkpoint (gravel)",
     "fallback_workout_id": null
    },
    "gym": null,
@@ -11876,7 +11876,7 @@
     "workout_id": "Z2_HEAT",
     "name": "Z2 w upale (adaptacja cieplna)",
     "duration_min": 90,
-    "bike": "Dogma na suchą szosę > 5 °C; Checkpoint na mokro, sól, szuter",
+    "bike": "Checkpoint (gravel)",
     "fallback_workout_id": null
    },
    "gym": null,
@@ -11905,7 +11905,7 @@
     "workout_id": "THR_2x20",
     "name": "Próg pod górę 2×20 min",
     "duration_min": 77,
-    "bike": "Dogma na suchą szosę > 5 °C; Checkpoint na mokro, sól, szuter",
+    "bike": "Checkpoint (gravel)",
     "fallback_workout_id": null
    },
    "gym": {
@@ -12008,7 +12008,7 @@
     "workout_id": "Z2",
     "name": "Baza tlenowa Z2",
     "duration_min": 45,
-    "bike": "Dogma na suchą szosę > 5 °C; Checkpoint na mokro, sól, szuter",
+    "bike": "Checkpoint (gravel)",
     "fallback_workout_id": null
    },
    "gym": null,
@@ -12035,7 +12035,7 @@
     "workout_id": "TRAVEL_REST",
     "name": "Odpoczynek / dojazd",
     "duration_min": 0,
-    "bike": "Dogma na suchą szosę > 5 °C; Checkpoint na mokro, sól, szuter",
+    "bike": "Checkpoint (gravel)",
     "fallback_workout_id": null
    },
    "gym": null,
@@ -12144,7 +12144,7 @@
     "workout_id": "Z2",
     "name": "Baza tlenowa Z2",
     "duration_min": 60,
-    "bike": "Dogma na suchą szosę > 5 °C; Checkpoint na mokro, sól, szuter",
+    "bike": "Checkpoint (gravel)",
     "fallback_workout_id": null
    },
    "gym": null,
@@ -12173,7 +12173,7 @@
     "workout_id": "DELOAD_WED",
     "name": "Tydzień lżejszy: Z2 z pobudzeniem",
     "duration_min": 60,
-    "bike": "Dogma na suchą szosę > 5 °C; Checkpoint na mokro, sól, szuter",
+    "bike": "Checkpoint (gravel)",
     "fallback_workout_id": null
    },
    "gym": {
@@ -12324,7 +12324,7 @@
     "workout_id": "LONG",
     "name": "Długa jazda",
     "duration_min": 150,
-    "bike": "Dogma na suchą szosę > 5 °C; Checkpoint na mokro, sól, szuter",
+    "bike": "Checkpoint (gravel)",
     "fallback_workout_id": null
    },
    "gym": null,
@@ -12353,7 +12353,7 @@
     "workout_id": "Z2",
     "name": "Baza tlenowa Z2",
     "duration_min": 90,
-    "bike": "Dogma na suchą szosę > 5 °C; Checkpoint na mokro, sól, szuter",
+    "bike": "Checkpoint (gravel)",
     "fallback_workout_id": null
    },
    "gym": null,
@@ -12403,7 +12403,7 @@
     "workout_id": "Z2_HEAT",
     "name": "Z2 w upale (adaptacja cieplna)",
     "duration_min": 90,
-    "bike": "Dogma na suchą szosę > 5 °C; Checkpoint na mokro, sól, szuter",
+    "bike": "Checkpoint (gravel)",
     "fallback_workout_id": null
    },
    "gym": null,
@@ -12432,7 +12432,7 @@
     "workout_id": "THR_2x20",
     "name": "Próg pod górę 2×20 min",
     "duration_min": 77,
-    "bike": "Dogma na suchą szosę > 5 °C; Checkpoint na mokro, sól, szuter",
+    "bike": "Checkpoint (gravel)",
     "fallback_workout_id": null
    },
    "gym": {
@@ -12535,7 +12535,7 @@
     "workout_id": "Z2",
     "name": "Baza tlenowa Z2",
     "duration_min": 60,
-    "bike": "Dogma na suchą szosę > 5 °C; Checkpoint na mokro, sól, szuter",
+    "bike": "Checkpoint (gravel)",
     "fallback_workout_id": null
    },
    "gym": null,
@@ -12583,7 +12583,7 @@
     "workout_id": "LONG",
     "name": "Długa jazda",
     "duration_min": 270,
-    "bike": "Dogma na suchą szosę > 5 °C; Checkpoint na mokro, sól, szuter",
+    "bike": "Checkpoint (gravel)",
     "fallback_workout_id": null
    },
    "gym": null,
@@ -12610,7 +12610,7 @@
     "workout_id": "HILLS",
     "name": "Pagórki / gravel",
     "duration_min": 180,
-    "bike": "Dogma na suchą szosę > 5 °C; Checkpoint na mokro, sól, szuter",
+    "bike": "Checkpoint (gravel)",
     "fallback_workout_id": null
    },
    "gym": null,
@@ -12658,7 +12658,7 @@
     "workout_id": "Z2_HEAT",
     "name": "Z2 w upale (adaptacja cieplna)",
     "duration_min": 90,
-    "bike": "Dogma na suchą szosę > 5 °C; Checkpoint na mokro, sól, szuter",
+    "bike": "Checkpoint (gravel)",
     "fallback_workout_id": null
    },
    "gym": null,
@@ -12687,7 +12687,7 @@
     "workout_id": "CLIMB_REPEATS",
     "name": "Powtórzenia podjazdu 6–10×",
     "duration_min": 107,
-    "bike": "Dogma na suchą szosę > 5 °C; Checkpoint na mokro, sól, szuter",
+    "bike": "Checkpoint (gravel)",
     "fallback_workout_id": null
    },
    "gym": {
@@ -12790,7 +12790,7 @@
     "workout_id": "Z2",
     "name": "Baza tlenowa Z2",
     "duration_min": 60,
-    "bike": "Dogma na suchą szosę > 5 °C; Checkpoint na mokro, sól, szuter",
+    "bike": "Checkpoint (gravel)",
     "fallback_workout_id": null
    },
    "gym": null,
@@ -12918,7 +12918,7 @@
     "workout_id": "Z2_HEAT",
     "name": "Z2 w upale (adaptacja cieplna)",
     "duration_min": 90,
-    "bike": "Dogma na suchą szosę > 5 °C; Checkpoint na mokro, sól, szuter",
+    "bike": "Checkpoint (gravel)",
     "fallback_workout_id": null
    },
    "gym": null,
@@ -12947,7 +12947,7 @@
     "workout_id": "VO2_5x3",
     "name": "VO2max 5×3 min",
     "duration_min": 60,
-    "bike": "Dogma na suchą szosę > 5 °C; Checkpoint na mokro, sól, szuter",
+    "bike": "Checkpoint (gravel)",
     "fallback_workout_id": null
    },
    "gym": {
@@ -13050,7 +13050,7 @@
     "workout_id": "Z2",
     "name": "Baza tlenowa Z2",
     "duration_min": 45,
-    "bike": "Dogma na suchą szosę > 5 °C; Checkpoint na mokro, sól, szuter",
+    "bike": "Checkpoint (gravel)",
     "fallback_workout_id": null
    },
    "gym": null,
@@ -13077,7 +13077,7 @@
     "workout_id": "TRAVEL_REST",
     "name": "Odpoczynek / dojazd",
     "duration_min": 0,
-    "bike": "Dogma na suchą szosę > 5 °C; Checkpoint na mokro, sól, szuter",
+    "bike": "Checkpoint (gravel)",
     "fallback_workout_id": null
    },
    "gym": null,
@@ -13186,7 +13186,7 @@
     "workout_id": "Z2",
     "name": "Baza tlenowa Z2",
     "duration_min": 60,
-    "bike": "Dogma na suchą szosę > 5 °C; Checkpoint na mokro, sól, szuter",
+    "bike": "Checkpoint (gravel)",
     "fallback_workout_id": null
    },
    "gym": null,
@@ -13215,7 +13215,7 @@
     "workout_id": "DELOAD_WED",
     "name": "Tydzień lżejszy: Z2 z pobudzeniem",
     "duration_min": 60,
-    "bike": "Dogma na suchą szosę > 5 °C; Checkpoint na mokro, sól, szuter",
+    "bike": "Checkpoint (gravel)",
     "fallback_workout_id": null
    },
    "gym": {
@@ -13366,7 +13366,7 @@
     "workout_id": "LONG",
     "name": "Długa jazda",
     "duration_min": 150,
-    "bike": "Dogma na suchą szosę > 5 °C; Checkpoint na mokro, sól, szuter",
+    "bike": "Checkpoint (gravel)",
     "fallback_workout_id": null
    },
    "gym": null,
@@ -13395,7 +13395,7 @@
     "workout_id": "Z2",
     "name": "Baza tlenowa Z2",
     "duration_min": 90,
-    "bike": "Dogma na suchą szosę > 5 °C; Checkpoint na mokro, sól, szuter",
+    "bike": "Checkpoint (gravel)",
     "fallback_workout_id": null
    },
    "gym": null,
