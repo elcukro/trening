@@ -257,6 +257,13 @@ a.ios-row:active {
   background: var(--separator);
 }
 
+/* Powierzchnia karty bez marginesu – dla elementów, którym margines daje rodzic (przyciski `width:100%`). */
+.ios-surface {
+  border-radius: 16px;
+  background: var(--card);
+  box-shadow: var(--shadow);
+  overflow: hidden;
+}
 .ios-card {
   margin: 0 16px;
   border-radius: 16px;

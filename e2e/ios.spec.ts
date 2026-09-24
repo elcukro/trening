@@ -102,3 +102,36 @@ test.describe('bez konta', () => {
     await expect(page.getByRole('heading', { name: 'Dziś' })).toBeVisible()
   })
 })
+
+test('Żaden panel nie wychodzi za krawędź ekranu', async ({ page }) => {
+  // regresja: przycisk-karta z `width: 100%` i marginesem `.ios-card` wystawał 32 px za prawą krawędź
+  const overflowing = async () =>
+    page.evaluate(() => {
+      const w = window.innerWidth
+      const bad: string[] = []
+      for (const el of document.querySelectorAll('body *')) {
+        const r = el.getBoundingClientRect()
+        if (r.width === 0 && r.height === 0) continue
+        if (r.right > w + 0.6 || r.left < -0.6) bad.push(`${el.tagName}.${String(el.className).slice(0, 40)} [${Math.round(r.left)}–${Math.round(r.right)}]`)
+      }
+      return { bad, scrollWidth: document.documentElement.scrollWidth, innerWidth: w }
+    })
+
+  for (const path of ['/i?today=2026-09-23', '/i/trening/2026-09-26?today=2026-09-23', '/i/tydzien?today=2026-09-23', '/i/postep?today=2026-09-23', '/i/wiecej?today=2026-09-23']) {
+    await page.goto(path)
+    await expect(page.getByRole('navigation', { name: 'Nawigacja główna' })).toBeVisible()
+    const r = await overflowing()
+    expect(r.bad, `${path}: ${r.bad.join(', ')}`).toEqual([])
+    expect(r.scrollWidth, path).toBeLessThanOrEqual(r.innerWidth)
+  }
+
+  // arkusze też
+  await page.goto('/i?today=2026-09-23')
+  for (const name of [/Poranny check-in/, /Podsumowanie/, /Odprawa/]) {
+    await page.getByRole('button', { name }).click()
+    await expect(page.getByRole('dialog')).toBeVisible()
+    const r = await overflowing()
+    expect(r.bad, `arkusz ${name}: ${r.bad.join(', ')}`).toEqual([])
+    await page.getByRole('button', { name: 'Zamknij' }).click()
+  }
+})

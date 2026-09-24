@@ -96,11 +96,14 @@ export function Row({ icon, title, subtitle, value, accessory, onClick, to, clas
 }
 
 export function Card({ children, className = '', onClick }: { children: ReactNode; className?: string; onClick?: () => void }) {
+  // przycisk z `width: 100%` nie może sam nosić marginesu `.ios-card` – 100% rodzica + 2×16 px wychodzi za ekran
   if (onClick)
     return (
-      <button type="button" onClick={onClick} className={`ios-card ios-press block w-full text-left ${className}`}>
-        {children}
-      </button>
+      <div className={`mx-4 ${className}`}>
+        <button type="button" onClick={onClick} className="ios-surface ios-press block w-full text-left">
+          {children}
+        </button>
+      </div>
     )
   return <div className={`ios-card ${className}`}>{children}</div>
 }

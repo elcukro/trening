@@ -282,7 +282,7 @@ export function DayScreen() {
         </div>
       ) : allDone ? (
         <div className="mb-8 px-4">
-          <div className="ios-card flex items-center justify-center gap-2 px-4 py-3" style={{ color: 'var(--green)' }}>
+          <div className="ios-surface flex items-center justify-center gap-2 px-4 py-3" style={{ color: 'var(--green)' }}>
             <IconCheck size={20} />
             <span className="ios-headline">Wszystko na dziś zrobione</span>
           </div>
