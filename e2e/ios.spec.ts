@@ -1,3 +1,4 @@
+import { existsSync, readFileSync } from 'node:fs'
 import { expect, test } from '@playwright/test'
 
 /** Uproszczony interfejs iOS: przepływ dnia, szczegóły treningu, tydzień, postęp i powrót do pełnej aplikacji. */
@@ -84,10 +85,24 @@ test('Wyłączenie domyślnego widoku zostawia start w pełnej aplikacji', async
   await expect(page.getByRole('heading', { name: 'Tydzień 2' })).toBeVisible()
 })
 
+/**
+ * Brama logowania włącza się tylko wtedy, gdy build ma konfigurację Supabase (`VITE_SUPABASE_*`).
+ * Lokalnie zwykle jest w `.env.local`, a na CI jej nie ma – dlatego oba warianty mają własny test,
+ * a nie jeden z `if` w środku. Warunek czytamy z tych samych plików, z których czyta go Vite przy buildzie.
+ */
+function supabaseConfigured(): boolean {
+  for (const f of ['.env.local', '.env']) {
+    if (!existsSync(f)) continue
+    if (/^VITE_SUPABASE_URL=\S/m.test(readFileSync(f, 'utf8'))) return true
+  }
+  return false
+}
+
 test.describe('bez konta', () => {
   test.use({ viewport: { width: 390, height: 780 }, isMobile: false, hasTouch: true })
 
-  test('prosi o zalogowanie zamiast pokazywać puste ekrany', async ({ page }) => {
+  test('z kontem w chmurze: prosi o zalogowanie zamiast pokazywać puste ekrany', async ({ page }) => {
+    test.skip(!supabaseConfigured(), 'build bez konfiguracji Supabase – nie ma się gdzie logować')
     // ten blok celowo nie ustawia znacznika „bez konta”
     await page.addInitScript(() => sessionStorage.removeItem('trening:no-account'))
     await page.goto('/i?today=2026-09-23')
@@ -100,6 +115,15 @@ test.describe('bez konta', () => {
     // da się obejrzeć sam plan bez konta
     await page.getByRole('button', { name: /Zobacz tylko plan, bez konta/ }).click()
     await expect(page.getByRole('heading', { name: 'Dziś' })).toBeVisible()
+  })
+
+  test('tryb lokalny: plan działa bez logowania i aplikacja to nazywa', async ({ page }) => {
+    test.skip(supabaseConfigured(), 'build z konfiguracją Supabase – tu wchodzi brama logowania')
+    await page.addInitScript(() => sessionStorage.removeItem('trening:no-account'))
+    await page.goto('/i?today=2026-09-23')
+    await expect(page.getByRole('heading', { name: 'Dziś' })).toBeVisible()
+    await page.goto('/i/wiecej?today=2026-09-23')
+    await expect(page.getByText('Tryb lokalny')).toBeVisible()
   })
 })
 
