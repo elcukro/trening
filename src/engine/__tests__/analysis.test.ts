@@ -97,7 +97,7 @@ describe('matchSteps', () => {
     const s = samples(1800, (t) => ({ watts: 150, hr: 130, cad: t % 20 === 0 ? 0 : 88 }))
     const m = matchSteps(ss, s)
     expect(m.steps[0]!.avg_cadence).toBe(88)
-    expect(m.steps[0]!.cadence_target).toEqual([85, 95])
+    expect(m.steps[0]!.cadence_target).toEqual([80, 95])
     expect(m.steps[0]!.cadence_in_target_pct).toBe(100)
   })
   it('chartSeries daje punkt co 30 s z pasem celu', () => {

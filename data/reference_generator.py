@@ -17,7 +17,7 @@ import json, datetime as dt, os, copy
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 D = dt.date
-PROGRAM_VERSION = "2026.09.22-3"
+PROGRAM_VERSION = "2026.09.24-1"
 
 DEFAULT_SETTINGS = {
     "program_start": "2026-09-14",          # poniedziałek tygodnia 1
@@ -71,8 +71,8 @@ def step(name, minutes, zone, intensity="active", cadence=None, note=None, rpe=N
 def repeat(times, steps):
     return {"repeat": times, "steps": steps}
 
-WU = lambda m=15: step("Rozgrzewka", m, "Z2", "wu", [85, 95], "Stopniowo od Z1 do górnej Z2; ostatnie 3 min z 2×20 s przyspieszenia.")
-CD = lambda m=10: step("Schłodzenie", m, "Z1", "cd", [90, 100])
+WU = lambda m=15: step("Rozgrzewka", m, "Z2", "wu", [80, 95], "Stopniowo od Z1 do górnej Z2; ostatnie 3 min z 2×20 s przyspieszenia.")
+CD = lambda m=10: step("Schłodzenie", m, "Z1", "cd", [85, 100])
 
 def total_s(steps):
     t = 0
@@ -87,7 +87,7 @@ def interval_workout(wid, name, category, reps, work_min, rec_min, zone, cadence
     steps = [WU(wu)]
     if extra_before: steps += extra_before
     steps.append(repeat(reps, [step(f"Interwał {work_min} min", work_min, zone, "lt" if zone in ("THR", "Z4") else ("map" if zone == "Z5b" else "active"), cadence, HR_LAG),
-                               step("Przerwa", rec_min, "Z1", "recover", [85, 95])]))
+                               step("Przerwa", rec_min, "Z1", "recover", [80, 95])]))
     steps.append(CD(cd))
     return {"id": wid, "name": name, "category": category, "key": True, "steps": steps,
             "duration_min": round(total_s(steps) / 60), "description": description}
@@ -95,7 +95,9 @@ def interval_workout(wid, name, category, reps, work_min, rec_min, zone, cadence
 BIKE_WORKOUTS = {}
 def add(w): BIKE_WORKOUTS[w["id"]] = w
 
-def endurance(wid, name, minutes, zone="Z2", desc="", category="endurance", cadence=(85, 95), key=False, extras=None):
+# Kadencja na jazdach spokojnych celowo szeroka: zawodnik ma mocne nogi i naturalnie kręci ~80 rpm,
+# a wymuszanie 90 podnosi mu tętno przy tej samej mocy. Pracę nad kadencją robimy w Z2_CADENCE, nie na każdej jeździe.
+def endurance(wid, name, minutes, zone="Z2", desc="", category="endurance", cadence=(80, 95), key=False, extras=None):
     steps = [step(name, minutes, zone, "active", list(cadence), desc)]
     w = {"id": wid, "name": name, "category": category, "key": key, "steps": steps,
          "duration_min": minutes, "description": desc, "parametric_duration": True}
@@ -104,19 +106,23 @@ def endurance(wid, name, minutes, zone="Z2", desc="", category="endurance", cade
 
 add(endurance("REST", "Odpoczynek", 0, "Z1", "Pełny dzień wolny. Spacer, sen, rozciąganie zginaczy bioder 5 min.", "rest"))
 add(endurance("Z1_RECOVERY", "Jazda regeneracyjna", 45, "Z1", "Bardzo luźno, miękki bieg, bez podjazdów. Opcjonalna – jeśli nogi są ciężkie, lepiej odpocząć.", "recovery", (90, 100)))
-add(endurance("Z2", "Baza tlenowa Z2", 60, "Z2", "Równe tempo w Z2, możesz rozmawiać pełnymi zdaniami. Kadencja 85–95. Bez zatrzymywania się w chłodzie.", "endurance"))
-z2c = endurance("Z2_CADENCE", "Z2 + praca nad kadencją", 60, "Z2", "Z2 z blokiem kadencji: po 15 min jazdy 5×2 min przy 100–110 rpm (tętno nadal w Z2) / 2 min swobodnie. Cel: nawyk 85–92 rpm na płaskim.", "endurance")
+add(endurance("Z2", "Baza tlenowa Z2", 60, "Z2", "Równe tempo w Z2, możesz rozmawiać pełnymi zdaniami. Kadencja naturalna (80–95) – nie wymuszaj szybszego kręcenia. Bez zatrzymywania się w chłodzie.", "endurance"))
+z2c = endurance("Z2_CADENCE", "Z2 + praca nad kadencją", 60, "Z2",
+                "Z2 z blokiem kadencji: w środku jazdy 5×2 min przy 100–110 rpm (tętno nadal w Z2) / 2 min swobodnie. Celem nie jest zmiana stylu jazdy, tylko zapas: na trzeciej godzinie nogi siadają wcześniej niż oddech i wtedy wyższa kadencja ratuje tempo.",
+                "endurance", extras={"insert": repeat(5, [
+                    step("Wysoka kadencja 100–110 rpm", 2, "Z2", "active", [100, 110], "Lżejszy bieg, kręcisz szybciej – nie mocniej. Biodra spokojne, bez podskakiwania w siodle."),
+                    step("Swobodnie", 2, "Z2", "recover", [80, 95])])})
 add(z2c)
-add(endurance("Z2_FORCE", "Z2 + siła na niskiej kadencji", 75, "Z2", "Z2 z blokami siły: 4×5 min w górnej Z2/dolnej Z3 na twardym biegu przy 55–65 rpm (siedząc, tułów spokojny, nacisk przez całe koło) / 5 min Z2 przy 85–95 rpm. Buduje siłę specyficzną bez dodatkowego zmęczenia układu krążenia. Kolana bez bólu – inaczej wyższa kadencja.", "endurance", extras={"insert": repeat(4, [step("Siła 55–65 rpm", 5, "Z3", "active", [55, 65], "Twardy bieg, siedząc; tętno może zostać w Z2 – liczy się nacisk na pedał."), step("Z2 swobodnie", 5, "Z2", "recover", [85, 95])])}))
+add(endurance("Z2_FORCE", "Z2 + siła na niskiej kadencji", 75, "Z2", "Z2 z blokami siły: 4×5 min w górnej Z2/dolnej Z3 na twardym biegu przy 55–65 rpm (siedząc, tułów spokojny, nacisk przez całe koło) / 5 min Z2 na swojej kadencji. Buduje siłę specyficzną bez dodatkowego zmęczenia układu krążenia. Kolana bez bólu – inaczej wyższa kadencja.", "endurance", extras={"insert": repeat(4, [step("Siła 55–65 rpm", 5, "Z3", "active", [55, 65], "Twardy bieg, siedząc; tętno może zostać w Z2 – liczy się nacisk na pedał."), step("Z2 swobodnie", 5, "Z2", "recover", [80, 95])])}))
 add(endurance("Z2_HEAT", "Z2 w upale (adaptacja cieplna)", 75, "Z2", "Jazda w najcieplejszej porze dnia (≥25 °C). Tętno w Z2 – prędkość będzie niższa, to normalne. 750 ml płynu/h + elektrolity. Przerwij przy zawrotach głowy.", "endurance"))
 add(endurance("LONG", "Długa jazda", 150, "Z2", "Główny trening objętościowy. Z2, podjazdy spokojnie (max górna Z3). Jedz od 45. minuty: 60–80 g węglowodanów/h, 500–750 ml/h. Na płaskich prostych ćwicz pozycję z przedramionami równolegle do ziemi.", "long"))
-add(endurance("LONG_TEMPO", "Długa jazda z tempem 30 km/h", 210, "Z2", "Z2 z blokiem tempa: w środku jazdy 3×15 min w Z3 (cel 30–32 km/h na płaskim, pozycja aero na klamkach, kadencja 88–95) / 5 min Z2. Jedzenie jak w długiej jeździe.", "long", extras={"insert": repeat(3, [step("Tempo 30–32 km/h", 15, "Z3", "tempo", [88, 95]), step("Z2", 5, "Z2", "recover", [85, 95])])}))
+add(endurance("LONG_TEMPO", "Długa jazda z tempem 30 km/h", 210, "Z2", "Z2 z blokiem tempa: w środku jazdy 3×15 min w Z3 (cel 30–32 km/h na płaskim, pozycja aero na klamkach, kadencja 88–95) / 5 min Z2. Jedzenie jak w długiej jeździe.", "long", extras={"insert": repeat(3, [step("Tempo 30–32 km/h", 15, "Z3", "tempo", [88, 95]), step("Z2", 5, "Z2", "recover", [80, 95])])}))
 add(endurance("HILLS", "Pagórki / gravel", 105, "Z2", "Teren pofałdowany lub szuter. Podjazdy w Z3 na miękkim przełożeniu (kadencja 75–85), zjazdy i płaskie w Z2. Bez „mielenia” na twardym biegu.", "hills"))
 add(endurance("DELOAD_WED", "Tydzień lżejszy: Z2 z pobudzeniem", 60, "Z2", "60 min Z2, w środku 3×1 min Z3–Z4 z 3 min luzu. Nogi mają wyjść świeższe.", "endurance"))
 
 # --- test progowy
 test_steps = [WU(15), step("Luźno przed testem", 5, "Z1", "recover"),
-              step("TEST 30 min – maksymalny równy wysiłek", 30, "THR", "ftp", [85, 95],
+              step("TEST 30 min – maksymalny równy wysiłek", 30, "THR", "ftp", [80, 95],
                    "Samotnie, płaska trasa lub równy lekki podjazd, zawsze ta sama. Pierwsze 5 min nie za mocno. LTHR = średnie tętno z minut 10–30. Zapisz też prędkość średnią, rower, temperaturę, wiatr.", [9, 9]),
               CD(10)]
 add({"id": "TEST_LTHR", "name": "Test progowy 30 min (LTHR)", "category": "test", "key": True, "steps": test_steps,
@@ -131,11 +137,11 @@ add({"id": "WATTBIKE_TEST", "name": "Test 20 min na Wattbike (FTP + LTHR)", "cat
      "description": "Wariant na siłowni (zima, gołoledź) lub dodatkowo do testu terenowego. Daje FTP w watach: FTP = 0,95 × średnia moc z 20 min; LTHR ≈ 0,97 × średnie tętno.",
      "result_fields": ["avg_power_w", "avg_hr", "notes"]})
 
-ftp_steps = [step("Rozgrzewka", 20, "Z2", "wu", [85, 95], "Z2; w środku 3×1 min z kadencją 100 rpm."),
-             step("5 min mocno", 5, "Z4", "lt", [85, 95], "Mocno, ale nie do upadku – otwiera nogi przed testem."),
-             step("Luz", 10, "Z1", "recover", [85, 95]),
-             step("TEST 20 min – maksymalnie równo", 20, "Z5a", "ftp", [85, 95],
-                  "Płaska, prosta trasa bez świateł, zawsze ta sama. Najczęstszy błąd: wystrzelić na starcie – pierwsze 5 min świadomie wolniej niż chcesz. FTP = 95% średniej mocy. Tętno progowe = średnie HR z ostatnich 10 min.", [9, 10]),
+ftp_steps = [step("Rozgrzewka", 20, "Z2", "wu", [80, 95], "Z2; w środku 3×1 min z kadencją 100 rpm."),
+             step("5 min mocno", 5, "Z4", "lt", [80, 95], "Mocno, ale nie do upadku – otwiera nogi przed testem."),
+             step("Luz", 10, "Z1", "recover", [80, 95]),
+             step("TEST 20 min – maksymalnie równo", 20, "Z5a", "ftp", [80, 95],
+                  "Płaska, prosta trasa bez świateł, zawsze ta sama. Kadencja naturalna – nie wymuszaj szybszego kręcenia, bo kosztuje waty. Najczęstszy błąd: wystrzelić na starcie – pierwsze 5 min świadomie wolniej niż chcesz. FTP = 95% średniej mocy. Tętno progowe = średnie HR z ostatnich 10 min.", [9, 10]),
              CD(10)]
 add({"id": "FTP_TEST", "name": "Test FTP 20 min (moc)", "category": "test", "key": True, "steps": ftp_steps,
      "duration_min": round(total_s(ftp_steps) / 60),

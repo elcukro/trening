@@ -16,7 +16,7 @@ describe('plan.json dla Wahoo', () => {
     expect(plan.intervals[0]).toMatchObject({ name: '130-142 · Rozgrzewka', exit_trigger_type: 'time', exit_trigger_value: 900, intensity_type: 'wu' })
     expect(plan.intervals[0]!.targets).toEqual([
       { type: 'threshold_hr', low: 0.81, high: 0.89 },
-      { type: 'rpm', low: 85, high: 95 },
+      { type: 'rpm', low: 80, high: 95 },
     ])
     const rep = plan.intervals.find((i) => i.exit_trigger_type === 'repeat') as WahooInterval
     expect(rep.exit_trigger_value).toBe(3) // 3 powtórzenia PO pierwszym = 4 razy łącznie
