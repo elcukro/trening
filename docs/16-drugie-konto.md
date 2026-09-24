@@ -33,6 +33,30 @@ programu treningowego** (patrz § Otwarta kwestia).
    wspólnie dla obu kont. Wysyłka tygodnia to ~13 zapytań, więc spokojnie wystarczy; nie debugować obu
    kont naraz.
 
+## Pułapka: poczta logowania (napotkana 24.09.2026)
+
+Nadawcą maili auth był `onboarding@resend.dev` – **współdzielony adres testowy Resend, który dostarcza
+wyłącznie na adres właściciela konta Resend**. Pierwsza próba logowania drugiego konta kończy się
+„error sending magic link", a w bazie widać, że Supabase **w ogóle nie wygenerował tokenu**
+(`auth.users.confirmation_sent_at` i `recovery_sent_at` puste, brak wiersza w `auth.one_time_tokens`).
+To nie jest problem konta ani listy dozwolonych adresów.
+
+**Obejście bez poczty** – Admin API generuje link i kod, nic nie wysyłając:
+
+```bash
+read -rs -p "service_role: " SR && curl -s -X POST \
+  "https://kgllegvlnmchdvkkbitt.supabase.co/auth/v1/admin/generate_link" \
+  -H "apikey: $SR" -H "Authorization: Bearer $SR" -H "Content-Type: application/json" \
+  -d '{"type":"magiclink","email":"adres@example.com"}' | python3 -m json.tool | grep -E "action_link|email_otp"
+```
+
+`action_link` wkleja się w „Mam link z maila", `email_otp` wpisuje w pole kodu. Jednorazowe, ważne godzinę.
+
+**Naprawa docelowa** – zweryfikowana własna domena w Resend (rekordy SPF, DKIM, MX dla poddomeny),
+a potem w Supabase → Project Settings → Authentication → SMTP: nadawca na tej domenie
+(host `smtp.resend.com`, użytkownik `resend`, hasło = klucz API Resend). Poprawia też trafianie do spamu,
+na które maile z `resend.dev` cierpiały.
+
 ## Przebieg wieczorem (15–20 minut)
 
 1. **Logowanie** – otwiera `https://trening-inky.vercel.app`, wpisuje swój adres, dostaje kod z maila, wpisuje kod.
