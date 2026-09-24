@@ -1,5 +1,5 @@
 {
- "version": "2026.09.24-1",
+ "version": "2026.09.24-2",
  "settings": {
   "program_start": "2026-09-14",
   "trip_start": "2027-09-11",
@@ -684,8 +684,8 @@
    "week_type": "build",
    "day_type": "easy",
    "bike": {
-    "workout_id": "Z2_CADENCE",
-    "name": "Z2 + praca nad kadencją",
+    "workout_id": "Z2",
+    "name": "Baza tlenowa Z2",
     "duration_min": 60,
     "bike": "Dogma na suchą szosę > 5 °C; Checkpoint na mokro, sól, szuter",
     "fallback_workout_id": null
@@ -861,8 +861,8 @@
    "week_type": "build",
    "day_type": "easy",
    "bike": {
-    "workout_id": "Z2_CADENCE",
-    "name": "Z2 + praca nad kadencją",
+    "workout_id": "Z2",
+    "name": "Baza tlenowa Z2",
     "duration_min": 60,
     "bike": "Dogma na suchą szosę > 5 °C; Checkpoint na mokro, sól, szuter",
     "fallback_workout_id": null
@@ -1402,8 +1402,8 @@
    "week_type": "build",
    "day_type": "easy",
    "bike": {
-    "workout_id": "Z2_CADENCE",
-    "name": "Z2 + praca nad kadencją",
+    "workout_id": "Z2",
+    "name": "Baza tlenowa Z2",
     "duration_min": 60,
     "bike": "Dogma na suchą szosę > 5 °C; Checkpoint na mokro, sól, szuter",
     "fallback_workout_id": null
@@ -1757,8 +1757,8 @@
    "week_type": "build",
    "day_type": "easy",
    "bike": {
-    "workout_id": "Z2_CADENCE",
-    "name": "Z2 + praca nad kadencją",
+    "workout_id": "Z2",
+    "name": "Baza tlenowa Z2",
     "duration_min": 60,
     "bike": "Dogma na suchą szosę > 5 °C; Checkpoint na mokro, sól, szuter",
     "fallback_workout_id": null

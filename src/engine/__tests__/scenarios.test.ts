@@ -41,7 +41,7 @@ describe('scenariusze ze specyfikacji §10', () => {
   })
   it('1b. Blok 5 jazd (tyg. 3): wt Z2, śr akcent, czw wolne, pt Z2, sb długa, nd Z2, bez siłowni', () => {
     const ids = ['2026-09-28', '2026-09-29', '2026-09-30', '2026-10-01', '2026-10-02', '2026-10-03', '2026-10-04'].map((x) => getDayPlan(x, base)!)
-    expect(ids.map((d) => d.bike?.workout_id ?? null)).toEqual([null, 'Z2_CADENCE', 'SS_2x12', null, 'Z2', 'LONG', 'Z2'])
+    expect(ids.map((d) => d.bike?.workout_id ?? null)).toEqual([null, 'Z2', 'SS_2x12', null, 'Z2', 'LONG', 'Z2'])
     expect(ids.map((d) => d.gym?.session ?? null)).toEqual([null, null, null, null, null, null, null])
     expect(ids[2]!.day_type).toBe('key')
     expect(ids[0]!.week_notes).toContain('5 jazd bez siłowni')

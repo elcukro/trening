@@ -1,5 +1,5 @@
 {
- "version": "2026.09.24-1",
+ "version": "2026.09.24-2",
  "default_settings": {
   "program_start": "2026-09-14",
   "trip_start": "2027-09-11",
@@ -3322,7 +3322,7 @@
    "phase": "I",
    "type": "build",
    "tue": [
-    "Z2_CADENCE",
+    "Z2",
     60
    ],
    "wed": [
@@ -3352,7 +3352,7 @@
    "phase": "I",
    "type": "build",
    "tue": [
-    "Z2_CADENCE",
+    "Z2",
     60
    ],
    "wed": [
@@ -3441,7 +3441,7 @@
    "phase": "I",
    "type": "build",
    "tue": [
-    "Z2_CADENCE",
+    "Z2",
     60
    ],
    "wed": [
@@ -3499,7 +3499,7 @@
    "phase": "I",
    "type": "build",
    "tue": [
-    "Z2_CADENCE",
+    "Z2",
     60
    ],
    "wed": [
