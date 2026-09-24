@@ -34,8 +34,8 @@ PROGRAM_VERSION = "2026.09.24-1"
 gen.add(gen.interval_workout("VO2_6x3", "VO2max 6×3 min", "vo2max", 6, 3, 3, "Z5b", [85, 95], gen.VO2_DESC, wu=20))
 
 DEFAULT_SETTINGS = {
-    "program_start": "2026-09-28",          # poniedziałek tygodnia 1
-    "trip_start": "2027-07-05",             # data celu: test końcowy zamyka program tydzień wcześniej
+    "program_start": "2026-09-21",          # tydzień 0 = pomiar (test w niedzielę 27.09), plan właściwy od 28.09
+    "trip_start": "2027-06-28",             # data celu: poniedziałek po tygodniu z testem końcowym
     "athlete_name": "Ferdynand",
     "body_weight_start_kg": 73,
     "body_weight_target_kg": 67,
@@ -65,10 +65,10 @@ PHASES = [
 R = ("REST", 0)
 
 
-def W(phase, type_, mon, wed, thu, fri, sat, gym, notes=None):
+def W(phase, type_, mon, wed, thu, fri, sat, gym, notes=None, tue=R, sun=R):
     """Tydzień: poniedziałek długa, wtorek i niedziela wolne, środa i piątek jakościowe, sobota Z2 + siłownia.
     `gym` = (stopień, tydzień-wskazówka dla progresji ciężarów) albo None."""
-    return {"phase": phase, "type": type_, "mon": mon, "tue": R, "wed": wed, "thu": thu, "fri": fri, "sat": sat, "sun": R,
+    return {"phase": phase, "type": type_, "mon": mon, "tue": tue, "wed": wed, "thu": thu, "fri": fri, "sat": sat, "sun": sun,
             "gym_stage": gym[0] if gym else None, "gym_week": gym[1] if gym else None,
             **({"notes": notes} if notes else {})}
 
@@ -86,8 +86,8 @@ TEST = ("FTP_TEST", None)
 
 WEEKS = {
     # ---------------------------------------------------------------- PREP: pomiar
-    0: W("PREP", "test", LONG(180), TEST, Z2(45), Z2(60), Z2(60), ("intro", 1),
-         notes="Test FTP 20 min w środę – od jego wyniku liczą się wszystkie strefy mocy i tętna. Reszta tygodnia spokojnie; poniedziałkowa długa i tak jest w Twoim zwykłym zakresie."),
+    0: W("PREP", "test", R, R, R, Z2(45), R, None, sun=TEST,
+         notes="Tydzień pomiarowy: w niedzielę test FTP 20 min, wcześniej tylko lekkie rozjeżdżenie w piątek. Od jego wyniku liczą się wszystkie strefy mocy i tętna. Plan właściwy startuje w poniedziałek 28.09."),
     # ---------------------------------------------------------------- I: baza + sweet spot
     1: W("I", "build", LONG(195), ("SS_2x10", None), Z2(60), Z2(75), Z2(60), ("intro", 2),
          notes="Start bloku bazowego. Długa w poniedziałek ma być nudna – rozmowa pełnymi zdaniami. Jedyny dzień, w którym wolno się zmęczyć, to środa."),

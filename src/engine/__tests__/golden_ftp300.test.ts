@@ -16,8 +16,8 @@ describe('golden file: calendar-ftp300.json', () => {
 
   it('silnik daje dokładnie to samo co plik referencyjny', () => {
     expect(days).toHaveLength(golden.length)
-    expect(days[0]!.date).toBe('2026-09-28')
-    expect(days.at(-1)!.date).toBe('2027-07-04')
+    expect(days[0]!.date).toBe('2026-09-21')
+    expect(days.at(-1)!.date).toBe('2027-06-27')
     for (let i = 0; i < golden.length; i++) {
       expect(days[i], `dzień ${golden[i]!.date}`).toEqual(golden[i])
     }
@@ -26,13 +26,13 @@ describe('golden file: calendar-ftp300.json', () => {
   it('układ stały: 40 tygodni po kolei, pierwszy tydzień od startu programu', () => {
     const weeks = layoutWeeks(program, program.default_settings)
     expect(weeks).toHaveLength(40)
-    expect(weeks[0]!.monday).toBe('2026-09-28')
+    expect(weeks[0]!.monday).toBe('2026-09-21')
     expect(weeks.map((w) => w.template)).toEqual(Array.from({ length: 40 }, (_, i) => i))
     expect(weeks.every((w) => !w.cloned)).toBe(true)
   })
 
   it('tydzień: długa w poniedziałek, wolne we wtorek i niedzielę, akcenty w środę i piątek', () => {
-    const w = days.filter((d) => d.week === 2)
+    const w = days.filter((d) => d.week === 3)
     expect(w.map((d) => d.weekday)).toEqual(['mon', 'tue', 'wed', 'thu', 'fri', 'sat', 'sun'])
     expect(w[0]!.bike?.workout_id).toBe('LONG')
     expect(w[0]!.day_type).toBe('long')
@@ -53,8 +53,13 @@ describe('golden file: calendar-ftp300.json', () => {
   })
 
   it('testy FTP zamykają każdą fazę: tygodnie 0, 11, 21, 27 i 39', () => {
-    const tests = days.filter((d) => d.bike?.workout_id === 'FTP_TEST').map((d) => d.week)
-    expect(tests).toEqual([0, 11, 21, 27, 39])
+    const tests = days.filter((d) => d.bike?.workout_id === 'FTP_TEST')
+    expect(tests.map((d) => d.week)).toEqual([0, 11, 21, 27, 39])
+    // pomiar wejściowy wypada w niedzielę 27.09, plan właściwy startuje w poniedziałek
+    expect(tests[0]!.date).toBe('2026-09-27')
+    expect(tests[0]!.weekday).toBe('sun')
+    expect(days.find((d) => d.date === '2026-09-28')!.week).toBe(1)
+    expect(days.find((d) => d.date === '2026-09-28')!.bike?.workout_id).toBe('LONG')
   })
 
   it('kadencja standardowa (85–95), bez ustawień z programu alpejskiego', () => {

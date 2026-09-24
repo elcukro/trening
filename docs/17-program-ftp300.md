@@ -26,7 +26,7 @@ Siłownia po spokojnej sobocie, niedziela wolna, więc na poniedziałkową dług
 
 | faza | tygodnie | treść |
 |---|---|---|
-| PREP | 0 | test FTP na wejściu |
+| PREP | 0 | tydzień pomiarowy: test FTP w **niedzielę 27.09**, wcześniej tylko lekkie rozjeżdżenie |
 | I | 1–11 | baza Z2 + rosnący sweet spot, test w 11 |
 | II | 12–21 | interwały progowe + sweet spot, test w 21 |
 | III | 22–27 | blok VO2max (3 min), objętość w dół, test w 27 |
@@ -35,7 +35,10 @@ Siłownia po spokojnej sobocie, niedziela wolna, więc na poniedziałkową dług
 | TAPER | 39 | taper i test końcowy |
 
 Rozładowanie co 4–5 tygodni (5, 9, 15, 19, 25, 31, 35). Testy FTP w tygodniach 0, 11, 21, 27 i 39.
-Daty: 28.09.2026 – 4.07.2027.
+Daty: 21.09.2026 – 27.06.2027 (`program_start` to poniedziałek tygodnia pomiarowego; plan właściwy
+startuje w poniedziałek 28.09, a `trip_start` = 28.06.2027 to dzień po tygodniu z testem końcowym).
+Tydzień 0 ma pustą większość dni, bo powstał w trakcie już rozpoczętego tygodnia – liczy się w nim
+tylko piątkowe rozjeżdżenie i niedzielny test.
 
 ## Obsługa wielu programów w kodzie
 

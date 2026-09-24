@@ -1,8 +1,8 @@
 {
  "version": "2026.09.24-1",
  "default_settings": {
-  "program_start": "2026-09-28",
-  "trip_start": "2027-07-05",
+  "program_start": "2026-09-21",
+  "trip_start": "2027-06-28",
   "athlete_name": "Ferdynand",
   "body_weight_start_kg": 73,
   "body_weight_target_kg": 67,
@@ -3330,35 +3330,35 @@
    "phase": "PREP",
    "type": "test",
    "mon": [
-    "LONG",
-    180
+    "REST",
+    0
    ],
    "tue": [
     "REST",
     0
    ],
    "wed": [
-    "FTP_TEST",
-    null
-   ],
-   "thu": [
-    "Z2",
-    45
-   ],
-   "fri": [
-    "Z2",
-    60
-   ],
-   "sat": [
-    "Z2",
-    60
-   ],
-   "sun": [
     "REST",
     0
    ],
-   "gym_stage": "intro",
-   "notes": "Test FTP 20 min w środę – od jego wyniku liczą się wszystkie strefy mocy i tętna. Reszta tygodnia spokojnie; poniedziałkowa długa i tak jest w Twoim zwykłym zakresie."
+   "thu": [
+    "REST",
+    0
+   ],
+   "fri": [
+    "Z2",
+    45
+   ],
+   "sat": [
+    "REST",
+    0
+   ],
+   "sun": [
+    "FTP_TEST",
+    null
+   ],
+   "gym_stage": null,
+   "notes": "Tydzień pomiarowy: w niedzielę test FTP 20 min, wcześniej tylko lekkie rozjeżdżenie w piątek. Od jego wyniku liczą się wszystkie strefy mocy i tętna. Plan właściwy startuje w poniedziałek 28.09."
   },
   "1": {
    "phase": "I",
@@ -4665,102 +4665,6 @@
   }
  },
  "gym_prescriptions": {
-  "0": {
-   "wed": {
-    "session": "A",
-    "name": "Sesja A – Siła nóg (ciężka)",
-    "est_min": 70,
-    "items": [
-     {
-      "exercise": "mobility_circuit",
-      "rx": {
-       "sets": 2,
-       "reps": "obwód",
-       "note": "5 min rowerek/wioślarz luźno + 2 rundy obwodu. Serie wstępne do 1. ćwiczenia: pusta sztanga×8 → 50%×5 → 70%×3 → 85%×1–2."
-      }
-     },
-     {
-      "exercise": "back_squat",
-      "rx": {
-       "sets": 2,
-       "reps": 10,
-       "rir": 4,
-       "rest_s": 120
-      },
-      "block": "1"
-     },
-     {
-      "exercise": "rdl",
-      "rx": {
-       "sets": 2,
-       "reps": 10,
-       "rir": 4,
-       "rest_s": 120
-      },
-      "block": "2"
-     },
-     {
-      "exercise": "db_row",
-      "rx": {
-       "sets": 2,
-       "reps": 10,
-       "rir": 2,
-       "rest_s": 60,
-       "note": "superseria 3A/3B"
-      },
-      "block": "3A"
-     },
-     {
-      "exercise": "calf_raise",
-      "rx": {
-       "sets": 2,
-       "reps": 15,
-       "rir": 2,
-       "rest_s": 60,
-       "note": "pauza 1 s na górze"
-      },
-      "block": "3B"
-     },
-     {
-      "exercise": "pallof_press",
-      "rx": {
-       "sets": 2,
-       "reps": 10,
-       "rest_s": 30
-      },
-      "block": "4",
-      "circuit": "core_A"
-     },
-     {
-      "exercise": "dead_bug",
-      "rx": {
-       "sets": 2,
-       "reps": 8,
-       "rest_s": 30
-      },
-      "block": "4",
-      "circuit": "core_A"
-     },
-     {
-      "exercise": "side_plank",
-      "rx": {
-       "sets": 2,
-       "reps": "30 s",
-       "rest_s": 30
-      },
-      "block": "4",
-      "circuit": "core_A"
-     },
-     {
-      "exercise": "cooldown_stretch",
-      "rx": {
-       "sets": 1,
-       "reps": "4–5 min"
-      }
-     }
-    ]
-   }
-  },
   "1": {
    "wed": {
     "session": "A",
@@ -8485,17 +8389,13 @@
    "week": 0,
    "phase": "PREP",
    "type": "test",
-   "start": "2026-09-28",
-   "bike_min": 410,
-   "gym": [
-    "A(sat)"
-   ],
-   "key": [
-    "FTP_TEST"
-   ],
-   "sat": "Z2 60′",
-   "sun": null,
-   "end": "2026-10-04",
+   "start": "2026-09-21",
+   "bike_min": 110,
+   "gym": [],
+   "key": [],
+   "sat": null,
+   "sun": "FTP_TEST 65′",
+   "end": "2026-09-27",
    "event": null,
    "notes": "Tydzień przygotowawczy: zamów/zamontuj napęd, ustaw aplikację i profil, sprawdź wagę startową."
   },
@@ -8503,7 +8403,7 @@
    "week": 1,
    "phase": "I",
    "type": "build",
-   "start": "2026-10-05",
+   "start": "2026-09-28",
    "bike_min": 445,
    "gym": [
     "A(sat)"
@@ -8513,7 +8413,7 @@
    ],
    "sat": "Z2 60′",
    "sun": null,
-   "end": "2026-10-11",
+   "end": "2026-10-04",
    "event": null,
    "notes": "Wyjście ze zmęczenia po Great Escape. Jedź lekko, siłownia celowo lekko (RIR 4)."
   },
@@ -8521,7 +8421,7 @@
    "week": 2,
    "phase": "I",
    "type": "build",
-   "start": "2026-10-12",
+   "start": "2026-10-05",
    "bike_min": 464,
    "gym": [
     "A(sat)"
@@ -8531,7 +8431,7 @@
    ],
    "sat": "Z2 60′",
    "sun": null,
-   "end": "2026-10-18",
+   "end": "2026-10-11",
    "event": null,
    "notes": "Tydzień resetu przed fazą: trzy spokojne jazdy (wt/śr/pt, wszystkie w Z2 – żadnych interwałów), bez siłowni, w sobotę test FTP 20 min. Zważ się rano na czczo trzy razy – to punkt zero redukcji. Skalibruj miernik (zeruj offset przed każdą jazdą). Jeśli nogi ciężkie – test w niedzielę i faza tydzień później."
   },
@@ -8539,7 +8439,7 @@
    "week": 3,
    "phase": "I",
    "type": "build",
-   "start": "2026-10-19",
+   "start": "2026-10-12",
    "bike_min": 470,
    "gym": [
     "A(sat)"
@@ -8549,7 +8449,7 @@
    ],
    "sat": "Z2 60′",
    "sun": null,
-   "end": "2026-10-25",
+   "end": "2026-10-18",
    "event": null,
    "notes": "Start bloku 5 jazd bez siłowni – jeździmy, póki pogoda pozwala (do 15.11). Jedyny dzień, na którym wolno się zmęczyć, to środa; wtorek, piątek i niedziela mają być nudne (rozmowa pełnymi zdaniami). Kadencja na każdym podjeździe min. 75 rpm (38×46). Minimalna jazda 40 min Z2 liczy się jako wykonana."
   },
@@ -8557,7 +8457,7 @@
    "week": 4,
    "phase": "I",
    "type": "build",
-   "start": "2026-10-26",
+   "start": "2026-10-19",
    "bike_min": 496,
    "gym": [
     "A(sat)"
@@ -8567,7 +8467,7 @@
    ],
    "sat": "Z2 60′",
    "sun": null,
-   "end": "2026-11-01",
+   "end": "2026-10-25",
    "event": null,
    "notes": null
   },
@@ -8575,7 +8475,7 @@
    "week": 5,
    "phase": "I",
    "type": "deload",
-   "start": "2026-11-02",
+   "start": "2026-10-26",
    "bike_min": 300,
    "gym": [
     "A(sat)"
@@ -8583,7 +8483,7 @@
    "key": [],
    "sat": "Z2 60′",
    "sun": null,
-   "end": "2026-11-08",
+   "end": "2026-11-01",
    "event": null,
    "notes": "Do 18.10 kup lampę przednią ≥ 800 lm i tył z radarem – od zmiany czasu (25.10) wtorek, środa i piątek to jazda po ciemku."
   },
@@ -8591,7 +8491,7 @@
    "week": 6,
    "phase": "I",
    "type": "build",
-   "start": "2026-11-09",
+   "start": "2026-11-02",
    "bike_min": 476,
    "gym": [
     "A(sat)"
@@ -8601,7 +8501,7 @@
    ],
    "sat": "Z2 60′",
    "sun": null,
-   "end": "2026-11-15",
+   "end": "2026-11-08",
    "event": null,
    "notes": "Tydzień lżejszy: cztery jazdy, żadnych interwałów. Po nim wracamy do akcentów w środy."
   },
@@ -8609,7 +8509,7 @@
    "week": 7,
    "phase": "I",
    "type": "build",
-   "start": "2026-11-16",
+   "start": "2026-11-09",
    "bike_min": 519,
    "gym": [
     "A(sat)"
@@ -8619,7 +8519,7 @@
    ],
    "sat": "Z2 75′",
    "sun": null,
-   "end": "2026-11-22",
+   "end": "2026-11-15",
    "event": null,
    "notes": null
   },
@@ -8627,7 +8527,7 @@
    "week": 8,
    "phase": "I",
    "type": "build",
-   "start": "2026-11-23",
+   "start": "2026-11-16",
    "bike_min": 509,
    "gym": [
     "A(sat)"
@@ -8637,7 +8537,7 @@
    ],
    "sat": "Z2 75′",
    "sun": null,
-   "end": "2026-11-29",
+   "end": "2026-11-22",
    "event": null,
    "notes": null
   },
@@ -8645,7 +8545,7 @@
    "week": 9,
    "phase": "I",
    "type": "deload",
-   "start": "2026-11-30",
+   "start": "2026-11-23",
    "bike_min": 315,
    "gym": [
     "A(sat)"
@@ -8653,7 +8553,7 @@
    "key": [],
    "sat": "Z2 60′",
    "sun": null,
-   "end": "2026-12-06",
+   "end": "2026-11-29",
    "event": null,
    "notes": "Ostatni tydzień bloku 5 jazd. Od 16.11 wracają dwie sesje siłowni i plan schodzi do 3 jazd – zimą i tak nie wyjedziesz pięć razy w tygodniu."
   },
@@ -8661,7 +8561,7 @@
    "week": 10,
    "phase": "I",
    "type": "build",
-   "start": "2026-12-07",
+   "start": "2026-11-30",
    "bike_min": 555,
    "gym": [
     "A(sat)"
@@ -8671,7 +8571,7 @@
    ],
    "sat": "Z2 75′",
    "sun": null,
-   "end": "2026-12-13",
+   "end": "2026-12-06",
    "event": null,
    "notes": "Przed zimą: pełne błotniki SKS Bluemels 45, odzież (merino, rękawice trójpalczaste, ochraniacze na buty), ciśnienie w oponach −0,3 bara."
   },
@@ -8679,7 +8579,7 @@
    "week": 11,
    "phase": "I",
    "type": "test",
-   "start": "2026-12-14",
+   "start": "2026-12-07",
    "bike_min": 395,
    "gym": [
     "A(sat)"
@@ -8689,7 +8589,7 @@
    ],
    "sat": "Z2 60′",
    "sun": null,
-   "end": "2026-12-20",
+   "end": "2026-12-13",
    "event": null,
    "notes": "Powrót do siły po siedmiu tygodniach przerwy: zacznij o 20 % lżej niż we wrześniu, RIR 4. Ciężary dobiera aplikacja z tego, co wpiszesz."
   },
@@ -8697,7 +8597,7 @@
    "week": 12,
    "phase": "II",
    "type": "build",
-   "start": "2026-12-21",
+   "start": "2026-12-14",
    "bike_min": 490,
    "gym": [
     "A(sat)"
@@ -8707,7 +8607,7 @@
    ],
    "sat": "Z2 75′",
    "sun": null,
-   "end": "2026-12-27",
+   "end": "2026-12-20",
    "event": null,
    "notes": null
   },
@@ -8715,7 +8615,7 @@
    "week": 13,
    "phase": "II",
    "type": "build",
-   "start": "2026-12-28",
+   "start": "2026-12-21",
    "bike_min": 523,
    "gym": [
     "A(sat)"
@@ -8725,7 +8625,7 @@
    ],
    "sat": "Z2 75′",
    "sun": null,
-   "end": "2027-01-03",
+   "end": "2026-12-27",
    "event": null,
    "notes": "Największy tydzień fazy. Jeśli pogoda go zabierze, przenieś 3:30 na tydzień wcześniej i potraktuj ten jako rozładowanie. Nie odrabiaj straconych godzin."
   },
@@ -8733,7 +8633,7 @@
    "week": 14,
    "phase": "II",
    "type": "build",
-   "start": "2027-01-04",
+   "start": "2026-12-28",
    "bike_min": 536,
    "gym": [
     "A(sat)"
@@ -8743,7 +8643,7 @@
    ],
    "sat": "Z2 75′",
    "sun": null,
-   "end": "2027-01-10",
+   "end": "2027-01-03",
    "event": null,
    "notes": "Test FTP 20 min w sobotę – koniec Fazy 1. Zapisz W/kg (FTP ÷ masa)."
   },
@@ -8751,7 +8651,7 @@
    "week": 15,
    "phase": "II",
    "type": "deload",
-   "start": "2027-01-11",
+   "start": "2027-01-04",
    "bike_min": 315,
    "gym": [
     "A(sat)"
@@ -8759,7 +8659,7 @@
    "key": [],
    "sat": "Z2 60′",
    "sun": null,
-   "end": "2027-01-17",
+   "end": "2027-01-10",
    "event": null,
    "notes": "Święta – tydzień lżejszy. Zima: domyślnie Checkpoint z błotnikami. Czwartek poniżej −10 °C lub gołoledź = INDOOR_4x4 przed Sesją A."
   },
@@ -8767,7 +8667,7 @@
    "week": 16,
    "phase": "II",
    "type": "build",
-   "start": "2027-01-18",
+   "start": "2027-01-11",
    "bike_min": 511,
    "gym": [
     "A(sat)"
@@ -8777,7 +8677,7 @@
    ],
    "sat": "Z2 75′",
    "sun": null,
-   "end": "2027-01-24",
+   "end": "2027-01-17",
    "event": null,
    "notes": null
   },
@@ -8785,7 +8685,7 @@
    "week": 17,
    "phase": "II",
    "type": "build",
-   "start": "2027-01-25",
+   "start": "2027-01-18",
    "bike_min": 545,
    "gym": [
     "A(sat)"
@@ -8795,7 +8695,7 @@
    ],
    "sat": "Z2 75′",
    "sun": null,
-   "end": "2027-01-31",
+   "end": "2027-01-24",
    "event": null,
    "notes": null
   },
@@ -8803,7 +8703,7 @@
    "week": 18,
    "phase": "II",
    "type": "build",
-   "start": "2027-02-01",
+   "start": "2027-01-25",
    "bike_min": 567,
    "gym": [
     "A(sat)"
@@ -8813,7 +8713,7 @@
    ],
    "sat": "Z2 75′",
    "sun": null,
-   "end": "2027-02-07",
+   "end": "2027-01-31",
    "event": null,
    "notes": null
   },
@@ -8821,7 +8721,7 @@
    "week": 19,
    "phase": "II",
    "type": "deload",
-   "start": "2027-02-08",
+   "start": "2027-02-01",
    "bike_min": 315,
    "gym": [
     "A(sat)"
@@ -8829,7 +8729,7 @@
    "key": [],
    "sat": "Z2 60′",
    "sun": null,
-   "end": "2027-02-14",
+   "end": "2027-02-07",
    "event": null,
    "notes": null
   },
@@ -8837,7 +8737,7 @@
    "week": 20,
    "phase": "II",
    "type": "build",
-   "start": "2027-02-15",
+   "start": "2027-02-08",
    "bike_min": 582,
    "gym": [
     "A(sat)"
@@ -8847,7 +8747,7 @@
    ],
    "sat": "Z2 90′",
    "sun": null,
-   "end": "2027-02-21",
+   "end": "2027-02-14",
    "event": null,
    "notes": null
   },
@@ -8855,7 +8755,7 @@
    "week": 21,
    "phase": "II",
    "type": "test",
-   "start": "2027-02-22",
+   "start": "2027-02-15",
    "bike_min": 395,
    "gym": [
     "A(sat)"
@@ -8865,7 +8765,7 @@
    ],
    "sat": "Z2 60′",
    "sun": null,
-   "end": "2027-02-28",
+   "end": "2027-02-21",
    "event": null,
    "notes": null
   },
@@ -8873,7 +8773,7 @@
    "week": 22,
    "phase": "III",
    "type": "build",
-   "start": "2027-03-01",
+   "start": "2027-02-22",
    "bike_min": 427,
    "gym": [
     "A(sat)"
@@ -8883,7 +8783,7 @@
    ],
    "sat": "Z2 60′",
    "sun": null,
-   "end": "2027-03-07",
+   "end": "2027-02-28",
    "event": null,
    "notes": null
   },
@@ -8891,7 +8791,7 @@
    "week": 23,
    "phase": "III",
    "type": "build",
-   "start": "2027-03-08",
+   "start": "2027-03-01",
    "bike_min": 436,
    "gym": [
     "A(sat)"
@@ -8901,7 +8801,7 @@
    ],
    "sat": "Z2 60′",
    "sun": null,
-   "end": "2027-03-14",
+   "end": "2027-03-07",
    "event": null,
    "notes": null
   },
@@ -8909,7 +8809,7 @@
    "week": 24,
    "phase": "III",
    "type": "build",
-   "start": "2027-03-15",
+   "start": "2027-03-08",
    "bike_min": 427,
    "gym": [
     "A(sat)"
@@ -8919,7 +8819,7 @@
    ],
    "sat": "Z2 60′",
    "sun": null,
-   "end": "2027-03-21",
+   "end": "2027-03-14",
    "event": null,
    "notes": "Tydzień sprawdzianów: wtorek test FTP (świeże nogi po wolnym poniedziałku; przy gołoledzi Wattbike), środa sprawdzian siłowy (przysiad i trap bar 1×5 RIR 1). Kryteria wejścia do fazy III: ≥ 2,7 dnia jazdy/tydz. (śr. z 12 tyg.), FTP ≥ 200 W, masa ≤ 102 kg, kadencja na podjazdach ≥ 78 rpm, 3,5 h Z2 pod Łodzią zimą. Przy 2–3 spełnionych przesuń fazę III o 3–4 tygodnie i skróć IV."
   },
@@ -8927,7 +8827,7 @@
    "week": 25,
    "phase": "III",
    "type": "deload",
-   "start": "2027-03-22",
+   "start": "2027-03-15",
    "bike_min": 300,
    "gym": [
     "A(sat)"
@@ -8935,7 +8835,7 @@
    "key": [],
    "sat": "Z2 60′",
    "sun": null,
-   "end": "2027-03-28",
+   "end": "2027-03-21",
    "event": null,
    "notes": null
   },
@@ -8943,7 +8843,7 @@
    "week": 26,
    "phase": "III",
    "type": "build",
-   "start": "2027-03-29",
+   "start": "2027-03-22",
    "bike_min": 443,
    "gym": [
     "A(sat)"
@@ -8953,7 +8853,7 @@
    ],
    "sat": "Z2 60′",
    "sun": null,
-   "end": "2027-04-04",
+   "end": "2027-03-28",
    "event": null,
    "notes": null
   },
@@ -8961,7 +8861,7 @@
    "week": 27,
    "phase": "III",
    "type": "test",
-   "start": "2027-04-05",
+   "start": "2027-03-29",
    "bike_min": 395,
    "gym": [
     "A(sat)"
@@ -8971,7 +8871,7 @@
    ],
    "sat": "Z2 60′",
    "sun": null,
-   "end": "2027-04-11",
+   "end": "2027-04-04",
    "event": null,
    "notes": "Pierwsze 100 km z blokiem tempa 30–32 km/h."
   },
@@ -8979,7 +8879,7 @@
    "week": 28,
    "phase": "IV",
    "type": "build",
-   "start": "2027-04-12",
+   "start": "2027-04-05",
    "bike_min": 530,
    "gym": [
     "A(sat)"
@@ -8989,7 +8889,7 @@
    ],
    "sat": "Z2 75′",
    "sun": null,
-   "end": "2027-04-18",
+   "end": "2027-04-11",
    "event": null,
    "notes": null
   },
@@ -8997,7 +8897,7 @@
    "week": 29,
    "phase": "IV",
    "type": "build",
-   "start": "2027-04-19",
+   "start": "2027-04-12",
    "bike_min": 552,
    "gym": [
     "A(sat)"
@@ -9007,7 +8907,7 @@
    ],
    "sat": "Z2 75′",
    "sun": null,
-   "end": "2027-04-25",
+   "end": "2027-04-18",
    "event": null,
    "notes": "Od teraz siłownia 1×/tydz. (Sesja C). Piątek wolny lub luźna jazda."
   },
@@ -9015,7 +8915,7 @@
    "week": 30,
    "phase": "IV",
    "type": "build",
-   "start": "2027-04-26",
+   "start": "2027-04-19",
    "bike_min": 605,
    "gym": [
     "A(sat)"
@@ -9025,7 +8925,7 @@
    ],
    "sat": "Z2 90′",
    "sun": null,
-   "end": "2027-05-02",
+   "end": "2027-04-25",
    "event": null,
    "notes": "Serwis wiosenny: klocki (spiek, jeśli zaciski SRAM HRD), płyn hamulcowy, zużycie łańcucha; przegląd Dogmy."
   },
@@ -9033,7 +8933,7 @@
    "week": 31,
    "phase": "IV",
    "type": "deload",
-   "start": "2027-05-03",
+   "start": "2027-04-26",
    "bike_min": 330,
    "gym": [
     "A(sat)"
@@ -9041,7 +8941,7 @@
    "key": [],
    "sat": "Z2 60′",
    "sun": null,
-   "end": "2027-05-09",
+   "end": "2027-05-02",
    "event": null,
    "notes": null
   },
@@ -9049,7 +8949,7 @@
    "week": 32,
    "phase": "IV",
    "type": "build",
-   "start": "2027-05-10",
+   "start": "2027-05-03",
    "bike_min": 597,
    "gym": [
     "A(sat)"
@@ -9059,7 +8959,7 @@
    ],
    "sat": "Z2 90′",
    "sun": null,
-   "end": "2027-05-16",
+   "end": "2027-05-09",
    "event": null,
    "notes": null
   },
@@ -9067,7 +8967,7 @@
    "week": 33,
    "phase": "IV",
    "type": "build",
-   "start": "2027-05-17",
+   "start": "2027-05-10",
    "bike_min": 605,
    "gym": [
     "A(sat)"
@@ -9077,7 +8977,7 @@
    ],
    "sat": "Z2 90′",
    "sun": null,
-   "end": "2027-05-23",
+   "end": "2027-05-16",
    "event": null,
    "notes": "Decyzja o oponach na lato/Alpy dla Checkpointa (GP 5000 S TR 32c z dętkami lub AS TR 35c) – kup w tym tygodniu."
   },
@@ -9085,7 +8985,7 @@
    "week": 34,
    "phase": "IV",
    "type": "build",
-   "start": "2027-05-24",
+   "start": "2027-05-17",
    "bike_min": 597,
    "gym": [
     "A(sat)"
@@ -9095,7 +8995,7 @@
    ],
    "sat": "Z2 90′",
    "sun": null,
-   "end": "2027-05-30",
+   "end": "2027-05-23",
    "event": null,
    "notes": null
   },
@@ -9103,7 +9003,7 @@
    "week": 35,
    "phase": "IV",
    "type": "deload",
-   "start": "2027-05-31",
+   "start": "2027-05-24",
    "bike_min": 330,
    "gym": [
     "A(sat)"
@@ -9111,7 +9011,7 @@
    "key": [],
    "sat": "Z2 60′",
    "sun": null,
-   "end": "2027-06-06",
+   "end": "2027-05-30",
    "event": "Weekend w górach #1: Karkonosze (Kowary → Przełęcz Okraj; Przesieka → Przełęcz Karkonoska). Checkpoint.",
    "notes": null
   },
@@ -9119,7 +9019,7 @@
    "week": 36,
    "phase": "V",
    "type": "build",
-   "start": "2027-06-07",
+   "start": "2027-05-31",
    "bike_min": 437,
    "gym": [
     "A(sat)"
@@ -9129,7 +9029,7 @@
    ],
    "sat": "Z2 60′",
    "sun": null,
-   "end": "2027-06-13",
+   "end": "2027-06-06",
    "event": null,
    "notes": null
   },
@@ -9137,7 +9037,7 @@
    "week": 37,
    "phase": "V",
    "type": "build",
-   "start": "2027-06-14",
+   "start": "2027-06-07",
    "bike_min": 428,
    "gym": [],
    "key": [
@@ -9145,7 +9045,7 @@
    ],
    "sat": "Z2 60′",
    "sun": null,
-   "end": "2027-06-20",
+   "end": "2027-06-13",
    "event": null,
    "notes": null
   },
@@ -9153,7 +9053,7 @@
    "week": 38,
    "phase": "V",
    "type": "build",
-   "start": "2027-06-21",
+   "start": "2027-06-14",
    "bike_min": 381,
    "gym": [],
    "key": [
@@ -9161,7 +9061,7 @@
    ],
    "sat": "Z2 45′",
    "sun": null,
-   "end": "2027-06-27",
+   "end": "2027-06-20",
    "event": "Weekend back-to-back #1: sobota 120 km / 1000 m, niedziela 120 km / 1200 m.",
    "notes": null
   },
@@ -9169,7 +9069,7 @@
    "week": 39,
    "phase": "TAPER",
    "type": "taper",
-   "start": "2027-06-28",
+   "start": "2027-06-21",
    "bike_min": 260,
    "gym": [],
    "key": [
@@ -9177,7 +9077,7 @@
    ],
    "sat": "Z2 60′",
    "sun": null,
-   "end": "2027-07-04",
+   "end": "2027-06-27",
    "event": "Weekend w górach #2: Beskid Śląski (Przełęcz Salmopolska, Kubalonka, Koniaków).",
    "notes": null
   }
