@@ -36,10 +36,13 @@ test.describe('wersja na komputer (≥ 1024 px)', () => {
   test('ustawienia w dwóch kolumnach z przełącznikiem miernika', async ({ page }) => {
     await page.goto('/wiecej/ustawienia')
     await expect(page.getByText('Mam miernik mocy')).toBeVisible()
-    // profil po lewej, konto po prawej – na tej samej wysokości
+    // dwie kolumny: pierwsza karta lewej i pierwsza karta prawej na tej samej wysokości
+    const left = await page.getByRole('heading', { name: 'Program treningowy' }).boundingBox()
+    const right = await page.getByRole('heading', { name: /^Konto/ }).boundingBox()
+    expect(left && right && right.x > left.x + 300 && Math.abs(left.y - right.y) < 40).toBe(true)
+    // profil zostaje w lewej kolumnie, pod programem
     const profile = await page.getByRole('heading', { name: 'Profil' }).boundingBox()
-    const account = await page.getByRole('heading', { name: /^Konto/ }).boundingBox()
-    expect(profile && account && account.x > profile.x + 300 && Math.abs(profile.y - account.y) < 40).toBe(true)
+    expect(profile && left && Math.abs(profile.x - left.x) < 5 && profile.y > left.y).toBe(true)
     await page.screenshot({ path: 'test-results/desktop-settings.png', fullPage: true })
   })
 

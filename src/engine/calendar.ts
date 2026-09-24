@@ -34,9 +34,10 @@ function isKeyWorkout(id: string, key: boolean): boolean {
   return key || /^(SS_|THR_|VO2_|TEST|WATTBIKE|FTP)/.test(id)
 }
 
-export function bikeSuggestion(phase: PhaseId, workoutId: string): string {
-  if (['MOUNTAIN_DAY', 'B2B_DAY', 'BLOCK_DAY1'].includes(workoutId)) return 'Checkpoint (przełożenie 40/50, tarczówki)'
+export function bikeSuggestion(phase: PhaseId, workoutId: string, fallback?: string): string {
   if (['WATTBIKE_TEST', 'INDOOR_4x4'].includes(workoutId)) return 'Wattbike / rowerek na siłowni'
+  if (fallback) return fallback
+  if (['MOUNTAIN_DAY', 'B2B_DAY', 'BLOCK_DAY1'].includes(workoutId)) return 'Checkpoint (przełożenie 40/50, tarczówki)'
   if (phase === 'II') return 'Checkpoint (zima, błotniki)'
   if (phase === 'V' || phase === 'TAPER') return 'Checkpoint (docelowy rower wyjazdowy)'
   // Wszystkie treningy na gravelu (decyzja 24.09.2026); Dogma czeka, aż pojawi się rower endurance
@@ -66,7 +67,7 @@ export function buildDay(ctx: EngineContext, lw: LayoutWeek, weekday: Weekday, d
   if (compareISO(date, settings.trip_start) >= 0) {
     slot = ['TRIP', 0]
   } else if (weekday === 'mon') {
-    slot = ['REST', 0]
+    slot = wk.mon ?? ['REST', 0]
   } else {
     const fromTemplate = wk[weekday]
     if (fromTemplate) slot = fromTemplate
@@ -105,7 +106,7 @@ export function buildDay(ctx: EngineContext, lw: LayoutWeek, weekday: Weekday, d
     bike:
       wid === 'REST'
         ? null
-        : { workout_id: wid, name: w.name, duration_min: dur, bike: bikeSuggestion(phase, wid), fallback_workout_id: fallback },
+        : { workout_id: wid, name: w.name, duration_min: dur, bike: bikeSuggestion(phase, wid, program.bike_default), fallback_workout_id: fallback },
     gym: gym ? { session: gym.session, name: gym.name, est_min: gym.est_min, items: gym.items } : null,
     nutrition: nutritionFor(phase, dayType, bikeMin, key),
     flags,

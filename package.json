@@ -13,7 +13,7 @@
     "test:watch": "vitest",
     "test:coverage": "vitest run --coverage",
     "e2e": "playwright test",
-    "data:generate": "python3 data/reference_generator.py"
+    "data:generate": "python3 data/reference_generator.py && python3 data/ftp300_generator.py"
   },
   "dependencies": {
     "@date-fns/tz": "^1.5.0",

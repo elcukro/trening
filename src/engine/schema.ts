@@ -83,6 +83,8 @@ const daySlot = z.tuple([z.string(), z.number().nullable()]).nullable().optional
 export const WeekTemplateSchema = z.object({
   phase: z.string(),
   type: z.enum(['prep', 'build', 'deload', 'test', 'taper']),
+  /** Poniedziałek jest domyślnie wolny; program może go wykorzystać (np. długa jazda na początku tygodnia). */
+  mon: daySlot,
   tue: daySlot,
   wed: daySlot,
   thu: daySlot,
@@ -101,10 +103,12 @@ export const PhaseSchema = z.object({
   weeks: z.tuple([z.number().int(), z.number().int()]).optional(),
 })
 
+/** Dni siłowni: program alpejski używa wed/fri, program „FTP 300” jednej sesji w sobotę. */
+const weekdayEnum = z.enum(['mon', 'tue', 'wed', 'thu', 'fri', 'sat', 'sun'])
 export const GymDaysSchema = z.object({
-  A: z.enum(['tue', 'wed']),
-  B: z.literal('fri'),
-  C: z.enum(['tue', 'wed']),
+  A: weekdayEnum,
+  B: weekdayEnum,
+  C: weekdayEnum,
 })
 
 export const SettingsSchema = z.object({
@@ -123,6 +127,8 @@ export const SettingsSchema = z.object({
   gym_days: GymDaysSchema,
   timezone: z.string(),
   volume_scale: z.number().min(0.7).max(1),
+  /** Który program treningowy obowiązuje tego użytkownika (klucz z `src/data/program.ts`). */
+  program_id: z.string().optional(),
   units: z.string(),
   language: z.string(),
 })
@@ -154,6 +160,13 @@ export const ProgramSchema = z.object({
   weeks: z.record(z.string(), WeekTemplateSchema),
   gym_prescriptions: z.record(z.string(), z.record(z.string(), GymSessionSchema)),
   week_summary: z.array(WeekSummarySchema),
+  /**
+   * `fixed` – tygodnie idą po kolei od szablonu 0 do ostatniego (program o stałej długości).
+   * Brak pola = układ sezonowy z R14 (rozciąganie fazy IV do daty wyjazdu) – tak działa program alpejski.
+   */
+  layout: z.object({ mode: z.literal('fixed') }).optional(),
+  /** Rower pokazywany przy treningach; bez niego obowiązuje reguła fazowa z `bikeSuggestion`. */
+  bike_default: z.string().optional(),
 })
 
 export type Program = z.infer<typeof ProgramSchema>

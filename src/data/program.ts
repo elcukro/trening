@@ -1,10 +1,31 @@
-import programJson from '../../data/program.json'
+import alpsJson from '../../data/program.json'
+import ftp300Json from '../../data/program-ftp300.json'
 import { parseProgram, type Program } from '@/engine/schema'
 
-let cached: Program | null = null
+/**
+ * Programy treningowe. Każde konto ma swój (`settings.program_id`) – ustalenia jednego zawodnika
+ * (strefy, kadencja, żywienie, rower) nie przenoszą się na drugiego, bo siedzą w jego pliku programu.
+ */
+export const PROGRAMS = [
+  { id: 'alps2027', name: 'Alpy 2027 – baza i góry', json: alpsJson as unknown },
+  { id: 'ftp300', name: 'FTP 300 – próg i VO2max', json: ftp300Json as unknown },
+] as const
 
-/** Program treningowy z `data/program.json`, zwalidowany schematem Zod (raz, przy pierwszym użyciu). */
-export function loadProgram(): Program {
-  if (!cached) cached = parseProgram(programJson)
-  return cached
+export type ProgramId = (typeof PROGRAMS)[number]['id']
+export const DEFAULT_PROGRAM_ID: ProgramId = 'alps2027'
+
+const cache = new Map<string, Program>()
+
+/** Program treningowy z `data/`, zwalidowany schematem Zod (raz na identyfikator). */
+export function loadProgram(id: string = DEFAULT_PROGRAM_ID): Program {
+  const found = cache.get(id)
+  if (found) return found
+  const entry = PROGRAMS.find((p) => p.id === id) ?? PROGRAMS[0]
+  const parsed = parseProgram(entry.json)
+  cache.set(id, parsed)
+  return parsed
+}
+
+export function programName(id: string | undefined): string {
+  return PROGRAMS.find((p) => p.id === id)?.name ?? PROGRAMS[0].name
 }

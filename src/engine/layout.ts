@@ -87,6 +87,17 @@ export function earliestTripStart(programStart: ISODate): ISODate {
 
 export function layoutWeeks(program: Program, settings: Pick<Settings, 'program_start' | 'trip_start'>): LayoutWeek[] {
   const week0 = addDays(mondayOf(settings.program_start), -7)
+  // program o stałej długości: szablony po kolei od pierwszego tygodnia, bez rozciągania faz do daty celu (R14)
+  if (program.layout?.mode === 'fixed') {
+    const first = mondayOf(settings.program_start)
+    return Object.keys(program.weeks)
+      .map(Number)
+      .toSorted((a, b) => a - b)
+      .map((template, i) => {
+        const t = tpl(program, template)
+        return { week: i, template, monday: addDays(first, 7 * i), phase: t.phase as PhaseId, type: t.type as WeekType, cloned: false }
+      })
+  }
   const tripMonday = mondayOf(settings.trip_start)
   const taperStart = addDays(tripMonday, -7)
   const phaseVStart = addDays(taperStart, -7 * PHASE_V_TEMPLATES.length)

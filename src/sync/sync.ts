@@ -113,6 +113,7 @@ const PROFILE_MAP: [keyof Settings, string][] = [
   ['trip_start', 'trip_start'],
   ['gym_days', 'gym_days'],
   ['volume_scale', 'volume_scale'],
+  ['program_id', 'program_id'],
 ]
 
 async function syncProfile(userId: string, programVersion: string): Promise<void> {

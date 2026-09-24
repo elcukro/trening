@@ -1,0 +1,9189 @@
+{
+ "version": "2026.09.24-1",
+ "default_settings": {
+  "program_start": "2026-09-28",
+  "trip_start": "2027-07-05",
+  "athlete_name": "Ferdynand",
+  "body_weight_start_kg": 73,
+  "body_weight_target_kg": 67,
+  "bike_and_kit_kg": 9,
+  "lthr_bpm": 170,
+  "hr_max_bpm": 193,
+  "ftp_w_estimate": 235,
+  "ftp_w_goal": 300,
+  "power_meter": true,
+  "gym_days": {
+   "A": "sat",
+   "B": "fri",
+   "C": "sat"
+  },
+  "timezone": "Europe/Warsaw",
+  "volume_scale": 1.0,
+  "units": "metric",
+  "language": "pl",
+  "program_id": "ftp300"
+ },
+ "hr_zones_lthr_fraction": [
+  {
+   "id": "Z1",
+   "name": "Regeneracja",
+   "low": 0.0,
+   "high": 0.81,
+   "rpe": [
+    1,
+    2
+   ]
+  },
+  {
+   "id": "Z2",
+   "name": "Wytrzymałość (baza)",
+   "low": 0.81,
+   "high": 0.89,
+   "rpe": [
+    3,
+    4
+   ]
+  },
+  {
+   "id": "Z3",
+   "name": "Tempo",
+   "low": 0.9,
+   "high": 0.93,
+   "rpe": [
+    5,
+    6
+   ]
+  },
+  {
+   "id": "SS",
+   "name": "Sweet spot",
+   "low": 0.92,
+   "high": 0.96,
+   "rpe": [
+    6,
+    7
+   ]
+  },
+  {
+   "id": "Z4",
+   "name": "Podprogowa",
+   "low": 0.94,
+   "high": 0.99,
+   "rpe": [
+    7,
+    8
+   ]
+  },
+  {
+   "id": "THR",
+   "name": "Progowa (interwały)",
+   "low": 0.95,
+   "high": 1.0,
+   "rpe": [
+    7,
+    8
+   ]
+  },
+  {
+   "id": "Z5a",
+   "name": "Nadprogowa",
+   "low": 1.0,
+   "high": 1.02,
+   "rpe": [
+    8,
+    9
+   ]
+  },
+  {
+   "id": "Z5b",
+   "name": "VO2max",
+   "low": 1.03,
+   "high": 1.06,
+   "rpe": [
+    9,
+    9
+   ]
+  },
+  {
+   "id": "Z5c",
+   "name": "Beztlenowa",
+   "low": 1.06,
+   "high": 1.15,
+   "rpe": [
+    10,
+    10
+   ]
+  }
+ ],
+ "power_zones_ftp_fraction": [
+  {
+   "id": "Z1",
+   "low": 0.0,
+   "high": 0.55
+  },
+  {
+   "id": "Z2",
+   "low": 0.56,
+   "high": 0.75
+  },
+  {
+   "id": "Z3",
+   "low": 0.76,
+   "high": 0.9
+  },
+  {
+   "id": "SS",
+   "low": 0.88,
+   "high": 0.94
+  },
+  {
+   "id": "Z4",
+   "low": 0.91,
+   "high": 1.05
+  },
+  {
+   "id": "THR",
+   "low": 0.95,
+   "high": 1.0
+  },
+  {
+   "id": "Z5b",
+   "low": 1.06,
+   "high": 1.2
+  },
+  {
+   "id": "Z5c",
+   "low": 1.21,
+   "high": 1.5
+  }
+ ],
+ "phases": [
+  {
+   "id": "PREP",
+   "name": "Pomiar wejściowy",
+   "goal": "Test FTP na wejściu – wpisane 235 W nie jest jeszcze potwierdzone żadnym maksymalnym wysiłkiem, a od tej liczby zależą wszystkie strefy.",
+   "weeks": [
+    0,
+    0
+   ]
+  },
+  {
+   "id": "I",
+   "name": "Faza I – Baza i sweet spot",
+   "goal": "Objętość Z2 z rosnącym blokiem sweet spot. Buduje podłoże, na którym praca progowa ma sens.",
+   "weeks": [
+    1,
+    11
+   ]
+  },
+  {
+   "id": "II",
+   "name": "Faza II – Blok progowy",
+   "goal": "Dwa dni jakościowe: interwały progowe w środę, sweet spot w piątek. Tu rośnie FTP.",
+   "weeks": [
+    12,
+    21
+   ]
+  },
+  {
+   "id": "III",
+   "name": "Faza III – VO2max",
+   "goal": "Interwały 3-minutowe przy obniżonej objętości. Podnosi pułap, pod którym leży próg.",
+   "weeks": [
+    22,
+    27
+   ]
+  },
+  {
+   "id": "IV",
+   "name": "Faza IV – Próg na nowym poziomie",
+   "goal": "Powrót do pracy progowej przy wyższym FTP, z największą objętością programu.",
+   "weeks": [
+    28,
+    35
+   ]
+  },
+  {
+   "id": "V",
+   "name": "Faza V – Szczyt",
+   "goal": "Ostatni blok VO2max przy zredukowanej objętości – szlif przed testem.",
+   "weeks": [
+    36,
+    38
+   ]
+  },
+  {
+   "id": "TAPER",
+   "name": "Taper i test końcowy",
+   "goal": "Świeże nogi i pomiar, który rozlicza 40 tygodni.",
+   "weeks": [
+    39,
+    39
+   ]
+  }
+ ],
+ "bike_workouts": {
+  "REST": {
+   "id": "REST",
+   "name": "Odpoczynek",
+   "category": "rest",
+   "key": false,
+   "steps": [
+    {
+     "name": "Odpoczynek",
+     "duration_s": 0,
+     "zone": "Z1",
+     "target": {
+      "type": "threshold_hr",
+      "low": 0.0,
+      "high": 0.81
+     },
+     "rpe": [
+      1,
+      2
+     ],
+     "intensity_type": "active",
+     "cadence_rpm": [
+      85,
+      95
+     ],
+     "note": "Pełny dzień wolny. Spacer, sen, rozciąganie zginaczy bioder 5 min."
+    }
+   ],
+   "duration_min": 0,
+   "description": "Pełny dzień wolny. Spacer, sen, rozciąganie zginaczy bioder 5 min.",
+   "parametric_duration": true
+  },
+  "Z1_RECOVERY": {
+   "id": "Z1_RECOVERY",
+   "name": "Jazda regeneracyjna",
+   "category": "recovery",
+   "key": false,
+   "steps": [
+    {
+     "name": "Jazda regeneracyjna",
+     "duration_s": 2700,
+     "zone": "Z1",
+     "target": {
+      "type": "threshold_hr",
+      "low": 0.0,
+      "high": 0.81
+     },
+     "rpe": [
+      1,
+      2
+     ],
+     "intensity_type": "active",
+     "cadence_rpm": [
+      90,
+      100
+     ],
+     "note": "Bardzo luźno, miękki bieg, bez podjazdów. Opcjonalna – jeśli nogi są ciężkie, lepiej odpocząć."
+    }
+   ],
+   "duration_min": 45,
+   "description": "Bardzo luźno, miękki bieg, bez podjazdów. Opcjonalna – jeśli nogi są ciężkie, lepiej odpocząć.",
+   "parametric_duration": true
+  },
+  "Z2": {
+   "id": "Z2",
+   "name": "Baza tlenowa Z2",
+   "category": "endurance",
+   "key": false,
+   "steps": [
+    {
+     "name": "Baza tlenowa Z2",
+     "duration_s": 3600,
+     "zone": "Z2",
+     "target": {
+      "type": "threshold_hr",
+      "low": 0.81,
+      "high": 0.89
+     },
+     "rpe": [
+      3,
+      4
+     ],
+     "intensity_type": "active",
+     "cadence_rpm": [
+      85,
+      95
+     ],
+     "note": "Równe tempo w Z2, możesz rozmawiać pełnymi zdaniami. Kadencja 85–95. Bez zatrzymywania się w chłodzie."
+    }
+   ],
+   "duration_min": 60,
+   "description": "Równe tempo w Z2, możesz rozmawiać pełnymi zdaniami. Kadencja 85–95. Bez zatrzymywania się w chłodzie.",
+   "parametric_duration": true
+  },
+  "Z2_CADENCE": {
+   "id": "Z2_CADENCE",
+   "name": "Z2 + praca nad kadencją",
+   "category": "endurance",
+   "key": false,
+   "steps": [
+    {
+     "name": "Z2 + praca nad kadencją",
+     "duration_s": 3600,
+     "zone": "Z2",
+     "target": {
+      "type": "threshold_hr",
+      "low": 0.81,
+      "high": 0.89
+     },
+     "rpe": [
+      3,
+      4
+     ],
+     "intensity_type": "active",
+     "cadence_rpm": [
+      85,
+      95
+     ],
+     "note": "Z2 z blokiem kadencji: w środku jazdy 5×2 min przy 100–110 rpm (tętno nadal w Z2) / 2 min swobodnie. Celem nie jest zmiana stylu jazdy, tylko zapas: na trzeciej godzinie nogi siadają wcześniej niż oddech i wtedy wyższa kadencja ratuje tempo."
+    }
+   ],
+   "duration_min": 60,
+   "description": "Z2 z blokiem kadencji: w środku jazdy 5×2 min przy 100–110 rpm (tętno nadal w Z2) / 2 min swobodnie. Celem nie jest zmiana stylu jazdy, tylko zapas: na trzeciej godzinie nogi siadają wcześniej niż oddech i wtedy wyższa kadencja ratuje tempo.",
+   "parametric_duration": true,
+   "insert": {
+    "repeat": 5,
+    "steps": [
+     {
+      "name": "Wysoka kadencja 100–110 rpm",
+      "duration_s": 120,
+      "zone": "Z2",
+      "target": {
+       "type": "threshold_hr",
+       "low": 0.81,
+       "high": 0.89
+      },
+      "rpe": [
+       3,
+       4
+      ],
+      "intensity_type": "active",
+      "cadence_rpm": [
+       100,
+       110
+      ],
+      "note": "Lżejszy bieg, kręcisz szybciej – nie mocniej. Biodra spokojne, bez podskakiwania w siodle."
+     },
+     {
+      "name": "Swobodnie",
+      "duration_s": 120,
+      "zone": "Z2",
+      "target": {
+       "type": "threshold_hr",
+       "low": 0.81,
+       "high": 0.89
+      },
+      "rpe": [
+       3,
+       4
+      ],
+      "intensity_type": "recover",
+      "cadence_rpm": [
+       85,
+       95
+      ]
+     }
+    ]
+   }
+  },
+  "Z2_FORCE": {
+   "id": "Z2_FORCE",
+   "name": "Z2 + siła na niskiej kadencji",
+   "category": "endurance",
+   "key": false,
+   "steps": [
+    {
+     "name": "Z2 + siła na niskiej kadencji",
+     "duration_s": 4500,
+     "zone": "Z2",
+     "target": {
+      "type": "threshold_hr",
+      "low": 0.81,
+      "high": 0.89
+     },
+     "rpe": [
+      3,
+      4
+     ],
+     "intensity_type": "active",
+     "cadence_rpm": [
+      85,
+      95
+     ],
+     "note": "Z2 z blokami siły: 4×5 min w górnej Z2/dolnej Z3 na twardym biegu przy 55–65 rpm (siedząc, tułów spokojny, nacisk przez całe koło) / 5 min Z2 swobodnie. Buduje siłę specyficzną bez dodatkowego zmęczenia układu krążenia. Kolana bez bólu – inaczej wyższa kadencja."
+    }
+   ],
+   "duration_min": 75,
+   "description": "Z2 z blokami siły: 4×5 min w górnej Z2/dolnej Z3 na twardym biegu przy 55–65 rpm (siedząc, tułów spokojny, nacisk przez całe koło) / 5 min Z2 swobodnie. Buduje siłę specyficzną bez dodatkowego zmęczenia układu krążenia. Kolana bez bólu – inaczej wyższa kadencja.",
+   "parametric_duration": true,
+   "insert": {
+    "repeat": 4,
+    "steps": [
+     {
+      "name": "Siła 55–65 rpm",
+      "duration_s": 300,
+      "zone": "Z3",
+      "target": {
+       "type": "threshold_hr",
+       "low": 0.9,
+       "high": 0.93
+      },
+      "rpe": [
+       5,
+       6
+      ],
+      "intensity_type": "active",
+      "cadence_rpm": [
+       55,
+       65
+      ],
+      "note": "Twardy bieg, siedząc; tętno może zostać w Z2 – liczy się nacisk na pedał."
+     },
+     {
+      "name": "Z2 swobodnie",
+      "duration_s": 300,
+      "zone": "Z2",
+      "target": {
+       "type": "threshold_hr",
+       "low": 0.81,
+       "high": 0.89
+      },
+      "rpe": [
+       3,
+       4
+      ],
+      "intensity_type": "recover",
+      "cadence_rpm": [
+       85,
+       95
+      ]
+     }
+    ]
+   }
+  },
+  "Z2_HEAT": {
+   "id": "Z2_HEAT",
+   "name": "Z2 w upale (adaptacja cieplna)",
+   "category": "endurance",
+   "key": false,
+   "steps": [
+    {
+     "name": "Z2 w upale (adaptacja cieplna)",
+     "duration_s": 4500,
+     "zone": "Z2",
+     "target": {
+      "type": "threshold_hr",
+      "low": 0.81,
+      "high": 0.89
+     },
+     "rpe": [
+      3,
+      4
+     ],
+     "intensity_type": "active",
+     "cadence_rpm": [
+      85,
+      95
+     ],
+     "note": "Jazda w najcieplejszej porze dnia (≥25 °C). Tętno w Z2 – prędkość będzie niższa, to normalne. 750 ml płynu/h + elektrolity. Przerwij przy zawrotach głowy."
+    }
+   ],
+   "duration_min": 75,
+   "description": "Jazda w najcieplejszej porze dnia (≥25 °C). Tętno w Z2 – prędkość będzie niższa, to normalne. 750 ml płynu/h + elektrolity. Przerwij przy zawrotach głowy.",
+   "parametric_duration": true
+  },
+  "LONG": {
+   "id": "LONG",
+   "name": "Długa jazda",
+   "category": "long",
+   "key": false,
+   "steps": [
+    {
+     "name": "Długa jazda",
+     "duration_s": 9000,
+     "zone": "Z2",
+     "target": {
+      "type": "threshold_hr",
+      "low": 0.81,
+      "high": 0.89
+     },
+     "rpe": [
+      3,
+      4
+     ],
+     "intensity_type": "active",
+     "cadence_rpm": [
+      85,
+      95
+     ],
+     "note": "Główny trening objętościowy. Z2, podjazdy spokojnie (max górna Z3). Jedz od 45. minuty: 60–80 g węglowodanów/h, 500–750 ml/h. Na płaskich prostych ćwicz pozycję z przedramionami równolegle do ziemi."
+    }
+   ],
+   "duration_min": 150,
+   "description": "Główny trening objętościowy. Z2, podjazdy spokojnie (max górna Z3). Jedz od 45. minuty: 60–80 g węglowodanów/h, 500–750 ml/h. Na płaskich prostych ćwicz pozycję z przedramionami równolegle do ziemi.",
+   "parametric_duration": true
+  },
+  "LONG_TEMPO": {
+   "id": "LONG_TEMPO",
+   "name": "Długa jazda z tempem 30 km/h",
+   "category": "long",
+   "key": false,
+   "steps": [
+    {
+     "name": "Długa jazda z tempem 30 km/h",
+     "duration_s": 12600,
+     "zone": "Z2",
+     "target": {
+      "type": "threshold_hr",
+      "low": 0.81,
+      "high": 0.89
+     },
+     "rpe": [
+      3,
+      4
+     ],
+     "intensity_type": "active",
+     "cadence_rpm": [
+      85,
+      95
+     ],
+     "note": "Z2 z blokiem tempa: w środku jazdy 3×15 min w Z3 (cel 30–32 km/h na płaskim, pozycja aero na klamkach, kadencja 88–95) / 5 min Z2. Jedzenie jak w długiej jeździe."
+    }
+   ],
+   "duration_min": 210,
+   "description": "Z2 z blokiem tempa: w środku jazdy 3×15 min w Z3 (cel 30–32 km/h na płaskim, pozycja aero na klamkach, kadencja 88–95) / 5 min Z2. Jedzenie jak w długiej jeździe.",
+   "parametric_duration": true,
+   "insert": {
+    "repeat": 3,
+    "steps": [
+     {
+      "name": "Tempo 30–32 km/h",
+      "duration_s": 900,
+      "zone": "Z3",
+      "target": {
+       "type": "threshold_hr",
+       "low": 0.9,
+       "high": 0.93
+      },
+      "rpe": [
+       5,
+       6
+      ],
+      "intensity_type": "tempo",
+      "cadence_rpm": [
+       88,
+       95
+      ]
+     },
+     {
+      "name": "Z2",
+      "duration_s": 300,
+      "zone": "Z2",
+      "target": {
+       "type": "threshold_hr",
+       "low": 0.81,
+       "high": 0.89
+      },
+      "rpe": [
+       3,
+       4
+      ],
+      "intensity_type": "recover",
+      "cadence_rpm": [
+       85,
+       95
+      ]
+     }
+    ]
+   }
+  },
+  "HILLS": {
+   "id": "HILLS",
+   "name": "Pagórki / gravel",
+   "category": "hills",
+   "key": false,
+   "steps": [
+    {
+     "name": "Pagórki / gravel",
+     "duration_s": 6300,
+     "zone": "Z2",
+     "target": {
+      "type": "threshold_hr",
+      "low": 0.81,
+      "high": 0.89
+     },
+     "rpe": [
+      3,
+      4
+     ],
+     "intensity_type": "active",
+     "cadence_rpm": [
+      85,
+      95
+     ],
+     "note": "Teren pofałdowany lub szuter. Podjazdy w Z3 na miękkim przełożeniu (kadencja 75–85), zjazdy i płaskie w Z2. Bez „mielenia” na twardym biegu."
+    }
+   ],
+   "duration_min": 105,
+   "description": "Teren pofałdowany lub szuter. Podjazdy w Z3 na miękkim przełożeniu (kadencja 75–85), zjazdy i płaskie w Z2. Bez „mielenia” na twardym biegu.",
+   "parametric_duration": true
+  },
+  "DELOAD_WED": {
+   "id": "DELOAD_WED",
+   "name": "Tydzień lżejszy: Z2 z pobudzeniem",
+   "category": "endurance",
+   "key": false,
+   "steps": [
+    {
+     "name": "Tydzień lżejszy: Z2 z pobudzeniem",
+     "duration_s": 3600,
+     "zone": "Z2",
+     "target": {
+      "type": "threshold_hr",
+      "low": 0.81,
+      "high": 0.89
+     },
+     "rpe": [
+      3,
+      4
+     ],
+     "intensity_type": "active",
+     "cadence_rpm": [
+      85,
+      95
+     ],
+     "note": "60 min Z2, w środku 3×1 min Z3–Z4 z 3 min luzu. Nogi mają wyjść świeższe."
+    }
+   ],
+   "duration_min": 60,
+   "description": "60 min Z2, w środku 3×1 min Z3–Z4 z 3 min luzu. Nogi mają wyjść świeższe.",
+   "parametric_duration": true
+  },
+  "TEST_LTHR": {
+   "id": "TEST_LTHR",
+   "name": "Test progowy 30 min (LTHR)",
+   "category": "test",
+   "key": true,
+   "steps": [
+    {
+     "name": "Rozgrzewka",
+     "duration_s": 900,
+     "zone": "Z2",
+     "target": {
+      "type": "threshold_hr",
+      "low": 0.81,
+      "high": 0.89
+     },
+     "rpe": [
+      3,
+      4
+     ],
+     "intensity_type": "wu",
+     "cadence_rpm": [
+      85,
+      95
+     ],
+     "note": "Stopniowo od Z1 do górnej Z2; ostatnie 3 min z 2×20 s przyspieszenia."
+    },
+    {
+     "name": "Luźno przed testem",
+     "duration_s": 300,
+     "zone": "Z1",
+     "target": {
+      "type": "threshold_hr",
+      "low": 0.0,
+      "high": 0.81
+     },
+     "rpe": [
+      1,
+      2
+     ],
+     "intensity_type": "recover"
+    },
+    {
+     "name": "TEST 30 min – maksymalny równy wysiłek",
+     "duration_s": 1800,
+     "zone": "THR",
+     "target": {
+      "type": "threshold_hr",
+      "low": 0.95,
+      "high": 1.0
+     },
+     "rpe": [
+      9,
+      9
+     ],
+     "intensity_type": "ftp",
+     "cadence_rpm": [
+      85,
+      95
+     ],
+     "note": "Samotnie, płaska trasa lub równy lekki podjazd, zawsze ta sama. Pierwsze 5 min nie za mocno. LTHR = średnie tętno z minut 10–30. Zapisz też prędkość średnią, rower, temperaturę, wiatr."
+    },
+    {
+     "name": "Schłodzenie",
+     "duration_s": 600,
+     "zone": "Z1",
+     "target": {
+      "type": "threshold_hr",
+      "low": 0.0,
+      "high": 0.81
+     },
+     "rpe": [
+      1,
+      2
+     ],
+     "intensity_type": "cd",
+     "cadence_rpm": [
+      90,
+      100
+     ]
+    }
+   ],
+   "duration_min": 60,
+   "description": "Test Friela: 30 min maksymalnego równego wysiłku w pojedynkę. LTHR = średnie tętno z ostatnich 20 min. Po teście aplikacja przelicza strefy. Zimą (tydz. 16, 24) domyślnie wariant WATTBIKE_TEST.",
+   "result_fields": [
+    "avg_hr_last20",
+    "avg_speed_kmh",
+    "distance_km",
+    "route",
+    "bike",
+    "temp_c",
+    "wind",
+    "notes"
+   ],
+   "alternative": "WATTBIKE_TEST"
+  },
+  "WATTBIKE_TEST": {
+   "id": "WATTBIKE_TEST",
+   "name": "Test 20 min na Wattbike (FTP + LTHR)",
+   "category": "test",
+   "key": true,
+   "steps": [
+    {
+     "name": "Rozgrzewka",
+     "duration_s": 900,
+     "zone": "Z2",
+     "target": {
+      "type": "threshold_hr",
+      "low": 0.81,
+      "high": 0.89
+     },
+     "rpe": [
+      3,
+      4
+     ],
+     "intensity_type": "wu",
+     "cadence_rpm": [
+      85,
+      95
+     ],
+     "note": "Stopniowo od Z1 do górnej Z2; ostatnie 3 min z 2×20 s przyspieszenia."
+    },
+    {
+     "name": "Luźno",
+     "duration_s": 300,
+     "zone": "Z1",
+     "target": {
+      "type": "threshold_hr",
+      "low": 0.0,
+      "high": 0.81
+     },
+     "rpe": [
+      1,
+      2
+     ],
+     "intensity_type": "recover"
+    },
+    {
+     "name": "TEST 20 min all-out (Wattbike)",
+     "duration_s": 1200,
+     "zone": "Z5a",
+     "target": {
+      "type": "threshold_hr",
+      "low": 1.0,
+      "high": 1.02
+     },
+     "rpe": [
+      9,
+      10
+     ],
+     "intensity_type": "ftp",
+     "cadence_rpm": [
+      85,
+      100
+     ],
+     "note": "Równy maksymalny wysiłek. FTP = 95% średniej mocy. LTHR ≈ 97% średniego tętna z 20 min."
+    },
+    {
+     "name": "Schłodzenie",
+     "duration_s": 600,
+     "zone": "Z1",
+     "target": {
+      "type": "threshold_hr",
+      "low": 0.0,
+      "high": 0.81
+     },
+     "rpe": [
+      1,
+      2
+     ],
+     "intensity_type": "cd",
+     "cadence_rpm": [
+      90,
+      100
+     ]
+    }
+   ],
+   "duration_min": 50,
+   "description": "Wariant na siłowni (zima, gołoledź) lub dodatkowo do testu terenowego. Daje FTP w watach: FTP = 0,95 × średnia moc z 20 min; LTHR ≈ 0,97 × średnie tętno.",
+   "result_fields": [
+    "avg_power_w",
+    "avg_hr",
+    "notes"
+   ]
+  },
+  "FTP_TEST": {
+   "id": "FTP_TEST",
+   "name": "Test FTP 20 min (moc)",
+   "category": "test",
+   "key": true,
+   "steps": [
+    {
+     "name": "Rozgrzewka",
+     "duration_s": 1200,
+     "zone": "Z2",
+     "target": {
+      "type": "threshold_hr",
+      "low": 0.81,
+      "high": 0.89
+     },
+     "rpe": [
+      3,
+      4
+     ],
+     "intensity_type": "wu",
+     "cadence_rpm": [
+      85,
+      95
+     ],
+     "note": "Z2; w środku 3×1 min z kadencją 100 rpm."
+    },
+    {
+     "name": "5 min mocno",
+     "duration_s": 300,
+     "zone": "Z4",
+     "target": {
+      "type": "threshold_hr",
+      "low": 0.94,
+      "high": 0.99
+     },
+     "rpe": [
+      7,
+      8
+     ],
+     "intensity_type": "lt",
+     "cadence_rpm": [
+      85,
+      95
+     ],
+     "note": "Mocno, ale nie do upadku – otwiera nogi przed testem."
+    },
+    {
+     "name": "Luz",
+     "duration_s": 600,
+     "zone": "Z1",
+     "target": {
+      "type": "threshold_hr",
+      "low": 0.0,
+      "high": 0.81
+     },
+     "rpe": [
+      1,
+      2
+     ],
+     "intensity_type": "recover",
+     "cadence_rpm": [
+      85,
+      95
+     ]
+    },
+    {
+     "name": "TEST 20 min – maksymalnie równo",
+     "duration_s": 1200,
+     "zone": "Z5a",
+     "target": {
+      "type": "threshold_hr",
+      "low": 1.0,
+      "high": 1.02
+     },
+     "rpe": [
+      9,
+      10
+     ],
+     "intensity_type": "ftp",
+     "cadence_rpm": [
+      85,
+      95
+     ],
+     "note": "Płaska, prosta trasa bez świateł, zawsze ta sama. Najczęstszy błąd: wystrzelić na starcie – pierwsze 5 min świadomie wolniej niż chcesz. FTP = 95% średniej mocy. Tętno progowe = średnie HR z ostatnich 10 min."
+    },
+    {
+     "name": "Schłodzenie",
+     "duration_s": 600,
+     "zone": "Z1",
+     "target": {
+      "type": "threshold_hr",
+      "low": 0.0,
+      "high": 0.81
+     },
+     "rpe": [
+      1,
+      2
+     ],
+     "intensity_type": "cd",
+     "cadence_rpm": [
+      90,
+      100
+     ]
+    }
+   ],
+   "duration_min": 65,
+   "description": "Test progowy z miernikiem mocy: 20 min maksymalnie równo. FTP = 0,95 × średnia moc, tętno progowe = średnie tętno z ostatnich 10 min. Bez miernika: wariant terenowy po tętnie (TEST_LTHR) albo Wattbike na siłowni. Powtarzaj co 6 tygodni – strefy mocy licz z wyniku, nie ze starych ustawień.",
+   "result_fields": [
+    "avg_power_w",
+    "avg_hr_last10",
+    "avg_speed_kmh",
+    "route",
+    "bike",
+    "temp_c",
+    "wind",
+    "notes"
+   ],
+   "alternative": "WATTBIKE_TEST"
+  },
+  "SS_2x10": {
+   "id": "SS_2x10",
+   "name": "Sweet spot 2×10 min",
+   "category": "sweet_spot",
+   "key": true,
+   "steps": [
+    {
+     "name": "Rozgrzewka",
+     "duration_s": 900,
+     "zone": "Z2",
+     "target": {
+      "type": "threshold_hr",
+      "low": 0.81,
+      "high": 0.89
+     },
+     "rpe": [
+      3,
+      4
+     ],
+     "intensity_type": "wu",
+     "cadence_rpm": [
+      85,
+      95
+     ],
+     "note": "Stopniowo od Z1 do górnej Z2; ostatnie 3 min z 2×20 s przyspieszenia."
+    },
+    {
+     "repeat": 2,
+     "steps": [
+      {
+       "name": "Interwał 10 min",
+       "duration_s": 600,
+       "zone": "SS",
+       "target": {
+        "type": "threshold_hr",
+        "low": 0.92,
+        "high": 0.96
+       },
+       "rpe": [
+        6,
+        7
+       ],
+       "intensity_type": "active",
+       "cadence_rpm": [
+        80,
+        90
+       ],
+       "note": "Pierwsze 2–3 min interwału prowadź po odczuciu (RPE) – tętno dogania wysiłek z opóźnieniem. Nie goń tętna na starcie."
+      },
+      {
+       "name": "Przerwa",
+       "duration_s": 300,
+       "zone": "Z1",
+       "target": {
+        "type": "threshold_hr",
+        "low": 0.0,
+        "high": 0.81
+       },
+       "rpe": [
+        1,
+        2
+       ],
+       "intensity_type": "recover",
+       "cadence_rpm": [
+        85,
+        95
+       ]
+      }
+     ]
+    },
+    {
+     "name": "Schłodzenie",
+     "duration_s": 600,
+     "zone": "Z1",
+     "target": {
+      "type": "threshold_hr",
+      "low": 0.0,
+      "high": 0.81
+     },
+     "rpe": [
+      1,
+      2
+     ],
+     "intensity_type": "cd",
+     "cadence_rpm": [
+      90,
+      100
+     ]
+    }
+   ],
+   "duration_min": 55,
+   "description": "Sweet spot: mocno, ale kontrolowanie (RPE 6–7), tętno 92–96% LTHR. Na podjeździe lub płaskim bez przerw na skrzyżowania. Kadencja 80–90."
+  },
+  "SS_2x12": {
+   "id": "SS_2x12",
+   "name": "Sweet spot 2×12 min",
+   "category": "sweet_spot",
+   "key": true,
+   "steps": [
+    {
+     "name": "Rozgrzewka",
+     "duration_s": 900,
+     "zone": "Z2",
+     "target": {
+      "type": "threshold_hr",
+      "low": 0.81,
+      "high": 0.89
+     },
+     "rpe": [
+      3,
+      4
+     ],
+     "intensity_type": "wu",
+     "cadence_rpm": [
+      85,
+      95
+     ],
+     "note": "Stopniowo od Z1 do górnej Z2; ostatnie 3 min z 2×20 s przyspieszenia."
+    },
+    {
+     "repeat": 2,
+     "steps": [
+      {
+       "name": "Interwał 12 min",
+       "duration_s": 720,
+       "zone": "SS",
+       "target": {
+        "type": "threshold_hr",
+        "low": 0.92,
+        "high": 0.96
+       },
+       "rpe": [
+        6,
+        7
+       ],
+       "intensity_type": "active",
+       "cadence_rpm": [
+        80,
+        90
+       ],
+       "note": "Pierwsze 2–3 min interwału prowadź po odczuciu (RPE) – tętno dogania wysiłek z opóźnieniem. Nie goń tętna na starcie."
+      },
+      {
+       "name": "Przerwa",
+       "duration_s": 300,
+       "zone": "Z1",
+       "target": {
+        "type": "threshold_hr",
+        "low": 0.0,
+        "high": 0.81
+       },
+       "rpe": [
+        1,
+        2
+       ],
+       "intensity_type": "recover",
+       "cadence_rpm": [
+        85,
+        95
+       ]
+      }
+     ]
+    },
+    {
+     "name": "Schłodzenie",
+     "duration_s": 600,
+     "zone": "Z1",
+     "target": {
+      "type": "threshold_hr",
+      "low": 0.0,
+      "high": 0.81
+     },
+     "rpe": [
+      1,
+      2
+     ],
+     "intensity_type": "cd",
+     "cadence_rpm": [
+      90,
+      100
+     ]
+    }
+   ],
+   "duration_min": 59,
+   "description": "Sweet spot: mocno, ale kontrolowanie (RPE 6–7), tętno 92–96% LTHR. Na podjeździe lub płaskim bez przerw na skrzyżowania. Kadencja 80–90."
+  },
+  "SS_3x10": {
+   "id": "SS_3x10",
+   "name": "Sweet spot 3×10 min",
+   "category": "sweet_spot",
+   "key": true,
+   "steps": [
+    {
+     "name": "Rozgrzewka",
+     "duration_s": 900,
+     "zone": "Z2",
+     "target": {
+      "type": "threshold_hr",
+      "low": 0.81,
+      "high": 0.89
+     },
+     "rpe": [
+      3,
+      4
+     ],
+     "intensity_type": "wu",
+     "cadence_rpm": [
+      85,
+      95
+     ],
+     "note": "Stopniowo od Z1 do górnej Z2; ostatnie 3 min z 2×20 s przyspieszenia."
+    },
+    {
+     "repeat": 3,
+     "steps": [
+      {
+       "name": "Interwał 10 min",
+       "duration_s": 600,
+       "zone": "SS",
+       "target": {
+        "type": "threshold_hr",
+        "low": 0.92,
+        "high": 0.96
+       },
+       "rpe": [
+        6,
+        7
+       ],
+       "intensity_type": "active",
+       "cadence_rpm": [
+        80,
+        90
+       ],
+       "note": "Pierwsze 2–3 min interwału prowadź po odczuciu (RPE) – tętno dogania wysiłek z opóźnieniem. Nie goń tętna na starcie."
+      },
+      {
+       "name": "Przerwa",
+       "duration_s": 300,
+       "zone": "Z1",
+       "target": {
+        "type": "threshold_hr",
+        "low": 0.0,
+        "high": 0.81
+       },
+       "rpe": [
+        1,
+        2
+       ],
+       "intensity_type": "recover",
+       "cadence_rpm": [
+        85,
+        95
+       ]
+      }
+     ]
+    },
+    {
+     "name": "Schłodzenie",
+     "duration_s": 600,
+     "zone": "Z1",
+     "target": {
+      "type": "threshold_hr",
+      "low": 0.0,
+      "high": 0.81
+     },
+     "rpe": [
+      1,
+      2
+     ],
+     "intensity_type": "cd",
+     "cadence_rpm": [
+      90,
+      100
+     ]
+    }
+   ],
+   "duration_min": 70,
+   "description": "Sweet spot: mocno, ale kontrolowanie (RPE 6–7), tętno 92–96% LTHR. Na podjeździe lub płaskim bez przerw na skrzyżowania. Kadencja 80–90."
+  },
+  "SS_2x15": {
+   "id": "SS_2x15",
+   "name": "Sweet spot 2×15 min",
+   "category": "sweet_spot",
+   "key": true,
+   "steps": [
+    {
+     "name": "Rozgrzewka",
+     "duration_s": 900,
+     "zone": "Z2",
+     "target": {
+      "type": "threshold_hr",
+      "low": 0.81,
+      "high": 0.89
+     },
+     "rpe": [
+      3,
+      4
+     ],
+     "intensity_type": "wu",
+     "cadence_rpm": [
+      85,
+      95
+     ],
+     "note": "Stopniowo od Z1 do górnej Z2; ostatnie 3 min z 2×20 s przyspieszenia."
+    },
+    {
+     "repeat": 2,
+     "steps": [
+      {
+       "name": "Interwał 15 min",
+       "duration_s": 900,
+       "zone": "SS",
+       "target": {
+        "type": "threshold_hr",
+        "low": 0.92,
+        "high": 0.96
+       },
+       "rpe": [
+        6,
+        7
+       ],
+       "intensity_type": "active",
+       "cadence_rpm": [
+        80,
+        90
+       ],
+       "note": "Pierwsze 2–3 min interwału prowadź po odczuciu (RPE) – tętno dogania wysiłek z opóźnieniem. Nie goń tętna na starcie."
+      },
+      {
+       "name": "Przerwa",
+       "duration_s": 300,
+       "zone": "Z1",
+       "target": {
+        "type": "threshold_hr",
+        "low": 0.0,
+        "high": 0.81
+       },
+       "rpe": [
+        1,
+        2
+       ],
+       "intensity_type": "recover",
+       "cadence_rpm": [
+        85,
+        95
+       ]
+      }
+     ]
+    },
+    {
+     "name": "Schłodzenie",
+     "duration_s": 600,
+     "zone": "Z1",
+     "target": {
+      "type": "threshold_hr",
+      "low": 0.0,
+      "high": 0.81
+     },
+     "rpe": [
+      1,
+      2
+     ],
+     "intensity_type": "cd",
+     "cadence_rpm": [
+      90,
+      100
+     ]
+    }
+   ],
+   "duration_min": 65,
+   "description": "Sweet spot: mocno, ale kontrolowanie (RPE 6–7), tętno 92–96% LTHR. Na podjeździe lub płaskim bez przerw na skrzyżowania. Kadencja 80–90."
+  },
+  "SS_3x12": {
+   "id": "SS_3x12",
+   "name": "Sweet spot 3×12 min",
+   "category": "sweet_spot",
+   "key": true,
+   "steps": [
+    {
+     "name": "Rozgrzewka",
+     "duration_s": 900,
+     "zone": "Z2",
+     "target": {
+      "type": "threshold_hr",
+      "low": 0.81,
+      "high": 0.89
+     },
+     "rpe": [
+      3,
+      4
+     ],
+     "intensity_type": "wu",
+     "cadence_rpm": [
+      85,
+      95
+     ],
+     "note": "Stopniowo od Z1 do górnej Z2; ostatnie 3 min z 2×20 s przyspieszenia."
+    },
+    {
+     "repeat": 3,
+     "steps": [
+      {
+       "name": "Interwał 12 min",
+       "duration_s": 720,
+       "zone": "SS",
+       "target": {
+        "type": "threshold_hr",
+        "low": 0.92,
+        "high": 0.96
+       },
+       "rpe": [
+        6,
+        7
+       ],
+       "intensity_type": "active",
+       "cadence_rpm": [
+        80,
+        90
+       ],
+       "note": "Pierwsze 2–3 min interwału prowadź po odczuciu (RPE) – tętno dogania wysiłek z opóźnieniem. Nie goń tętna na starcie."
+      },
+      {
+       "name": "Przerwa",
+       "duration_s": 300,
+       "zone": "Z1",
+       "target": {
+        "type": "threshold_hr",
+        "low": 0.0,
+        "high": 0.81
+       },
+       "rpe": [
+        1,
+        2
+       ],
+       "intensity_type": "recover",
+       "cadence_rpm": [
+        85,
+        95
+       ]
+      }
+     ]
+    },
+    {
+     "name": "Schłodzenie",
+     "duration_s": 600,
+     "zone": "Z1",
+     "target": {
+      "type": "threshold_hr",
+      "low": 0.0,
+      "high": 0.81
+     },
+     "rpe": [
+      1,
+      2
+     ],
+     "intensity_type": "cd",
+     "cadence_rpm": [
+      90,
+      100
+     ]
+    }
+   ],
+   "duration_min": 76,
+   "description": "Sweet spot: mocno, ale kontrolowanie (RPE 6–7), tętno 92–96% LTHR. Na podjeździe lub płaskim bez przerw na skrzyżowania. Kadencja 80–90."
+  },
+  "SS_3x15": {
+   "id": "SS_3x15",
+   "name": "Sweet spot 3×15 min",
+   "category": "sweet_spot",
+   "key": true,
+   "steps": [
+    {
+     "name": "Rozgrzewka",
+     "duration_s": 900,
+     "zone": "Z2",
+     "target": {
+      "type": "threshold_hr",
+      "low": 0.81,
+      "high": 0.89
+     },
+     "rpe": [
+      3,
+      4
+     ],
+     "intensity_type": "wu",
+     "cadence_rpm": [
+      85,
+      95
+     ],
+     "note": "Stopniowo od Z1 do górnej Z2; ostatnie 3 min z 2×20 s przyspieszenia."
+    },
+    {
+     "repeat": 3,
+     "steps": [
+      {
+       "name": "Interwał 15 min",
+       "duration_s": 900,
+       "zone": "SS",
+       "target": {
+        "type": "threshold_hr",
+        "low": 0.92,
+        "high": 0.96
+       },
+       "rpe": [
+        6,
+        7
+       ],
+       "intensity_type": "active",
+       "cadence_rpm": [
+        80,
+        90
+       ],
+       "note": "Pierwsze 2–3 min interwału prowadź po odczuciu (RPE) – tętno dogania wysiłek z opóźnieniem. Nie goń tętna na starcie."
+      },
+      {
+       "name": "Przerwa",
+       "duration_s": 300,
+       "zone": "Z1",
+       "target": {
+        "type": "threshold_hr",
+        "low": 0.0,
+        "high": 0.81
+       },
+       "rpe": [
+        1,
+        2
+       ],
+       "intensity_type": "recover",
+       "cadence_rpm": [
+        85,
+        95
+       ]
+      }
+     ]
+    },
+    {
+     "name": "Schłodzenie",
+     "duration_s": 600,
+     "zone": "Z1",
+     "target": {
+      "type": "threshold_hr",
+      "low": 0.0,
+      "high": 0.81
+     },
+     "rpe": [
+      1,
+      2
+     ],
+     "intensity_type": "cd",
+     "cadence_rpm": [
+      90,
+      100
+     ]
+    }
+   ],
+   "duration_min": 85,
+   "description": "Sweet spot: mocno, ale kontrolowanie (RPE 6–7), tętno 92–96% LTHR. Na podjeździe lub płaskim bez przerw na skrzyżowania. Kadencja 80–90."
+  },
+  "SS_2x20": {
+   "id": "SS_2x20",
+   "name": "Sweet spot 2×20 min",
+   "category": "sweet_spot",
+   "key": true,
+   "steps": [
+    {
+     "name": "Rozgrzewka",
+     "duration_s": 900,
+     "zone": "Z2",
+     "target": {
+      "type": "threshold_hr",
+      "low": 0.81,
+      "high": 0.89
+     },
+     "rpe": [
+      3,
+      4
+     ],
+     "intensity_type": "wu",
+     "cadence_rpm": [
+      85,
+      95
+     ],
+     "note": "Stopniowo od Z1 do górnej Z2; ostatnie 3 min z 2×20 s przyspieszenia."
+    },
+    {
+     "repeat": 2,
+     "steps": [
+      {
+       "name": "Interwał 20 min",
+       "duration_s": 1200,
+       "zone": "SS",
+       "target": {
+        "type": "threshold_hr",
+        "low": 0.92,
+        "high": 0.96
+       },
+       "rpe": [
+        6,
+        7
+       ],
+       "intensity_type": "active",
+       "cadence_rpm": [
+        80,
+        90
+       ],
+       "note": "Pierwsze 2–3 min interwału prowadź po odczuciu (RPE) – tętno dogania wysiłek z opóźnieniem. Nie goń tętna na starcie."
+      },
+      {
+       "name": "Przerwa",
+       "duration_s": 300,
+       "zone": "Z1",
+       "target": {
+        "type": "threshold_hr",
+        "low": 0.0,
+        "high": 0.81
+       },
+       "rpe": [
+        1,
+        2
+       ],
+       "intensity_type": "recover",
+       "cadence_rpm": [
+        85,
+        95
+       ]
+      }
+     ]
+    },
+    {
+     "name": "Schłodzenie",
+     "duration_s": 600,
+     "zone": "Z1",
+     "target": {
+      "type": "threshold_hr",
+      "low": 0.0,
+      "high": 0.81
+     },
+     "rpe": [
+      1,
+      2
+     ],
+     "intensity_type": "cd",
+     "cadence_rpm": [
+      90,
+      100
+     ]
+    }
+   ],
+   "duration_min": 75,
+   "description": "Sweet spot: mocno, ale kontrolowanie (RPE 6–7), tętno 92–96% LTHR. Na podjeździe lub płaskim bez przerw na skrzyżowania. Kadencja 80–90."
+  },
+  "SS_3x20": {
+   "id": "SS_3x20",
+   "name": "Sweet spot 3×20 min",
+   "category": "sweet_spot",
+   "key": true,
+   "steps": [
+    {
+     "name": "Rozgrzewka",
+     "duration_s": 900,
+     "zone": "Z2",
+     "target": {
+      "type": "threshold_hr",
+      "low": 0.81,
+      "high": 0.89
+     },
+     "rpe": [
+      3,
+      4
+     ],
+     "intensity_type": "wu",
+     "cadence_rpm": [
+      85,
+      95
+     ],
+     "note": "Stopniowo od Z1 do górnej Z2; ostatnie 3 min z 2×20 s przyspieszenia."
+    },
+    {
+     "repeat": 3,
+     "steps": [
+      {
+       "name": "Interwał 20 min",
+       "duration_s": 1200,
+       "zone": "SS",
+       "target": {
+        "type": "threshold_hr",
+        "low": 0.92,
+        "high": 0.96
+       },
+       "rpe": [
+        6,
+        7
+       ],
+       "intensity_type": "active",
+       "cadence_rpm": [
+        80,
+        90
+       ],
+       "note": "Pierwsze 2–3 min interwału prowadź po odczuciu (RPE) – tętno dogania wysiłek z opóźnieniem. Nie goń tętna na starcie."
+      },
+      {
+       "name": "Przerwa",
+       "duration_s": 300,
+       "zone": "Z1",
+       "target": {
+        "type": "threshold_hr",
+        "low": 0.0,
+        "high": 0.81
+       },
+       "rpe": [
+        1,
+        2
+       ],
+       "intensity_type": "recover",
+       "cadence_rpm": [
+        85,
+        95
+       ]
+      }
+     ]
+    },
+    {
+     "name": "Schłodzenie",
+     "duration_s": 600,
+     "zone": "Z1",
+     "target": {
+      "type": "threshold_hr",
+      "low": 0.0,
+      "high": 0.81
+     },
+     "rpe": [
+      1,
+      2
+     ],
+     "intensity_type": "cd",
+     "cadence_rpm": [
+      90,
+      100
+     ]
+    }
+   ],
+   "duration_min": 100,
+   "description": "Sweet spot: mocno, ale kontrolowanie (RPE 6–7), tętno 92–96% LTHR. Na podjeździe lub płaskim bez przerw na skrzyżowania. Kadencja 80–90."
+  },
+  "THR_4x6": {
+   "id": "THR_4x6",
+   "name": "Próg pod górę 4×6 min",
+   "category": "threshold",
+   "key": true,
+   "steps": [
+    {
+     "name": "Rozgrzewka",
+     "duration_s": 900,
+     "zone": "Z2",
+     "target": {
+      "type": "threshold_hr",
+      "low": 0.81,
+      "high": 0.89
+     },
+     "rpe": [
+      3,
+      4
+     ],
+     "intensity_type": "wu",
+     "cadence_rpm": [
+      85,
+      95
+     ],
+     "note": "Stopniowo od Z1 do górnej Z2; ostatnie 3 min z 2×20 s przyspieszenia."
+    },
+    {
+     "repeat": 4,
+     "steps": [
+      {
+       "name": "Interwał 6 min",
+       "duration_s": 360,
+       "zone": "THR",
+       "target": {
+        "type": "threshold_hr",
+        "low": 0.95,
+        "high": 1.0
+       },
+       "rpe": [
+        7,
+        8
+       ],
+       "intensity_type": "lt",
+       "cadence_rpm": [
+        75,
+        85
+       ],
+       "note": "Pierwsze 2–3 min interwału prowadź po odczuciu (RPE) – tętno dogania wysiłek z opóźnieniem. Nie goń tętna na starcie."
+      },
+      {
+       "name": "Przerwa",
+       "duration_s": 240,
+       "zone": "Z1",
+       "target": {
+        "type": "threshold_hr",
+        "low": 0.0,
+        "high": 0.81
+       },
+       "rpe": [
+        1,
+        2
+       ],
+       "intensity_type": "recover",
+       "cadence_rpm": [
+        85,
+        95
+       ]
+      }
+     ]
+    },
+    {
+     "name": "Schłodzenie",
+     "duration_s": 600,
+     "zone": "Z1",
+     "target": {
+      "type": "threshold_hr",
+      "low": 0.0,
+      "high": 0.81
+     },
+     "rpe": [
+      1,
+      2
+     ],
+     "intensity_type": "cd",
+     "cadence_rpm": [
+      90,
+      100
+     ]
+    }
+   ],
+   "duration_min": 65,
+   "description": "Interwały progowe pod górę (lub pod wiatr): RPE 7–8, tętno 95–100% LTHR pod koniec interwału. Kadencja 75–85 – jak na alpejskim podjeździe, na miękkim przełożeniu."
+  },
+  "THR_4x8": {
+   "id": "THR_4x8",
+   "name": "Próg pod górę 4×8 min",
+   "category": "threshold",
+   "key": true,
+   "steps": [
+    {
+     "name": "Rozgrzewka",
+     "duration_s": 900,
+     "zone": "Z2",
+     "target": {
+      "type": "threshold_hr",
+      "low": 0.81,
+      "high": 0.89
+     },
+     "rpe": [
+      3,
+      4
+     ],
+     "intensity_type": "wu",
+     "cadence_rpm": [
+      85,
+      95
+     ],
+     "note": "Stopniowo od Z1 do górnej Z2; ostatnie 3 min z 2×20 s przyspieszenia."
+    },
+    {
+     "repeat": 4,
+     "steps": [
+      {
+       "name": "Interwał 8 min",
+       "duration_s": 480,
+       "zone": "THR",
+       "target": {
+        "type": "threshold_hr",
+        "low": 0.95,
+        "high": 1.0
+       },
+       "rpe": [
+        7,
+        8
+       ],
+       "intensity_type": "lt",
+       "cadence_rpm": [
+        75,
+        85
+       ],
+       "note": "Pierwsze 2–3 min interwału prowadź po odczuciu (RPE) – tętno dogania wysiłek z opóźnieniem. Nie goń tętna na starcie."
+      },
+      {
+       "name": "Przerwa",
+       "duration_s": 240,
+       "zone": "Z1",
+       "target": {
+        "type": "threshold_hr",
+        "low": 0.0,
+        "high": 0.81
+       },
+       "rpe": [
+        1,
+        2
+       ],
+       "intensity_type": "recover",
+       "cadence_rpm": [
+        85,
+        95
+       ]
+      }
+     ]
+    },
+    {
+     "name": "Schłodzenie",
+     "duration_s": 600,
+     "zone": "Z1",
+     "target": {
+      "type": "threshold_hr",
+      "low": 0.0,
+      "high": 0.81
+     },
+     "rpe": [
+      1,
+      2
+     ],
+     "intensity_type": "cd",
+     "cadence_rpm": [
+      90,
+      100
+     ]
+    }
+   ],
+   "duration_min": 73,
+   "description": "Interwały progowe pod górę (lub pod wiatr): RPE 7–8, tętno 95–100% LTHR pod koniec interwału. Kadencja 75–85 – jak na alpejskim podjeździe, na miękkim przełożeniu."
+  },
+  "THR_3x12": {
+   "id": "THR_3x12",
+   "name": "Próg pod górę 3×12 min",
+   "category": "threshold",
+   "key": true,
+   "steps": [
+    {
+     "name": "Rozgrzewka",
+     "duration_s": 900,
+     "zone": "Z2",
+     "target": {
+      "type": "threshold_hr",
+      "low": 0.81,
+      "high": 0.89
+     },
+     "rpe": [
+      3,
+      4
+     ],
+     "intensity_type": "wu",
+     "cadence_rpm": [
+      85,
+      95
+     ],
+     "note": "Stopniowo od Z1 do górnej Z2; ostatnie 3 min z 2×20 s przyspieszenia."
+    },
+    {
+     "repeat": 3,
+     "steps": [
+      {
+       "name": "Interwał 12 min",
+       "duration_s": 720,
+       "zone": "THR",
+       "target": {
+        "type": "threshold_hr",
+        "low": 0.95,
+        "high": 1.0
+       },
+       "rpe": [
+        7,
+        8
+       ],
+       "intensity_type": "lt",
+       "cadence_rpm": [
+        75,
+        85
+       ],
+       "note": "Pierwsze 2–3 min interwału prowadź po odczuciu (RPE) – tętno dogania wysiłek z opóźnieniem. Nie goń tętna na starcie."
+      },
+      {
+       "name": "Przerwa",
+       "duration_s": 300,
+       "zone": "Z1",
+       "target": {
+        "type": "threshold_hr",
+        "low": 0.0,
+        "high": 0.81
+       },
+       "rpe": [
+        1,
+        2
+       ],
+       "intensity_type": "recover",
+       "cadence_rpm": [
+        85,
+        95
+       ]
+      }
+     ]
+    },
+    {
+     "name": "Schłodzenie",
+     "duration_s": 600,
+     "zone": "Z1",
+     "target": {
+      "type": "threshold_hr",
+      "low": 0.0,
+      "high": 0.81
+     },
+     "rpe": [
+      1,
+      2
+     ],
+     "intensity_type": "cd",
+     "cadence_rpm": [
+      90,
+      100
+     ]
+    }
+   ],
+   "duration_min": 76,
+   "description": "Interwały progowe pod górę (lub pod wiatr): RPE 7–8, tętno 95–100% LTHR pod koniec interwału. Kadencja 75–85 – jak na alpejskim podjeździe, na miękkim przełożeniu."
+  },
+  "THR_3x15": {
+   "id": "THR_3x15",
+   "name": "Próg pod górę 3×15 min",
+   "category": "threshold",
+   "key": true,
+   "steps": [
+    {
+     "name": "Rozgrzewka",
+     "duration_s": 900,
+     "zone": "Z2",
+     "target": {
+      "type": "threshold_hr",
+      "low": 0.81,
+      "high": 0.89
+     },
+     "rpe": [
+      3,
+      4
+     ],
+     "intensity_type": "wu",
+     "cadence_rpm": [
+      85,
+      95
+     ],
+     "note": "Stopniowo od Z1 do górnej Z2; ostatnie 3 min z 2×20 s przyspieszenia."
+    },
+    {
+     "repeat": 3,
+     "steps": [
+      {
+       "name": "Interwał 15 min",
+       "duration_s": 900,
+       "zone": "THR",
+       "target": {
+        "type": "threshold_hr",
+        "low": 0.95,
+        "high": 1.0
+       },
+       "rpe": [
+        7,
+        8
+       ],
+       "intensity_type": "lt",
+       "cadence_rpm": [
+        75,
+        85
+       ],
+       "note": "Pierwsze 2–3 min interwału prowadź po odczuciu (RPE) – tętno dogania wysiłek z opóźnieniem. Nie goń tętna na starcie."
+      },
+      {
+       "name": "Przerwa",
+       "duration_s": 300,
+       "zone": "Z1",
+       "target": {
+        "type": "threshold_hr",
+        "low": 0.0,
+        "high": 0.81
+       },
+       "rpe": [
+        1,
+        2
+       ],
+       "intensity_type": "recover",
+       "cadence_rpm": [
+        85,
+        95
+       ]
+      }
+     ]
+    },
+    {
+     "name": "Schłodzenie",
+     "duration_s": 600,
+     "zone": "Z1",
+     "target": {
+      "type": "threshold_hr",
+      "low": 0.0,
+      "high": 0.81
+     },
+     "rpe": [
+      1,
+      2
+     ],
+     "intensity_type": "cd",
+     "cadence_rpm": [
+      90,
+      100
+     ]
+    }
+   ],
+   "duration_min": 85,
+   "description": "Interwały progowe pod górę (lub pod wiatr): RPE 7–8, tętno 95–100% LTHR pod koniec interwału. Kadencja 75–85 – jak na alpejskim podjeździe, na miękkim przełożeniu."
+  },
+  "THR_2x20": {
+   "id": "THR_2x20",
+   "name": "Próg pod górę 2×20 min",
+   "category": "threshold",
+   "key": true,
+   "steps": [
+    {
+     "name": "Rozgrzewka",
+     "duration_s": 900,
+     "zone": "Z2",
+     "target": {
+      "type": "threshold_hr",
+      "low": 0.81,
+      "high": 0.89
+     },
+     "rpe": [
+      3,
+      4
+     ],
+     "intensity_type": "wu",
+     "cadence_rpm": [
+      85,
+      95
+     ],
+     "note": "Stopniowo od Z1 do górnej Z2; ostatnie 3 min z 2×20 s przyspieszenia."
+    },
+    {
+     "repeat": 2,
+     "steps": [
+      {
+       "name": "Interwał 20 min",
+       "duration_s": 1200,
+       "zone": "THR",
+       "target": {
+        "type": "threshold_hr",
+        "low": 0.95,
+        "high": 1.0
+       },
+       "rpe": [
+        7,
+        8
+       ],
+       "intensity_type": "lt",
+       "cadence_rpm": [
+        75,
+        85
+       ],
+       "note": "Pierwsze 2–3 min interwału prowadź po odczuciu (RPE) – tętno dogania wysiłek z opóźnieniem. Nie goń tętna na starcie."
+      },
+      {
+       "name": "Przerwa",
+       "duration_s": 360,
+       "zone": "Z1",
+       "target": {
+        "type": "threshold_hr",
+        "low": 0.0,
+        "high": 0.81
+       },
+       "rpe": [
+        1,
+        2
+       ],
+       "intensity_type": "recover",
+       "cadence_rpm": [
+        85,
+        95
+       ]
+      }
+     ]
+    },
+    {
+     "name": "Schłodzenie",
+     "duration_s": 600,
+     "zone": "Z1",
+     "target": {
+      "type": "threshold_hr",
+      "low": 0.0,
+      "high": 0.81
+     },
+     "rpe": [
+      1,
+      2
+     ],
+     "intensity_type": "cd",
+     "cadence_rpm": [
+      90,
+      100
+     ]
+    }
+   ],
+   "duration_min": 77,
+   "description": "Interwały progowe pod górę (lub pod wiatr): RPE 7–8, tętno 95–100% LTHR pod koniec interwału. Kadencja 75–85 – jak na alpejskim podjeździe, na miękkim przełożeniu."
+  },
+  "VO2_5x3": {
+   "id": "VO2_5x3",
+   "name": "VO2max 5×3 min",
+   "category": "vo2max",
+   "key": true,
+   "steps": [
+    {
+     "name": "Rozgrzewka",
+     "duration_s": 1200,
+     "zone": "Z2",
+     "target": {
+      "type": "threshold_hr",
+      "low": 0.81,
+      "high": 0.89
+     },
+     "rpe": [
+      3,
+      4
+     ],
+     "intensity_type": "wu",
+     "cadence_rpm": [
+      85,
+      95
+     ],
+     "note": "Stopniowo od Z1 do górnej Z2; ostatnie 3 min z 2×20 s przyspieszenia."
+    },
+    {
+     "repeat": 5,
+     "steps": [
+      {
+       "name": "Interwał 3 min",
+       "duration_s": 180,
+       "zone": "Z5b",
+       "target": {
+        "type": "threshold_hr",
+        "low": 1.03,
+        "high": 1.06
+       },
+       "rpe": [
+        9,
+        9
+       ],
+       "intensity_type": "map",
+       "cadence_rpm": [
+        85,
+        95
+       ],
+       "note": "Pierwsze 2–3 min interwału prowadź po odczuciu (RPE) – tętno dogania wysiłek z opóźnieniem. Nie goń tętna na starcie."
+      },
+      {
+       "name": "Przerwa",
+       "duration_s": 180,
+       "zone": "Z1",
+       "target": {
+        "type": "threshold_hr",
+        "low": 0.0,
+        "high": 0.81
+       },
+       "rpe": [
+        1,
+        2
+       ],
+       "intensity_type": "recover",
+       "cadence_rpm": [
+        85,
+        95
+       ]
+      }
+     ]
+    },
+    {
+     "name": "Schłodzenie",
+     "duration_s": 600,
+     "zone": "Z1",
+     "target": {
+      "type": "threshold_hr",
+      "low": 0.0,
+      "high": 0.81
+     },
+     "rpe": [
+      1,
+      2
+     ],
+     "intensity_type": "cd",
+     "cadence_rpm": [
+      90,
+      100
+     ]
+    }
+   ],
+   "duration_min": 60,
+   "description": "VO2max: 3 min mocno, ale równo (RPE 9) – nie sprint na starcie. Tętno dojdzie do 103–106% LTHR dopiero w końcówce kolejnych powtórzeń. Przerwa 3 min bardzo luźno."
+  },
+  "VO2_4x3": {
+   "id": "VO2_4x3",
+   "name": "VO2max 4×3 min",
+   "category": "vo2max",
+   "key": true,
+   "steps": [
+    {
+     "name": "Rozgrzewka",
+     "duration_s": 1200,
+     "zone": "Z2",
+     "target": {
+      "type": "threshold_hr",
+      "low": 0.81,
+      "high": 0.89
+     },
+     "rpe": [
+      3,
+      4
+     ],
+     "intensity_type": "wu",
+     "cadence_rpm": [
+      85,
+      95
+     ],
+     "note": "Stopniowo od Z1 do górnej Z2; ostatnie 3 min z 2×20 s przyspieszenia."
+    },
+    {
+     "repeat": 4,
+     "steps": [
+      {
+       "name": "Interwał 3 min",
+       "duration_s": 180,
+       "zone": "Z5b",
+       "target": {
+        "type": "threshold_hr",
+        "low": 1.03,
+        "high": 1.06
+       },
+       "rpe": [
+        9,
+        9
+       ],
+       "intensity_type": "map",
+       "cadence_rpm": [
+        85,
+        95
+       ],
+       "note": "Pierwsze 2–3 min interwału prowadź po odczuciu (RPE) – tętno dogania wysiłek z opóźnieniem. Nie goń tętna na starcie."
+      },
+      {
+       "name": "Przerwa",
+       "duration_s": 180,
+       "zone": "Z1",
+       "target": {
+        "type": "threshold_hr",
+        "low": 0.0,
+        "high": 0.81
+       },
+       "rpe": [
+        1,
+        2
+       ],
+       "intensity_type": "recover",
+       "cadence_rpm": [
+        85,
+        95
+       ]
+      }
+     ]
+    },
+    {
+     "name": "Schłodzenie",
+     "duration_s": 600,
+     "zone": "Z1",
+     "target": {
+      "type": "threshold_hr",
+      "low": 0.0,
+      "high": 0.81
+     },
+     "rpe": [
+      1,
+      2
+     ],
+     "intensity_type": "cd",
+     "cadence_rpm": [
+      90,
+      100
+     ]
+    }
+   ],
+   "duration_min": 54,
+   "description": "VO2max: 3 min mocno, ale równo (RPE 9) – nie sprint na starcie. Tętno dojdzie do 103–106% LTHR dopiero w końcówce kolejnych powtórzeń. Przerwa 3 min bardzo luźno."
+  },
+  "INDOOR_4x4": {
+   "id": "INDOOR_4x4",
+   "name": "Wersja pod dachem: 4×4 min (Wattbike/rowerek)",
+   "category": "indoor",
+   "key": true,
+   "steps": [
+    {
+     "name": "Rozgrzewka",
+     "duration_s": 600,
+     "zone": "Z2",
+     "target": {
+      "type": "threshold_hr",
+      "low": 0.81,
+      "high": 0.89
+     },
+     "rpe": [
+      3,
+      4
+     ],
+     "intensity_type": "wu",
+     "cadence_rpm": [
+      85,
+      95
+     ],
+     "note": "Stopniowo od Z1 do górnej Z2; ostatnie 3 min z 2×20 s przyspieszenia."
+    },
+    {
+     "repeat": 4,
+     "steps": [
+      {
+       "name": "Interwał 4 min",
+       "duration_s": 240,
+       "zone": "Z5b",
+       "target": {
+        "type": "threshold_hr",
+        "low": 1.03,
+        "high": 1.06
+       },
+       "rpe": [
+        9,
+        9
+       ],
+       "intensity_type": "map",
+       "cadence_rpm": [
+        85,
+        95
+       ],
+       "note": "Pierwsze 2–3 min interwału prowadź po odczuciu (RPE) – tętno dogania wysiłek z opóźnieniem. Nie goń tętna na starcie."
+      },
+      {
+       "name": "Przerwa",
+       "duration_s": 180,
+       "zone": "Z1",
+       "target": {
+        "type": "threshold_hr",
+        "low": 0.0,
+        "high": 0.81
+       },
+       "rpe": [
+        1,
+        2
+       ],
+       "intensity_type": "recover",
+       "cadence_rpm": [
+        85,
+        95
+       ]
+      }
+     ]
+    },
+    {
+     "name": "Schłodzenie",
+     "duration_s": 300,
+     "zone": "Z1",
+     "target": {
+      "type": "threshold_hr",
+      "low": 0.0,
+      "high": 0.81
+     },
+     "rpe": [
+      1,
+      2
+     ],
+     "intensity_type": "cd",
+     "cadence_rpm": [
+      90,
+      100
+     ]
+    }
+   ],
+   "duration_min": 43,
+   "description": "Na gołoledź, śnieg lub mróz poniżej −5 °C. Zastępuje środowy akcent. Po nim Sesja A na siłowni."
+  },
+  "CLIMB_REPEATS": {
+   "id": "CLIMB_REPEATS",
+   "name": "Powtórzenia podjazdu 6–10×",
+   "category": "threshold",
+   "key": true,
+   "steps": [
+    {
+     "name": "Rozgrzewka",
+     "duration_s": 1200,
+     "zone": "Z2",
+     "target": {
+      "type": "threshold_hr",
+      "low": 0.81,
+      "high": 0.89
+     },
+     "rpe": [
+      3,
+      4
+     ],
+     "intensity_type": "wu",
+     "cadence_rpm": [
+      85,
+      95
+     ],
+     "note": "Stopniowo od Z1 do górnej Z2; ostatnie 3 min z 2×20 s przyspieszenia."
+    },
+    {
+     "repeat": 8,
+     "steps": [
+      {
+       "name": "Podjazd tempem",
+       "duration_s": 300,
+       "zone": "Z4",
+       "target": {
+        "type": "threshold_hr",
+        "low": 0.94,
+        "high": 0.99
+       },
+       "rpe": [
+        7,
+        8
+       ],
+       "intensity_type": "lt",
+       "cadence_rpm": [
+        75,
+        85
+       ],
+       "note": "Najdłuższy lokalny podjazd. Tętno max 85% HRmax (~94–99% LTHR). Równe tempo, siedząc."
+      },
+      {
+       "name": "Zjazd / powrót",
+       "duration_s": 240,
+       "zone": "Z1",
+       "target": {
+        "type": "threshold_hr",
+        "low": 0.0,
+        "high": 0.81
+       },
+       "rpe": [
+        1,
+        2
+       ],
+       "intensity_type": "recover"
+      }
+     ]
+    },
+    {
+     "name": "Schłodzenie",
+     "duration_s": 900,
+     "zone": "Z1",
+     "target": {
+      "type": "threshold_hr",
+      "low": 0.0,
+      "high": 0.81
+     },
+     "rpe": [
+      1,
+      2
+     ],
+     "intensity_type": "cd",
+     "cadence_rpm": [
+      90,
+      100
+     ]
+    }
+   ],
+   "duration_min": 107,
+   "description": "Symulacja długiej wspinaczki: 6–10 powtórzeń najdłuższego podjazdu w okolicy pod rząd. Ćwicz jedzenie co 20 min i równe tempo."
+  },
+  "OPENERS": {
+   "id": "OPENERS",
+   "name": "Pobudzenie przed wyjazdem",
+   "category": "taper",
+   "key": false,
+   "steps": [
+    {
+     "name": "Rozgrzewka",
+     "duration_s": 900,
+     "zone": "Z2",
+     "target": {
+      "type": "threshold_hr",
+      "low": 0.81,
+      "high": 0.89
+     },
+     "rpe": [
+      3,
+      4
+     ],
+     "intensity_type": "wu",
+     "cadence_rpm": [
+      85,
+      95
+     ],
+     "note": "Stopniowo od Z1 do górnej Z2; ostatnie 3 min z 2×20 s przyspieszenia."
+    },
+    {
+     "repeat": 3,
+     "steps": [
+      {
+       "name": "Tempo 3 min",
+       "duration_s": 180,
+       "zone": "Z4",
+       "target": {
+        "type": "threshold_hr",
+        "low": 0.94,
+        "high": 0.99
+       },
+       "rpe": [
+        7,
+        8
+       ],
+       "intensity_type": "lt",
+       "cadence_rpm": [
+        85,
+        95
+       ]
+      },
+      {
+       "name": "Luźno",
+       "duration_s": 180,
+       "zone": "Z1",
+       "target": {
+        "type": "threshold_hr",
+        "low": 0.0,
+        "high": 0.81
+       },
+       "rpe": [
+        1,
+        2
+       ],
+       "intensity_type": "recover"
+      }
+     ]
+    },
+    {
+     "repeat": 5,
+     "steps": [
+      {
+       "name": "Przyspieszenie 30 s",
+       "duration_s": 30,
+       "zone": "Z5b",
+       "target": {
+        "type": "threshold_hr",
+        "low": 1.03,
+        "high": 1.06
+       },
+       "rpe": [
+        8,
+        9
+       ],
+       "intensity_type": "ac",
+       "cadence_rpm": [
+        95,
+        110
+       ]
+      },
+      {
+       "name": "Luźno 90 s",
+       "duration_s": 90,
+       "zone": "Z1",
+       "target": {
+        "type": "threshold_hr",
+        "low": 0.0,
+        "high": 0.81
+       },
+       "rpe": [
+        1,
+        2
+       ],
+       "intensity_type": "recover"
+      }
+     ]
+    },
+    {
+     "name": "Schłodzenie",
+     "duration_s": 600,
+     "zone": "Z1",
+     "target": {
+      "type": "threshold_hr",
+      "low": 0.0,
+      "high": 0.81
+     },
+     "rpe": [
+      1,
+      2
+     ],
+     "intensity_type": "cd",
+     "cadence_rpm": [
+      90,
+      100
+     ]
+    }
+   ],
+   "duration_min": 60,
+   "description": "Taper: krótko i świeżo. Objętość tygodnia −40%, intensywność tylko w krótkich pobudzeniach."
+  },
+  "MOUNTAIN_DAY": {
+   "id": "MOUNTAIN_DAY",
+   "name": "Dzień w górach",
+   "category": "mountain",
+   "key": true,
+   "steps": [
+    {
+     "name": "Dzień w górach",
+     "duration_s": 14400,
+     "zone": "Z2",
+     "target": {
+      "type": "threshold_hr",
+      "low": 0.81,
+      "high": 0.89
+     },
+     "rpe": [
+      3,
+      4
+     ],
+     "intensity_type": "active",
+     "cadence_rpm": [
+      72,
+      85
+     ],
+     "note": "Długie podjazdy: start 10–15 uderzeń poniżej progu, kadencja 72–85 na 40/50, jedzenie co 20 min (70–80 g węgli/h), picie 500–750 ml/h. Zjazdy: pozycja nisko, hamowanie pulsacyjne (mocno–puść), nigdy ciągłe. Test sprzętu: przełożenia, klocki, sakwy."
+    }
+   ],
+   "duration_min": 240,
+   "description": "Długie podjazdy: start 10–15 uderzeń poniżej progu, kadencja 72–85 na 40/50, jedzenie co 20 min (70–80 g węgli/h), picie 500–750 ml/h. Zjazdy: pozycja nisko, hamowanie pulsacyjne (mocno–puść), nigdy ciągłe. Test sprzętu: przełożenia, klocki, sakwy.",
+   "parametric_duration": true
+  },
+  "B2B_DAY": {
+   "id": "B2B_DAY",
+   "name": "Blok back-to-back",
+   "category": "long",
+   "key": true,
+   "steps": [
+    {
+     "name": "Blok back-to-back",
+     "duration_s": 18000,
+     "zone": "Z2",
+     "target": {
+      "type": "threshold_hr",
+      "low": 0.81,
+      "high": 0.89
+     },
+     "rpe": [
+      3,
+      4
+     ],
+     "intensity_type": "active",
+     "cadence_rpm": [
+      85,
+      95
+     ],
+     "note": "120 km z przewyższeniem 1000–1200 m. Z2, podjazdy maks. górna Z3. Następnego dnia to samo – uczysz się jechać zmęczony. Jedzenie 60–80 g węgli/h od pierwszej godziny."
+    }
+   ],
+   "duration_min": 300,
+   "description": "120 km z przewyższeniem 1000–1200 m. Z2, podjazdy maks. górna Z3. Następnego dnia to samo – uczysz się jechać zmęczony. Jedzenie 60–80 g węgli/h od pierwszej godziny.",
+   "parametric_duration": true
+  },
+  "BLOCK_DAY1": {
+   "id": "BLOCK_DAY1",
+   "name": "Blok 3-dniowy – dzień 1",
+   "category": "long",
+   "key": true,
+   "steps": [
+    {
+     "name": "Blok 3-dniowy – dzień 1",
+     "duration_s": 14400,
+     "zone": "Z2",
+     "target": {
+      "type": "threshold_hr",
+      "low": 0.81,
+      "high": 0.89
+     },
+     "rpe": [
+      3,
+      4
+     ],
+     "intensity_type": "active",
+     "cadence_rpm": [
+      85,
+      95
+     ],
+     "note": "100 km spokojnie w Z2. Otwiera 3-dniowy blok symulujący wyjazd (pt–nd), najlepiej z docelowym bagażem."
+    }
+   ],
+   "duration_min": 240,
+   "description": "100 km spokojnie w Z2. Otwiera 3-dniowy blok symulujący wyjazd (pt–nd), najlepiej z docelowym bagażem.",
+   "parametric_duration": true
+  },
+  "TRIP": {
+   "id": "TRIP",
+   "name": "Wyjazd w Alpy",
+   "category": "trip",
+   "key": false,
+   "steps": [
+    {
+     "name": "Wyjazd w Alpy",
+     "duration_s": 0,
+     "zone": "Z2",
+     "target": {
+      "type": "threshold_hr",
+      "low": 0.81,
+      "high": 0.89
+     },
+     "rpe": [
+      3,
+      4
+     ],
+     "intensity_type": "active",
+     "cadence_rpm": [
+      85,
+      95
+     ],
+     "note": "Dzień wyjazdu. Pacing, jedzenie i hamowanie wg Części „Strategia na przełęcz”."
+    }
+   ],
+   "duration_min": 0,
+   "description": "Dzień wyjazdu. Pacing, jedzenie i hamowanie wg Części „Strategia na przełęcz”.",
+   "parametric_duration": true
+  },
+  "TRAVEL_REST": {
+   "id": "TRAVEL_REST",
+   "name": "Odpoczynek / dojazd",
+   "category": "rest",
+   "key": false,
+   "steps": [
+    {
+     "name": "Odpoczynek / dojazd",
+     "duration_s": 0,
+     "zone": "Z1",
+     "target": {
+      "type": "threshold_hr",
+      "low": 0.0,
+      "high": 0.81
+     },
+     "rpe": [
+      1,
+      2
+     ],
+     "intensity_type": "active",
+     "cadence_rpm": [
+      85,
+      95
+     ],
+     "note": "Dojazd w góry lub pakowanie. Bez treningu albo 20–30 min bardzo luźno."
+    }
+   ],
+   "duration_min": 0,
+   "description": "Dojazd w góry lub pakowanie. Bez treningu albo 20–30 min bardzo luźno.",
+   "parametric_duration": true
+  },
+  "VO2_6x3": {
+   "id": "VO2_6x3",
+   "name": "VO2max 6×3 min",
+   "category": "vo2max",
+   "key": true,
+   "steps": [
+    {
+     "name": "Rozgrzewka",
+     "duration_s": 1200,
+     "zone": "Z2",
+     "target": {
+      "type": "threshold_hr",
+      "low": 0.81,
+      "high": 0.89
+     },
+     "rpe": [
+      3,
+      4
+     ],
+     "intensity_type": "wu",
+     "cadence_rpm": [
+      85,
+      95
+     ],
+     "note": "Stopniowo od Z1 do górnej Z2; ostatnie 3 min z 2×20 s przyspieszenia."
+    },
+    {
+     "repeat": 6,
+     "steps": [
+      {
+       "name": "Interwał 3 min",
+       "duration_s": 180,
+       "zone": "Z5b",
+       "target": {
+        "type": "threshold_hr",
+        "low": 1.03,
+        "high": 1.06
+       },
+       "rpe": [
+        9,
+        9
+       ],
+       "intensity_type": "map",
+       "cadence_rpm": [
+        85,
+        95
+       ],
+       "note": "Pierwsze 2–3 min interwału prowadź po odczuciu (RPE) – tętno dogania wysiłek z opóźnieniem. Nie goń tętna na starcie."
+      },
+      {
+       "name": "Przerwa",
+       "duration_s": 180,
+       "zone": "Z1",
+       "target": {
+        "type": "threshold_hr",
+        "low": 0.0,
+        "high": 0.81
+       },
+       "rpe": [
+        1,
+        2
+       ],
+       "intensity_type": "recover",
+       "cadence_rpm": [
+        85,
+        95
+       ]
+      }
+     ]
+    },
+    {
+     "name": "Schłodzenie",
+     "duration_s": 600,
+     "zone": "Z1",
+     "target": {
+      "type": "threshold_hr",
+      "low": 0.0,
+      "high": 0.81
+     },
+     "rpe": [
+      1,
+      2
+     ],
+     "intensity_type": "cd",
+     "cadence_rpm": [
+      90,
+      100
+     ]
+    }
+   ],
+   "duration_min": 66,
+   "description": "VO2max: 3 min mocno, ale równo (RPE 9) – nie sprint na starcie. Tętno dojdzie do 103–106% LTHR dopiero w końcówce kolejnych powtórzeń. Przerwa 3 min bardzo luźno."
+  }
+ },
+ "exercises": {
+  "back_squat": {
+   "id": "back_squat",
+   "name": "Przysiad ze sztangą na plecach",
+   "pattern": "squat",
+   "equipment": [
+    "sztanga",
+    "stojak"
+   ],
+   "cues": [
+    "Stopy na szerokość bioder–barków, palce lekko na zewnątrz.",
+    "Biodro co najmniej do wysokości kolana.",
+    "Kolana w linii palców, nie do środka.",
+    "Wdech w brzuch i napięcie tułowia przed zejściem; wydech po minięciu najtrudniejszego punktu.",
+    "Tempo 3-0-X: 3 s w dół, w górę z maksymalną intencją szybkości."
+   ],
+   "why": "Siła maksymalna nóg – każdy obrót korby to mniejszy % Twoich możliwości, mniej zmęczenia na godzinnym podjeździe.",
+   "alternatives": [
+    "Przysiad do skrzyni (ból kolana)",
+    "Wypychanie na suwnicy"
+   ],
+   "load_unit": "kg",
+   "per_side": false
+  },
+  "rdl": {
+   "id": "rdl",
+   "name": "Martwy ciąg rumuński (RDL)",
+   "pattern": "hinge",
+   "equipment": [
+    "sztanga"
+   ],
+   "cues": [
+    "Kolana lekko ugięte i „zamrożone”.",
+    "Biodra jadą do tyłu, sztanga sunie po udach.",
+    "Schodzisz do mocnego rozciągnięcia tyłu uda (zwykle połowa piszczeli).",
+    "Plecy neutralne przez cały ruch."
+   ],
+   "why": "Tylna taśma (pośladki, dwugłowe) – napęd na podjazdach i zdrowe lędźwie w pozycji kolarskiej.",
+   "alternatives": [
+    "Hip thrust + wyprosty (ból lędźwi)"
+   ],
+   "load_unit": "kg",
+   "per_side": false
+  },
+  "trap_bar_deadlift": {
+   "id": "trap_bar_deadlift",
+   "name": "Martwy ciąg z trap bar",
+   "pattern": "hinge",
+   "equipment": [
+    "sztanga heksagonalna"
+   ],
+   "cues": [
+    "Wysokie uchwyty.",
+    "Biodra wyżej niż w przysiadzie.",
+    "„Odpychasz podłogę” nogami, plecy neutralne.",
+    "Wydech na górze, pełny wyprost bioder bez odchylania."
+   ],
+   "why": "Najbezpieczniejszy ciężki martwy ciąg dla kolarza – duża siła nóg i bioder przy małym obciążeniu lędźwi.",
+   "alternatives": [
+    "RDL",
+    "Hip thrust"
+   ],
+   "load_unit": "kg",
+   "per_side": false
+  },
+  "db_row": {
+   "id": "db_row",
+   "name": "Wiosłowanie hantlem jednorącz",
+   "pattern": "pull",
+   "equipment": [
+    "hantel",
+    "ławka"
+   ],
+   "cues": [
+    "Podparcie o ławkę, plecy równolegle do podłogi.",
+    "Łokieć sunie wzdłuż żeber.",
+    "Tułów się nie obraca."
+   ],
+   "why": "Mięśnie, które trzymają Cię na kierownicy przez 4 h.",
+   "alternatives": [],
+   "load_unit": "kg",
+   "per_side": true
+  },
+  "calf_raise": {
+   "id": "calf_raise",
+   "name": "Wspięcia na palce stojąc",
+   "pattern": "calf",
+   "equipment": [
+    "maszyna lub Smith"
+   ],
+   "cues": [
+    "Pięta nisko pod krawędzią stopnia.",
+    "Pauza 1 s na górze.",
+    "Pełny zakres ruchu."
+   ],
+   "why": "Łydki i ścięgna Achillesa – jazda na stojąco i długie podjazdy.",
+   "alternatives": [],
+   "load_unit": "kg",
+   "per_side": false
+  },
+  "pallof_press": {
+   "id": "pallof_press",
+   "name": "Pallof press",
+   "pattern": "core_antirotation",
+   "equipment": [
+    "wyciąg lub guma"
+   ],
+   "cues": [
+    "Stoisz bokiem do wyciągu.",
+    "Wypychasz rękojeść przed klatkę i trzymasz 2 s.",
+    "Tułów nie daje się obrócić."
+   ],
+   "why": "Stabilny tułów – moc nie ucieka w bujanie na siodle.",
+   "alternatives": [],
+   "load_unit": "reps",
+   "per_side": true
+  },
+  "dead_bug": {
+   "id": "dead_bug",
+   "name": "Dead bug",
+   "pattern": "core",
+   "equipment": [
+    "mata"
+   ],
+   "cues": [
+    "Lędźwie przyklejone do podłogi.",
+    "Przeciwna ręka i noga powoli w dół.",
+    "Wydech przy wyproście."
+   ],
+   "why": "Kontrola miednicy i żeber – podstawa pozycji aero.",
+   "alternatives": [],
+   "load_unit": "reps",
+   "per_side": true
+  },
+  "side_plank": {
+   "id": "side_plank",
+   "name": "Plank bokiem",
+   "pattern": "core",
+   "equipment": [
+    "mata"
+   ],
+   "cues": [
+    "Ciało w jednej linii.",
+    "Biodro wysoko."
+   ],
+   "why": "Mięśnie skośne – stabilizacja przy jeździe na stojąco.",
+   "alternatives": [],
+   "load_unit": "s",
+   "per_side": true
+  },
+  "step_up": {
+   "id": "step_up",
+   "name": "Wejścia na skrzynię z hantlami",
+   "pattern": "single_leg",
+   "equipment": [
+    "skrzynia 40–50 cm",
+    "hantle"
+   ],
+   "cues": [
+    "Udo ok. poziomo przy stopie na skrzyni.",
+    "Pchasz wyłącznie nogą na skrzyni – tylna się nie odbija.",
+    "Schodzisz powoli."
+   ],
+   "why": "Najbardziej „kolarskie” ćwiczenie: jedna noga, kąt kolana jak w górnym punkcie korby.",
+   "alternatives": [],
+   "load_unit": "kg",
+   "per_side": true
+  },
+  "bulgarian_split_squat": {
+   "id": "bulgarian_split_squat",
+   "name": "Przysiad bułgarski",
+   "pattern": "single_leg",
+   "equipment": [
+    "hantle",
+    "ławka"
+   ],
+   "cues": [
+    "Tylna stopa na ławce.",
+    "Ciężar głównie na przedniej nodze.",
+    "Tułów lekko pochylony – mocniej pracują pośladki."
+   ],
+   "why": "Wyrównuje różnice siły między nogami.",
+   "alternatives": [],
+   "load_unit": "kg",
+   "per_side": true
+  },
+  "hip_thrust": {
+   "id": "hip_thrust",
+   "name": "Hip thrust ze sztangą",
+   "pattern": "hinge",
+   "equipment": [
+    "sztanga",
+    "ławka",
+    "podkładka"
+   ],
+   "cues": [
+    "Plecy oparte o ławkę.",
+    "Broda do klatki, żebra w dół.",
+    "Pauza 2 s na górze, ruch z pośladków, nie z lędźwi."
+   ],
+   "why": "Pośladki to główny silnik przy jeździe w siodle pod górę.",
+   "alternatives": [],
+   "load_unit": "kg",
+   "per_side": false
+  },
+  "pull_up": {
+   "id": "pull_up",
+   "name": "Podciąganie nachwytem",
+   "pattern": "pull",
+   "equipment": [
+    "drążek",
+    "guma asekuracyjna"
+   ],
+   "cues": [
+    "Pełny zwis, łopatki w dół na starcie.",
+    "Klatka do drążka, bez bujania."
+   ],
+   "why": "Plecy i ramiona do trzymania pozycji na klamkach.",
+   "alternatives": [
+    "Ściąganie drążka wyciągu (jeśli < 5 powtórzeń)"
+   ],
+   "load_unit": "reps",
+   "per_side": false
+  },
+  "push_up": {
+   "id": "push_up",
+   "name": "Pompki",
+   "pattern": "push",
+   "equipment": [
+    "podłoga"
+   ],
+   "cues": [
+    "Ciało w jednej linii.",
+    "Łokcie ok. 45° od tułowia."
+   ],
+   "why": "Równoważy „zamkniętą” pozycję na rowerze – postawa, nie siła.",
+   "alternatives": [
+    "Wyciskanie hantli na ławce skośnej"
+   ],
+   "load_unit": "reps",
+   "per_side": false
+  },
+  "farmer_walk": {
+   "id": "farmer_walk",
+   "name": "Spacer farmera",
+   "pattern": "carry",
+   "equipment": [
+    "hantle lub kettlebell"
+   ],
+   "cues": [
+    "Hantle łącznie ok. 0,6–0,8 × masa ciała.",
+    "Idziesz wyprostowany, krótkie kroki."
+   ],
+   "why": "Nośność tułowia i chwyt.",
+   "alternatives": [],
+   "load_unit": "m",
+   "per_side": false
+  },
+  "back_extension": {
+   "id": "back_extension",
+   "name": "Wyprosty tułowia na ławce rzymskiej",
+   "pattern": "hinge",
+   "equipment": [
+    "ławka rzymska"
+   ],
+   "cues": [
+    "Bez przeprostu na górze.",
+    "Ruch z bioder."
+   ],
+   "why": "Zdrowe lędźwie przy długich godzinach w siodle.",
+   "alternatives": [],
+   "load_unit": "reps",
+   "per_side": false
+  },
+  "copenhagen_plank": {
+   "id": "copenhagen_plank",
+   "name": "Copenhagen plank",
+   "pattern": "core",
+   "equipment": [
+    "ławka"
+   ],
+   "cues": [
+    "Bokiem, górna noga na ławce.",
+    "Biodro wysoko."
+   ],
+   "why": "Przywodziciele stabilizują kolano w każdym obrocie korby.",
+   "alternatives": [],
+   "load_unit": "s",
+   "per_side": true
+  },
+  "plank_reach": {
+   "id": "plank_reach",
+   "name": "Plank przodem z unoszeniem ręki",
+   "pattern": "core",
+   "equipment": [
+    "mata"
+   ],
+   "cues": [
+    "Biodra nie rotują przy unoszeniu ręki."
+   ],
+   "why": "Anty-rotacja w pozycji podporu – jak na kierownicy.",
+   "alternatives": [],
+   "load_unit": "reps",
+   "per_side": true
+  },
+  "jump_squat": {
+   "id": "jump_squat",
+   "name": "Wyskoki z hantlami",
+   "pattern": "power",
+   "equipment": [
+    "hantle"
+   ],
+   "cues": [
+    "Hantle 10–15% masy ciała.",
+    "Szybki skok, miękkie lądowanie."
+   ],
+   "why": "Zamiana siły w moc (Faza III).",
+   "alternatives": [],
+   "load_unit": "reps",
+   "per_side": false
+  },
+  "kb_swing": {
+   "id": "kb_swing",
+   "name": "Swing kettlebell",
+   "pattern": "power",
+   "equipment": [
+    "kettlebell 24–32 kg"
+   ],
+   "cues": [
+    "Ruch z bioder, nie przysiad.",
+    "Mocny wyprost na górze."
+   ],
+   "why": "Szybki wyprost bioder – moc na podjazdach.",
+   "alternatives": [],
+   "load_unit": "kg",
+   "per_side": false
+  },
+  "box_jump": {
+   "id": "box_jump",
+   "name": "Wskoki na skrzynię",
+   "pattern": "power",
+   "equipment": [
+    "skrzynia"
+   ],
+   "cues": [
+    "Schodzisz ze skrzyni, nie zeskakujesz.",
+    "Pełny reset między skokami."
+   ],
+   "why": "Moc i reaktywność nóg.",
+   "alternatives": [],
+   "load_unit": "reps",
+   "per_side": false
+  },
+  "mobility_circuit": {
+   "id": "mobility_circuit",
+   "name": "Obwód mobilności",
+   "pattern": "warmup",
+   "equipment": [
+    "guma",
+    "kettlebell 12–16 kg"
+   ],
+   "cues": [
+    "Biodra 90/90 – 5 zmian/stronę",
+    "Wykrok z rotacją (world’s greatest stretch) – 4/stronę",
+    "Mostek biodrowy – 10",
+    "Przysiad goblet z 5 s pauzą na dole – 5",
+    "Band pull-apart – 15",
+    "Koci grzbiet – 6"
+   ],
+   "why": "Przygotowanie bioder i odcinka piersiowego po godzinach w siodle i przy biurku.",
+   "alternatives": [],
+   "load_unit": "rounds",
+   "per_side": false
+  },
+  "cooldown_stretch": {
+   "id": "cooldown_stretch",
+   "name": "Schłodzenie – rozciąganie",
+   "pattern": "mobility",
+   "equipment": [
+    "mata"
+   ],
+   "cues": [
+    "Zginacze bioder w półklęku 45 s/stronę",
+    "Pośladek („gołąb”) 45 s/stronę",
+    "Łydka o ścianę 30 s/stronę",
+    "Klatka w framudze 45 s/stronę",
+    "Tył uda z gumą 45 s/stronę"
+   ],
+   "why": "Zginacze bioder są skrócone po każdej jeździe – to rozciąganie ma dla Ciebie największe znaczenie.",
+   "alternatives": [],
+   "load_unit": "min",
+   "per_side": false
+  }
+ },
+ "gym_prescription_stages": {
+  "intro": "tydz. 0–1 (wdrożenie, RIR 4)",
+  "I_a": "tydz. 2–5",
+  "I_b": "tydz. 6–10",
+  "transition": "tydz. 11",
+  "II_a": "tydz. 12–15",
+  "II_b": "tydz. 16–19",
+  "II_c": "tydz. 20–23",
+  "test": "tydz. 24–25",
+  "III": "tydz. 26–36 (podtrzymanie siły)"
+ },
+ "weeks": {
+  "0": {
+   "phase": "PREP",
+   "type": "test",
+   "mon": [
+    "LONG",
+    180
+   ],
+   "tue": [
+    "REST",
+    0
+   ],
+   "wed": [
+    "FTP_TEST",
+    null
+   ],
+   "thu": [
+    "Z2",
+    45
+   ],
+   "fri": [
+    "Z2",
+    60
+   ],
+   "sat": [
+    "Z2",
+    60
+   ],
+   "sun": [
+    "REST",
+    0
+   ],
+   "gym_stage": "intro",
+   "notes": "Test FTP 20 min w środę – od jego wyniku liczą się wszystkie strefy mocy i tętna. Reszta tygodnia spokojnie; poniedziałkowa długa i tak jest w Twoim zwykłym zakresie."
+  },
+  "1": {
+   "phase": "I",
+   "type": "build",
+   "mon": [
+    "LONG",
+    195
+   ],
+   "tue": [
+    "REST",
+    0
+   ],
+   "wed": [
+    "SS_2x10",
+    null
+   ],
+   "thu": [
+    "Z2",
+    60
+   ],
+   "fri": [
+    "Z2",
+    75
+   ],
+   "sat": [
+    "Z2",
+    60
+   ],
+   "sun": [
+    "REST",
+    0
+   ],
+   "gym_stage": "intro",
+   "notes": "Start bloku bazowego. Długa w poniedziałek ma być nudna – rozmowa pełnymi zdaniami. Jedyny dzień, w którym wolno się zmęczyć, to środa."
+  },
+  "2": {
+   "phase": "I",
+   "type": "build",
+   "mon": [
+    "LONG",
+    210
+   ],
+   "tue": [
+    "REST",
+    0
+   ],
+   "wed": [
+    "SS_2x12",
+    null
+   ],
+   "thu": [
+    "Z2",
+    60
+   ],
+   "fri": [
+    "Z2",
+    75
+   ],
+   "sat": [
+    "Z2",
+    60
+   ],
+   "sun": [
+    "REST",
+    0
+   ],
+   "gym_stage": "I_a"
+  },
+  "3": {
+   "phase": "I",
+   "type": "build",
+   "mon": [
+    "LONG",
+    210
+   ],
+   "tue": [
+    "REST",
+    0
+   ],
+   "wed": [
+    "SS_2x15",
+    null
+   ],
+   "thu": [
+    "Z2",
+    60
+   ],
+   "fri": [
+    "Z2",
+    75
+   ],
+   "sat": [
+    "Z2",
+    60
+   ],
+   "sun": [
+    "REST",
+    0
+   ],
+   "gym_stage": "I_a"
+  },
+  "4": {
+   "phase": "I",
+   "type": "build",
+   "mon": [
+    "LONG",
+    225
+   ],
+   "tue": [
+    "REST",
+    0
+   ],
+   "wed": [
+    "SS_3x12",
+    null
+   ],
+   "thu": [
+    "Z2",
+    60
+   ],
+   "fri": [
+    "Z2",
+    75
+   ],
+   "sat": [
+    "Z2",
+    60
+   ],
+   "sun": [
+    "REST",
+    0
+   ],
+   "gym_stage": "I_a"
+  },
+  "5": {
+   "phase": "I",
+   "type": "deload",
+   "mon": [
+    "LONG",
+    135
+   ],
+   "tue": [
+    "REST",
+    0
+   ],
+   "wed": [
+    "DELOAD_WED",
+    60
+   ],
+   "thu": [
+    "Z2",
+    45
+   ],
+   "fri": [
+    "REST",
+    0
+   ],
+   "sat": [
+    "Z2",
+    60
+   ],
+   "sun": [
+    "REST",
+    0
+   ],
+   "gym_stage": "I_a",
+   "notes": "Tydzień lżejszy: żadnych interwałów, piątek wolny. Nogi mają wyjść świeższe niż weszły."
+  },
+  "6": {
+   "phase": "I",
+   "type": "build",
+   "mon": [
+    "LONG",
+    225
+   ],
+   "tue": [
+    "REST",
+    0
+   ],
+   "wed": [
+    "SS_3x12",
+    null
+   ],
+   "thu": [
+    "Z2",
+    60
+   ],
+   "fri": [
+    "SS_2x10",
+    null
+   ],
+   "sat": [
+    "Z2",
+    60
+   ],
+   "sun": [
+    "REST",
+    0
+   ],
+   "gym_stage": "I_b",
+   "notes": "Od tego tygodnia dwa dni jakościowe: środa mocniejsza, piątek krótszy blok sweet spot."
+  },
+  "7": {
+   "phase": "I",
+   "type": "build",
+   "mon": [
+    "LONG",
+    240
+   ],
+   "tue": [
+    "REST",
+    0
+   ],
+   "wed": [
+    "SS_3x15",
+    null
+   ],
+   "thu": [
+    "Z2",
+    60
+   ],
+   "fri": [
+    "SS_2x12",
+    null
+   ],
+   "sat": [
+    "Z2",
+    75
+   ],
+   "sun": [
+    "REST",
+    0
+   ],
+   "gym_stage": "I_b"
+  },
+  "8": {
+   "phase": "I",
+   "type": "build",
+   "mon": [
+    "LONG",
+    240
+   ],
+   "tue": [
+    "REST",
+    0
+   ],
+   "wed": [
+    "SS_2x20",
+    null
+   ],
+   "thu": [
+    "Z2",
+    60
+   ],
+   "fri": [
+    "SS_2x12",
+    null
+   ],
+   "sat": [
+    "Z2",
+    75
+   ],
+   "sun": [
+    "REST",
+    0
+   ],
+   "gym_stage": "I_b"
+  },
+  "9": {
+   "phase": "I",
+   "type": "deload",
+   "mon": [
+    "LONG",
+    150
+   ],
+   "tue": [
+    "REST",
+    0
+   ],
+   "wed": [
+    "DELOAD_WED",
+    60
+   ],
+   "thu": [
+    "Z2",
+    45
+   ],
+   "fri": [
+    "REST",
+    0
+   ],
+   "sat": [
+    "Z2",
+    60
+   ],
+   "sun": [
+    "REST",
+    0
+   ],
+   "gym_stage": "I_b"
+  },
+  "10": {
+   "phase": "I",
+   "type": "build",
+   "mon": [
+    "LONG",
+    255
+   ],
+   "tue": [
+    "REST",
+    0
+   ],
+   "wed": [
+    "SS_3x20",
+    null
+   ],
+   "thu": [
+    "Z2",
+    60
+   ],
+   "fri": [
+    "SS_2x15",
+    null
+   ],
+   "sat": [
+    "Z2",
+    75
+   ],
+   "sun": [
+    "REST",
+    0
+   ],
+   "gym_stage": "I_b",
+   "notes": "Największy tydzień fazy bazowej: ponad 4 godziny w poniedziałek i godzina pracy w sweet spot w środę."
+  },
+  "11": {
+   "phase": "I",
+   "type": "test",
+   "mon": [
+    "LONG",
+    165
+   ],
+   "tue": [
+    "REST",
+    0
+   ],
+   "wed": [
+    "FTP_TEST",
+    null
+   ],
+   "thu": [
+    "Z2",
+    45
+   ],
+   "fri": [
+    "Z2",
+    60
+   ],
+   "sat": [
+    "Z2",
+    60
+   ],
+   "sun": [
+    "REST",
+    0
+   ],
+   "gym_stage": "transition",
+   "notes": "Drugi test FTP. Jeśli wzrósł, strefy przeliczą się same – kolejne 10 tygodni pojedziesz na nowych watach."
+  },
+  "12": {
+   "phase": "II",
+   "type": "build",
+   "mon": [
+    "LONG",
+    225
+   ],
+   "tue": [
+    "REST",
+    0
+   ],
+   "wed": [
+    "THR_4x6",
+    null
+   ],
+   "thu": [
+    "Z2",
+    60
+   ],
+   "fri": [
+    "SS_2x15",
+    null
+   ],
+   "sat": [
+    "Z2",
+    75
+   ],
+   "sun": [
+    "REST",
+    0
+   ],
+   "gym_stage": "II_a",
+   "notes": "Blok progowy. Interwały w środę jadą na 95–100% FTP – pierwsze dwie minuty prowadź po odczuciu, tętno dogania z opóźnieniem. Zimą wszystko schodzi na trenażer."
+  },
+  "13": {
+   "phase": "II",
+   "type": "build",
+   "mon": [
+    "LONG",
+    240
+   ],
+   "tue": [
+    "REST",
+    0
+   ],
+   "wed": [
+    "THR_4x8",
+    null
+   ],
+   "thu": [
+    "Z2",
+    60
+   ],
+   "fri": [
+    "SS_2x20",
+    null
+   ],
+   "sat": [
+    "Z2",
+    75
+   ],
+   "sun": [
+    "REST",
+    0
+   ],
+   "gym_stage": "II_a"
+  },
+  "14": {
+   "phase": "II",
+   "type": "build",
+   "mon": [
+    "LONG",
+    240
+   ],
+   "tue": [
+    "REST",
+    0
+   ],
+   "wed": [
+    "THR_3x12",
+    null
+   ],
+   "thu": [
+    "Z2",
+    60
+   ],
+   "fri": [
+    "SS_3x15",
+    null
+   ],
+   "sat": [
+    "Z2",
+    75
+   ],
+   "sun": [
+    "REST",
+    0
+   ],
+   "gym_stage": "II_a"
+  },
+  "15": {
+   "phase": "II",
+   "type": "deload",
+   "mon": [
+    "LONG",
+    150
+   ],
+   "tue": [
+    "REST",
+    0
+   ],
+   "wed": [
+    "DELOAD_WED",
+    60
+   ],
+   "thu": [
+    "Z2",
+    45
+   ],
+   "fri": [
+    "REST",
+    0
+   ],
+   "sat": [
+    "Z2",
+    60
+   ],
+   "sun": [
+    "REST",
+    0
+   ],
+   "gym_stage": "II_a"
+  },
+  "16": {
+   "phase": "II",
+   "type": "build",
+   "mon": [
+    "LONG",
+    225
+   ],
+   "tue": [
+    "REST",
+    0
+   ],
+   "wed": [
+    "THR_3x12",
+    null
+   ],
+   "thu": [
+    "Z2",
+    60
+   ],
+   "fri": [
+    "SS_2x20",
+    null
+   ],
+   "sat": [
+    "Z2",
+    75
+   ],
+   "sun": [
+    "REST",
+    0
+   ],
+   "gym_stage": "II_b"
+  },
+  "17": {
+   "phase": "II",
+   "type": "build",
+   "mon": [
+    "LONG",
+    240
+   ],
+   "tue": [
+    "REST",
+    0
+   ],
+   "wed": [
+    "THR_3x15",
+    null
+   ],
+   "thu": [
+    "Z2",
+    60
+   ],
+   "fri": [
+    "SS_3x15",
+    null
+   ],
+   "sat": [
+    "Z2",
+    75
+   ],
+   "sun": [
+    "REST",
+    0
+   ],
+   "gym_stage": "II_b"
+  },
+  "18": {
+   "phase": "II",
+   "type": "build",
+   "mon": [
+    "LONG",
+    255
+   ],
+   "tue": [
+    "REST",
+    0
+   ],
+   "wed": [
+    "THR_2x20",
+    null
+   ],
+   "thu": [
+    "Z2",
+    60
+   ],
+   "fri": [
+    "SS_3x20",
+    null
+   ],
+   "sat": [
+    "Z2",
+    75
+   ],
+   "sun": [
+    "REST",
+    0
+   ],
+   "gym_stage": "II_b"
+  },
+  "19": {
+   "phase": "II",
+   "type": "deload",
+   "mon": [
+    "LONG",
+    150
+   ],
+   "tue": [
+    "REST",
+    0
+   ],
+   "wed": [
+    "DELOAD_WED",
+    60
+   ],
+   "thu": [
+    "Z2",
+    45
+   ],
+   "fri": [
+    "REST",
+    0
+   ],
+   "sat": [
+    "Z2",
+    60
+   ],
+   "sun": [
+    "REST",
+    0
+   ],
+   "gym_stage": "II_b"
+  },
+  "20": {
+   "phase": "II",
+   "type": "build",
+   "mon": [
+    "LONG",
+    255
+   ],
+   "tue": [
+    "REST",
+    0
+   ],
+   "wed": [
+    "THR_2x20",
+    null
+   ],
+   "thu": [
+    "Z2",
+    60
+   ],
+   "fri": [
+    "SS_3x20",
+    null
+   ],
+   "sat": [
+    "Z2",
+    90
+   ],
+   "sun": [
+    "REST",
+    0
+   ],
+   "gym_stage": "II_c",
+   "notes": "Ostatni tydzień bloku progowego – dwa razy 20 minut na progu to najtrudniejsza sesja programu do tej pory."
+  },
+  "21": {
+   "phase": "II",
+   "type": "test",
+   "mon": [
+    "LONG",
+    165
+   ],
+   "tue": [
+    "REST",
+    0
+   ],
+   "wed": [
+    "FTP_TEST",
+    null
+   ],
+   "thu": [
+    "Z2",
+    45
+   ],
+   "fri": [
+    "Z2",
+    60
+   ],
+   "sat": [
+    "Z2",
+    60
+   ],
+   "sun": [
+    "REST",
+    0
+   ],
+   "gym_stage": "II_c",
+   "notes": "Test FTP po bloku progowym. Tu spodziewam się największego pojedynczego skoku w całym programie."
+  },
+  "22": {
+   "phase": "III",
+   "type": "build",
+   "mon": [
+    "LONG",
+    195
+   ],
+   "tue": [
+    "REST",
+    0
+   ],
+   "wed": [
+    "VO2_4x3",
+    null
+   ],
+   "thu": [
+    "Z2",
+    45
+   ],
+   "fri": [
+    "THR_4x8",
+    null
+   ],
+   "sat": [
+    "Z2",
+    60
+   ],
+   "sun": [
+    "REST",
+    0
+   ],
+   "gym_stage": "II_c",
+   "notes": "Blok VO2max: objętość w dół, intensywność w górę. Interwały 3-minutowe rób równo (RPE 9), nie sprintem na starcie. Trenażer ERG jest tu przewagą – moc trzyma się sama."
+  },
+  "23": {
+   "phase": "III",
+   "type": "build",
+   "mon": [
+    "LONG",
+    195
+   ],
+   "tue": [
+    "REST",
+    0
+   ],
+   "wed": [
+    "VO2_5x3",
+    null
+   ],
+   "thu": [
+    "Z2",
+    45
+   ],
+   "fri": [
+    "THR_3x12",
+    null
+   ],
+   "sat": [
+    "Z2",
+    60
+   ],
+   "sun": [
+    "REST",
+    0
+   ],
+   "gym_stage": "II_c"
+  },
+  "24": {
+   "phase": "III",
+   "type": "build",
+   "mon": [
+    "LONG",
+    180
+   ],
+   "tue": [
+    "REST",
+    0
+   ],
+   "wed": [
+    "VO2_6x3",
+    null
+   ],
+   "thu": [
+    "Z2",
+    45
+   ],
+   "fri": [
+    "THR_3x12",
+    null
+   ],
+   "sat": [
+    "Z2",
+    60
+   ],
+   "sun": [
+    "REST",
+    0
+   ],
+   "gym_stage": "test"
+  },
+  "25": {
+   "phase": "III",
+   "type": "deload",
+   "mon": [
+    "LONG",
+    135
+   ],
+   "tue": [
+    "REST",
+    0
+   ],
+   "wed": [
+    "DELOAD_WED",
+    60
+   ],
+   "thu": [
+    "Z2",
+    45
+   ],
+   "fri": [
+    "REST",
+    0
+   ],
+   "sat": [
+    "Z2",
+    60
+   ],
+   "sun": [
+    "REST",
+    0
+   ],
+   "gym_stage": "test",
+   "notes": "Po bloku VO2max rozładowanie jest obowiązkowe, nie opcjonalne."
+  },
+  "26": {
+   "phase": "III",
+   "type": "build",
+   "mon": [
+    "LONG",
+    195
+   ],
+   "tue": [
+    "REST",
+    0
+   ],
+   "wed": [
+    "VO2_6x3",
+    null
+   ],
+   "thu": [
+    "Z2",
+    45
+   ],
+   "fri": [
+    "THR_2x20",
+    null
+   ],
+   "sat": [
+    "Z2",
+    60
+   ],
+   "sun": [
+    "REST",
+    0
+   ],
+   "gym_stage": "III"
+  },
+  "27": {
+   "phase": "III",
+   "type": "test",
+   "mon": [
+    "LONG",
+    165
+   ],
+   "tue": [
+    "REST",
+    0
+   ],
+   "wed": [
+    "FTP_TEST",
+    null
+   ],
+   "thu": [
+    "Z2",
+    45
+   ],
+   "fri": [
+    "Z2",
+    60
+   ],
+   "sat": [
+    "Z2",
+    60
+   ],
+   "sun": [
+    "REST",
+    0
+   ],
+   "gym_stage": "III",
+   "notes": "Test po bloku VO2max. Nawet jeśli FTP drgnie mniej niż po fazie II, podniesiony pułap zapłaci w następnej fazie."
+  },
+  "28": {
+   "phase": "IV",
+   "type": "build",
+   "mon": [
+    "LONG",
+    225
+   ],
+   "tue": [
+    "REST",
+    0
+   ],
+   "wed": [
+    "THR_3x15",
+    null
+   ],
+   "thu": [
+    "Z2",
+    60
+   ],
+   "fri": [
+    "SS_3x15",
+    null
+   ],
+   "sat": [
+    "Z2",
+    75
+   ],
+   "sun": [
+    "REST",
+    0
+   ],
+   "gym_stage": "III",
+   "notes": "Największa objętość programu i praca progowa na nowym FTP. Wiosna, więc długie jazdy wracają na zewnątrz."
+  },
+  "29": {
+   "phase": "IV",
+   "type": "build",
+   "mon": [
+    "LONG",
+    240
+   ],
+   "tue": [
+    "REST",
+    0
+   ],
+   "wed": [
+    "THR_2x20",
+    null
+   ],
+   "thu": [
+    "Z2",
+    60
+   ],
+   "fri": [
+    "SS_3x20",
+    null
+   ],
+   "sat": [
+    "Z2",
+    75
+   ],
+   "sun": [
+    "REST",
+    0
+   ],
+   "gym_stage": "III"
+  },
+  "30": {
+   "phase": "IV",
+   "type": "build",
+   "mon": [
+    "LONG",
+    255
+   ],
+   "tue": [
+    "REST",
+    0
+   ],
+   "wed": [
+    "THR_3x15",
+    null
+   ],
+   "thu": [
+    "Z2",
+    75
+   ],
+   "fri": [
+    "SS_3x20",
+    null
+   ],
+   "sat": [
+    "Z2",
+    90
+   ],
+   "sun": [
+    "REST",
+    0
+   ],
+   "gym_stage": "III"
+  },
+  "31": {
+   "phase": "IV",
+   "type": "deload",
+   "mon": [
+    "LONG",
+    165
+   ],
+   "tue": [
+    "REST",
+    0
+   ],
+   "wed": [
+    "DELOAD_WED",
+    60
+   ],
+   "thu": [
+    "Z2",
+    45
+   ],
+   "fri": [
+    "REST",
+    0
+   ],
+   "sat": [
+    "Z2",
+    60
+   ],
+   "sun": [
+    "REST",
+    0
+   ],
+   "gym_stage": "III"
+  },
+  "32": {
+   "phase": "IV",
+   "type": "build",
+   "mon": [
+    "LONG",
+    255
+   ],
+   "tue": [
+    "REST",
+    0
+   ],
+   "wed": [
+    "THR_2x20",
+    null
+   ],
+   "thu": [
+    "Z2",
+    75
+   ],
+   "fri": [
+    "SS_3x20",
+    null
+   ],
+   "sat": [
+    "Z2",
+    90
+   ],
+   "sun": [
+    "REST",
+    0
+   ],
+   "gym_stage": "III"
+  },
+  "33": {
+   "phase": "IV",
+   "type": "build",
+   "mon": [
+    "LONG",
+    255
+   ],
+   "tue": [
+    "REST",
+    0
+   ],
+   "wed": [
+    "THR_3x15",
+    null
+   ],
+   "thu": [
+    "Z2",
+    75
+   ],
+   "fri": [
+    "SS_3x20",
+    null
+   ],
+   "sat": [
+    "Z2",
+    90
+   ],
+   "sun": [
+    "REST",
+    0
+   ],
+   "gym_stage": "III"
+  },
+  "34": {
+   "phase": "IV",
+   "type": "build",
+   "mon": [
+    "LONG",
+    255
+   ],
+   "tue": [
+    "REST",
+    0
+   ],
+   "wed": [
+    "THR_2x20",
+    null
+   ],
+   "thu": [
+    "Z2",
+    75
+   ],
+   "fri": [
+    "SS_3x20",
+    null
+   ],
+   "sat": [
+    "Z2",
+    90
+   ],
+   "sun": [
+    "REST",
+    0
+   ],
+   "gym_stage": "III",
+   "notes": "Szczyt objętości: ponad 4 godziny w poniedziałek, dwa dni jakościowe i 1,5 h w sobotę."
+  },
+  "35": {
+   "phase": "IV",
+   "type": "deload",
+   "mon": [
+    "LONG",
+    165
+   ],
+   "tue": [
+    "REST",
+    0
+   ],
+   "wed": [
+    "DELOAD_WED",
+    60
+   ],
+   "thu": [
+    "Z2",
+    45
+   ],
+   "fri": [
+    "REST",
+    0
+   ],
+   "sat": [
+    "Z2",
+    60
+   ],
+   "sun": [
+    "REST",
+    0
+   ],
+   "gym_stage": "III"
+  },
+  "36": {
+   "phase": "V",
+   "type": "build",
+   "mon": [
+    "LONG",
+    195
+   ],
+   "tue": [
+    "REST",
+    0
+   ],
+   "wed": [
+    "VO2_5x3",
+    null
+   ],
+   "thu": [
+    "Z2",
+    45
+   ],
+   "fri": [
+    "THR_2x20",
+    null
+   ],
+   "sat": [
+    "Z2",
+    60
+   ],
+   "sun": [
+    "REST",
+    0
+   ],
+   "gym_stage": "III",
+   "notes": "Ostatni blok VO2max. Objętość schodzi, żeby interwały były naprawdę mocne."
+  },
+  "37": {
+   "phase": "V",
+   "type": "build",
+   "mon": [
+    "LONG",
+    180
+   ],
+   "tue": [
+    "REST",
+    0
+   ],
+   "wed": [
+    "VO2_6x3",
+    null
+   ],
+   "thu": [
+    "Z2",
+    45
+   ],
+   "fri": [
+    "THR_2x20",
+    null
+   ],
+   "sat": [
+    "Z2",
+    60
+   ],
+   "sun": [
+    "REST",
+    0
+   ],
+   "gym_stage": null
+  },
+  "38": {
+   "phase": "V",
+   "type": "build",
+   "mon": [
+    "LONG",
+    165
+   ],
+   "tue": [
+    "REST",
+    0
+   ],
+   "wed": [
+    "VO2_6x3",
+    null
+   ],
+   "thu": [
+    "Z2",
+    45
+   ],
+   "fri": [
+    "OPENERS",
+    null
+   ],
+   "sat": [
+    "Z2",
+    45
+   ],
+   "sun": [
+    "REST",
+    0
+   ],
+   "gym_stage": null,
+   "notes": "Siłownia wypada – od teraz wszystko idzie w świeżość na test."
+  },
+  "39": {
+   "phase": "TAPER",
+   "type": "taper",
+   "mon": [
+    "LONG",
+    90
+   ],
+   "tue": [
+    "REST",
+    0
+   ],
+   "wed": [
+    "FTP_TEST",
+    null
+   ],
+   "thu": [
+    "REST",
+    0
+   ],
+   "fri": [
+    "Z2",
+    45
+   ],
+   "sat": [
+    "Z2",
+    60
+   ],
+   "sun": [
+    "REST",
+    0
+   ],
+   "gym_stage": null,
+   "notes": "Taper i test końcowy w środę. Rozliczenie 40 tygodni: FTP i W/kg. Po nim ustawiamy następny cel."
+  }
+ },
+ "gym_prescriptions": {
+  "0": {
+   "wed": {
+    "session": "A",
+    "name": "Sesja A – Siła nóg (ciężka)",
+    "est_min": 70,
+    "items": [
+     {
+      "exercise": "mobility_circuit",
+      "rx": {
+       "sets": 2,
+       "reps": "obwód",
+       "note": "5 min rowerek/wioślarz luźno + 2 rundy obwodu. Serie wstępne do 1. ćwiczenia: pusta sztanga×8 → 50%×5 → 70%×3 → 85%×1–2."
+      }
+     },
+     {
+      "exercise": "back_squat",
+      "rx": {
+       "sets": 2,
+       "reps": 10,
+       "rir": 4,
+       "rest_s": 120
+      },
+      "block": "1"
+     },
+     {
+      "exercise": "rdl",
+      "rx": {
+       "sets": 2,
+       "reps": 10,
+       "rir": 4,
+       "rest_s": 120
+      },
+      "block": "2"
+     },
+     {
+      "exercise": "db_row",
+      "rx": {
+       "sets": 2,
+       "reps": 10,
+       "rir": 2,
+       "rest_s": 60,
+       "note": "superseria 3A/3B"
+      },
+      "block": "3A"
+     },
+     {
+      "exercise": "calf_raise",
+      "rx": {
+       "sets": 2,
+       "reps": 15,
+       "rir": 2,
+       "rest_s": 60,
+       "note": "pauza 1 s na górze"
+      },
+      "block": "3B"
+     },
+     {
+      "exercise": "pallof_press",
+      "rx": {
+       "sets": 2,
+       "reps": 10,
+       "rest_s": 30
+      },
+      "block": "4",
+      "circuit": "core_A"
+     },
+     {
+      "exercise": "dead_bug",
+      "rx": {
+       "sets": 2,
+       "reps": 8,
+       "rest_s": 30
+      },
+      "block": "4",
+      "circuit": "core_A"
+     },
+     {
+      "exercise": "side_plank",
+      "rx": {
+       "sets": 2,
+       "reps": "30 s",
+       "rest_s": 30
+      },
+      "block": "4",
+      "circuit": "core_A"
+     },
+     {
+      "exercise": "cooldown_stretch",
+      "rx": {
+       "sets": 1,
+       "reps": "4–5 min"
+      }
+     }
+    ]
+   }
+  },
+  "1": {
+   "wed": {
+    "session": "A",
+    "name": "Sesja A – Siła nóg (ciężka)",
+    "est_min": 70,
+    "items": [
+     {
+      "exercise": "mobility_circuit",
+      "rx": {
+       "sets": 2,
+       "reps": "obwód",
+       "note": "5 min rowerek/wioślarz luźno + 2 rundy obwodu. Serie wstępne do 1. ćwiczenia: pusta sztanga×8 → 50%×5 → 70%×3 → 85%×1–2."
+      }
+     },
+     {
+      "exercise": "back_squat",
+      "rx": {
+       "sets": 2,
+       "reps": 10,
+       "rir": 4,
+       "rest_s": 120
+      },
+      "block": "1"
+     },
+     {
+      "exercise": "rdl",
+      "rx": {
+       "sets": 2,
+       "reps": 10,
+       "rir": 4,
+       "rest_s": 120
+      },
+      "block": "2"
+     },
+     {
+      "exercise": "db_row",
+      "rx": {
+       "sets": 2,
+       "reps": 10,
+       "rir": 2,
+       "rest_s": 60,
+       "note": "superseria 3A/3B"
+      },
+      "block": "3A"
+     },
+     {
+      "exercise": "calf_raise",
+      "rx": {
+       "sets": 2,
+       "reps": 15,
+       "rir": 2,
+       "rest_s": 60,
+       "note": "pauza 1 s na górze"
+      },
+      "block": "3B"
+     },
+     {
+      "exercise": "pallof_press",
+      "rx": {
+       "sets": 2,
+       "reps": 10,
+       "rest_s": 30
+      },
+      "block": "4",
+      "circuit": "core_A"
+     },
+     {
+      "exercise": "dead_bug",
+      "rx": {
+       "sets": 2,
+       "reps": 8,
+       "rest_s": 30
+      },
+      "block": "4",
+      "circuit": "core_A"
+     },
+     {
+      "exercise": "side_plank",
+      "rx": {
+       "sets": 2,
+       "reps": "30 s",
+       "rest_s": 30
+      },
+      "block": "4",
+      "circuit": "core_A"
+     },
+     {
+      "exercise": "cooldown_stretch",
+      "rx": {
+       "sets": 1,
+       "reps": "4–5 min"
+      }
+     }
+    ]
+   }
+  },
+  "2": {
+   "wed": {
+    "session": "A",
+    "name": "Sesja A – Siła nóg (ciężka)",
+    "est_min": 70,
+    "items": [
+     {
+      "exercise": "mobility_circuit",
+      "rx": {
+       "sets": 2,
+       "reps": "obwód",
+       "note": "5 min rowerek/wioślarz luźno + 2 rundy obwodu. Serie wstępne do 1. ćwiczenia: pusta sztanga×8 → 50%×5 → 70%×3 → 85%×1–2."
+      }
+     },
+     {
+      "exercise": "back_squat",
+      "rx": {
+       "sets": 3,
+       "reps": 10,
+       "rir": 3,
+       "rest_s": 120
+      },
+      "block": "1"
+     },
+     {
+      "exercise": "rdl",
+      "rx": {
+       "sets": 3,
+       "reps": 10,
+       "rir": 3,
+       "rest_s": 120
+      },
+      "block": "2"
+     },
+     {
+      "exercise": "db_row",
+      "rx": {
+       "sets": 3,
+       "reps": 10,
+       "rir": 2,
+       "rest_s": 60,
+       "note": "superseria 3A/3B"
+      },
+      "block": "3A"
+     },
+     {
+      "exercise": "calf_raise",
+      "rx": {
+       "sets": 3,
+       "reps": 15,
+       "rir": 2,
+       "rest_s": 60,
+       "note": "pauza 1 s na górze"
+      },
+      "block": "3B"
+     },
+     {
+      "exercise": "pallof_press",
+      "rx": {
+       "sets": 3,
+       "reps": 10,
+       "rest_s": 30
+      },
+      "block": "4",
+      "circuit": "core_A"
+     },
+     {
+      "exercise": "dead_bug",
+      "rx": {
+       "sets": 3,
+       "reps": 8,
+       "rest_s": 30
+      },
+      "block": "4",
+      "circuit": "core_A"
+     },
+     {
+      "exercise": "side_plank",
+      "rx": {
+       "sets": 3,
+       "reps": "30 s",
+       "rest_s": 30
+      },
+      "block": "4",
+      "circuit": "core_A"
+     },
+     {
+      "exercise": "cooldown_stretch",
+      "rx": {
+       "sets": 1,
+       "reps": "4–5 min"
+      }
+     }
+    ]
+   }
+  },
+  "3": {
+   "wed": {
+    "session": "A",
+    "name": "Sesja A – Siła nóg (ciężka)",
+    "est_min": 70,
+    "items": [
+     {
+      "exercise": "mobility_circuit",
+      "rx": {
+       "sets": 2,
+       "reps": "obwód",
+       "note": "5 min rowerek/wioślarz luźno + 2 rundy obwodu. Serie wstępne do 1. ćwiczenia: pusta sztanga×8 → 50%×5 → 70%×3 → 85%×1–2."
+      }
+     },
+     {
+      "exercise": "back_squat",
+      "rx": {
+       "sets": 4,
+       "reps": 8,
+       "rir": 3,
+       "rest_s": 120
+      },
+      "block": "1"
+     },
+     {
+      "exercise": "rdl",
+      "rx": {
+       "sets": 3,
+       "reps": 10,
+       "rir": 3,
+       "rest_s": 120
+      },
+      "block": "2"
+     },
+     {
+      "exercise": "db_row",
+      "rx": {
+       "sets": 3,
+       "reps": 10,
+       "rir": 2,
+       "rest_s": 60,
+       "note": "superseria 3A/3B"
+      },
+      "block": "3A"
+     },
+     {
+      "exercise": "calf_raise",
+      "rx": {
+       "sets": 3,
+       "reps": 15,
+       "rir": 2,
+       "rest_s": 60,
+       "note": "pauza 1 s na górze"
+      },
+      "block": "3B"
+     },
+     {
+      "exercise": "pallof_press",
+      "rx": {
+       "sets": 3,
+       "reps": 10,
+       "rest_s": 30
+      },
+      "block": "4",
+      "circuit": "core_A"
+     },
+     {
+      "exercise": "dead_bug",
+      "rx": {
+       "sets": 3,
+       "reps": 8,
+       "rest_s": 30
+      },
+      "block": "4",
+      "circuit": "core_A"
+     },
+     {
+      "exercise": "side_plank",
+      "rx": {
+       "sets": 3,
+       "reps": "30 s",
+       "rest_s": 30
+      },
+      "block": "4",
+      "circuit": "core_A"
+     },
+     {
+      "exercise": "cooldown_stretch",
+      "rx": {
+       "sets": 1,
+       "reps": "4–5 min"
+      }
+     }
+    ]
+   }
+  },
+  "4": {
+   "wed": {
+    "session": "A",
+    "name": "Sesja A – Siła nóg (ciężka)",
+    "est_min": 70,
+    "items": [
+     {
+      "exercise": "mobility_circuit",
+      "rx": {
+       "sets": 2,
+       "reps": "obwód",
+       "note": "5 min rowerek/wioślarz luźno + 2 rundy obwodu. Serie wstępne do 1. ćwiczenia: pusta sztanga×8 → 50%×5 → 70%×3 → 85%×1–2."
+      }
+     },
+     {
+      "exercise": "back_squat",
+      "rx": {
+       "sets": 4,
+       "reps": 8,
+       "rir": 3,
+       "rest_s": 120
+      },
+      "block": "1"
+     },
+     {
+      "exercise": "rdl",
+      "rx": {
+       "sets": 3,
+       "reps": 8,
+       "rir": 3,
+       "rest_s": 120
+      },
+      "block": "2"
+     },
+     {
+      "exercise": "db_row",
+      "rx": {
+       "sets": 3,
+       "reps": 10,
+       "rir": 2,
+       "rest_s": 60,
+       "note": "superseria 3A/3B"
+      },
+      "block": "3A"
+     },
+     {
+      "exercise": "calf_raise",
+      "rx": {
+       "sets": 3,
+       "reps": 15,
+       "rir": 2,
+       "rest_s": 60,
+       "note": "pauza 1 s na górze"
+      },
+      "block": "3B"
+     },
+     {
+      "exercise": "pallof_press",
+      "rx": {
+       "sets": 3,
+       "reps": 10,
+       "rest_s": 30
+      },
+      "block": "4",
+      "circuit": "core_A"
+     },
+     {
+      "exercise": "dead_bug",
+      "rx": {
+       "sets": 3,
+       "reps": 8,
+       "rest_s": 30
+      },
+      "block": "4",
+      "circuit": "core_A"
+     },
+     {
+      "exercise": "side_plank",
+      "rx": {
+       "sets": 3,
+       "reps": "30 s",
+       "rest_s": 30
+      },
+      "block": "4",
+      "circuit": "core_A"
+     },
+     {
+      "exercise": "cooldown_stretch",
+      "rx": {
+       "sets": 1,
+       "reps": "4–5 min"
+      }
+     }
+    ]
+   }
+  },
+  "5": {
+   "wed": {
+    "session": "A",
+    "name": "Sesja A – Siła nóg (ciężka) – tydzień rozładowania",
+    "est_min": 49,
+    "items": [
+     {
+      "exercise": "mobility_circuit",
+      "rx": {
+       "sets": 2,
+       "reps": "obwód",
+       "note": "5 min rowerek/wioślarz luźno + 2 rundy obwodu. Serie wstępne do 1. ćwiczenia: pusta sztanga×8 → 50%×5 → 70%×3 → 85%×1–2."
+      }
+     },
+     {
+      "exercise": "back_squat",
+      "rx": {
+       "sets": 2,
+       "reps": 8,
+       "rir": 4,
+       "rest_s": 120,
+       "note": "Rozładowanie: −40% serii, ciężar −10%, RIR +1."
+      },
+      "block": "1"
+     },
+     {
+      "exercise": "rdl",
+      "rx": {
+       "sets": 2,
+       "reps": 8,
+       "rir": 4,
+       "rest_s": 120,
+       "note": "Rozładowanie: −40% serii, ciężar −10%, RIR +1."
+      },
+      "block": "2"
+     },
+     {
+      "exercise": "db_row",
+      "rx": {
+       "sets": 2,
+       "reps": 10,
+       "rir": 3,
+       "rest_s": 60,
+       "note": "superseria 3A/3B · Rozładowanie: −40% serii, ciężar −10%, RIR +1."
+      },
+      "block": "3A"
+     },
+     {
+      "exercise": "calf_raise",
+      "rx": {
+       "sets": 2,
+       "reps": 15,
+       "rir": 3,
+       "rest_s": 60,
+       "note": "pauza 1 s na górze · Rozładowanie: −40% serii, ciężar −10%, RIR +1."
+      },
+      "block": "3B"
+     },
+     {
+      "exercise": "pallof_press",
+      "rx": {
+       "sets": 2,
+       "reps": 10,
+       "rest_s": 30,
+       "note": "Rozładowanie: −40% serii, ciężar −10%, RIR +1."
+      },
+      "block": "4",
+      "circuit": "core_A"
+     },
+     {
+      "exercise": "dead_bug",
+      "rx": {
+       "sets": 2,
+       "reps": 8,
+       "rest_s": 30,
+       "note": "Rozładowanie: −40% serii, ciężar −10%, RIR +1."
+      },
+      "block": "4",
+      "circuit": "core_A"
+     },
+     {
+      "exercise": "side_plank",
+      "rx": {
+       "sets": 2,
+       "reps": "30 s",
+       "rest_s": 30,
+       "note": "Rozładowanie: −40% serii, ciężar −10%, RIR +1."
+      },
+      "block": "4",
+      "circuit": "core_A"
+     },
+     {
+      "exercise": "cooldown_stretch",
+      "rx": {
+       "sets": 1,
+       "reps": "4–5 min"
+      }
+     }
+    ]
+   }
+  },
+  "6": {
+   "wed": {
+    "session": "A",
+    "name": "Sesja A – Siła nóg (ciężka)",
+    "est_min": 70,
+    "items": [
+     {
+      "exercise": "mobility_circuit",
+      "rx": {
+       "sets": 2,
+       "reps": "obwód",
+       "note": "5 min rowerek/wioślarz luźno + 2 rundy obwodu. Serie wstępne do 1. ćwiczenia: pusta sztanga×8 → 50%×5 → 70%×3 → 85%×1–2."
+      }
+     },
+     {
+      "exercise": "back_squat",
+      "rx": {
+       "sets": 4,
+       "reps": 8,
+       "rir": 3,
+       "rest_s": 120
+      },
+      "block": "1"
+     },
+     {
+      "exercise": "rdl",
+      "rx": {
+       "sets": 3,
+       "reps": 8,
+       "rir": "2–3",
+       "rest_s": 150
+      },
+      "block": "2"
+     },
+     {
+      "exercise": "db_row",
+      "rx": {
+       "sets": 3,
+       "reps": 10,
+       "rir": 2,
+       "rest_s": 60,
+       "note": "superseria 3A/3B"
+      },
+      "block": "3A"
+     },
+     {
+      "exercise": "calf_raise",
+      "rx": {
+       "sets": 3,
+       "reps": 15,
+       "rir": 2,
+       "rest_s": 60,
+       "note": "pauza 1 s na górze"
+      },
+      "block": "3B"
+     },
+     {
+      "exercise": "pallof_press",
+      "rx": {
+       "sets": 3,
+       "reps": 10,
+       "rest_s": 30
+      },
+      "block": "4",
+      "circuit": "core_A"
+     },
+     {
+      "exercise": "dead_bug",
+      "rx": {
+       "sets": 3,
+       "reps": 8,
+       "rest_s": 30
+      },
+      "block": "4",
+      "circuit": "core_A"
+     },
+     {
+      "exercise": "side_plank",
+      "rx": {
+       "sets": 3,
+       "reps": "30 s",
+       "rest_s": 30
+      },
+      "block": "4",
+      "circuit": "core_A"
+     },
+     {
+      "exercise": "cooldown_stretch",
+      "rx": {
+       "sets": 1,
+       "reps": "4–5 min"
+      }
+     }
+    ]
+   }
+  },
+  "7": {
+   "wed": {
+    "session": "A",
+    "name": "Sesja A – Siła nóg (ciężka)",
+    "est_min": 70,
+    "items": [
+     {
+      "exercise": "mobility_circuit",
+      "rx": {
+       "sets": 2,
+       "reps": "obwód",
+       "note": "5 min rowerek/wioślarz luźno + 2 rundy obwodu. Serie wstępne do 1. ćwiczenia: pusta sztanga×8 → 50%×5 → 70%×3 → 85%×1–2."
+      }
+     },
+     {
+      "exercise": "back_squat",
+      "rx": {
+       "sets": 4,
+       "reps": 6,
+       "rir": "2–3",
+       "rest_s": 150
+      },
+      "block": "1"
+     },
+     {
+      "exercise": "rdl",
+      "rx": {
+       "sets": 3,
+       "reps": 8,
+       "rir": "2–3",
+       "rest_s": 150
+      },
+      "block": "2"
+     },
+     {
+      "exercise": "db_row",
+      "rx": {
+       "sets": 3,
+       "reps": 10,
+       "rir": 2,
+       "rest_s": 60,
+       "note": "superseria 3A/3B"
+      },
+      "block": "3A"
+     },
+     {
+      "exercise": "calf_raise",
+      "rx": {
+       "sets": 3,
+       "reps": 15,
+       "rir": 2,
+       "rest_s": 60,
+       "note": "pauza 1 s na górze"
+      },
+      "block": "3B"
+     },
+     {
+      "exercise": "pallof_press",
+      "rx": {
+       "sets": 3,
+       "reps": 10,
+       "rest_s": 30
+      },
+      "block": "4",
+      "circuit": "core_A"
+     },
+     {
+      "exercise": "dead_bug",
+      "rx": {
+       "sets": 3,
+       "reps": 8,
+       "rest_s": 30
+      },
+      "block": "4",
+      "circuit": "core_A"
+     },
+     {
+      "exercise": "side_plank",
+      "rx": {
+       "sets": 3,
+       "reps": "30 s",
+       "rest_s": 30
+      },
+      "block": "4",
+      "circuit": "core_A"
+     },
+     {
+      "exercise": "cooldown_stretch",
+      "rx": {
+       "sets": 1,
+       "reps": "4–5 min"
+      }
+     }
+    ]
+   }
+  },
+  "8": {
+   "wed": {
+    "session": "A",
+    "name": "Sesja A – Siła nóg (ciężka)",
+    "est_min": 70,
+    "items": [
+     {
+      "exercise": "mobility_circuit",
+      "rx": {
+       "sets": 2,
+       "reps": "obwód",
+       "note": "5 min rowerek/wioślarz luźno + 2 rundy obwodu. Serie wstępne do 1. ćwiczenia: pusta sztanga×8 → 50%×5 → 70%×3 → 85%×1–2."
+      }
+     },
+     {
+      "exercise": "back_squat",
+      "rx": {
+       "sets": 4,
+       "reps": 6,
+       "rir": 2,
+       "rest_s": 150
+      },
+      "block": "1"
+     },
+     {
+      "exercise": "rdl",
+      "rx": {
+       "sets": 3,
+       "reps": 8,
+       "rir": "2–3",
+       "rest_s": 150
+      },
+      "block": "2"
+     },
+     {
+      "exercise": "db_row",
+      "rx": {
+       "sets": 3,
+       "reps": 10,
+       "rir": 2,
+       "rest_s": 60,
+       "note": "superseria 3A/3B"
+      },
+      "block": "3A"
+     },
+     {
+      "exercise": "calf_raise",
+      "rx": {
+       "sets": 3,
+       "reps": 15,
+       "rir": 2,
+       "rest_s": 60,
+       "note": "pauza 1 s na górze"
+      },
+      "block": "3B"
+     },
+     {
+      "exercise": "pallof_press",
+      "rx": {
+       "sets": 3,
+       "reps": 10,
+       "rest_s": 30
+      },
+      "block": "4",
+      "circuit": "core_A"
+     },
+     {
+      "exercise": "dead_bug",
+      "rx": {
+       "sets": 3,
+       "reps": 8,
+       "rest_s": 30
+      },
+      "block": "4",
+      "circuit": "core_A"
+     },
+     {
+      "exercise": "side_plank",
+      "rx": {
+       "sets": 3,
+       "reps": "30 s",
+       "rest_s": 30
+      },
+      "block": "4",
+      "circuit": "core_A"
+     },
+     {
+      "exercise": "cooldown_stretch",
+      "rx": {
+       "sets": 1,
+       "reps": "4–5 min"
+      }
+     }
+    ]
+   }
+  },
+  "9": {
+   "wed": {
+    "session": "A",
+    "name": "Sesja A – Siła nóg (ciężka) – tydzień rozładowania",
+    "est_min": 49,
+    "items": [
+     {
+      "exercise": "mobility_circuit",
+      "rx": {
+       "sets": 2,
+       "reps": "obwód",
+       "note": "5 min rowerek/wioślarz luźno + 2 rundy obwodu. Serie wstępne do 1. ćwiczenia: pusta sztanga×8 → 50%×5 → 70%×3 → 85%×1–2."
+      }
+     },
+     {
+      "exercise": "back_squat",
+      "rx": {
+       "sets": 2,
+       "reps": 6,
+       "rir": 3,
+       "rest_s": 150,
+       "note": "Rozładowanie: −40% serii, ciężar −10%, RIR +1."
+      },
+      "block": "1"
+     },
+     {
+      "exercise": "rdl",
+      "rx": {
+       "sets": 2,
+       "reps": 8,
+       "rir": "3–4",
+       "rest_s": 150,
+       "note": "Rozładowanie: −40% serii, ciężar −10%, RIR +1."
+      },
+      "block": "2"
+     },
+     {
+      "exercise": "db_row",
+      "rx": {
+       "sets": 2,
+       "reps": 10,
+       "rir": 3,
+       "rest_s": 60,
+       "note": "superseria 3A/3B · Rozładowanie: −40% serii, ciężar −10%, RIR +1."
+      },
+      "block": "3A"
+     },
+     {
+      "exercise": "calf_raise",
+      "rx": {
+       "sets": 2,
+       "reps": 15,
+       "rir": 3,
+       "rest_s": 60,
+       "note": "pauza 1 s na górze · Rozładowanie: −40% serii, ciężar −10%, RIR +1."
+      },
+      "block": "3B"
+     },
+     {
+      "exercise": "pallof_press",
+      "rx": {
+       "sets": 2,
+       "reps": 10,
+       "rest_s": 30,
+       "note": "Rozładowanie: −40% serii, ciężar −10%, RIR +1."
+      },
+      "block": "4",
+      "circuit": "core_A"
+     },
+     {
+      "exercise": "dead_bug",
+      "rx": {
+       "sets": 2,
+       "reps": 8,
+       "rest_s": 30,
+       "note": "Rozładowanie: −40% serii, ciężar −10%, RIR +1."
+      },
+      "block": "4",
+      "circuit": "core_A"
+     },
+     {
+      "exercise": "side_plank",
+      "rx": {
+       "sets": 2,
+       "reps": "30 s",
+       "rest_s": 30,
+       "note": "Rozładowanie: −40% serii, ciężar −10%, RIR +1."
+      },
+      "block": "4",
+      "circuit": "core_A"
+     },
+     {
+      "exercise": "cooldown_stretch",
+      "rx": {
+       "sets": 1,
+       "reps": "4–5 min"
+      }
+     }
+    ]
+   }
+  },
+  "10": {
+   "wed": {
+    "session": "A",
+    "name": "Sesja A – Siła nóg (ciężka)",
+    "est_min": 70,
+    "items": [
+     {
+      "exercise": "mobility_circuit",
+      "rx": {
+       "sets": 2,
+       "reps": "obwód",
+       "note": "5 min rowerek/wioślarz luźno + 2 rundy obwodu. Serie wstępne do 1. ćwiczenia: pusta sztanga×8 → 50%×5 → 70%×3 → 85%×1–2."
+      }
+     },
+     {
+      "exercise": "back_squat",
+      "rx": {
+       "sets": 4,
+       "reps": 6,
+       "rir": 2,
+       "rest_s": 150
+      },
+      "block": "1"
+     },
+     {
+      "exercise": "rdl",
+      "rx": {
+       "sets": 3,
+       "reps": 8,
+       "rir": "2–3",
+       "rest_s": 150
+      },
+      "block": "2"
+     },
+     {
+      "exercise": "db_row",
+      "rx": {
+       "sets": 3,
+       "reps": 10,
+       "rir": 2,
+       "rest_s": 60,
+       "note": "superseria 3A/3B"
+      },
+      "block": "3A"
+     },
+     {
+      "exercise": "calf_raise",
+      "rx": {
+       "sets": 3,
+       "reps": 15,
+       "rir": 2,
+       "rest_s": 60,
+       "note": "pauza 1 s na górze"
+      },
+      "block": "3B"
+     },
+     {
+      "exercise": "pallof_press",
+      "rx": {
+       "sets": 3,
+       "reps": 10,
+       "rest_s": 30
+      },
+      "block": "4",
+      "circuit": "core_A"
+     },
+     {
+      "exercise": "dead_bug",
+      "rx": {
+       "sets": 3,
+       "reps": 8,
+       "rest_s": 30
+      },
+      "block": "4",
+      "circuit": "core_A"
+     },
+     {
+      "exercise": "side_plank",
+      "rx": {
+       "sets": 3,
+       "reps": "30 s",
+       "rest_s": 30
+      },
+      "block": "4",
+      "circuit": "core_A"
+     },
+     {
+      "exercise": "cooldown_stretch",
+      "rx": {
+       "sets": 1,
+       "reps": "4–5 min"
+      }
+     }
+    ]
+   }
+  },
+  "11": {
+   "wed": {
+    "session": "A",
+    "name": "Sesja A – Siła nóg (ciężka)",
+    "est_min": 70,
+    "items": [
+     {
+      "exercise": "mobility_circuit",
+      "rx": {
+       "sets": 2,
+       "reps": "obwód",
+       "note": "5 min rowerek/wioślarz luźno + 2 rundy obwodu. Serie wstępne do 1. ćwiczenia: pusta sztanga×8 → 50%×5 → 70%×3 → 85%×1–2."
+      }
+     },
+     {
+      "exercise": "back_squat",
+      "rx": {
+       "sets": 3,
+       "reps": 6,
+       "rir": 2,
+       "rest_s": 180
+      },
+      "block": "1"
+     },
+     {
+      "exercise": "trap_bar_deadlift",
+      "rx": {
+       "sets": 3,
+       "reps": 6,
+       "rir": 2,
+       "rest_s": 150,
+       "note": "Wprowadzenie trap bar – ustal ciężar na Fazę II."
+      },
+      "block": "2"
+     },
+     {
+      "exercise": "db_row",
+      "rx": {
+       "sets": 3,
+       "reps": 10,
+       "rir": 2,
+       "rest_s": 60,
+       "note": "superseria 3A/3B"
+      },
+      "block": "3A"
+     },
+     {
+      "exercise": "calf_raise",
+      "rx": {
+       "sets": 3,
+       "reps": 15,
+       "rir": 2,
+       "rest_s": 60,
+       "note": "pauza 1 s na górze"
+      },
+      "block": "3B"
+     },
+     {
+      "exercise": "pallof_press",
+      "rx": {
+       "sets": 3,
+       "reps": 10,
+       "rest_s": 30
+      },
+      "block": "4",
+      "circuit": "core_A"
+     },
+     {
+      "exercise": "dead_bug",
+      "rx": {
+       "sets": 3,
+       "reps": 8,
+       "rest_s": 30
+      },
+      "block": "4",
+      "circuit": "core_A"
+     },
+     {
+      "exercise": "side_plank",
+      "rx": {
+       "sets": 3,
+       "reps": "30 s",
+       "rest_s": 30
+      },
+      "block": "4",
+      "circuit": "core_A"
+     },
+     {
+      "exercise": "cooldown_stretch",
+      "rx": {
+       "sets": 1,
+       "reps": "4–5 min"
+      }
+     }
+    ]
+   }
+  },
+  "12": {
+   "wed": {
+    "session": "A",
+    "name": "Sesja A – Siła nóg (ciężka)",
+    "est_min": 70,
+    "items": [
+     {
+      "exercise": "mobility_circuit",
+      "rx": {
+       "sets": 2,
+       "reps": "obwód",
+       "note": "5 min rowerek/wioślarz luźno + 2 rundy obwodu. Serie wstępne do 1. ćwiczenia: pusta sztanga×8 → 50%×5 → 70%×3 → 85%×1–2."
+      }
+     },
+     {
+      "exercise": "back_squat",
+      "rx": {
+       "sets": 4,
+       "reps": 6,
+       "rir": 2,
+       "rest_s": 180
+      },
+      "block": "1"
+     },
+     {
+      "exercise": "trap_bar_deadlift",
+      "rx": {
+       "sets": 4,
+       "reps": 5,
+       "rir": 2,
+       "rest_s": 150
+      },
+      "block": "2"
+     },
+     {
+      "exercise": "db_row",
+      "rx": {
+       "sets": 3,
+       "reps": 8,
+       "rir": 2,
+       "rest_s": 60,
+       "note": "superseria 3A/3B"
+      },
+      "block": "3A"
+     },
+     {
+      "exercise": "calf_raise",
+      "rx": {
+       "sets": 3,
+       "reps": 10,
+       "rir": 2,
+       "rest_s": 60,
+       "note": "pauza 1 s na górze"
+      },
+      "block": "3B"
+     },
+     {
+      "exercise": "pallof_press",
+      "rx": {
+       "sets": 3,
+       "reps": 10,
+       "rest_s": 30
+      },
+      "block": "4",
+      "circuit": "core_A"
+     },
+     {
+      "exercise": "dead_bug",
+      "rx": {
+       "sets": 3,
+       "reps": 8,
+       "rest_s": 30
+      },
+      "block": "4",
+      "circuit": "core_A"
+     },
+     {
+      "exercise": "side_plank",
+      "rx": {
+       "sets": 3,
+       "reps": "45 s",
+       "rest_s": 30
+      },
+      "block": "4",
+      "circuit": "core_A"
+     },
+     {
+      "exercise": "cooldown_stretch",
+      "rx": {
+       "sets": 1,
+       "reps": "4–5 min"
+      }
+     }
+    ]
+   }
+  },
+  "13": {
+   "wed": {
+    "session": "A",
+    "name": "Sesja A – Siła nóg (ciężka)",
+    "est_min": 70,
+    "items": [
+     {
+      "exercise": "mobility_circuit",
+      "rx": {
+       "sets": 2,
+       "reps": "obwód",
+       "note": "5 min rowerek/wioślarz luźno + 2 rundy obwodu. Serie wstępne do 1. ćwiczenia: pusta sztanga×8 → 50%×5 → 70%×3 → 85%×1–2."
+      }
+     },
+     {
+      "exercise": "back_squat",
+      "rx": {
+       "sets": 5,
+       "reps": 5,
+       "rir": 2,
+       "rest_s": 180
+      },
+      "block": "1"
+     },
+     {
+      "exercise": "trap_bar_deadlift",
+      "rx": {
+       "sets": 4,
+       "reps": 5,
+       "rir": 2,
+       "rest_s": 150
+      },
+      "block": "2"
+     },
+     {
+      "exercise": "db_row",
+      "rx": {
+       "sets": 3,
+       "reps": 8,
+       "rir": 2,
+       "rest_s": 60,
+       "note": "superseria 3A/3B"
+      },
+      "block": "3A"
+     },
+     {
+      "exercise": "calf_raise",
+      "rx": {
+       "sets": 3,
+       "reps": 10,
+       "rir": 2,
+       "rest_s": 60,
+       "note": "pauza 1 s na górze"
+      },
+      "block": "3B"
+     },
+     {
+      "exercise": "pallof_press",
+      "rx": {
+       "sets": 3,
+       "reps": 10,
+       "rest_s": 30
+      },
+      "block": "4",
+      "circuit": "core_A"
+     },
+     {
+      "exercise": "dead_bug",
+      "rx": {
+       "sets": 3,
+       "reps": 8,
+       "rest_s": 30
+      },
+      "block": "4",
+      "circuit": "core_A"
+     },
+     {
+      "exercise": "side_plank",
+      "rx": {
+       "sets": 3,
+       "reps": "45 s",
+       "rest_s": 30
+      },
+      "block": "4",
+      "circuit": "core_A"
+     },
+     {
+      "exercise": "cooldown_stretch",
+      "rx": {
+       "sets": 1,
+       "reps": "4–5 min"
+      }
+     }
+    ]
+   }
+  },
+  "14": {
+   "wed": {
+    "session": "A",
+    "name": "Sesja A – Siła nóg (ciężka)",
+    "est_min": 70,
+    "items": [
+     {
+      "exercise": "mobility_circuit",
+      "rx": {
+       "sets": 2,
+       "reps": "obwód",
+       "note": "5 min rowerek/wioślarz luźno + 2 rundy obwodu. Serie wstępne do 1. ćwiczenia: pusta sztanga×8 → 50%×5 → 70%×3 → 85%×1–2."
+      }
+     },
+     {
+      "exercise": "back_squat",
+      "rx": {
+       "sets": 5,
+       "reps": 5,
+       "rir": 2,
+       "rest_s": 180
+      },
+      "block": "1"
+     },
+     {
+      "exercise": "trap_bar_deadlift",
+      "rx": {
+       "sets": 4,
+       "reps": 4,
+       "rir": 2,
+       "rest_s": 150
+      },
+      "block": "2"
+     },
+     {
+      "exercise": "db_row",
+      "rx": {
+       "sets": 3,
+       "reps": 8,
+       "rir": 2,
+       "rest_s": 60,
+       "note": "superseria 3A/3B"
+      },
+      "block": "3A"
+     },
+     {
+      "exercise": "calf_raise",
+      "rx": {
+       "sets": 3,
+       "reps": 10,
+       "rir": 2,
+       "rest_s": 60,
+       "note": "pauza 1 s na górze"
+      },
+      "block": "3B"
+     },
+     {
+      "exercise": "pallof_press",
+      "rx": {
+       "sets": 3,
+       "reps": 10,
+       "rest_s": 30
+      },
+      "block": "4",
+      "circuit": "core_A"
+     },
+     {
+      "exercise": "dead_bug",
+      "rx": {
+       "sets": 3,
+       "reps": 8,
+       "rest_s": 30
+      },
+      "block": "4",
+      "circuit": "core_A"
+     },
+     {
+      "exercise": "side_plank",
+      "rx": {
+       "sets": 3,
+       "reps": "45 s",
+       "rest_s": 30
+      },
+      "block": "4",
+      "circuit": "core_A"
+     },
+     {
+      "exercise": "cooldown_stretch",
+      "rx": {
+       "sets": 1,
+       "reps": "4–5 min"
+      }
+     }
+    ]
+   }
+  },
+  "15": {
+   "wed": {
+    "session": "A",
+    "name": "Sesja A – Siła nóg (ciężka) – tydzień rozładowania",
+    "est_min": 49,
+    "items": [
+     {
+      "exercise": "mobility_circuit",
+      "rx": {
+       "sets": 2,
+       "reps": "obwód",
+       "note": "5 min rowerek/wioślarz luźno + 2 rundy obwodu. Serie wstępne do 1. ćwiczenia: pusta sztanga×8 → 50%×5 → 70%×3 → 85%×1–2."
+      }
+     },
+     {
+      "exercise": "back_squat",
+      "rx": {
+       "sets": 3,
+       "reps": 5,
+       "rir": 3,
+       "rest_s": 180,
+       "note": "Rozładowanie: −40% serii, ciężar −10%, RIR +1."
+      },
+      "block": "1"
+     },
+     {
+      "exercise": "trap_bar_deadlift",
+      "rx": {
+       "sets": 2,
+       "reps": 4,
+       "rir": 3,
+       "rest_s": 150,
+       "note": "Rozładowanie: −40% serii, ciężar −10%, RIR +1."
+      },
+      "block": "2"
+     },
+     {
+      "exercise": "db_row",
+      "rx": {
+       "sets": 2,
+       "reps": 8,
+       "rir": 3,
+       "rest_s": 60,
+       "note": "superseria 3A/3B · Rozładowanie: −40% serii, ciężar −10%, RIR +1."
+      },
+      "block": "3A"
+     },
+     {
+      "exercise": "calf_raise",
+      "rx": {
+       "sets": 2,
+       "reps": 10,
+       "rir": 3,
+       "rest_s": 60,
+       "note": "pauza 1 s na górze · Rozładowanie: −40% serii, ciężar −10%, RIR +1."
+      },
+      "block": "3B"
+     },
+     {
+      "exercise": "pallof_press",
+      "rx": {
+       "sets": 2,
+       "reps": 10,
+       "rest_s": 30,
+       "note": "Rozładowanie: −40% serii, ciężar −10%, RIR +1."
+      },
+      "block": "4",
+      "circuit": "core_A"
+     },
+     {
+      "exercise": "dead_bug",
+      "rx": {
+       "sets": 2,
+       "reps": 8,
+       "rest_s": 30,
+       "note": "Rozładowanie: −40% serii, ciężar −10%, RIR +1."
+      },
+      "block": "4",
+      "circuit": "core_A"
+     },
+     {
+      "exercise": "side_plank",
+      "rx": {
+       "sets": 2,
+       "reps": "45 s",
+       "rest_s": 30,
+       "note": "Rozładowanie: −40% serii, ciężar −10%, RIR +1."
+      },
+      "block": "4",
+      "circuit": "core_A"
+     },
+     {
+      "exercise": "cooldown_stretch",
+      "rx": {
+       "sets": 1,
+       "reps": "4–5 min"
+      }
+     }
+    ]
+   }
+  },
+  "16": {
+   "wed": {
+    "session": "A",
+    "name": "Sesja A – Siła nóg (ciężka)",
+    "est_min": 70,
+    "items": [
+     {
+      "exercise": "mobility_circuit",
+      "rx": {
+       "sets": 2,
+       "reps": "obwód",
+       "note": "5 min rowerek/wioślarz luźno + 2 rundy obwodu. Serie wstępne do 1. ćwiczenia: pusta sztanga×8 → 50%×5 → 70%×3 → 85%×1–2."
+      }
+     },
+     {
+      "exercise": "back_squat",
+      "rx": {
+       "sets": 5,
+       "reps": 5,
+       "rir": 2,
+       "rest_s": 180
+      },
+      "block": "1"
+     },
+     {
+      "exercise": "trap_bar_deadlift",
+      "rx": {
+       "sets": 4,
+       "reps": 4,
+       "rir": 2,
+       "rest_s": 180
+      },
+      "block": "2"
+     },
+     {
+      "exercise": "db_row",
+      "rx": {
+       "sets": 3,
+       "reps": 8,
+       "rir": 2,
+       "rest_s": 60,
+       "note": "superseria 3A/3B"
+      },
+      "block": "3A"
+     },
+     {
+      "exercise": "calf_raise",
+      "rx": {
+       "sets": 3,
+       "reps": 10,
+       "rir": 2,
+       "rest_s": 60,
+       "note": "pauza 1 s na górze"
+      },
+      "block": "3B"
+     },
+     {
+      "exercise": "pallof_press",
+      "rx": {
+       "sets": 3,
+       "reps": 10,
+       "rest_s": 30
+      },
+      "block": "4",
+      "circuit": "core_A"
+     },
+     {
+      "exercise": "dead_bug",
+      "rx": {
+       "sets": 3,
+       "reps": 8,
+       "rest_s": 30
+      },
+      "block": "4",
+      "circuit": "core_A"
+     },
+     {
+      "exercise": "side_plank",
+      "rx": {
+       "sets": 3,
+       "reps": "45 s",
+       "rest_s": 30
+      },
+      "block": "4",
+      "circuit": "core_A"
+     },
+     {
+      "exercise": "cooldown_stretch",
+      "rx": {
+       "sets": 1,
+       "reps": "4–5 min"
+      }
+     }
+    ]
+   }
+  },
+  "17": {
+   "wed": {
+    "session": "A",
+    "name": "Sesja A – Siła nóg (ciężka)",
+    "est_min": 70,
+    "items": [
+     {
+      "exercise": "mobility_circuit",
+      "rx": {
+       "sets": 2,
+       "reps": "obwód",
+       "note": "5 min rowerek/wioślarz luźno + 2 rundy obwodu. Serie wstępne do 1. ćwiczenia: pusta sztanga×8 → 50%×5 → 70%×3 → 85%×1–2."
+      }
+     },
+     {
+      "exercise": "back_squat",
+      "rx": {
+       "sets": 5,
+       "reps": 4,
+       "rir": 2,
+       "rest_s": 180
+      },
+      "block": "1"
+     },
+     {
+      "exercise": "trap_bar_deadlift",
+      "rx": {
+       "sets": 4,
+       "reps": 4,
+       "rir": 2,
+       "rest_s": 180
+      },
+      "block": "2"
+     },
+     {
+      "exercise": "db_row",
+      "rx": {
+       "sets": 3,
+       "reps": 8,
+       "rir": 2,
+       "rest_s": 60,
+       "note": "superseria 3A/3B"
+      },
+      "block": "3A"
+     },
+     {
+      "exercise": "calf_raise",
+      "rx": {
+       "sets": 3,
+       "reps": 10,
+       "rir": 2,
+       "rest_s": 60,
+       "note": "pauza 1 s na górze"
+      },
+      "block": "3B"
+     },
+     {
+      "exercise": "pallof_press",
+      "rx": {
+       "sets": 3,
+       "reps": 10,
+       "rest_s": 30
+      },
+      "block": "4",
+      "circuit": "core_A"
+     },
+     {
+      "exercise": "dead_bug",
+      "rx": {
+       "sets": 3,
+       "reps": 8,
+       "rest_s": 30
+      },
+      "block": "4",
+      "circuit": "core_A"
+     },
+     {
+      "exercise": "side_plank",
+      "rx": {
+       "sets": 3,
+       "reps": "45 s",
+       "rest_s": 30
+      },
+      "block": "4",
+      "circuit": "core_A"
+     },
+     {
+      "exercise": "cooldown_stretch",
+      "rx": {
+       "sets": 1,
+       "reps": "4–5 min"
+      }
+     }
+    ]
+   }
+  },
+  "18": {
+   "wed": {
+    "session": "A",
+    "name": "Sesja A – Siła nóg (ciężka)",
+    "est_min": 70,
+    "items": [
+     {
+      "exercise": "mobility_circuit",
+      "rx": {
+       "sets": 2,
+       "reps": "obwód",
+       "note": "5 min rowerek/wioślarz luźno + 2 rundy obwodu. Serie wstępne do 1. ćwiczenia: pusta sztanga×8 → 50%×5 → 70%×3 → 85%×1–2."
+      }
+     },
+     {
+      "exercise": "back_squat",
+      "rx": {
+       "sets": 5,
+       "reps": 4,
+       "rir": 2,
+       "rest_s": 180
+      },
+      "block": "1"
+     },
+     {
+      "exercise": "trap_bar_deadlift",
+      "rx": {
+       "sets": 5,
+       "reps": 3,
+       "rir": 2,
+       "rest_s": 180
+      },
+      "block": "2"
+     },
+     {
+      "exercise": "db_row",
+      "rx": {
+       "sets": 3,
+       "reps": 8,
+       "rir": 2,
+       "rest_s": 60,
+       "note": "superseria 3A/3B"
+      },
+      "block": "3A"
+     },
+     {
+      "exercise": "calf_raise",
+      "rx": {
+       "sets": 3,
+       "reps": 10,
+       "rir": 2,
+       "rest_s": 60,
+       "note": "pauza 1 s na górze"
+      },
+      "block": "3B"
+     },
+     {
+      "exercise": "pallof_press",
+      "rx": {
+       "sets": 3,
+       "reps": 10,
+       "rest_s": 30
+      },
+      "block": "4",
+      "circuit": "core_A"
+     },
+     {
+      "exercise": "dead_bug",
+      "rx": {
+       "sets": 3,
+       "reps": 8,
+       "rest_s": 30
+      },
+      "block": "4",
+      "circuit": "core_A"
+     },
+     {
+      "exercise": "side_plank",
+      "rx": {
+       "sets": 3,
+       "reps": "45 s",
+       "rest_s": 30
+      },
+      "block": "4",
+      "circuit": "core_A"
+     },
+     {
+      "exercise": "cooldown_stretch",
+      "rx": {
+       "sets": 1,
+       "reps": "4–5 min"
+      }
+     }
+    ]
+   }
+  },
+  "19": {
+   "wed": {
+    "session": "A",
+    "name": "Sesja A – Siła nóg (ciężka) – tydzień rozładowania",
+    "est_min": 49,
+    "items": [
+     {
+      "exercise": "mobility_circuit",
+      "rx": {
+       "sets": 2,
+       "reps": "obwód",
+       "note": "5 min rowerek/wioślarz luźno + 2 rundy obwodu. Serie wstępne do 1. ćwiczenia: pusta sztanga×8 → 50%×5 → 70%×3 → 85%×1–2."
+      }
+     },
+     {
+      "exercise": "back_squat",
+      "rx": {
+       "sets": 3,
+       "reps": 4,
+       "rir": 3,
+       "rest_s": 180,
+       "note": "Rozładowanie: −40% serii, ciężar −10%, RIR +1."
+      },
+      "block": "1"
+     },
+     {
+      "exercise": "trap_bar_deadlift",
+      "rx": {
+       "sets": 3,
+       "reps": 3,
+       "rir": 3,
+       "rest_s": 180,
+       "note": "Rozładowanie: −40% serii, ciężar −10%, RIR +1."
+      },
+      "block": "2"
+     },
+     {
+      "exercise": "db_row",
+      "rx": {
+       "sets": 2,
+       "reps": 8,
+       "rir": 3,
+       "rest_s": 60,
+       "note": "superseria 3A/3B · Rozładowanie: −40% serii, ciężar −10%, RIR +1."
+      },
+      "block": "3A"
+     },
+     {
+      "exercise": "calf_raise",
+      "rx": {
+       "sets": 2,
+       "reps": 10,
+       "rir": 3,
+       "rest_s": 60,
+       "note": "pauza 1 s na górze · Rozładowanie: −40% serii, ciężar −10%, RIR +1."
+      },
+      "block": "3B"
+     },
+     {
+      "exercise": "pallof_press",
+      "rx": {
+       "sets": 2,
+       "reps": 10,
+       "rest_s": 30,
+       "note": "Rozładowanie: −40% serii, ciężar −10%, RIR +1."
+      },
+      "block": "4",
+      "circuit": "core_A"
+     },
+     {
+      "exercise": "dead_bug",
+      "rx": {
+       "sets": 2,
+       "reps": 8,
+       "rest_s": 30,
+       "note": "Rozładowanie: −40% serii, ciężar −10%, RIR +1."
+      },
+      "block": "4",
+      "circuit": "core_A"
+     },
+     {
+      "exercise": "side_plank",
+      "rx": {
+       "sets": 2,
+       "reps": "45 s",
+       "rest_s": 30,
+       "note": "Rozładowanie: −40% serii, ciężar −10%, RIR +1."
+      },
+      "block": "4",
+      "circuit": "core_A"
+     },
+     {
+      "exercise": "cooldown_stretch",
+      "rx": {
+       "sets": 1,
+       "reps": "4–5 min"
+      }
+     }
+    ]
+   }
+  },
+  "20": {
+   "wed": {
+    "session": "A",
+    "name": "Sesja A – Siła nóg (ciężka)",
+    "est_min": 70,
+    "items": [
+     {
+      "exercise": "mobility_circuit",
+      "rx": {
+       "sets": 2,
+       "reps": "obwód",
+       "note": "5 min rowerek/wioślarz luźno + 2 rundy obwodu. Serie wstępne do 1. ćwiczenia: pusta sztanga×8 → 50%×5 → 70%×3 → 85%×1–2."
+      }
+     },
+     {
+      "exercise": "back_squat",
+      "rx": {
+       "sets": 5,
+       "reps": 4,
+       "rir": 2,
+       "rest_s": 180
+      },
+      "block": "1"
+     },
+     {
+      "exercise": "trap_bar_deadlift",
+      "rx": {
+       "sets": 5,
+       "reps": 3,
+       "rir": 2,
+       "rest_s": 180
+      },
+      "block": "2"
+     },
+     {
+      "exercise": "db_row",
+      "rx": {
+       "sets": 3,
+       "reps": 8,
+       "rir": 2,
+       "rest_s": 60,
+       "note": "superseria 3A/3B"
+      },
+      "block": "3A"
+     },
+     {
+      "exercise": "calf_raise",
+      "rx": {
+       "sets": 3,
+       "reps": 10,
+       "rir": 2,
+       "rest_s": 60,
+       "note": "pauza 1 s na górze"
+      },
+      "block": "3B"
+     },
+     {
+      "exercise": "pallof_press",
+      "rx": {
+       "sets": 3,
+       "reps": 10,
+       "rest_s": 30
+      },
+      "block": "4",
+      "circuit": "core_A"
+     },
+     {
+      "exercise": "dead_bug",
+      "rx": {
+       "sets": 3,
+       "reps": 8,
+       "rest_s": 30
+      },
+      "block": "4",
+      "circuit": "core_A"
+     },
+     {
+      "exercise": "side_plank",
+      "rx": {
+       "sets": 3,
+       "reps": "45 s",
+       "rest_s": 30
+      },
+      "block": "4",
+      "circuit": "core_A"
+     },
+     {
+      "exercise": "cooldown_stretch",
+      "rx": {
+       "sets": 1,
+       "reps": "4–5 min"
+      }
+     }
+    ]
+   }
+  },
+  "21": {
+   "wed": {
+    "session": "A",
+    "name": "Sesja A – Siła nóg (ciężka)",
+    "est_min": 70,
+    "items": [
+     {
+      "exercise": "mobility_circuit",
+      "rx": {
+       "sets": 2,
+       "reps": "obwód",
+       "note": "5 min rowerek/wioślarz luźno + 2 rundy obwodu. Serie wstępne do 1. ćwiczenia: pusta sztanga×8 → 50%×5 → 70%×3 → 85%×1–2."
+      }
+     },
+     {
+      "exercise": "back_squat",
+      "rx": {
+       "sets": 5,
+       "reps": 3,
+       "rir": 2,
+       "rest_s": 180
+      },
+      "block": "1"
+     },
+     {
+      "exercise": "trap_bar_deadlift",
+      "rx": {
+       "sets": 5,
+       "reps": 3,
+       "rir": 2,
+       "rest_s": 180
+      },
+      "block": "2"
+     },
+     {
+      "exercise": "db_row",
+      "rx": {
+       "sets": 3,
+       "reps": 8,
+       "rir": 2,
+       "rest_s": 60,
+       "note": "superseria 3A/3B"
+      },
+      "block": "3A"
+     },
+     {
+      "exercise": "calf_raise",
+      "rx": {
+       "sets": 3,
+       "reps": 10,
+       "rir": 2,
+       "rest_s": 60,
+       "note": "pauza 1 s na górze"
+      },
+      "block": "3B"
+     },
+     {
+      "exercise": "pallof_press",
+      "rx": {
+       "sets": 3,
+       "reps": 10,
+       "rest_s": 30
+      },
+      "block": "4",
+      "circuit": "core_A"
+     },
+     {
+      "exercise": "dead_bug",
+      "rx": {
+       "sets": 3,
+       "reps": 8,
+       "rest_s": 30
+      },
+      "block": "4",
+      "circuit": "core_A"
+     },
+     {
+      "exercise": "side_plank",
+      "rx": {
+       "sets": 3,
+       "reps": "45 s",
+       "rest_s": 30
+      },
+      "block": "4",
+      "circuit": "core_A"
+     },
+     {
+      "exercise": "cooldown_stretch",
+      "rx": {
+       "sets": 1,
+       "reps": "4–5 min"
+      }
+     }
+    ]
+   }
+  },
+  "22": {
+   "wed": {
+    "session": "A",
+    "name": "Sesja A – Siła nóg (ciężka)",
+    "est_min": 70,
+    "items": [
+     {
+      "exercise": "mobility_circuit",
+      "rx": {
+       "sets": 2,
+       "reps": "obwód",
+       "note": "5 min rowerek/wioślarz luźno + 2 rundy obwodu. Serie wstępne do 1. ćwiczenia: pusta sztanga×8 → 50%×5 → 70%×3 → 85%×1–2."
+      }
+     },
+     {
+      "exercise": "back_squat",
+      "rx": {
+       "sets": 5,
+       "reps": 3,
+       "rir": 1,
+       "rest_s": 180
+      },
+      "block": "1"
+     },
+     {
+      "exercise": "trap_bar_deadlift",
+      "rx": {
+       "sets": 5,
+       "reps": 3,
+       "rir": "1–2",
+       "rest_s": 180
+      },
+      "block": "2"
+     },
+     {
+      "exercise": "db_row",
+      "rx": {
+       "sets": 3,
+       "reps": 8,
+       "rir": 2,
+       "rest_s": 60,
+       "note": "superseria 3A/3B"
+      },
+      "block": "3A"
+     },
+     {
+      "exercise": "calf_raise",
+      "rx": {
+       "sets": 3,
+       "reps": 10,
+       "rir": 2,
+       "rest_s": 60,
+       "note": "pauza 1 s na górze"
+      },
+      "block": "3B"
+     },
+     {
+      "exercise": "pallof_press",
+      "rx": {
+       "sets": 3,
+       "reps": 10,
+       "rest_s": 30
+      },
+      "block": "4",
+      "circuit": "core_A"
+     },
+     {
+      "exercise": "dead_bug",
+      "rx": {
+       "sets": 3,
+       "reps": 8,
+       "rest_s": 30
+      },
+      "block": "4",
+      "circuit": "core_A"
+     },
+     {
+      "exercise": "side_plank",
+      "rx": {
+       "sets": 3,
+       "reps": "45 s",
+       "rest_s": 30
+      },
+      "block": "4",
+      "circuit": "core_A"
+     },
+     {
+      "exercise": "cooldown_stretch",
+      "rx": {
+       "sets": 1,
+       "reps": "4–5 min"
+      }
+     }
+    ]
+   }
+  },
+  "23": {
+   "wed": {
+    "session": "A",
+    "name": "Sesja A – Siła nóg (ciężka)",
+    "est_min": 70,
+    "items": [
+     {
+      "exercise": "mobility_circuit",
+      "rx": {
+       "sets": 2,
+       "reps": "obwód",
+       "note": "5 min rowerek/wioślarz luźno + 2 rundy obwodu. Serie wstępne do 1. ćwiczenia: pusta sztanga×8 → 50%×5 → 70%×3 → 85%×1–2."
+      }
+     },
+     {
+      "exercise": "back_squat",
+      "rx": {
+       "sets": 5,
+       "reps": 3,
+       "rir": 1,
+       "rest_s": 180
+      },
+      "block": "1"
+     },
+     {
+      "exercise": "trap_bar_deadlift",
+      "rx": {
+       "sets": 5,
+       "reps": 3,
+       "rir": "1–2",
+       "rest_s": 180
+      },
+      "block": "2"
+     },
+     {
+      "exercise": "db_row",
+      "rx": {
+       "sets": 3,
+       "reps": 8,
+       "rir": 2,
+       "rest_s": 60,
+       "note": "superseria 3A/3B"
+      },
+      "block": "3A"
+     },
+     {
+      "exercise": "calf_raise",
+      "rx": {
+       "sets": 3,
+       "reps": 10,
+       "rir": 2,
+       "rest_s": 60,
+       "note": "pauza 1 s na górze"
+      },
+      "block": "3B"
+     },
+     {
+      "exercise": "pallof_press",
+      "rx": {
+       "sets": 3,
+       "reps": 10,
+       "rest_s": 30
+      },
+      "block": "4",
+      "circuit": "core_A"
+     },
+     {
+      "exercise": "dead_bug",
+      "rx": {
+       "sets": 3,
+       "reps": 8,
+       "rest_s": 30
+      },
+      "block": "4",
+      "circuit": "core_A"
+     },
+     {
+      "exercise": "side_plank",
+      "rx": {
+       "sets": 3,
+       "reps": "45 s",
+       "rest_s": 30
+      },
+      "block": "4",
+      "circuit": "core_A"
+     },
+     {
+      "exercise": "cooldown_stretch",
+      "rx": {
+       "sets": 1,
+       "reps": "4–5 min"
+      }
+     }
+    ]
+   }
+  },
+  "24": {
+   "wed": {
+    "session": "A",
+    "name": "Sesja A – Siła nóg (ciężka)",
+    "est_min": 70,
+    "items": [
+     {
+      "exercise": "mobility_circuit",
+      "rx": {
+       "sets": 2,
+       "reps": "obwód",
+       "note": "5 min rowerek/wioślarz luźno + 2 rundy obwodu. Serie wstępne do 1. ćwiczenia: pusta sztanga×8 → 50%×5 → 70%×3 → 85%×1–2."
+      }
+     },
+     {
+      "exercise": "back_squat",
+      "rx": {
+       "sets": 1,
+       "reps": 5,
+       "rir": 1,
+       "rest_s": 180,
+       "note": "Sprawdzian: 1 seria ciężka na 5 powtórzeń, potem 2×3 lekko (RIR 4)."
+      },
+      "block": "1"
+     },
+     {
+      "exercise": "trap_bar_deadlift",
+      "rx": {
+       "sets": 1,
+       "reps": 5,
+       "rir": 1,
+       "rest_s": 180,
+       "note": "Sprawdzian."
+      },
+      "block": "2"
+     },
+     {
+      "exercise": "db_row",
+      "rx": {
+       "sets": 2,
+       "reps": 8,
+       "rir": 2,
+       "rest_s": 60,
+       "note": "superseria 3A/3B"
+      },
+      "block": "3A"
+     },
+     {
+      "exercise": "calf_raise",
+      "rx": {
+       "sets": 2,
+       "reps": 10,
+       "rir": 2,
+       "rest_s": 60,
+       "note": "pauza 1 s na górze"
+      },
+      "block": "3B"
+     },
+     {
+      "exercise": "pallof_press",
+      "rx": {
+       "sets": 2,
+       "reps": 10,
+       "rest_s": 30
+      },
+      "block": "4",
+      "circuit": "core_A"
+     },
+     {
+      "exercise": "dead_bug",
+      "rx": {
+       "sets": 2,
+       "reps": 8,
+       "rest_s": 30
+      },
+      "block": "4",
+      "circuit": "core_A"
+     },
+     {
+      "exercise": "side_plank",
+      "rx": {
+       "sets": 2,
+       "reps": "45 s",
+       "rest_s": 30
+      },
+      "block": "4",
+      "circuit": "core_A"
+     },
+     {
+      "exercise": "cooldown_stretch",
+      "rx": {
+       "sets": 1,
+       "reps": "4–5 min"
+      }
+     }
+    ]
+   }
+  },
+  "25": {
+   "wed": {
+    "session": "A",
+    "name": "Sesja A – Siła nóg (ciężka) – tydzień rozładowania",
+    "est_min": 49,
+    "items": [
+     {
+      "exercise": "mobility_circuit",
+      "rx": {
+       "sets": 2,
+       "reps": "obwód",
+       "note": "5 min rowerek/wioślarz luźno + 2 rundy obwodu. Serie wstępne do 1. ćwiczenia: pusta sztanga×8 → 50%×5 → 70%×3 → 85%×1–2."
+      }
+     },
+     {
+      "exercise": "back_squat",
+      "rx": {
+       "sets": 1,
+       "reps": 5,
+       "rir": 2,
+       "rest_s": 180,
+       "note": "Sprawdzian: 1 seria ciężka na 5 powtórzeń, potem 2×3 lekko (RIR 4). · Rozładowanie: −40% serii, ciężar −10%, RIR +1."
+      },
+      "block": "1"
+     },
+     {
+      "exercise": "trap_bar_deadlift",
+      "rx": {
+       "sets": 1,
+       "reps": 5,
+       "rir": 2,
+       "rest_s": 180,
+       "note": "Sprawdzian. · Rozładowanie: −40% serii, ciężar −10%, RIR +1."
+      },
+      "block": "2"
+     },
+     {
+      "exercise": "db_row",
+      "rx": {
+       "sets": 1,
+       "reps": 8,
+       "rir": 3,
+       "rest_s": 60,
+       "note": "superseria 3A/3B · Rozładowanie: −40% serii, ciężar −10%, RIR +1."
+      },
+      "block": "3A"
+     },
+     {
+      "exercise": "calf_raise",
+      "rx": {
+       "sets": 1,
+       "reps": 10,
+       "rir": 3,
+       "rest_s": 60,
+       "note": "pauza 1 s na górze · Rozładowanie: −40% serii, ciężar −10%, RIR +1."
+      },
+      "block": "3B"
+     },
+     {
+      "exercise": "pallof_press",
+      "rx": {
+       "sets": 1,
+       "reps": 10,
+       "rest_s": 30,
+       "note": "Rozładowanie: −40% serii, ciężar −10%, RIR +1."
+      },
+      "block": "4",
+      "circuit": "core_A"
+     },
+     {
+      "exercise": "dead_bug",
+      "rx": {
+       "sets": 1,
+       "reps": 8,
+       "rest_s": 30,
+       "note": "Rozładowanie: −40% serii, ciężar −10%, RIR +1."
+      },
+      "block": "4",
+      "circuit": "core_A"
+     },
+     {
+      "exercise": "side_plank",
+      "rx": {
+       "sets": 1,
+       "reps": "45 s",
+       "rest_s": 30,
+       "note": "Rozładowanie: −40% serii, ciężar −10%, RIR +1."
+      },
+      "block": "4",
+      "circuit": "core_A"
+     },
+     {
+      "exercise": "cooldown_stretch",
+      "rx": {
+       "sets": 1,
+       "reps": "4–5 min"
+      }
+     }
+    ]
+   }
+  },
+  "26": {
+   "wed": {
+    "session": "A",
+    "name": "Sesja A – Siła nóg (ciężka)",
+    "est_min": 70,
+    "items": [
+     {
+      "exercise": "mobility_circuit",
+      "rx": {
+       "sets": 2,
+       "reps": "obwód",
+       "note": "5 min rowerek/wioślarz luźno + 2 rundy obwodu. Serie wstępne do 1. ćwiczenia: pusta sztanga×8 → 50%×5 → 70%×3 → 85%×1–2."
+      }
+     },
+     {
+      "exercise": "back_squat",
+      "rx": {
+       "sets": 3,
+       "reps": 3,
+       "rir": 2,
+       "rest_s": 180
+      },
+      "block": "1"
+     },
+     {
+      "exercise": "jump_squat",
+      "rx": {
+       "sets": 3,
+       "reps": 5,
+       "rest_s": 90,
+       "load_hint": "hantle 10–15% masy ciała"
+      },
+      "block": "1b"
+     },
+     {
+      "exercise": "trap_bar_deadlift",
+      "rx": {
+       "sets": 3,
+       "reps": 3,
+       "rir": 2,
+       "rest_s": 180
+      },
+      "block": "2"
+     },
+     {
+      "exercise": "kb_swing",
+      "rx": {
+       "sets": 3,
+       "reps": 8,
+       "rest_s": 90,
+       "load_hint": "24–32 kg"
+      },
+      "block": "2b"
+     },
+     {
+      "exercise": "db_row",
+      "rx": {
+       "sets": 3,
+       "reps": 8,
+       "rir": 2,
+       "rest_s": 60,
+       "note": "superseria 3A/3B"
+      },
+      "block": "3A"
+     },
+     {
+      "exercise": "calf_raise",
+      "rx": {
+       "sets": 2,
+       "reps": 10,
+       "rir": 2,
+       "rest_s": 60,
+       "note": "pauza 1 s na górze"
+      },
+      "block": "3B"
+     },
+     {
+      "exercise": "pallof_press",
+      "rx": {
+       "sets": 2,
+       "reps": 10,
+       "rest_s": 30
+      },
+      "block": "4",
+      "circuit": "core_A"
+     },
+     {
+      "exercise": "dead_bug",
+      "rx": {
+       "sets": 2,
+       "reps": 8,
+       "rest_s": 30
+      },
+      "block": "4",
+      "circuit": "core_A"
+     },
+     {
+      "exercise": "side_plank",
+      "rx": {
+       "sets": 2,
+       "reps": "45 s",
+       "rest_s": 30
+      },
+      "block": "4",
+      "circuit": "core_A"
+     },
+     {
+      "exercise": "cooldown_stretch",
+      "rx": {
+       "sets": 1,
+       "reps": "4–5 min"
+      }
+     }
+    ]
+   }
+  },
+  "27": {
+   "wed": {
+    "session": "A",
+    "name": "Sesja A – Siła nóg (ciężka)",
+    "est_min": 70,
+    "items": [
+     {
+      "exercise": "mobility_circuit",
+      "rx": {
+       "sets": 2,
+       "reps": "obwód",
+       "note": "5 min rowerek/wioślarz luźno + 2 rundy obwodu. Serie wstępne do 1. ćwiczenia: pusta sztanga×8 → 50%×5 → 70%×3 → 85%×1–2."
+      }
+     },
+     {
+      "exercise": "back_squat",
+      "rx": {
+       "sets": 3,
+       "reps": 3,
+       "rir": 2,
+       "rest_s": 180
+      },
+      "block": "1"
+     },
+     {
+      "exercise": "jump_squat",
+      "rx": {
+       "sets": 3,
+       "reps": 5,
+       "rest_s": 90,
+       "load_hint": "hantle 10–15% masy ciała"
+      },
+      "block": "1b"
+     },
+     {
+      "exercise": "trap_bar_deadlift",
+      "rx": {
+       "sets": 3,
+       "reps": 3,
+       "rir": 2,
+       "rest_s": 180
+      },
+      "block": "2"
+     },
+     {
+      "exercise": "kb_swing",
+      "rx": {
+       "sets": 3,
+       "reps": 8,
+       "rest_s": 90,
+       "load_hint": "24–32 kg"
+      },
+      "block": "2b"
+     },
+     {
+      "exercise": "db_row",
+      "rx": {
+       "sets": 3,
+       "reps": 8,
+       "rir": 2,
+       "rest_s": 60,
+       "note": "superseria 3A/3B"
+      },
+      "block": "3A"
+     },
+     {
+      "exercise": "calf_raise",
+      "rx": {
+       "sets": 2,
+       "reps": 10,
+       "rir": 2,
+       "rest_s": 60,
+       "note": "pauza 1 s na górze"
+      },
+      "block": "3B"
+     },
+     {
+      "exercise": "pallof_press",
+      "rx": {
+       "sets": 2,
+       "reps": 10,
+       "rest_s": 30
+      },
+      "block": "4",
+      "circuit": "core_A"
+     },
+     {
+      "exercise": "dead_bug",
+      "rx": {
+       "sets": 2,
+       "reps": 8,
+       "rest_s": 30
+      },
+      "block": "4",
+      "circuit": "core_A"
+     },
+     {
+      "exercise": "side_plank",
+      "rx": {
+       "sets": 2,
+       "reps": "45 s",
+       "rest_s": 30
+      },
+      "block": "4",
+      "circuit": "core_A"
+     },
+     {
+      "exercise": "cooldown_stretch",
+      "rx": {
+       "sets": 1,
+       "reps": "4–5 min"
+      }
+     }
+    ]
+   }
+  },
+  "28": {
+   "wed": {
+    "session": "A",
+    "name": "Sesja A – Siła nóg (ciężka)",
+    "est_min": 70,
+    "items": [
+     {
+      "exercise": "mobility_circuit",
+      "rx": {
+       "sets": 2,
+       "reps": "obwód",
+       "note": "5 min rowerek/wioślarz luźno + 2 rundy obwodu. Serie wstępne do 1. ćwiczenia: pusta sztanga×8 → 50%×5 → 70%×3 → 85%×1–2."
+      }
+     },
+     {
+      "exercise": "back_squat",
+      "rx": {
+       "sets": 3,
+       "reps": 3,
+       "rir": 2,
+       "rest_s": 180
+      },
+      "block": "1"
+     },
+     {
+      "exercise": "jump_squat",
+      "rx": {
+       "sets": 3,
+       "reps": 5,
+       "rest_s": 90,
+       "load_hint": "hantle 10–15% masy ciała"
+      },
+      "block": "1b"
+     },
+     {
+      "exercise": "trap_bar_deadlift",
+      "rx": {
+       "sets": 3,
+       "reps": 3,
+       "rir": 2,
+       "rest_s": 180
+      },
+      "block": "2"
+     },
+     {
+      "exercise": "kb_swing",
+      "rx": {
+       "sets": 3,
+       "reps": 8,
+       "rest_s": 90,
+       "load_hint": "24–32 kg"
+      },
+      "block": "2b"
+     },
+     {
+      "exercise": "db_row",
+      "rx": {
+       "sets": 3,
+       "reps": 8,
+       "rir": 2,
+       "rest_s": 60,
+       "note": "superseria 3A/3B"
+      },
+      "block": "3A"
+     },
+     {
+      "exercise": "calf_raise",
+      "rx": {
+       "sets": 2,
+       "reps": 10,
+       "rir": 2,
+       "rest_s": 60,
+       "note": "pauza 1 s na górze"
+      },
+      "block": "3B"
+     },
+     {
+      "exercise": "pallof_press",
+      "rx": {
+       "sets": 2,
+       "reps": 10,
+       "rest_s": 30
+      },
+      "block": "4",
+      "circuit": "core_A"
+     },
+     {
+      "exercise": "dead_bug",
+      "rx": {
+       "sets": 2,
+       "reps": 8,
+       "rest_s": 30
+      },
+      "block": "4",
+      "circuit": "core_A"
+     },
+     {
+      "exercise": "side_plank",
+      "rx": {
+       "sets": 2,
+       "reps": "45 s",
+       "rest_s": 30
+      },
+      "block": "4",
+      "circuit": "core_A"
+     },
+     {
+      "exercise": "cooldown_stretch",
+      "rx": {
+       "sets": 1,
+       "reps": "4–5 min"
+      }
+     }
+    ]
+   }
+  },
+  "29": {
+   "wed": {
+    "session": "A",
+    "name": "Sesja A – Siła nóg (ciężka)",
+    "est_min": 70,
+    "items": [
+     {
+      "exercise": "mobility_circuit",
+      "rx": {
+       "sets": 2,
+       "reps": "obwód",
+       "note": "5 min rowerek/wioślarz luźno + 2 rundy obwodu. Serie wstępne do 1. ćwiczenia: pusta sztanga×8 → 50%×5 → 70%×3 → 85%×1–2."
+      }
+     },
+     {
+      "exercise": "back_squat",
+      "rx": {
+       "sets": 3,
+       "reps": 3,
+       "rir": 2,
+       "rest_s": 180
+      },
+      "block": "1"
+     },
+     {
+      "exercise": "jump_squat",
+      "rx": {
+       "sets": 3,
+       "reps": 5,
+       "rest_s": 90,
+       "load_hint": "hantle 10–15% masy ciała"
+      },
+      "block": "1b"
+     },
+     {
+      "exercise": "trap_bar_deadlift",
+      "rx": {
+       "sets": 3,
+       "reps": 3,
+       "rir": 2,
+       "rest_s": 180
+      },
+      "block": "2"
+     },
+     {
+      "exercise": "kb_swing",
+      "rx": {
+       "sets": 3,
+       "reps": 8,
+       "rest_s": 90,
+       "load_hint": "24–32 kg"
+      },
+      "block": "2b"
+     },
+     {
+      "exercise": "db_row",
+      "rx": {
+       "sets": 3,
+       "reps": 8,
+       "rir": 2,
+       "rest_s": 60,
+       "note": "superseria 3A/3B"
+      },
+      "block": "3A"
+     },
+     {
+      "exercise": "calf_raise",
+      "rx": {
+       "sets": 2,
+       "reps": 10,
+       "rir": 2,
+       "rest_s": 60,
+       "note": "pauza 1 s na górze"
+      },
+      "block": "3B"
+     },
+     {
+      "exercise": "pallof_press",
+      "rx": {
+       "sets": 2,
+       "reps": 10,
+       "rest_s": 30
+      },
+      "block": "4",
+      "circuit": "core_A"
+     },
+     {
+      "exercise": "dead_bug",
+      "rx": {
+       "sets": 2,
+       "reps": 8,
+       "rest_s": 30
+      },
+      "block": "4",
+      "circuit": "core_A"
+     },
+     {
+      "exercise": "side_plank",
+      "rx": {
+       "sets": 2,
+       "reps": "45 s",
+       "rest_s": 30
+      },
+      "block": "4",
+      "circuit": "core_A"
+     },
+     {
+      "exercise": "cooldown_stretch",
+      "rx": {
+       "sets": 1,
+       "reps": "4–5 min"
+      }
+     }
+    ]
+   }
+  },
+  "30": {
+   "wed": {
+    "session": "A",
+    "name": "Sesja A – Siła nóg (ciężka)",
+    "est_min": 70,
+    "items": [
+     {
+      "exercise": "mobility_circuit",
+      "rx": {
+       "sets": 2,
+       "reps": "obwód",
+       "note": "5 min rowerek/wioślarz luźno + 2 rundy obwodu. Serie wstępne do 1. ćwiczenia: pusta sztanga×8 → 50%×5 → 70%×3 → 85%×1–2."
+      }
+     },
+     {
+      "exercise": "back_squat",
+      "rx": {
+       "sets": 3,
+       "reps": 3,
+       "rir": 2,
+       "rest_s": 180
+      },
+      "block": "1"
+     },
+     {
+      "exercise": "jump_squat",
+      "rx": {
+       "sets": 3,
+       "reps": 5,
+       "rest_s": 90,
+       "load_hint": "hantle 10–15% masy ciała"
+      },
+      "block": "1b"
+     },
+     {
+      "exercise": "trap_bar_deadlift",
+      "rx": {
+       "sets": 3,
+       "reps": 3,
+       "rir": 2,
+       "rest_s": 180
+      },
+      "block": "2"
+     },
+     {
+      "exercise": "kb_swing",
+      "rx": {
+       "sets": 3,
+       "reps": 8,
+       "rest_s": 90,
+       "load_hint": "24–32 kg"
+      },
+      "block": "2b"
+     },
+     {
+      "exercise": "db_row",
+      "rx": {
+       "sets": 3,
+       "reps": 8,
+       "rir": 2,
+       "rest_s": 60,
+       "note": "superseria 3A/3B"
+      },
+      "block": "3A"
+     },
+     {
+      "exercise": "calf_raise",
+      "rx": {
+       "sets": 2,
+       "reps": 10,
+       "rir": 2,
+       "rest_s": 60,
+       "note": "pauza 1 s na górze"
+      },
+      "block": "3B"
+     },
+     {
+      "exercise": "pallof_press",
+      "rx": {
+       "sets": 2,
+       "reps": 10,
+       "rest_s": 30
+      },
+      "block": "4",
+      "circuit": "core_A"
+     },
+     {
+      "exercise": "dead_bug",
+      "rx": {
+       "sets": 2,
+       "reps": 8,
+       "rest_s": 30
+      },
+      "block": "4",
+      "circuit": "core_A"
+     },
+     {
+      "exercise": "side_plank",
+      "rx": {
+       "sets": 2,
+       "reps": "45 s",
+       "rest_s": 30
+      },
+      "block": "4",
+      "circuit": "core_A"
+     },
+     {
+      "exercise": "cooldown_stretch",
+      "rx": {
+       "sets": 1,
+       "reps": "4–5 min"
+      }
+     }
+    ]
+   }
+  },
+  "31": {
+   "wed": {
+    "session": "A",
+    "name": "Sesja A – Siła nóg (ciężka) – tydzień rozładowania",
+    "est_min": 49,
+    "items": [
+     {
+      "exercise": "mobility_circuit",
+      "rx": {
+       "sets": 2,
+       "reps": "obwód",
+       "note": "5 min rowerek/wioślarz luźno + 2 rundy obwodu. Serie wstępne do 1. ćwiczenia: pusta sztanga×8 → 50%×5 → 70%×3 → 85%×1–2."
+      }
+     },
+     {
+      "exercise": "back_squat",
+      "rx": {
+       "sets": 2,
+       "reps": 3,
+       "rir": 3,
+       "rest_s": 180,
+       "note": "Rozładowanie: −40% serii, ciężar −10%, RIR +1."
+      },
+      "block": "1"
+     },
+     {
+      "exercise": "jump_squat",
+      "rx": {
+       "sets": 2,
+       "reps": 5,
+       "rest_s": 90,
+       "load_hint": "hantle 10–15% masy ciała",
+       "note": "Rozładowanie: −40% serii, ciężar −10%, RIR +1."
+      },
+      "block": "1b"
+     },
+     {
+      "exercise": "trap_bar_deadlift",
+      "rx": {
+       "sets": 2,
+       "reps": 3,
+       "rir": 3,
+       "rest_s": 180,
+       "note": "Rozładowanie: −40% serii, ciężar −10%, RIR +1."
+      },
+      "block": "2"
+     },
+     {
+      "exercise": "kb_swing",
+      "rx": {
+       "sets": 2,
+       "reps": 8,
+       "rest_s": 90,
+       "load_hint": "24–32 kg",
+       "note": "Rozładowanie: −40% serii, ciężar −10%, RIR +1."
+      },
+      "block": "2b"
+     },
+     {
+      "exercise": "db_row",
+      "rx": {
+       "sets": 2,
+       "reps": 8,
+       "rir": 3,
+       "rest_s": 60,
+       "note": "superseria 3A/3B · Rozładowanie: −40% serii, ciężar −10%, RIR +1."
+      },
+      "block": "3A"
+     },
+     {
+      "exercise": "calf_raise",
+      "rx": {
+       "sets": 1,
+       "reps": 10,
+       "rir": 3,
+       "rest_s": 60,
+       "note": "pauza 1 s na górze · Rozładowanie: −40% serii, ciężar −10%, RIR +1."
+      },
+      "block": "3B"
+     },
+     {
+      "exercise": "pallof_press",
+      "rx": {
+       "sets": 1,
+       "reps": 10,
+       "rest_s": 30,
+       "note": "Rozładowanie: −40% serii, ciężar −10%, RIR +1."
+      },
+      "block": "4",
+      "circuit": "core_A"
+     },
+     {
+      "exercise": "dead_bug",
+      "rx": {
+       "sets": 1,
+       "reps": 8,
+       "rest_s": 30,
+       "note": "Rozładowanie: −40% serii, ciężar −10%, RIR +1."
+      },
+      "block": "4",
+      "circuit": "core_A"
+     },
+     {
+      "exercise": "side_plank",
+      "rx": {
+       "sets": 1,
+       "reps": "45 s",
+       "rest_s": 30,
+       "note": "Rozładowanie: −40% serii, ciężar −10%, RIR +1."
+      },
+      "block": "4",
+      "circuit": "core_A"
+     },
+     {
+      "exercise": "cooldown_stretch",
+      "rx": {
+       "sets": 1,
+       "reps": "4–5 min"
+      }
+     }
+    ]
+   }
+  },
+  "32": {
+   "wed": {
+    "session": "A",
+    "name": "Sesja A – Siła nóg (ciężka)",
+    "est_min": 70,
+    "items": [
+     {
+      "exercise": "mobility_circuit",
+      "rx": {
+       "sets": 2,
+       "reps": "obwód",
+       "note": "5 min rowerek/wioślarz luźno + 2 rundy obwodu. Serie wstępne do 1. ćwiczenia: pusta sztanga×8 → 50%×5 → 70%×3 → 85%×1–2."
+      }
+     },
+     {
+      "exercise": "back_squat",
+      "rx": {
+       "sets": 3,
+       "reps": 3,
+       "rir": 2,
+       "rest_s": 180
+      },
+      "block": "1"
+     },
+     {
+      "exercise": "jump_squat",
+      "rx": {
+       "sets": 3,
+       "reps": 5,
+       "rest_s": 90,
+       "load_hint": "hantle 10–15% masy ciała"
+      },
+      "block": "1b"
+     },
+     {
+      "exercise": "trap_bar_deadlift",
+      "rx": {
+       "sets": 3,
+       "reps": 3,
+       "rir": 2,
+       "rest_s": 180
+      },
+      "block": "2"
+     },
+     {
+      "exercise": "kb_swing",
+      "rx": {
+       "sets": 3,
+       "reps": 8,
+       "rest_s": 90,
+       "load_hint": "24–32 kg"
+      },
+      "block": "2b"
+     },
+     {
+      "exercise": "db_row",
+      "rx": {
+       "sets": 3,
+       "reps": 8,
+       "rir": 2,
+       "rest_s": 60,
+       "note": "superseria 3A/3B"
+      },
+      "block": "3A"
+     },
+     {
+      "exercise": "calf_raise",
+      "rx": {
+       "sets": 2,
+       "reps": 10,
+       "rir": 2,
+       "rest_s": 60,
+       "note": "pauza 1 s na górze"
+      },
+      "block": "3B"
+     },
+     {
+      "exercise": "pallof_press",
+      "rx": {
+       "sets": 2,
+       "reps": 10,
+       "rest_s": 30
+      },
+      "block": "4",
+      "circuit": "core_A"
+     },
+     {
+      "exercise": "dead_bug",
+      "rx": {
+       "sets": 2,
+       "reps": 8,
+       "rest_s": 30
+      },
+      "block": "4",
+      "circuit": "core_A"
+     },
+     {
+      "exercise": "side_plank",
+      "rx": {
+       "sets": 2,
+       "reps": "45 s",
+       "rest_s": 30
+      },
+      "block": "4",
+      "circuit": "core_A"
+     },
+     {
+      "exercise": "cooldown_stretch",
+      "rx": {
+       "sets": 1,
+       "reps": "4–5 min"
+      }
+     }
+    ]
+   }
+  },
+  "33": {
+   "wed": {
+    "session": "A",
+    "name": "Sesja A – Siła nóg (ciężka)",
+    "est_min": 70,
+    "items": [
+     {
+      "exercise": "mobility_circuit",
+      "rx": {
+       "sets": 2,
+       "reps": "obwód",
+       "note": "5 min rowerek/wioślarz luźno + 2 rundy obwodu. Serie wstępne do 1. ćwiczenia: pusta sztanga×8 → 50%×5 → 70%×3 → 85%×1–2."
+      }
+     },
+     {
+      "exercise": "back_squat",
+      "rx": {
+       "sets": 3,
+       "reps": 3,
+       "rir": 2,
+       "rest_s": 180
+      },
+      "block": "1"
+     },
+     {
+      "exercise": "jump_squat",
+      "rx": {
+       "sets": 3,
+       "reps": 5,
+       "rest_s": 90,
+       "load_hint": "hantle 10–15% masy ciała"
+      },
+      "block": "1b"
+     },
+     {
+      "exercise": "trap_bar_deadlift",
+      "rx": {
+       "sets": 3,
+       "reps": 3,
+       "rir": 2,
+       "rest_s": 180
+      },
+      "block": "2"
+     },
+     {
+      "exercise": "kb_swing",
+      "rx": {
+       "sets": 3,
+       "reps": 8,
+       "rest_s": 90,
+       "load_hint": "24–32 kg"
+      },
+      "block": "2b"
+     },
+     {
+      "exercise": "db_row",
+      "rx": {
+       "sets": 3,
+       "reps": 8,
+       "rir": 2,
+       "rest_s": 60,
+       "note": "superseria 3A/3B"
+      },
+      "block": "3A"
+     },
+     {
+      "exercise": "calf_raise",
+      "rx": {
+       "sets": 2,
+       "reps": 10,
+       "rir": 2,
+       "rest_s": 60,
+       "note": "pauza 1 s na górze"
+      },
+      "block": "3B"
+     },
+     {
+      "exercise": "pallof_press",
+      "rx": {
+       "sets": 2,
+       "reps": 10,
+       "rest_s": 30
+      },
+      "block": "4",
+      "circuit": "core_A"
+     },
+     {
+      "exercise": "dead_bug",
+      "rx": {
+       "sets": 2,
+       "reps": 8,
+       "rest_s": 30
+      },
+      "block": "4",
+      "circuit": "core_A"
+     },
+     {
+      "exercise": "side_plank",
+      "rx": {
+       "sets": 2,
+       "reps": "45 s",
+       "rest_s": 30
+      },
+      "block": "4",
+      "circuit": "core_A"
+     },
+     {
+      "exercise": "cooldown_stretch",
+      "rx": {
+       "sets": 1,
+       "reps": "4–5 min"
+      }
+     }
+    ]
+   }
+  },
+  "34": {
+   "wed": {
+    "session": "A",
+    "name": "Sesja A – Siła nóg (ciężka)",
+    "est_min": 70,
+    "items": [
+     {
+      "exercise": "mobility_circuit",
+      "rx": {
+       "sets": 2,
+       "reps": "obwód",
+       "note": "5 min rowerek/wioślarz luźno + 2 rundy obwodu. Serie wstępne do 1. ćwiczenia: pusta sztanga×8 → 50%×5 → 70%×3 → 85%×1–2."
+      }
+     },
+     {
+      "exercise": "back_squat",
+      "rx": {
+       "sets": 3,
+       "reps": 3,
+       "rir": 2,
+       "rest_s": 180
+      },
+      "block": "1"
+     },
+     {
+      "exercise": "jump_squat",
+      "rx": {
+       "sets": 3,
+       "reps": 5,
+       "rest_s": 90,
+       "load_hint": "hantle 10–15% masy ciała"
+      },
+      "block": "1b"
+     },
+     {
+      "exercise": "trap_bar_deadlift",
+      "rx": {
+       "sets": 3,
+       "reps": 3,
+       "rir": 2,
+       "rest_s": 180
+      },
+      "block": "2"
+     },
+     {
+      "exercise": "kb_swing",
+      "rx": {
+       "sets": 3,
+       "reps": 8,
+       "rest_s": 90,
+       "load_hint": "24–32 kg"
+      },
+      "block": "2b"
+     },
+     {
+      "exercise": "db_row",
+      "rx": {
+       "sets": 3,
+       "reps": 8,
+       "rir": 2,
+       "rest_s": 60,
+       "note": "superseria 3A/3B"
+      },
+      "block": "3A"
+     },
+     {
+      "exercise": "calf_raise",
+      "rx": {
+       "sets": 2,
+       "reps": 10,
+       "rir": 2,
+       "rest_s": 60,
+       "note": "pauza 1 s na górze"
+      },
+      "block": "3B"
+     },
+     {
+      "exercise": "pallof_press",
+      "rx": {
+       "sets": 2,
+       "reps": 10,
+       "rest_s": 30
+      },
+      "block": "4",
+      "circuit": "core_A"
+     },
+     {
+      "exercise": "dead_bug",
+      "rx": {
+       "sets": 2,
+       "reps": 8,
+       "rest_s": 30
+      },
+      "block": "4",
+      "circuit": "core_A"
+     },
+     {
+      "exercise": "side_plank",
+      "rx": {
+       "sets": 2,
+       "reps": "45 s",
+       "rest_s": 30
+      },
+      "block": "4",
+      "circuit": "core_A"
+     },
+     {
+      "exercise": "cooldown_stretch",
+      "rx": {
+       "sets": 1,
+       "reps": "4–5 min"
+      }
+     }
+    ]
+   }
+  },
+  "35": {
+   "wed": {
+    "session": "A",
+    "name": "Sesja A – Siła nóg (ciężka) – tydzień rozładowania",
+    "est_min": 49,
+    "items": [
+     {
+      "exercise": "mobility_circuit",
+      "rx": {
+       "sets": 2,
+       "reps": "obwód",
+       "note": "5 min rowerek/wioślarz luźno + 2 rundy obwodu. Serie wstępne do 1. ćwiczenia: pusta sztanga×8 → 50%×5 → 70%×3 → 85%×1–2."
+      }
+     },
+     {
+      "exercise": "back_squat",
+      "rx": {
+       "sets": 2,
+       "reps": 3,
+       "rir": 3,
+       "rest_s": 180,
+       "note": "Rozładowanie: −40% serii, ciężar −10%, RIR +1."
+      },
+      "block": "1"
+     },
+     {
+      "exercise": "jump_squat",
+      "rx": {
+       "sets": 2,
+       "reps": 5,
+       "rest_s": 90,
+       "load_hint": "hantle 10–15% masy ciała",
+       "note": "Rozładowanie: −40% serii, ciężar −10%, RIR +1."
+      },
+      "block": "1b"
+     },
+     {
+      "exercise": "trap_bar_deadlift",
+      "rx": {
+       "sets": 2,
+       "reps": 3,
+       "rir": 3,
+       "rest_s": 180,
+       "note": "Rozładowanie: −40% serii, ciężar −10%, RIR +1."
+      },
+      "block": "2"
+     },
+     {
+      "exercise": "kb_swing",
+      "rx": {
+       "sets": 2,
+       "reps": 8,
+       "rest_s": 90,
+       "load_hint": "24–32 kg",
+       "note": "Rozładowanie: −40% serii, ciężar −10%, RIR +1."
+      },
+      "block": "2b"
+     },
+     {
+      "exercise": "db_row",
+      "rx": {
+       "sets": 2,
+       "reps": 8,
+       "rir": 3,
+       "rest_s": 60,
+       "note": "superseria 3A/3B · Rozładowanie: −40% serii, ciężar −10%, RIR +1."
+      },
+      "block": "3A"
+     },
+     {
+      "exercise": "calf_raise",
+      "rx": {
+       "sets": 1,
+       "reps": 10,
+       "rir": 3,
+       "rest_s": 60,
+       "note": "pauza 1 s na górze · Rozładowanie: −40% serii, ciężar −10%, RIR +1."
+      },
+      "block": "3B"
+     },
+     {
+      "exercise": "pallof_press",
+      "rx": {
+       "sets": 1,
+       "reps": 10,
+       "rest_s": 30,
+       "note": "Rozładowanie: −40% serii, ciężar −10%, RIR +1."
+      },
+      "block": "4",
+      "circuit": "core_A"
+     },
+     {
+      "exercise": "dead_bug",
+      "rx": {
+       "sets": 1,
+       "reps": 8,
+       "rest_s": 30,
+       "note": "Rozładowanie: −40% serii, ciężar −10%, RIR +1."
+      },
+      "block": "4",
+      "circuit": "core_A"
+     },
+     {
+      "exercise": "side_plank",
+      "rx": {
+       "sets": 1,
+       "reps": "45 s",
+       "rest_s": 30,
+       "note": "Rozładowanie: −40% serii, ciężar −10%, RIR +1."
+      },
+      "block": "4",
+      "circuit": "core_A"
+     },
+     {
+      "exercise": "cooldown_stretch",
+      "rx": {
+       "sets": 1,
+       "reps": "4–5 min"
+      }
+     }
+    ]
+   }
+  },
+  "36": {
+   "wed": {
+    "session": "A",
+    "name": "Sesja A – Siła nóg (ciężka)",
+    "est_min": 70,
+    "items": [
+     {
+      "exercise": "mobility_circuit",
+      "rx": {
+       "sets": 2,
+       "reps": "obwód",
+       "note": "5 min rowerek/wioślarz luźno + 2 rundy obwodu. Serie wstępne do 1. ćwiczenia: pusta sztanga×8 → 50%×5 → 70%×3 → 85%×1–2."
+      }
+     },
+     {
+      "exercise": "back_squat",
+      "rx": {
+       "sets": 3,
+       "reps": 3,
+       "rir": 2,
+       "rest_s": 180
+      },
+      "block": "1"
+     },
+     {
+      "exercise": "jump_squat",
+      "rx": {
+       "sets": 3,
+       "reps": 5,
+       "rest_s": 90,
+       "load_hint": "hantle 10–15% masy ciała"
+      },
+      "block": "1b"
+     },
+     {
+      "exercise": "trap_bar_deadlift",
+      "rx": {
+       "sets": 3,
+       "reps": 3,
+       "rir": 2,
+       "rest_s": 180
+      },
+      "block": "2"
+     },
+     {
+      "exercise": "kb_swing",
+      "rx": {
+       "sets": 3,
+       "reps": 8,
+       "rest_s": 90,
+       "load_hint": "24–32 kg"
+      },
+      "block": "2b"
+     },
+     {
+      "exercise": "db_row",
+      "rx": {
+       "sets": 3,
+       "reps": 8,
+       "rir": 2,
+       "rest_s": 60,
+       "note": "superseria 3A/3B"
+      },
+      "block": "3A"
+     },
+     {
+      "exercise": "calf_raise",
+      "rx": {
+       "sets": 2,
+       "reps": 10,
+       "rir": 2,
+       "rest_s": 60,
+       "note": "pauza 1 s na górze"
+      },
+      "block": "3B"
+     },
+     {
+      "exercise": "pallof_press",
+      "rx": {
+       "sets": 2,
+       "reps": 10,
+       "rest_s": 30
+      },
+      "block": "4",
+      "circuit": "core_A"
+     },
+     {
+      "exercise": "dead_bug",
+      "rx": {
+       "sets": 2,
+       "reps": 8,
+       "rest_s": 30
+      },
+      "block": "4",
+      "circuit": "core_A"
+     },
+     {
+      "exercise": "side_plank",
+      "rx": {
+       "sets": 2,
+       "reps": "45 s",
+       "rest_s": 30
+      },
+      "block": "4",
+      "circuit": "core_A"
+     },
+     {
+      "exercise": "cooldown_stretch",
+      "rx": {
+       "sets": 1,
+       "reps": "4–5 min"
+      }
+     }
+    ]
+   }
+  }
+ },
+ "week_summary": [
+  {
+   "week": 0,
+   "phase": "PREP",
+   "type": "test",
+   "start": "2026-09-28",
+   "bike_min": 410,
+   "gym": [
+    "A(sat)"
+   ],
+   "key": [
+    "FTP_TEST"
+   ],
+   "sat": "Z2 60′",
+   "sun": null,
+   "end": "2026-10-04",
+   "event": null,
+   "notes": "Tydzień przygotowawczy: zamów/zamontuj napęd, ustaw aplikację i profil, sprawdź wagę startową."
+  },
+  {
+   "week": 1,
+   "phase": "I",
+   "type": "build",
+   "start": "2026-10-05",
+   "bike_min": 445,
+   "gym": [
+    "A(sat)"
+   ],
+   "key": [
+    "SS_2x10"
+   ],
+   "sat": "Z2 60′",
+   "sun": null,
+   "end": "2026-10-11",
+   "event": null,
+   "notes": "Wyjście ze zmęczenia po Great Escape. Jedź lekko, siłownia celowo lekko (RIR 4)."
+  },
+  {
+   "week": 2,
+   "phase": "I",
+   "type": "build",
+   "start": "2026-10-12",
+   "bike_min": 464,
+   "gym": [
+    "A(sat)"
+   ],
+   "key": [
+    "SS_2x12"
+   ],
+   "sat": "Z2 60′",
+   "sun": null,
+   "end": "2026-10-18",
+   "event": null,
+   "notes": "Tydzień resetu przed fazą: trzy spokojne jazdy (wt/śr/pt, wszystkie w Z2 – żadnych interwałów), bez siłowni, w sobotę test FTP 20 min. Zważ się rano na czczo trzy razy – to punkt zero redukcji. Skalibruj miernik (zeruj offset przed każdą jazdą). Jeśli nogi ciężkie – test w niedzielę i faza tydzień później."
+  },
+  {
+   "week": 3,
+   "phase": "I",
+   "type": "build",
+   "start": "2026-10-19",
+   "bike_min": 470,
+   "gym": [
+    "A(sat)"
+   ],
+   "key": [
+    "SS_2x15"
+   ],
+   "sat": "Z2 60′",
+   "sun": null,
+   "end": "2026-10-25",
+   "event": null,
+   "notes": "Start bloku 5 jazd bez siłowni – jeździmy, póki pogoda pozwala (do 15.11). Jedyny dzień, na którym wolno się zmęczyć, to środa; wtorek, piątek i niedziela mają być nudne (rozmowa pełnymi zdaniami). Kadencja na każdym podjeździe min. 75 rpm (38×46). Minimalna jazda 40 min Z2 liczy się jako wykonana."
+  },
+  {
+   "week": 4,
+   "phase": "I",
+   "type": "build",
+   "start": "2026-10-26",
+   "bike_min": 496,
+   "gym": [
+    "A(sat)"
+   ],
+   "key": [
+    "SS_3x12"
+   ],
+   "sat": "Z2 60′",
+   "sun": null,
+   "end": "2026-11-01",
+   "event": null,
+   "notes": null
+  },
+  {
+   "week": 5,
+   "phase": "I",
+   "type": "deload",
+   "start": "2026-11-02",
+   "bike_min": 300,
+   "gym": [
+    "A(sat)"
+   ],
+   "key": [],
+   "sat": "Z2 60′",
+   "sun": null,
+   "end": "2026-11-08",
+   "event": null,
+   "notes": "Do 18.10 kup lampę przednią ≥ 800 lm i tył z radarem – od zmiany czasu (25.10) wtorek, środa i piątek to jazda po ciemku."
+  },
+  {
+   "week": 6,
+   "phase": "I",
+   "type": "build",
+   "start": "2026-11-09",
+   "bike_min": 476,
+   "gym": [
+    "A(sat)"
+   ],
+   "key": [
+    "SS_3x12"
+   ],
+   "sat": "Z2 60′",
+   "sun": null,
+   "end": "2026-11-15",
+   "event": null,
+   "notes": "Tydzień lżejszy: cztery jazdy, żadnych interwałów. Po nim wracamy do akcentów w środy."
+  },
+  {
+   "week": 7,
+   "phase": "I",
+   "type": "build",
+   "start": "2026-11-16",
+   "bike_min": 519,
+   "gym": [
+    "A(sat)"
+   ],
+   "key": [
+    "SS_3x15"
+   ],
+   "sat": "Z2 75′",
+   "sun": null,
+   "end": "2026-11-22",
+   "event": null,
+   "notes": null
+  },
+  {
+   "week": 8,
+   "phase": "I",
+   "type": "build",
+   "start": "2026-11-23",
+   "bike_min": 509,
+   "gym": [
+    "A(sat)"
+   ],
+   "key": [
+    "SS_2x20"
+   ],
+   "sat": "Z2 75′",
+   "sun": null,
+   "end": "2026-11-29",
+   "event": null,
+   "notes": null
+  },
+  {
+   "week": 9,
+   "phase": "I",
+   "type": "deload",
+   "start": "2026-11-30",
+   "bike_min": 315,
+   "gym": [
+    "A(sat)"
+   ],
+   "key": [],
+   "sat": "Z2 60′",
+   "sun": null,
+   "end": "2026-12-06",
+   "event": null,
+   "notes": "Ostatni tydzień bloku 5 jazd. Od 16.11 wracają dwie sesje siłowni i plan schodzi do 3 jazd – zimą i tak nie wyjedziesz pięć razy w tygodniu."
+  },
+  {
+   "week": 10,
+   "phase": "I",
+   "type": "build",
+   "start": "2026-12-07",
+   "bike_min": 555,
+   "gym": [
+    "A(sat)"
+   ],
+   "key": [
+    "SS_3x20"
+   ],
+   "sat": "Z2 75′",
+   "sun": null,
+   "end": "2026-12-13",
+   "event": null,
+   "notes": "Przed zimą: pełne błotniki SKS Bluemels 45, odzież (merino, rękawice trójpalczaste, ochraniacze na buty), ciśnienie w oponach −0,3 bara."
+  },
+  {
+   "week": 11,
+   "phase": "I",
+   "type": "test",
+   "start": "2026-12-14",
+   "bike_min": 395,
+   "gym": [
+    "A(sat)"
+   ],
+   "key": [
+    "FTP_TEST"
+   ],
+   "sat": "Z2 60′",
+   "sun": null,
+   "end": "2026-12-20",
+   "event": null,
+   "notes": "Powrót do siły po siedmiu tygodniach przerwy: zacznij o 20 % lżej niż we wrześniu, RIR 4. Ciężary dobiera aplikacja z tego, co wpiszesz."
+  },
+  {
+   "week": 12,
+   "phase": "II",
+   "type": "build",
+   "start": "2026-12-21",
+   "bike_min": 490,
+   "gym": [
+    "A(sat)"
+   ],
+   "key": [
+    "THR_4x6"
+   ],
+   "sat": "Z2 75′",
+   "sun": null,
+   "end": "2026-12-27",
+   "event": null,
+   "notes": null
+  },
+  {
+   "week": 13,
+   "phase": "II",
+   "type": "build",
+   "start": "2026-12-28",
+   "bike_min": 523,
+   "gym": [
+    "A(sat)"
+   ],
+   "key": [
+    "THR_4x8"
+   ],
+   "sat": "Z2 75′",
+   "sun": null,
+   "end": "2027-01-03",
+   "event": null,
+   "notes": "Największy tydzień fazy. Jeśli pogoda go zabierze, przenieś 3:30 na tydzień wcześniej i potraktuj ten jako rozładowanie. Nie odrabiaj straconych godzin."
+  },
+  {
+   "week": 14,
+   "phase": "II",
+   "type": "build",
+   "start": "2027-01-04",
+   "bike_min": 536,
+   "gym": [
+    "A(sat)"
+   ],
+   "key": [
+    "THR_3x12"
+   ],
+   "sat": "Z2 75′",
+   "sun": null,
+   "end": "2027-01-10",
+   "event": null,
+   "notes": "Test FTP 20 min w sobotę – koniec Fazy 1. Zapisz W/kg (FTP ÷ masa)."
+  },
+  {
+   "week": 15,
+   "phase": "II",
+   "type": "deload",
+   "start": "2027-01-11",
+   "bike_min": 315,
+   "gym": [
+    "A(sat)"
+   ],
+   "key": [],
+   "sat": "Z2 60′",
+   "sun": null,
+   "end": "2027-01-17",
+   "event": null,
+   "notes": "Święta – tydzień lżejszy. Zima: domyślnie Checkpoint z błotnikami. Czwartek poniżej −10 °C lub gołoledź = INDOOR_4x4 przed Sesją A."
+  },
+  {
+   "week": 16,
+   "phase": "II",
+   "type": "build",
+   "start": "2027-01-18",
+   "bike_min": 511,
+   "gym": [
+    "A(sat)"
+   ],
+   "key": [
+    "THR_3x12"
+   ],
+   "sat": "Z2 75′",
+   "sun": null,
+   "end": "2027-01-24",
+   "event": null,
+   "notes": null
+  },
+  {
+   "week": 17,
+   "phase": "II",
+   "type": "build",
+   "start": "2027-01-25",
+   "bike_min": 545,
+   "gym": [
+    "A(sat)"
+   ],
+   "key": [
+    "THR_3x15"
+   ],
+   "sat": "Z2 75′",
+   "sun": null,
+   "end": "2027-01-31",
+   "event": null,
+   "notes": null
+  },
+  {
+   "week": 18,
+   "phase": "II",
+   "type": "build",
+   "start": "2027-02-01",
+   "bike_min": 567,
+   "gym": [
+    "A(sat)"
+   ],
+   "key": [
+    "THR_2x20"
+   ],
+   "sat": "Z2 75′",
+   "sun": null,
+   "end": "2027-02-07",
+   "event": null,
+   "notes": null
+  },
+  {
+   "week": 19,
+   "phase": "II",
+   "type": "deload",
+   "start": "2027-02-08",
+   "bike_min": 315,
+   "gym": [
+    "A(sat)"
+   ],
+   "key": [],
+   "sat": "Z2 60′",
+   "sun": null,
+   "end": "2027-02-14",
+   "event": null,
+   "notes": null
+  },
+  {
+   "week": 20,
+   "phase": "II",
+   "type": "build",
+   "start": "2027-02-15",
+   "bike_min": 582,
+   "gym": [
+    "A(sat)"
+   ],
+   "key": [
+    "THR_2x20"
+   ],
+   "sat": "Z2 90′",
+   "sun": null,
+   "end": "2027-02-21",
+   "event": null,
+   "notes": null
+  },
+  {
+   "week": 21,
+   "phase": "II",
+   "type": "test",
+   "start": "2027-02-22",
+   "bike_min": 395,
+   "gym": [
+    "A(sat)"
+   ],
+   "key": [
+    "FTP_TEST"
+   ],
+   "sat": "Z2 60′",
+   "sun": null,
+   "end": "2027-02-28",
+   "event": null,
+   "notes": null
+  },
+  {
+   "week": 22,
+   "phase": "III",
+   "type": "build",
+   "start": "2027-03-01",
+   "bike_min": 427,
+   "gym": [
+    "A(sat)"
+   ],
+   "key": [
+    "VO2_4x3"
+   ],
+   "sat": "Z2 60′",
+   "sun": null,
+   "end": "2027-03-07",
+   "event": null,
+   "notes": null
+  },
+  {
+   "week": 23,
+   "phase": "III",
+   "type": "build",
+   "start": "2027-03-08",
+   "bike_min": 436,
+   "gym": [
+    "A(sat)"
+   ],
+   "key": [
+    "VO2_5x3"
+   ],
+   "sat": "Z2 60′",
+   "sun": null,
+   "end": "2027-03-14",
+   "event": null,
+   "notes": null
+  },
+  {
+   "week": 24,
+   "phase": "III",
+   "type": "build",
+   "start": "2027-03-15",
+   "bike_min": 427,
+   "gym": [
+    "A(sat)"
+   ],
+   "key": [
+    "VO2_6x3"
+   ],
+   "sat": "Z2 60′",
+   "sun": null,
+   "end": "2027-03-21",
+   "event": null,
+   "notes": "Tydzień sprawdzianów: wtorek test FTP (świeże nogi po wolnym poniedziałku; przy gołoledzi Wattbike), środa sprawdzian siłowy (przysiad i trap bar 1×5 RIR 1). Kryteria wejścia do fazy III: ≥ 2,7 dnia jazdy/tydz. (śr. z 12 tyg.), FTP ≥ 200 W, masa ≤ 102 kg, kadencja na podjazdach ≥ 78 rpm, 3,5 h Z2 pod Łodzią zimą. Przy 2–3 spełnionych przesuń fazę III o 3–4 tygodnie i skróć IV."
+  },
+  {
+   "week": 25,
+   "phase": "III",
+   "type": "deload",
+   "start": "2027-03-22",
+   "bike_min": 300,
+   "gym": [
+    "A(sat)"
+   ],
+   "key": [],
+   "sat": "Z2 60′",
+   "sun": null,
+   "end": "2027-03-28",
+   "event": null,
+   "notes": null
+  },
+  {
+   "week": 26,
+   "phase": "III",
+   "type": "build",
+   "start": "2027-03-29",
+   "bike_min": 443,
+   "gym": [
+    "A(sat)"
+   ],
+   "key": [
+    "VO2_6x3"
+   ],
+   "sat": "Z2 60′",
+   "sun": null,
+   "end": "2027-04-04",
+   "event": null,
+   "notes": null
+  },
+  {
+   "week": 27,
+   "phase": "III",
+   "type": "test",
+   "start": "2027-04-05",
+   "bike_min": 395,
+   "gym": [
+    "A(sat)"
+   ],
+   "key": [
+    "FTP_TEST"
+   ],
+   "sat": "Z2 60′",
+   "sun": null,
+   "end": "2027-04-11",
+   "event": null,
+   "notes": "Pierwsze 100 km z blokiem tempa 30–32 km/h."
+  },
+  {
+   "week": 28,
+   "phase": "IV",
+   "type": "build",
+   "start": "2027-04-12",
+   "bike_min": 530,
+   "gym": [
+    "A(sat)"
+   ],
+   "key": [
+    "THR_3x15"
+   ],
+   "sat": "Z2 75′",
+   "sun": null,
+   "end": "2027-04-18",
+   "event": null,
+   "notes": null
+  },
+  {
+   "week": 29,
+   "phase": "IV",
+   "type": "build",
+   "start": "2027-04-19",
+   "bike_min": 552,
+   "gym": [
+    "A(sat)"
+   ],
+   "key": [
+    "THR_2x20"
+   ],
+   "sat": "Z2 75′",
+   "sun": null,
+   "end": "2027-04-25",
+   "event": null,
+   "notes": "Od teraz siłownia 1×/tydz. (Sesja C). Piątek wolny lub luźna jazda."
+  },
+  {
+   "week": 30,
+   "phase": "IV",
+   "type": "build",
+   "start": "2027-04-26",
+   "bike_min": 605,
+   "gym": [
+    "A(sat)"
+   ],
+   "key": [
+    "THR_3x15"
+   ],
+   "sat": "Z2 90′",
+   "sun": null,
+   "end": "2027-05-02",
+   "event": null,
+   "notes": "Serwis wiosenny: klocki (spiek, jeśli zaciski SRAM HRD), płyn hamulcowy, zużycie łańcucha; przegląd Dogmy."
+  },
+  {
+   "week": 31,
+   "phase": "IV",
+   "type": "deload",
+   "start": "2027-05-03",
+   "bike_min": 330,
+   "gym": [
+    "A(sat)"
+   ],
+   "key": [],
+   "sat": "Z2 60′",
+   "sun": null,
+   "end": "2027-05-09",
+   "event": null,
+   "notes": null
+  },
+  {
+   "week": 32,
+   "phase": "IV",
+   "type": "build",
+   "start": "2027-05-10",
+   "bike_min": 597,
+   "gym": [
+    "A(sat)"
+   ],
+   "key": [
+    "THR_2x20"
+   ],
+   "sat": "Z2 90′",
+   "sun": null,
+   "end": "2027-05-16",
+   "event": null,
+   "notes": null
+  },
+  {
+   "week": 33,
+   "phase": "IV",
+   "type": "build",
+   "start": "2027-05-17",
+   "bike_min": 605,
+   "gym": [
+    "A(sat)"
+   ],
+   "key": [
+    "THR_3x15"
+   ],
+   "sat": "Z2 90′",
+   "sun": null,
+   "end": "2027-05-23",
+   "event": null,
+   "notes": "Decyzja o oponach na lato/Alpy dla Checkpointa (GP 5000 S TR 32c z dętkami lub AS TR 35c) – kup w tym tygodniu."
+  },
+  {
+   "week": 34,
+   "phase": "IV",
+   "type": "build",
+   "start": "2027-05-24",
+   "bike_min": 597,
+   "gym": [
+    "A(sat)"
+   ],
+   "key": [
+    "THR_2x20"
+   ],
+   "sat": "Z2 90′",
+   "sun": null,
+   "end": "2027-05-30",
+   "event": null,
+   "notes": null
+  },
+  {
+   "week": 35,
+   "phase": "IV",
+   "type": "deload",
+   "start": "2027-05-31",
+   "bike_min": 330,
+   "gym": [
+    "A(sat)"
+   ],
+   "key": [],
+   "sat": "Z2 60′",
+   "sun": null,
+   "end": "2027-06-06",
+   "event": "Weekend w górach #1: Karkonosze (Kowary → Przełęcz Okraj; Przesieka → Przełęcz Karkonoska). Checkpoint.",
+   "notes": null
+  },
+  {
+   "week": 36,
+   "phase": "V",
+   "type": "build",
+   "start": "2027-06-07",
+   "bike_min": 437,
+   "gym": [
+    "A(sat)"
+   ],
+   "key": [
+    "VO2_5x3"
+   ],
+   "sat": "Z2 60′",
+   "sun": null,
+   "end": "2027-06-13",
+   "event": null,
+   "notes": null
+  },
+  {
+   "week": 37,
+   "phase": "V",
+   "type": "build",
+   "start": "2027-06-14",
+   "bike_min": 428,
+   "gym": [],
+   "key": [
+    "VO2_6x3"
+   ],
+   "sat": "Z2 60′",
+   "sun": null,
+   "end": "2027-06-20",
+   "event": null,
+   "notes": null
+  },
+  {
+   "week": 38,
+   "phase": "V",
+   "type": "build",
+   "start": "2027-06-21",
+   "bike_min": 381,
+   "gym": [],
+   "key": [
+    "VO2_6x3"
+   ],
+   "sat": "Z2 45′",
+   "sun": null,
+   "end": "2027-06-27",
+   "event": "Weekend back-to-back #1: sobota 120 km / 1000 m, niedziela 120 km / 1200 m.",
+   "notes": null
+  },
+  {
+   "week": 39,
+   "phase": "TAPER",
+   "type": "taper",
+   "start": "2027-06-28",
+   "bike_min": 260,
+   "gym": [],
+   "key": [
+    "FTP_TEST"
+   ],
+   "sat": "Z2 60′",
+   "sun": null,
+   "end": "2027-07-04",
+   "event": "Weekend w górach #2: Beskid Śląski (Przełęcz Salmopolska, Kubalonka, Koniaków).",
+   "notes": null
+  }
+ ],
+ "layout": {
+  "mode": "fixed"
+ },
+ "bike_default": "Rower"
+}

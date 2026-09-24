@@ -3,7 +3,8 @@ import { useEngine } from '@/app/useSettings'
 import type { Settings } from '@/engine/schema'
 import { earliestTripStart, layoutWeeks, TripDateError } from '@/engine/layout'
 import { isValidISODate } from '@/engine/dates'
-import { Actions, Button, Card, CardSection, CardTitle, Checkbox, Field, Input, Inset, PageTitle, Segmented, Select } from '@/components/ui'
+import { Actions, Button, Card, CardSection, CardTitle, Checkbox, Field, Input, Inset, PageTitle, Row, Segmented, Select } from '@/components/ui'
+import { DEFAULT_PROGRAM_ID, PROGRAMS } from '@/data/program'
 import { fmtDate } from '@/lib/dates'
 import { PHASE_SHORT } from '@/lib/labels'
 import type { LayoutWeek, PhaseId } from '@/engine/types'
@@ -26,7 +27,7 @@ type Form = {
   power_meter: boolean
   program_start: string
   trip_start: string
-  gym_a: 'wed' | 'tue'
+  gym_a: Settings['gym_days']['A']
   volume_scale: string
 }
 
@@ -159,6 +160,7 @@ function SettingsForm({ engine, saved, setSaved }: { engine: ReturnType<typeof u
           <PushSection />
         </div>
         <div className="min-w-0 space-y-3 lg:order-first lg:space-y-4">
+          <ProgramCard />
           <Card>
             <CardTitle icon="👤">Profil</CardTitle>
             <div className="space-y-3">
@@ -289,5 +291,38 @@ function ThemePicker() {
       />
       <p className="mt-2 text-xs text-slate-500 dark:text-slate-400">Zapisane na tym urządzeniu. „Jak system” podąża za ustawieniem telefonu lub komputera.</p>
     </div>
+  )
+}
+
+/**
+ * Wybór programu treningowego. Zmiana przelicza cały kalendarz, więc daty i progi
+ * z poprzedniego programu zostają – trzeba je sprawdzić po przełączeniu.
+ */
+function ProgramCard() {
+  const engine = useEngine()
+  const toast = useToast()
+  const { program, settings } = engine.ctx
+  const current = settings.program_id ?? DEFAULT_PROGRAM_ID
+  return (
+    <Card>
+      <CardTitle icon="🗺️">Program treningowy</CardTitle>
+      <Field label="Program" hint="Zmiana przebudowuje kalendarz. Daty startu i celu oraz progi zostają z Twoich ustawień – sprawdź je po przełączeniu.">
+        <Select
+          value={current}
+          onChange={(e) => void toast.run('Przełączam program…', () => engine.settingsApi.update({ program_id: e.target.value }), () => 'Program przełączony')}
+        >
+          {PROGRAMS.map((p) => (
+            <option key={p.id} value={p.id}>
+              {p.name}
+            </option>
+          ))}
+        </Select>
+      </Field>
+      <CardSection className="divide-y divide-slate-200/70 dark:divide-slate-700/80">
+        <Row label="Wersja">{program.version}</Row>
+        <Row label="Tygodni">{Object.keys(program.weeks).length}</Row>
+        <Row label="Faz">{program.phases.length}</Row>
+      </CardSection>
+    </Card>
   )
 }
