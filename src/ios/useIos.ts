@@ -105,6 +105,8 @@ export interface IosDay {
   flow: DayFlow
   checkin: Checkin | undefined
   weighDue: boolean
+  /** ostatnie ważenie przed tym dniem */
+  lastWeight: { date: ISODate; kg: number } | null
   rideLog: SessionLog | undefined
   gymLog: SessionLog | undefined
   activities: StravaActivity[]
@@ -127,10 +129,16 @@ export function useIosDay(date: ISODate): IosDay {
   const rideLog = useLiveQuery(async () => (await db.session_logs.where('[date+kind]').equals([date, 'bike']).toArray()).find((r) => !r.deleted_at), [date])
   const gymLog = useLiveQuery(async () => (await db.session_logs.where('[date+kind]').equals([date, 'gym']).toArray()).find((r) => !r.deleted_at), [date])
   const activities = useLiveQuery(async () => (await db.strava_activities.where('date').equals(date).toArray()).filter((a) => !a.deleted_at && a.is_ride), [date], [] as StravaActivity[])
-  const lastWeight = useLiveQuery(async () => {
-    const rows = (await db.checkins.where('date').belowOrEqual(date).toArray()).filter((c) => !c.deleted_at && c.weight_kg != null)
-    return rows.toSorted((a, b) => (a.date < b.date ? 1 : -1))[0]?.date ?? null
-  }, [date], null as ISODate | null)
+  /** Ostatnie ważenie do tego dnia – podpowiada format (dziesiątki!) i datę w check-inie. */
+  const lastWeight = useLiveQuery(
+    async () => {
+      const rows = (await db.checkins.where('date').below(date).toArray()).filter((c) => !c.deleted_at && c.weight_kg != null)
+      const prev = rows.toSorted((a, b) => (a.date < b.date ? 1 : -1))[0]
+      return prev ? { date: prev.date, kg: prev.weight_kg as number } : null
+    },
+    [date],
+    null as { date: ISODate; kg: number } | null,
+  )
   const boltWorkouts = useLiveQuery(async () => (await db.wahoo_workouts.where('date').equals(date).toArray()).filter((w) => !w.deleted_at), [date], [] as WahooWorkout[])
   const bolt = useBolt(day)
 
@@ -207,7 +215,8 @@ export function useIosDay(date: ISODate): IosDay {
     day,
     flow,
     checkin,
-    weighDue: weighDue(lastWeight, date),
+    weighDue: weighDue(lastWeight?.date ?? null, date),
+    lastWeight,
     rideLog,
     gymLog,
     activities,

@@ -1,5 +1,7 @@
 import { useState } from 'react'
 import type { Checkin } from '@/db'
+import { fmtDayMonth } from '@/lib/dates'
+import { num } from '@/lib/format'
 import { List, Row, Section, Sheet } from './Chrome'
 
 const SCALES = [
@@ -44,7 +46,7 @@ function Scale({ label, low, high, value, onChange }: { label: string; low: stri
 }
 
 /** Poranny check-in: waga (co drugi dzień), tętno spoczynkowe i trzy suwaki samopoczucia. */
-export function CheckinSheet({ checkin, weighDue, onClose, onSave }: { checkin: Checkin | undefined; weighDue: boolean; onClose: () => void; onSave: (patch: Partial<Checkin>) => Promise<void> }) {
+export function CheckinSheet({ checkin, weighDue, lastWeight, onClose, onSave }: { checkin: Checkin | undefined; weighDue: boolean; lastWeight: { date: string; kg: number } | null; onClose: () => void; onSave: (patch: Partial<Checkin>) => Promise<void> }) {
   const [weight, setWeight] = useState(checkin?.weight_kg != null ? String(checkin.weight_kg).replace('.', ',') : '')
   const [rhr, setRhr] = useState(checkin?.resting_hr != null ? String(checkin.resting_hr) : '')
   const [scale, setScale] = useState<Record<ScaleKey, number | null>>({
@@ -74,13 +76,21 @@ export function CheckinSheet({ checkin, weighDue, onClose, onSave }: { checkin: 
 
   return (
     <Sheet title="Check-in" onClose={onClose} done={{ label: 'Zapisz', onClick: save, disabled: busy || nothing }}>
-      <Section header={weighDue ? 'Pomiary · dziś wypada ważenie' : 'Pomiary'} footer={weighDue ? 'Waż się co drugi dzień, rano, po toalecie – dzienne wahania to głównie woda.' : 'Dziś nie musisz się ważyć. Pole zostaw puste.'}>
+      <Section
+        header={weighDue ? 'Pomiary · dziś wypada ważenie' : 'Pomiary'}
+        footer={
+          <>
+            {lastWeight ? `Poprzednio ${num(lastWeight.kg, 1)} kg (${fmtDayMonth(lastWeight.date)}). Wpisuj z dziesiątkami – z nich liczy się trend. ` : ''}
+            {weighDue ? 'Waż się co drugi dzień, rano, po toalecie – dzienne wahania to głównie woda.' : 'Dziś nie musisz się ważyć. Pole zostaw puste.'}
+          </>
+        }
+      >
         <List>
           <Row
             title="Waga"
             accessory={
               <span className="flex items-center gap-1">
-                <input className="ios-input ios-num w-20 text-right" inputMode="decimal" placeholder="—" value={weight} onChange={(e) => setWeight(e.target.value)} aria-label="Waga w kilogramach" />
+                <input className="ios-input ios-num w-20 text-right" inputMode="decimal" placeholder={lastWeight ? num(lastWeight.kg, 1) : '—'} value={weight} onChange={(e) => setWeight(e.target.value)} aria-label="Waga w kilogramach" />
                 <span className="ios-body ios-dim shrink-0">kg</span>
               </span>
             }

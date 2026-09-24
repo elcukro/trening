@@ -414,7 +414,7 @@ export function DayScreen() {
         </List>
       </Section>
 
-      {sheet === 'checkin' && <CheckinSheet checkin={d.checkin} weighDue={d.weighDue} onClose={() => setSheet(null)} onSave={d.saveCheckin} />}
+      {sheet === 'checkin' && <CheckinSheet checkin={d.checkin} weighDue={d.weighDue} lastWeight={d.lastWeight} onClose={() => setSheet(null)} onSave={d.saveCheckin} />}
       {sheet === 'after' && (
         <AfterSheet
           log={day.bike ? d.rideLog : d.gymLog}
