@@ -10,6 +10,7 @@ import { fmtRange, todayISO } from '@/lib/dates'
 import { minutes } from '@/lib/format'
 import { DAY_TYPE_COLOR, DAY_TYPE_LABEL, WEEKDAY_LONG } from '@/lib/labels'
 import { Card, List, Row, Screen, Section, Stat } from '../components/Chrome'
+import { SyncBanner } from '../components/SyncBanner'
 import { IconCheck, IconChevron, IconChevronLeft } from '../components/Icons'
 
 const WEEKDAY_TITLE: Record<string, string> = { mon: 'Poniedziałek', tue: 'Wtorek', wed: 'Środa', thu: 'Czwartek', fri: 'Piątek', sat: 'Sobota', sun: 'Niedziela' }
@@ -68,6 +69,7 @@ export function WeekScreen() {
         </span>
       }
     >
+      <SyncBanner />
       <Card className="mb-6">
         <div className="p-4">
           <div className="grid grid-cols-2 gap-4">

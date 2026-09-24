@@ -7,6 +7,7 @@ import { getThemePref, setThemePref, type ThemePref } from '@/lib/theme'
 import { useToast } from '@/components/Toast'
 import { num } from '@/lib/format'
 import { useAuth } from '@/sync/auth'
+import { resetSyncCursors, runSync } from '@/sync/sync'
 import { fmtDayMonth } from '@/lib/dates'
 import { useOpenFull, useSyncStatus, useUiMode } from '../useIos'
 import { Btn, List, Row, RowIcon, Screen, Section, Seg, Sheet } from '../components/Chrome'
@@ -137,9 +138,11 @@ export function MoreScreen() {
 
   return (
     <Screen title="Więcej" subtitle={`Program ${engine.ctx.program.version}`}>
-      <Section header="Konto i synchronizacja" footer={SYNC_FOOTER[sync.state]}>
+      <Section header="Konto i synchronizacja" footer={sync.error ?? SYNC_FOOTER[sync.state]}>
         <List>
-          {auth.session ? (
+          {!auth.configured ? (
+            <Row icon={<RowIcon color="var(--label-3)"><IconGear size={18} /></RowIcon>} title="Tryb lokalny" subtitle="Bez konfiguracji Supabase dane zostają w tej przeglądarce" />
+          ) : auth.session ? (
             <Row
               icon={<RowIcon color="var(--green)"><IconCheck size={18} /></RowIcon>}
               title="Zalogowany"
@@ -150,12 +153,36 @@ export function MoreScreen() {
             <Row
               icon={<RowIcon color="var(--red)"><IconGear size={18} /></RowIcon>}
               title={auth.loading ? 'Sprawdzam konto…' : 'Nie jesteś zalogowany'}
-              subtitle={auth.loading ? undefined : 'Dane zostają na telefonie i nie synchronizują się'}
+              subtitle={auth.loading ? undefined : 'Jazdy, check-iny i zmiany planu nie pobierają się z konta'}
               onClick={() => openFull('/wiecej/ustawienia')}
               accessory={<span className="ios-dim-3"><IconChevron size={18} /></span>}
             />
           )}
           {sync.pending > 0 && <Row title="Czeka na wysłanie" value={`${sync.pending}`} />}
+          {auth.session && (
+            <Row
+              icon={<RowIcon color="var(--blue)"><IconBolt size={18} /></RowIcon>}
+              title={sync.state === 'syncing' ? 'Synchronizuję…' : 'Synchronizuj teraz'}
+              onClick={sync.state === 'syncing' ? undefined : () => void toast.run('Synchronizuję…', () => runSync({ programVersion: engine.ctx.program.version }), () => 'Zsynchronizowano')}
+              accessory={<span className="ios-dim-3"><IconChevron size={18} /></span>}
+            />
+          )}
+          {auth.session && (
+            <Row
+              danger
+              title="Wyloguj"
+              onClick={() =>
+                void toast.run(
+                  'Wylogowuję…',
+                  async () => {
+                    await auth.signOut()
+                    await resetSyncCursors()
+                  },
+                  () => 'Wylogowano',
+                )
+              }
+            />
+          )}
         </List>
       </Section>
 

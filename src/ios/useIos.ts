@@ -29,6 +29,8 @@ export type UiMode = 'classic' | 'ios'
 const UI_MODE_KEY = 'ui_mode'
 /** Ucieczka do pełnej aplikacji na czas sesji – żeby przekierowanie nie odsyłało z powrotem. */
 export const FULL_ESCAPE = 'trening:full-ui'
+/** „Zobacz tylko plan, bez konta” – na czas sesji pomija ekran logowania. */
+export const NO_ACCOUNT = 'trening:no-account'
 /** Ten sam próg co `lg:` w pełnej aplikacji – powyżej jest boczna nawigacja i układ na komputer. */
 const PHONE_MAX_PX = 1024
 

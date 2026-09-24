@@ -7,6 +7,12 @@ import { expect, test } from '@playwright/test'
 // więc testujemy bez tej rezerwy – sam viewport zostaje telefonowy.
 test.use({ viewport: { width: 390, height: 780 }, isMobile: false, hasTouch: true })
 
+// Uproszczony interfejs bez konta prosi o zalogowanie (dane biorą się z konta). Testy przepływu dnia
+// pracują na danych lokalnych, więc pomijają ten ekran tak samo jak przycisk „Zobacz tylko plan, bez konta”.
+test.beforeEach(async ({ page }) => {
+  await page.addInitScript(() => sessionStorage.setItem('trening:no-account', '1'))
+})
+
 test('Dziś: karta treningu, kroki dnia i check-in', async ({ page }) => {
   await page.goto('/i?today=2026-09-23')
   await expect(page.getByRole('heading', { name: 'Dziś' })).toBeVisible()
@@ -76,4 +82,23 @@ test('Wyłączenie domyślnego widoku zostawia start w pełnej aplikacji', async
   await expect(page.getByRole('button', { name: 'Otwieraj ten widok domyślnie' })).toBeVisible()
   await page.goto('/?today=2026-09-23')
   await expect(page.getByRole('heading', { name: 'Tydzień 2' })).toBeVisible()
+})
+
+test.describe('bez konta', () => {
+  test.use({ viewport: { width: 390, height: 780 }, isMobile: false, hasTouch: true })
+
+  test('prosi o zalogowanie zamiast pokazywać puste ekrany', async ({ page }) => {
+    // ten blok celowo nie ustawia znacznika „bez konta”
+    await page.addInitScript(() => sessionStorage.removeItem('trening:no-account'))
+    await page.goto('/i?today=2026-09-23')
+    await expect(page.getByRole('heading', { name: 'Trening' })).toBeVisible()
+    await expect(page.getByText(/Zaloguj się, żeby zobaczyć swoje jazdy/)).toBeVisible()
+    await expect(page.getByRole('button', { name: 'Wyślij kod na maila' })).toBeDisabled()
+    await page.getByLabel('Adres e-mail').fill('ktos@example.com')
+    await expect(page.getByRole('button', { name: 'Wyślij kod na maila' })).toBeEnabled()
+
+    // da się obejrzeć sam plan bez konta
+    await page.getByRole('button', { name: /Zobacz tylko plan, bez konta/ }).click()
+    await expect(page.getByRole('heading', { name: 'Dziś' })).toBeVisible()
+  })
 })

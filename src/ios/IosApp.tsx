@@ -1,4 +1,6 @@
+import { useState } from 'react'
 import { NavLink, Navigate, Route, Routes } from 'react-router'
+import { useAuth } from '@/sync/auth'
 import { useSyncRunner } from '@/sync/useSync'
 import { useWahooAutoPush } from '@/sync/useWahoo'
 import { usePushKeepalive } from '@/sync/usePush'
@@ -8,6 +10,8 @@ import { WorkoutScreen } from './screens/WorkoutScreen'
 import { WeekScreen } from './screens/WeekScreen'
 import { ProgressScreen } from './screens/ProgressScreen'
 import { MoreScreen } from './screens/MoreScreen'
+import { LoginScreen } from './screens/LoginScreen'
+import { NO_ACCOUNT } from './useIos'
 import { IconMore, IconProgress, IconToday, IconWeek } from './components/Icons'
 
 const TABS = [
@@ -38,6 +42,36 @@ export function IosApp() {
   useSyncRunner()
   useWahooAutoPush()
   usePushKeepalive()
+  const auth = useAuth()
+  const [skipped, setSkipped] = useState(() => {
+    try {
+      return sessionStorage.getItem(NO_ACCOUNT) === '1'
+    } catch {
+      return false
+    }
+  })
+
+  // Konto jest źródłem jazd, check-inów i zmian planu – bez niego ekrany byłyby puste bez wyjaśnienia
+  if (auth.configured && !auth.session && !skipped) {
+    return (
+      <div className="ios">
+        {!auth.loading && (
+          <LoginScreen
+            auth={auth}
+            onSkip={() => {
+              try {
+                sessionStorage.setItem(NO_ACCOUNT, '1')
+              } catch {
+                /* prywatne okno */
+              }
+              setSkipped(true)
+            }}
+          />
+        )}
+      </div>
+    )
+  }
+
   return (
     <div className="ios flex min-h-dvh flex-col">
       <Routes>

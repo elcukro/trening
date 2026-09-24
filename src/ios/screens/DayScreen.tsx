@@ -14,6 +14,7 @@ import { rideVerdict, type DayStep } from '../dayState'
 import { mainTarget, structureLabel } from '../summary'
 import { Btn, Card, List, Pill, Row, RowIcon, Screen, Section, Stat } from '../components/Chrome'
 import { IconBike, IconBolt, IconCheck, IconChevron, IconFlag, IconGym, IconHeart, IconRest, IconSun, IconTarget, IconTimer, IconWatch } from '../components/Icons'
+import { SyncBanner } from '../components/SyncBanner'
 import { CheckinSheet } from '../components/CheckinSheet'
 import { AfterSheet } from '../components/AfterSheet'
 import { BriefingSheet } from '../components/BriefingSheet'
@@ -263,6 +264,7 @@ export function DayScreen() {
 
   return (
     <Screen title={title} subtitle={`${fmtLong(date)} · tydzień ${day.week}`} back={isToday ? undefined : () => navigate(-1)}>
+      <SyncBanner />
       {day.bike && day.workout ? (
         <HeroRide day={day} status={rideStatus} hasActivity={d.activities.length > 0} onOpen={() => navigate(`/i/trening/${date}`)} />
       ) : day.gym ? (

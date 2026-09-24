@@ -41,6 +41,22 @@ interfejs po prostu do niego prowadzi.
   więc przekierowanie odpuszcza do końca sesji; „Prosty widok na iPhone'a” w Więcej kasuje znacznik.
   Tego samego znacznika używają testy e2e pełnej aplikacji (`page.addInitScript` w `beforeEach`).
 
+## Logowanie
+
+Bez konta uproszczony interfejs nie ma skąd wziąć jazd, check-inów ani zmian planu, więc **zamiast po cichu
+pokazywać pusty tydzień prosi o zalogowanie** (`LoginScreen`, brama w `IosApp`: `auth.configured && !session`).
+Logowanie kodem z maila, bo aplikacja z ekranu początkowego ma osobną pamięć niż przeglądarka i link z maila
+trafia tam, gdzie go otworzysz (flow `implicit`); alternatywa – wklejenie całego linku.
+„Zobacz tylko plan, bez konta” pomija bramę na czas sesji (znacznik `trening:no-account` w `sessionStorage`,
+używany też przez `beforeEach` w `e2e/ios.spec.ts`) – dzięki temu program zostaje dostępny offline i bez konta.
+
+Pasek błędu synchronizacji na ekranach Dziś i Tydzień (`SyncBanner`) łapie przypadki, w których sesja wygasła
+albo pull się wywalił w trakcie pracy. W Więcej są „Synchronizuj teraz” i „Wyloguj”.
+
+Kto może się zalogować: trigger `check_allowed_email` na `auth.users` przepuszcza wyłącznie adresy z
+`private.allowed_emails`, a każda tabela w `public` ma RLS z politykami `user_id = auth.uid()`
+(`integration_tokens` ma RLS bez żadnej polityki – czyta ją tylko service role z Edge Functions).
+
 ## Konto, Strava i Wahoo
 
 Uproszczony interfejs to ta sama aplikacja pod tym samym adresem: sesja Supabase (localStorage), baza lokalna
