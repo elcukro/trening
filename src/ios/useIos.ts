@@ -19,6 +19,7 @@ import { effectiveFtp, effectiveLthr, weightTrend } from '@/engine/progress'
 import { cdaFromRide, goalPower } from '@/engine/baseline'
 import { suggestFtp, type FtpSuggestion } from '@/engine/power'
 import { onSyncStatus, type SyncStatus } from '@/sync/sync'
+import { programMeta } from '@/data/program'
 import { todayISO } from '@/lib/dates'
 import { dayFlow, weighDue, type DayFlow, type LogState } from './dayState'
 import type { BoltState } from '@/features/today/WahooStatus'
@@ -278,7 +279,8 @@ export interface Snapshot {
   ftp: { w: number; source: 'test' | 'estimate'; suggestion: FtpSuggestion | null; wPerKg: number | null }
   form: { ctl: number; tsb: number } | null
   week: { planned: number; done: number; monday: ISODate }
-  goal: { ftp: number; watts: number }
+  /** cel programu: FTP wymagane oraz – dla celu prędkościowego – moc na płaskim */
+  goal: { ftp: number; watts: number | null; label: string }
   hasData: boolean
 }
 
@@ -319,23 +321,27 @@ export function useSnapshot(): Snapshot {
     )
   }, [acts, ftpEff.ftp, tests, dismissals])
 
-  // CdA z jazdy odniesienia zapisanej w punkcie wyjścia – ten sam wynik co karta „Punkt wyjścia” w pełnej aplikacji.
-  // Bez tej pary silnik używa wartości domyślnej; szacowanie CdA z najlepszej godziny zwykłej jazdy zawyża opór.
+  // Cel bierze się z programu, nie z założeń jednego zawodnika: program alpejski celuje w prędkość
+  // (wymagane FTP liczy fizyka), program „FTP 300” wprost w moc progową z ustawienia `ftp_w_goal`.
+  const meta = programMeta(settings.program_id)
   const goal = useMemo(() => {
+    if (meta.goal.kind === 'ftp') return { ftp: settings.ftp_w_goal, watts: null, label: meta.goal.label }
     const massKg = (last?.weight_kg ?? settings.body_weight_start_kg) + settings.bike_and_kit_kg
     const latest = (metric: string) => baseline.filter((b) => b.metric === metric).toSorted((a, b) => (a.date < b.date ? 1 : -1))[0]?.value ?? null
     const kmh = latest('ref_speed_kmh')
     const watts = latest('ref_power_w')
     const cda = kmh && watts ? cdaFromRide(kmh, watts, massKg) : null
-    return goalPower(massKg, 30, cda)
-  }, [baseline, last?.weight_kg, settings.body_weight_start_kg, settings.bike_and_kit_kg])
+    const kmhTarget = 'kmh' in meta.goal ? meta.goal.kmh : 30
+    const g = goalPower(massKg, kmhTarget, cda)
+    return { ftp: g.ftp, watts: g.watts as number | null, label: meta.goal.label }
+  }, [baseline, last?.weight_kg, settings.body_weight_start_kg, settings.bike_and_kit_kg, settings.ftp_w_goal, meta])
 
   return {
     weight: { kg: last?.weight_kg ?? null, date: last?.date ?? null, perWeek: trend?.kg_per_week ?? null },
     ftp: { w: ftpEff.ftp, source: ftpEff.source, suggestion, wPerKg: last?.weight_kg ? ftpEff.ftp / last.weight_kg : null },
     form,
     week: { planned: week.planned, done: week.done, monday: week.monday },
-    goal: { ftp: goal.ftp, watts: goal.watts },
+    goal: { ftp: goal.ftp, watts: goal.watts, label: goal.label },
     hasData: actual.size > 0,
   }
 }

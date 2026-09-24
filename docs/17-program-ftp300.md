@@ -64,6 +64,22 @@ To był realny błąd przy pierwszej wersji: program Ferdynanda odziedziczył ka
 parametry w swoim `main()` przed przebudową biblioteki; każdy inny generator importuje moduł i dostaje wersję
 standardową. **Przy dodawaniu kolejnego programu: nie zmieniaj wartości domyślnych, ustaw je w swoim generatorze.**
 
+## Etykiety celu też są per program
+
+Po pierwszym wdrożeniu drugie konto widziało „Alpy 2027” w pasku bocznym i „30 km/h przez 2–3 godziny”
+na ekranie Postęp – cel pierwszego zawodnika. Teraz rejestr programów podaje `short` (etykieta sezonu)
+i `goal`: `{kind:'speed', kmh}` liczy wymagane FTP z fizyki (masa, CdA z jazdy odniesienia),
+a `{kind:'ftp'}` bierze je wprost z `ftp_w_goal`. `App.tsx` i `ios/screens/ProgressScreen.tsx`
+czytają to z programu, nie z literałów.
+
+## Pułapka przy pierwszym przełączeniu konta na nowy program
+
+Jeśli aplikacja pobrała profil **starą wersją** (bez `program_id`), zrównała lokalny `updated_at`
+ze zdalnym – a wtedy `syncProfile` ani nie wysyła, ani nie pobiera i wybór programu nie dociera.
+Ratunek: `update public.profiles set program_id = …, updated_at = now()` (zdalny znacznik musi być
+świeższy niż lokalny) albo po prostu wybór programu w Ustawieniach na urządzeniu – to zapis lokalny,
+niezależny od synchronizacji.
+
 ## Znane ograniczenia
 
 - **Żywienie** liczy `nutritionFor` w silniku – reguła deficytów jest wspólna dla programów i skalowana
@@ -71,5 +87,7 @@ standardową. **Przy dodawaniu kolejnego programu: nie zmieniaj wartości domyś
   za agresywna. Białko przelicza się poprawnie z masy docelowej. Do sparametryzowania per program.
 - **Sprzęt i wyjazd** (`data/gear_tasks.json`, `data/packing_list.json`) są globalne – drugie konto widzi
   zadania serwisowe rowerów pierwszego.
+- **Karta „Punkt wyjścia”** w pełnej aplikacji (`BaselineCard`) jest nadal zbudowana wokół celu
+  prędkościowego („FTP na 30 km/h”) – dla programu o celu mocowym pokazuje nieadekwatny opis.
 - Ustawienia → Siłownia pozwala wybrać dzień Sesji A tylko z wtorku i środy (pod program alpejski);
   dla tego programu dzień siłowni pochodzi z domyślnych ustawień programu.

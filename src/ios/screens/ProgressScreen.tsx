@@ -47,7 +47,7 @@ export function ProgressScreen() {
   const ftp = settings.power_meter ? snap.ftp.w : null
 
   return (
-    <Screen title="Postęp" subtitle="30 km/h przez 2–3 godziny">
+    <Screen title="Postęp" subtitle={snap.goal.label}>
       <Card className="mb-6">
         <div className="p-4">
           <div className="flex items-center gap-4">
@@ -67,7 +67,9 @@ export function ProgressScreen() {
             </div>
           </div>
           <p className="ios-foot ios-dim mt-3">
-            Tyle mocy progowej trzeba, żeby przez 2–3 h jechać 30 km/h – na płaskim to około {snap.goal.watts} W.
+            {snap.goal.watts != null
+              ? `Tyle mocy progowej trzeba na cel prędkościowy – na płaskim to około ${snap.goal.watts} W ciągle.`
+              : 'Cel z ustawień programu. Po każdym teście FTP zobaczysz, ile zostało.'}
           </p>
         </div>
       </Card>
