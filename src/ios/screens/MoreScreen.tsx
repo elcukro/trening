@@ -320,7 +320,7 @@ export function MoreScreen() {
         </List>
       </Section>
 
-      <Section header="Pełna aplikacja" footer={`Kalendarz z przenoszeniem treningów, krzywa mocy, wykres formy, biblioteka ćwiczeń${engine.ctx.program.features.includes('gear') ? ', sprzęt' : ''}${engine.ctx.program.features.includes('trip') ? ', wyjazd' : ''}, kopia danych.`}>
+      <Section header="Pełna aplikacja" footer={`Kalendarz z przenoszeniem treningów, krzywa mocy, wykres formy, biblioteka ćwiczeń, sprzęt${engine.ctx.program.features.includes('trip') ? ', wyjazd' : ''}, kopia danych.`}>
         <List>
           <Row icon={<RowIcon color="var(--label-3)"><IconGear size={18} /></RowIcon>} title="Otwórz pełną aplikację" onClick={() => openFull('/')} accessory={<span className="ios-dim-3"><IconChevron size={18} /></span>} />
         </List>

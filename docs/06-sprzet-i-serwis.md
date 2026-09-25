@@ -1,6 +1,6 @@
 # 06 · Sprzęt, serwis i checklista wyjazdowa
 
-Dane maszynowe: `data/gear_tasks.json` (zadania z terminami) i `data/packing_list.json` (checklista).
+Dane maszynowe: `data/gear_tasks_alps.json` (zadania z terminami, osadzane w `program.json → gear_tasks`), `data/gear_templates.json` (serwis cykliczny per rower użytkownika) i `data/packing_list.json` (checklista).
 
 ## 1. Rowery i ich role
 

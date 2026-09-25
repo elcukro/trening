@@ -34,8 +34,8 @@ test.describe('pełna aplikacja na komputerze', () => {
     await switchToFtp300(page)
   })
 
-  test('żadnych literałów programu alpejskiego, bez Sprzętu i Wyjazdu', async ({ page }) => {
-    const pages = ['/', '/tydzien', '/kalendarz', '/wiecej', '/wiecej/sezon', '/wiecej/ustawienia', '/biblioteka/zasady', '/biblioteka/strefy']
+  test('żadnych literałów programu alpejskiego, bez Wyjazdu i cudzych rowerów', async ({ page }) => {
+    const pages = ['/', '/tydzien', '/kalendarz', '/wiecej', '/wiecej/sezon', '/wiecej/sprzet', '/wiecej/ustawienia', '/biblioteka/zasady', '/biblioteka/strefy']
     for (const path of pages) {
       await page.goto(`${path}?today=2026-11-04`)
       await expect(page.getByRole('main')).toBeVisible()
@@ -45,11 +45,15 @@ test.describe('pełna aplikacja na komputerze', () => {
     const side = page.getByRole('navigation', { name: 'Nawigacja główna' }).filter({ has: page.getByText('FTP 300').first() })
     await expect(side).toBeVisible()
     await expect(side.getByText(/^za \d+ dni/)).toBeVisible()
-    await expect(side.getByRole('link', { name: 'Sprzęt' })).toHaveCount(0)
+    await expect(side.getByRole('link', { name: 'Sprzęt' })).toBeVisible()
     await expect(side.getByRole('link', { name: 'Wyjazd' })).toHaveCount(0)
     // bezpośredni adres ekranu wyłączonego w programie wraca do „Więcej”
     await page.goto('/wiecej/wyjazd?today=2026-11-04')
     await expect(page).toHaveURL(/\/wiecej(\?|$)/)
+    // Sprzęt bez zadań planu sezonu – dopóki nie doda roweru, nie ma czego serwisować
+    await page.goto('/wiecej/sprzet?today=2026-11-04')
+    await expect(page.getByText(/Dodaj swój rower/)).toBeVisible()
+    await expect(page.getByText('Montaż napędu 40/50')).toHaveCount(0)
     await page.goto('/wiecej/ustawienia?today=2026-11-04')
     await expect(page.getByText('Koniec programu', { exact: true })).toBeVisible()
     await expect(page.getByText('Dni siłowni')).toHaveCount(0)

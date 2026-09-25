@@ -1,16 +1,16 @@
-import gearJson from '../../data/gear_tasks.json'
+import templatesJson from '../../data/gear_templates.json'
 import packingJson from '../../data/packing_list.json'
 import { z } from 'zod'
+import type { GearTemplate } from '@/engine/gear'
 
-const GearTaskSchema = z.object({
+/** Szablon serwisu cyklicznego – wspólny dla wszystkich; zadania powstają z rowerów użytkownika. */
+const GearTemplateSchema = z.object({
   id: z.string(),
-  week: z.number().int().nullable().optional(),
-  due: z.string().nullable().optional(),
-  bike: z.enum(['checkpoint', 'dogma', 'both']).nullable().optional(),
+  every_days: z.number().int().positive(),
   title: z.string(),
   details: z.string(),
-  cost_pln: z.number().optional(),
-  recurring: z.string().optional(),
+  kinds: z.array(z.enum(['road', 'gravel', 'mtb', 'tt', 'other'])).optional(),
+  brakes: z.enum(['disc', 'rim']).optional(),
 })
 
 const PackingSchema = z.object({
@@ -28,16 +28,15 @@ const PackingSchema = z.object({
   ),
 })
 
-export type GearTask = z.infer<typeof GearTaskSchema>
 export type PackingList = z.infer<typeof PackingSchema>
 export type PackingItem = PackingList['items'][number]
 
-let gear: GearTask[] | null = null
+let templates: GearTemplate[] | null = null
 let packing: PackingList | null = null
 
-export function loadGearTasks(): GearTask[] {
-  gear ??= z.array(GearTaskSchema).parse(gearJson)
-  return gear
+export function loadGearTemplates(): GearTemplate[] {
+  templates ??= z.array(GearTemplateSchema).parse(templatesJson)
+  return templates
 }
 
 export function loadPackingList(): PackingList {
@@ -45,7 +44,6 @@ export function loadPackingList(): PackingList {
   return packing
 }
 
-export const BIKE_LABEL: Record<string, string> = { checkpoint: 'Checkpoint', dogma: 'Dogma', both: 'Oba rowery' }
 
 /** Stabilny klucz pozycji checklisty (nazwa bywa długa, ale jest unikalna w pliku). */
 export function itemKey(item: PackingItem, index: number): string {

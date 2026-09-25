@@ -1,4 +1,4 @@
-import { db, SYNC_TABLES, UPDATE_ONLY_TABLES, type SyncTable, type SyncedRow } from '@/db'
+import { db, SYNC_TABLES, UPDATE_ONLY_TABLES, USER_SCOPED_ID_TABLES, type SyncTable, type SyncedRow } from '@/db'
 import { supabase } from './supabase'
 import type { Settings } from '@/engine/schema'
 
@@ -62,7 +62,7 @@ async function pushOutbox(userId: string): Promise<void> {
         }
       } else {
         const payload = rows.map((r) => ({ ...(r as unknown as Record<string, unknown>), user_id: userId }))
-        const { error } = await supabase.from(table).upsert(payload, { onConflict: 'id' })
+        const { error } = await supabase.from(table).upsert(payload, { onConflict: USER_SCOPED_ID_TABLES.includes(table) ? 'user_id,id' : 'id' })
         if (error) throw new Error(`${table}: ${error.message}`)
       }
     }

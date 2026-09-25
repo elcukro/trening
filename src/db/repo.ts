@@ -1,4 +1,4 @@
-import { db, newId, nowISO, type BaselineEntry, type Checkin, type GearTaskState, type PackingState, type PlanOverrideRow, type ServiceLogRow, type SessionLog, type SetLog, type SyncTable, type SyncedRow, type TestResult } from './index'
+import { db, newId, nowISO, type BaselineEntry, type BikeRow, type Checkin, type GearTaskState, type PackingState, type PlanOverrideRow, type ServiceLogRow, type SessionLog, type SetLog, type SyncTable, type SyncedRow, type TestResult } from './index'
 
 /** Zapis lokalny + wpis do outboxa (jedna transakcja). */
 export async function putSynced<T extends SyncedRow>(table: SyncTable, row: T): Promise<T> {
@@ -119,10 +119,19 @@ export async function setGearStatus(taskId: string, status: GearTaskState['statu
     id: taskId,
     task_id: taskId,
     status,
-    done_at: status === 'done' ? (existing?.done_at ?? nowISO().slice(0, 10)) : null,
+    // każde odhaczenie to nowa data – zadania cykliczne liczą od niej następny termin
+    done_at: status === 'done' ? nowISO().slice(0, 10) : null,
     notes: notes ?? existing?.notes ?? null,
     updated_at: nowISO(),
   })
+}
+
+export async function saveBike(bike: Omit<BikeRow, 'id' | 'updated_at'> & { id?: string }): Promise<BikeRow> {
+  return putSynced('bikes', { ...bike, id: bike.id ?? newId(), updated_at: nowISO() })
+}
+
+export async function deleteBike(id: string): Promise<void> {
+  await softDelete('bikes', id)
 }
 
 export async function addServiceEntry(entry: Omit<ServiceLogRow, 'id' | 'updated_at'>): Promise<ServiceLogRow> {

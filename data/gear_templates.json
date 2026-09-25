@@ -1,0 +1,47 @@
+[
+  {
+    "id": "chain_wear",
+    "every_days": 30,
+    "title": "Kontrola zużycia łańcucha",
+    "details": "Miarka do łańcucha: przy 0,5 % wymień łańcuch (0,75 % przy łańcuchach 11s i mniej), zanim zje kasetę. Przy okazji wyczyść i nasmaruj."
+  },
+  {
+    "id": "tyres",
+    "every_days": 30,
+    "title": "Opony: bieżnik, przecięcia, ciśnienie",
+    "details": "Obejrzyj bieżnik i boki, wyjmij wbite kamyki i szkło. Ciśnienie dobierz do masy i szerokości opony."
+  },
+  {
+    "id": "pads_disc",
+    "brakes": "disc",
+    "every_days": 60,
+    "title": "Klocki i tarcze hamulcowe",
+    "details": "Wymień klocki przy okładzinie poniżej 1 mm (razem z płytką poniżej ok. 3 mm). Sprawdź grubość tarczy – minimum jest wybite na tarczy."
+  },
+  {
+    "id": "pads_rim",
+    "brakes": "rim",
+    "every_days": 60,
+    "title": "Klocki i ścianki obręczy",
+    "details": "Wymień klocki, gdy znikną rowki. Obręcz: wskaźnik zużycia ścianki albo wyraźnie wklęsła powierzchnia – do wymiany."
+  },
+  {
+    "id": "sealant",
+    "kinds": ["gravel", "mtb"],
+    "every_days": 90,
+    "title": "Mleko tubeless",
+    "details": "Dotyczy kół bezdętkowych: uzupełnij mleko (ok. 30–60 ml na koło, zależnie od szerokości). Na dętkach – oznacz „Nie dotyczy”."
+  },
+  {
+    "id": "bolts",
+    "every_days": 90,
+    "title": "Śruby i luzy",
+    "details": "Kluczem dynamometrycznym: mostek, kierownica, sztyca, siodło, bloki. Luz sterów i piast, bicie kół."
+  },
+  {
+    "id": "annual_service",
+    "every_days": 365,
+    "title": "Przegląd roczny",
+    "details": "Linki i pancerze (albo odpowietrzenie hydrauliki), łożyska suportu i sterów, centrowanie kół, owijka."
+  }
+]

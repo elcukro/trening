@@ -219,8 +219,20 @@ export const ProgramTargetSchema = z.object({
 
 export const ProgramMetaSchema = z.object({ name: z.string(), short: z.string(), target: ProgramTargetSchema })
 
-/** Ekrany, które mają sens tylko w niektórych programach (docs/18, krok 3). */
-export const FEATURES = ['gear', 'trip'] as const
+/** Ekrany, które mają sens tylko w niektórych programach (docs/18, krok 3). Sprzęt jest dla każdego (krok 4). */
+export const FEATURES = ['trip'] as const
+
+/** Zadanie sprzętowe należące do planu sezonu (terminy z tygodni programu); serwis cykliczny to szablon per rower. */
+export const ProgramGearTaskSchema = z.object({
+  id: z.string(),
+  week: z.number().int().nullable().optional(),
+  due: z.string().nullable().optional(),
+  /** który rower – opis dla człowieka, bo rowery są danymi użytkownika, nie programu */
+  bike_label: z.string().nullable().optional(),
+  title: z.string(),
+  details: z.string(),
+  cost_pln: z.number().optional(),
+})
 export type Feature = (typeof FEATURES)[number]
 
 /**
@@ -251,8 +263,10 @@ export const ProgramSchema = z.object({
   goal: GoalSchema,
   cadence: CadencePolicySchema,
   rules: ProgramRulesSchema,
-  /** `gear` – Sprzęt (zadania serwisowe), `trip` – Wyjazd (checklista, strategia na przełęcz) */
+  /** `trip` – Wyjazd (checklista, strategia na przełęcz) */
   features: z.array(z.enum(FEATURES)),
+  /** zadania sprzętowe z planu sezonu (Sprzęt); brak = tylko serwis cykliczny z szablonu */
+  gear_tasks: z.array(ProgramGearTaskSchema).optional(),
   /** warianty dni Sesji A/C do wyboru w Ustawieniach; brak = układ siłowni stały, bez wyboru */
   gym_day_options: z.array(z.object({ value: z.enum(['mon', 'tue', 'wed', 'thu', 'fri', 'sat', 'sun']), label: z.string() })).optional(),
   default_settings: SettingsSchema,
@@ -279,6 +293,7 @@ export type Goal = z.infer<typeof GoalSchema>
 export type CadencePolicy = z.infer<typeof CadencePolicySchema>
 export type ProgramRules = z.infer<typeof ProgramRulesSchema>
 export type ProgramTarget = z.infer<typeof ProgramTargetSchema>
+export type ProgramGearTask = z.infer<typeof ProgramGearTaskSchema>
 export type HrZone = z.infer<typeof HrZoneSchema>
 export type PowerZone = z.infer<typeof PowerZoneSchema>
 export type Step = z.infer<typeof StepSchema>

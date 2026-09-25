@@ -160,8 +160,17 @@ export interface GearTaskState extends SyncedRow {
   notes: string | null
 }
 
+/** Rower użytkownika (docs/18, krok 4) – z typu i hamulców wynika serwis cykliczny. */
+export interface BikeRow extends SyncedRow {
+  name: string
+  kind: 'road' | 'gravel' | 'mtb' | 'tt' | 'other'
+  brakes: 'disc' | 'rim'
+  role: string | null
+}
+
 export interface ServiceLogRow extends SyncedRow {
   date: string
+  /** `bikes.id` */
   bike: string
   km: number | null
   description: string
@@ -181,10 +190,15 @@ export interface OutboxItem {
   ts: string
 }
 
-export const SYNC_TABLES = ['checkins', 'session_logs', 'set_logs', 'test_results', 'plan_overrides', 'gear_task_state', 'service_log', 'packing_state', 'strava_activities', 'baseline_entries', 'wahoo_pushes', 'wahoo_workouts'] as const
+export const SYNC_TABLES = ['bikes', 'checkins', 'session_logs', 'set_logs', 'test_results', 'plan_overrides', 'gear_task_state', 'service_log', 'packing_state', 'strava_activities', 'baseline_entries', 'wahoo_pushes', 'wahoo_workouts'] as const
 /** Tabele, do których klient nie wstawia wierszy – tylko aktualizuje wybrane pola (RLS: update own). */
 export const UPDATE_ONLY_TABLES: Record<string, string[]> = { strava_activities: ['date', 'is_ride', 'updated_at'], wahoo_pushes: [], wahoo_workouts: [] }
 export type SyncTable = (typeof SYNC_TABLES)[number]
+/**
+ * Tabele z deterministycznym `id` (np. identyfikator zadania) – klucz główny na serwerze to (user_id, id),
+ * żeby dwa konta mogły odhaczyć to samo zadanie bez kolizji wierszy.
+ */
+export const USER_SCOPED_ID_TABLES: readonly SyncTable[] = ['gear_task_state', 'packing_state']
 
 export class TreningDB extends Dexie {
   settings!: EntityTable<SettingsRow, 'key'>
@@ -194,6 +208,7 @@ export class TreningDB extends Dexie {
   set_logs!: EntityTable<SetLog, 'id'>
   test_results!: EntityTable<TestResult, 'id'>
   plan_overrides!: EntityTable<PlanOverrideRow, 'id'>
+  bikes!: EntityTable<BikeRow, 'id'>
   gear_task_state!: EntityTable<GearTaskState, 'id'>
   service_log!: EntityTable<ServiceLogRow, 'id'>
   packing_state!: EntityTable<PackingState, 'id'>
@@ -232,6 +247,9 @@ export class TreningDB extends Dexie {
     this.version(7).stores({
       wahoo_pushes: 'id, date, updated_at',
       wahoo_workouts: 'id, date, updated_at',
+    })
+    this.version(8).stores({
+      bikes: 'id, updated_at',
     })
   }
 }

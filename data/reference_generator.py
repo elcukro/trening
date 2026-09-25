@@ -17,7 +17,7 @@ import json, datetime as dt, os, copy
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 D = dt.date
-PROGRAM_VERSION = "2026.09.25-2"
+PROGRAM_VERSION = "2026.09.25-3"
 
 DEFAULT_SETTINGS = {
     "program_start": "2026-09-14",          # poniedziałek tygodnia 1
@@ -537,7 +537,23 @@ META = {
     "short": "Alpy 2027",
     "target": {"label": "Data wyjazdu", "short": "wyjazd", "until": "do wyjazdu", "today": "Dzień wyjazdu!", "after": "Wyjazd trwa"},
 }
-FEATURES = ["gear", "trip"]
+FEATURES = ["trip"]
+
+
+def load_gear_tasks():
+    """Zadania sprzętowe planu sezonu (terminy z tygodni). Rowery to dane użytkownika, więc tu zostaje tylko opis.
+    Kontrola łańcucha poszła do szablonu serwisu cyklicznego (data/gear_templates.json)."""
+    labels = {"checkpoint": "Checkpoint", "dogma": "Dogma", "both": "Oba rowery"}
+    with open(os.path.join(os.path.dirname(os.path.abspath(__file__)), "gear_tasks_alps.json"), encoding="utf-8") as f:
+        raw = json.load(f)
+    out = []
+    for t in raw:
+        if t.get("recurring"):
+            continue
+        task = {k: v for k, v in t.items() if k not in ("bike", "recurring")}
+        task["bike_label"] = labels.get(t.get("bike")) if t.get("bike") else None
+        out.append(task)
+    return out
 GYM_DAY_OPTIONS = [{"value": "wed", "label": "środa (A/C) + piątek (B)"}, {"value": "tue", "label": "wtorek (A/C) + piątek (B)"}]
 
 # Zasady adaptacji (docs/18, krok 2) – teksty dla człowieka i parametry reguł silnika. Osobiste dla tego programu.
@@ -775,6 +791,7 @@ def main():
         "cadence": CADENCE,
         "rules": RULES,
         "features": FEATURES,
+        "gear_tasks": load_gear_tasks(),
         "gym_day_options": GYM_DAY_OPTIONS,
         "default_settings": DEFAULT_SETTINGS,
         "hr_zones_lthr_fraction": HR_ZONES,

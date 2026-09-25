@@ -23,7 +23,7 @@ Dokumentacja i dane dla aplikacji webowej (PWA na iPhone), która **każdego dni
 | `data/program.json` | źródło prawdy planu: strefy, fazy, treningi rowerowe (kroki z celami), ćwiczenia, tabela tygodni |
 | `data/calendar.json` | kalendarz dzień po dniu (11.09.2026 → 12.09.2027) dla ustawień domyślnych – plik referencyjny do testów |
 | `data/reference_generator.py` | referencyjny generator (Python) – `python3 data/reference_generator.py` odtwarza oba pliki JSON |
-| `data/gear_tasks.json` | zadania sprzętowe z terminami |
+| `data/gear_tasks_alps.json`, `data/gear_templates.json` | zadania sprzętowe planu alpejskiego (osadzane w programie) i szablon serwisu cyklicznego per rower |
 | `data/packing_list.json` | checklista wyjazdowa |
 
 ## Aplikacja

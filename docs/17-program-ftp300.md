@@ -89,9 +89,8 @@ niezależny od synchronizacji.
   żywienia i deficyt dobierany z masy obecnej i docelowej. Przy 73 → 67 kg, deficycie tylko w dni wolne
   (2 w tygodniu) i limicie 500 kcal wychodzi ok. 0,13 kg/tydz. – czyli ok. 68–69 kg w lipcu, nie 67.
   Świadomy wybór: jakość interwałów przed tempem chudnięcia. Etykieta dnia mówi to wprost.
-- **Sprzęt i wyjazd** (`data/gear_tasks.json`, `data/packing_list.json`) są globalne – drugie konto widzi
-  zadania serwisowe rowerów pierwszego.
-- **Karta „Punkt wyjścia”** w pełnej aplikacji (`BaselineCard`) jest nadal zbudowana wokół celu
-  prędkościowego („FTP na 30 km/h”) – dla programu o celu mocowym pokazuje nieadekwatny opis.
+- ~~Sprzęt i wyjazd globalne~~ – rozwiązane w docs/18 (krok 3: Wyjazd tylko w programie alpejskim;
+  krok 4: rowery i serwis per konto).
+- ~~Karta „Punkt wyjścia” wokół celu prędkościowego~~ – rozwiązane w docs/18, krok 1 (`program.goal`).
 - Ustawienia → Siłownia pozwala wybrać dzień Sesji A tylko z wtorku i środy (pod program alpejski);
   dla tego programu dzień siłowni pochodzi z domyślnych ustawień programu.

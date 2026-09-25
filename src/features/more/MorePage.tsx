@@ -7,7 +7,7 @@ import type { Feature } from '@/engine/schema'
 const ITEMS: { to: string; icon: string; label: string; sub: string; feature?: Feature }[] = [
   { to: '/kalendarz', icon: '🗓️', label: 'Kalendarz', sub: 'Miesiąc w siatce: jazdy, siłownia, znaczniki, wykonanie' },
   { to: '/wiecej/sezon', icon: '🗺️', label: 'Sezon', sub: 'Fazy, tabela tygodni, wydarzenia' },
-  { to: '/wiecej/sprzet', icon: '🔧', label: 'Sprzęt', sub: 'Zadania serwisowe, terminy, dziennik', feature: 'gear' },
+  { to: '/wiecej/sprzet', icon: '🔧', label: 'Sprzęt', sub: 'Twoje rowery, serwis, dziennik' },
   { to: '/wiecej/wyjazd', icon: '🎒', label: 'Wyjazd', sub: 'Checklista, torby, strategia na przełęcz', feature: 'trip' },
   { to: '/wiecej/ustawienia', icon: '⚙️', label: 'Ustawienia', sub: 'Profil, LTHR, daty, integracje, kopia' },
   { to: '/biblioteka/strefy', icon: '❤️', label: 'Strefy tętna', sub: 'Tabela bpm dla aktualnego LTHR' },

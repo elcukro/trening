@@ -148,16 +148,26 @@ Wykonanie:
   oraz 4 ekrany `/i` pod kątem literałów alpejskich (Alpy, przełęcz, Łódź, Checkpoint, Dogma, 30 km/h, Sesja B,
   „do wyjazdu”…), brak Sprzętu/Wyjazdu i przekierowanie z `/wiecej/wyjazd`.
 
-### Krok 4 – Sprzęt per użytkownik (B1)
+### Krok 4 – Sprzęt per użytkownik (B1) ✅ 25.09.2026
 
-- Rowery to dane użytkownika: tabela `bikes` (id, nazwa, typ, rola, rok, masa) + RLS; Ustawienia → „Rowery”.
-- `gear_tasks.json` zostaje **szablonem** zadań per typ roweru (szosa / gravel / tarczówki / obręcze),
-  a stan (`gear_task_state`) już jest per użytkownik. Zadania generują się z rowerów użytkownika,
-  a nie z listy Łukasza; `service_log.bike` odwołuje się do `bikes.id`, nie do enum.
-- Migracja danych Łukasza: dwa rowery wpisane skryptem, istniejący stan zadań zmapowany po `task_id`.
-
-Rozmiar: średni. Efekt: znika B1. Można odłożyć, jeśli krok 3 ukryje Sprzęt na koncie ftp300 –
-ale wtedy Ferdynand nie ma serwisu roweru w ogóle.
+Wykonanie:
+- Tabela `bikes` (id, nazwa, `kind` road/gravel/mtb/tt/other, `brakes` disc/rim, rola) z RLS i `lww_guard`,
+  synchronizowana jak reszta (`SYNC_TABLES`, Dexie v8). Rowery dodaje się na ekranie Sprzęt („+ Rower”).
+- Serwis cykliczny: `data/gear_templates.json` (łańcuch, opony, klocki tarczowe/szczękowe, mleko tubeless
+  dla gravel/MTB, śruby, przegląd roczny) × rowery użytkownika → `src/engine/gear.ts` (`gearTasks`, czysty TS,
+  `gear.test.ts`). Klucz stanu `szablon:bikeId`; zrobione wraca na listę po `every_days` od `done_at`
+  (każde odhaczenie zapisuje nową datę), „Nie dotyczy” zostaje na stałe.
+- Zadania z terminami to część planu sezonu: `program.gear_tasks` (opcjonalne; generator alpejski osadza
+  `data/gear_tasks_alps.json`, rower jako opis `bike_label`). Identyfikatory bez zmian, więc stan odhaczeń pasuje;
+  „Kontrola łańcucha co miesiąc” przeszła do szablonu. FTP 300 nie ma zadań programu.
+- **Sprzęt jest dla każdego** – flaga `gear` zniknęła z `features` (zostaje `trip`).
+- **Kolizja kluczy między kontami (znaleziona przy okazji):** `gear_task_state` i `packing_state` miały klucz
+  główny `id` (= identyfikator zadania / pozycji) dla całej tabeli, więc drugie konto odhaczające to samo zadanie
+  trafiało w cudzy wiersz. Migracja `20260925120000_bikes.sql`: klucz `(user_id, id)`, klient robi upsert
+  z `onConflict: 'user_id,id'` dla tych tabel (`USER_SCOPED_ID_TABLES`). Stary build (sprzed aktualizacji service
+  workera) dostanie błąd przy wysyłce stanu zadań – znika po odświeżeniu aplikacji.
+- `service_log.bike` trzyma `bikes.id`. Dane Łukasza: dwa rowery wpisane skryptem SQL (poza repo), zrobiona
+  kontrola łańcucha z 24.09 przepisana na Checkpointa; dziennik serwisu był pusty.
 
 ### Krok 5 – Synchronizacja profilu odporna na nowe pola (C1)
 

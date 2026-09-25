@@ -52,7 +52,7 @@ const SIDE_MAIN = [
 
 const SIDE_MORE: { to: string; label: string; feature?: Feature }[] = [
   { to: '/wiecej/sezon', label: 'Sezon' },
-  { to: '/wiecej/sprzet', label: 'Sprzęt', feature: 'gear' },
+  { to: '/wiecej/sprzet', label: 'Sprzęt' },
   { to: '/wiecej/wyjazd', label: 'Wyjazd', feature: 'trip' },
   { to: '/wiecej/ustawienia', label: 'Ustawienia' },
 ]
@@ -253,7 +253,7 @@ export function App() {
               <Route path="biblioteka/zasady" element={<RulesPage />} />
               <Route path="wiecej" element={<MorePage />} />
               <Route path="wiecej/sezon" element={<SeasonPage />} />
-              <Route path="wiecej/sprzet" element={<FeatureRoute feature="gear"><GearPage /></FeatureRoute>} />
+              <Route path="wiecej/sprzet" element={<GearPage />} />
               <Route path="wiecej/wyjazd" element={<FeatureRoute feature="trip"><TripPage /></FeatureRoute>} />
               <Route path="wiecej/ustawienia" element={<SettingsPage />} />
               <Route path="*" element={<Navigate to="/" replace />} />

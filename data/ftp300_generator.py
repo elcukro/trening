@@ -28,7 +28,7 @@ _spec.loader.exec_module(gen)
 sys.stdout = _stdout
 
 PROGRAM_ID = "ftp300"
-PROGRAM_VERSION = "2026.09.25-3"
+PROGRAM_VERSION = "2026.09.25-4"
 
 # dłuższy blok VO2max niż w programie alpejskim (6 powtórzeń) – przy trenażerze ERG da się utrzymać moc
 gen.add(gen.interval_workout("VO2_6x3", "VO2max 6×3 min", "vo2max", 6, 3, 3, "Z5b", [85, 95], gen.VO2_DESC, wu=20))
@@ -185,7 +185,7 @@ META = {
     # data końcowa to poniedziałek po tygodniu z testem końcowym – nie wyjazd
     "target": {"label": "Koniec programu", "short": "koniec", "until": "do końca programu", "today": "Koniec programu – czas na nowy cel", "after": "Program zakończony"},
 }
-FEATURES = []   # bez wyjazdu i bez listy serwisowej cudzych rowerów
+FEATURES = []   # bez wyjazdu; Sprzęt ma każdy – z własnymi rowerami
 
 # Zasady adaptacji (docs/18, krok 2) – układ tygodnia Ferdynanda: pn długa, śr akcent, pt drugi akcent (od tyg. 6),
 # sb Z2 + jedyna siłownia, wt i nd wolne. Silnik czyta parametry, człowiek teksty.
