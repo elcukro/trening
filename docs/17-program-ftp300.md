@@ -85,9 +85,10 @@ niezależny od synchronizacji.
 
 ## Znane ograniczenia
 
-- **Żywienie** liczy `nutritionFor` w silniku – reguła deficytów jest wspólna dla programów i skalowana
-  pod dużego zawodnika schodzącego ze 110 kg. Dla 73 kg etykieta „deficyt ok. 500 kcal” w dni lekkie jest
-  za agresywna. Białko przelicza się poprawnie z masy docelowej. Do sparametryzowania per program.
+- ~~Żywienie wspólne z programem alpejskim~~ – rozwiązane 25.09.2026 (docs/18, krok 1): własna polityka
+  żywienia i deficyt dobierany z masy obecnej i docelowej. Przy 73 → 67 kg, deficycie tylko w dni wolne
+  (2 w tygodniu) i limicie 500 kcal wychodzi ok. 0,13 kg/tydz. – czyli ok. 68–69 kg w lipcu, nie 67.
+  Świadomy wybór: jakość interwałów przed tempem chudnięcia. Etykieta dnia mówi to wprost.
 - **Sprzęt i wyjazd** (`data/gear_tasks.json`, `data/packing_list.json`) są globalne – drugie konto widzi
   zadania serwisowe rowerów pierwszego.
 - **Karta „Punkt wyjścia”** w pełnej aplikacji (`BaselineCard`) jest nadal zbudowana wokół celu

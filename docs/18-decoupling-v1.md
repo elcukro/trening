@@ -61,7 +61,7 @@ poniedziałek w szablonie, `bike_default`, parametry osobiste biblioteki trening
 Kolejność: od tego, co drugie konto widzi codziennie, do infrastruktury. Golden programu alpejskiego
 ma pozostać **bajt w bajt** taki sam po każdym kroku – to sprawdzian, że przenosimy, a nie zmieniamy.
 
-### Krok 1 – Żywienie, rower, cel i kadencja do pliku programu (A1, A4, A5, A6, A7, D1)
+### Krok 1 – Żywienie, rower, cel i kadencja do pliku programu (A1, A4, A5, A6, A7, D1) ✅ 25.09.2026
 
 Schemat programu dostaje sekcje (wszystkie **opcjonalne**; brak = dotychczasowe wartości, więc program
 alpejski parsuje się bez zmian):
@@ -86,6 +86,23 @@ meta:      { short: "Alpy 2027" }
   sprawdzający, że oba pliki mają sekcje i że alpejski daje te same liczby co przed zmianą.
 
 Rozmiar: średni. Efekt: znika A1, A4, A5, A6, A7, D1.
+
+**Wykonanie (25.09.2026):** sekcje `meta`, `nutrition`, `bikes`, `goal`, `cadence` są **wymagane** w schemacie
+(silnik nie ma już własnych wartości domyślnych). `nutritionFor(policy, …)`, `bikeSuggestion(bikes, …)`,
+`lowCadenceWarning(trend, policy)`, `programGoal(goal, masa, ftp_w_goal, cda)` w `baseline.ts` – wspólny
+dla karty „Punkt wyjścia”, Postępu i `/i`. Rejestr `src/data/program.ts` trzyma już tylko id i plik.
+Generatory liczą żywienie i rower tymi samymi funkcjami z tych samych struktur, które zapisują do JSON-a.
+`calendar.json` programu alpejskiego bajt w bajt taki sam jak przed zmianą (`cmp` przed/po).
+Testy: `program_sections.test.ts`.
+
+**Rozszerzenie – deficyt z masy (`nutrition.weight_based`)**, na prośbę po uwadze, że zawodnik ma masę
+obecną i docelową: zamiast stałej etykiety „deficyt 300/500 kcal” silnik (`personalizeNutrition` w
+`enrichDay`) liczy deficyt z brakujących kilogramów rozłożonych do daty celu (`trip_start`) i na dni z
+deficytem (`deficit_days_per_week`, średnia z tygodni budujących liczona w generatorze), z limitem kcal/dzień
+i limitem tempa (% masy/tydz.). Masa obecna = ostatni check-in (`EngineContext.current_weight_kg`), a bez
+niego masa startowa z ustawień. Gdy limit obcina tempo, etykieta mówi wprost, że cel wypadnie później.
+Włączone w programie FTP 300 (500 kcal, 0,7 %/tydz.); program alpejski zostaje przy stałych etykietach,
+dopóki jego właściciel nie zdecyduje inaczej. Testy: `weight_deficit.test.ts`.
 
 ### Krok 2 – Reguły sterowane programem (A2, A3)
 

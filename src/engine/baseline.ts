@@ -1,9 +1,10 @@
+import type { Goal } from './schema'
 import { addDays, type ISODate } from './dates'
 
 /**
  * Punkt wyjścia (pkt 0 planu usprawnień, docs/14): zestaw mierników z datą pierwszego pomiaru i bieżącą wartością.
  * Wartości bieżące liczymy z danych aplikacji (testy, check-iny, jazdy ze Stravy); użytkownik „zamraża” je jako
- * punkt wyjścia jednym dotknięciem, a jazdę odniesienia (30 km/h) wpisuje ręcznie.
+ * punkt wyjścia jednym dotknięciem, a jazdę odniesienia (równa jazda po płaskim) wpisuje ręcznie.
  */
 
 export type BaselineMetric = 'ftp_w' | 'lthr_bpm' | 'hr_max_bpm' | 'weight_kg' | 'resting_hr' | 'best20_kmh' | 'best60_kmh' | 'mmp20_w' | 'mmp60_w' | 'ref_speed_kmh' | 'ref_power_w' | 'decoupling_pct' | 'cadence_rpm'
@@ -138,9 +139,27 @@ export function cdaFromRide(kmh: number, watts: number, totalMassKg: number, crr
   return Math.round((aero / (0.5 * rho * v ** 3)) * 1000) / 1000
 }
 
-/** Cel 30 km/h: moc potrzebna i FTP wymagane (2–3 h ≈ 85 % FTP), z CdA z jazdy odniesienia albo domyślnego. */
-export function goalPower(totalMassKg: number, targetKmh = 30, cda: number | null = null): { watts: number; ftp: number; cda: number } {
+/** Cel prędkościowy: moc potrzebna i FTP wymagane (2–3 h ≈ 85 % FTP), z CdA z jazdy odniesienia albo domyślnego. */
+export function goalPower(totalMassKg: number, targetKmh: number, cda: number | null = null): { watts: number; ftp: number; cda: number } {
   const c = cda ?? 0.42
   const watts = powerForSpeed(targetKmh, totalMassKg, c)
   return { watts, ftp: Math.round(watts / 0.85), cda: c }
+}
+
+export interface ProgramGoal {
+  /** FTP wymagane do celu */
+  ftp: number
+  /** moc na płaskim przy prędkości celu (tylko cel prędkościowy) */
+  watts: number | null
+  /** prędkość celu (tylko cel prędkościowy) */
+  kmh: number | null
+  cda: number | null
+  label: string
+}
+
+/** Cel programu (`program.goal`): prędkościowy liczy fizyka, mocowy bierze wprost `ftp_w_goal` z ustawień. */
+export function programGoal(goal: Goal, totalMassKg: number, ftpGoal: number, cda: number | null = null): ProgramGoal {
+  if (goal.kind === 'ftp') return { ftp: ftpGoal, watts: null, kmh: null, cda: null, label: goal.label }
+  const g = goalPower(totalMassKg, goal.kmh, cda)
+  return { ftp: g.ftp, watts: g.watts, kmh: goal.kmh, cda: g.cda, label: goal.label }
 }

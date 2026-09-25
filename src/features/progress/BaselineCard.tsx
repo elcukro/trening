@@ -2,7 +2,7 @@ import { useMemo, useState } from 'react'
 import { useLiveQuery } from 'dexie-react-hooks'
 import { db, type BaselineEntry, type Checkin, type StravaActivity } from '@/db'
 import { addBaselineEntry, softDelete } from '@/db/repo'
-import { BASELINE_DEFS, baselineTable, cdaFromRide, currentValues, goalPower, type BaselineMetric } from '@/engine/baseline'
+import { BASELINE_DEFS, baselineTable, cdaFromRide, currentValues, programGoal, type BaselineMetric } from '@/engine/baseline'
 import { effectiveFtp, effectiveLthr } from '@/engine/progress'
 import type { Engine } from '@/app/useSettings'
 import { Actions, Button, Card, CardSection, CardTitle, Field, Input, Inset, Metric, Select } from '@/components/ui'
@@ -16,7 +16,7 @@ function fmt(v: number | null, decimals: number): string {
 
 /**
  * Punkt wyjścia (docs/14, pkt 0): pierwszy zapis każdego miernika vs wartość bieżąca z danych aplikacji,
- * plus cel „30 km/h przez 2–3 h” przeliczony na waty i FTP.
+ * plus cel programu (`program.goal`) przeliczony na waty i FTP.
  */
 export function BaselineCard({ engine, checkins, acts }: { engine: Engine; checkins: Checkin[]; acts: StravaActivity[] }) {
   const toast = useToast()
@@ -50,7 +50,7 @@ export function BaselineCard({ engine, checkins, acts }: { engine: Engine; check
   const refS = refSpeed?.current ?? refSpeed?.baseline?.value ?? null
   const refP = refPower?.current ?? refPower?.baseline?.value ?? null
   const cda = refS && refP ? cdaFromRide(refS, refP, totalKg) : null
-  const goal = goalPower(totalKg, 30, cda)
+  const goal = programGoal(engine.ctx.program.goal, totalKg, s.ftp_w_goal, cda)
   const ftpNow = current.ftp_w ?? null
 
   async function freeze(ids: BaselineMetric[]) {
@@ -96,12 +96,18 @@ export function BaselineCard({ engine, checkins, acts }: { engine: Engine; check
         </div>
         <div className="min-w-0 rounded-xl bg-sky-50 p-3 dark:bg-sky-950/50">
           <div className="text-2xl font-bold tabular-nums">{goal.ftp} W</div>
-          <div className="text-xs text-slate-500 dark:text-slate-400">FTP na 30 km/h (2–3 h)</div>
+          <div className="text-xs text-slate-500 dark:text-slate-400">FTP – {engine.ctx.program.goal.short}</div>
         </div>
       </div>
       <p className="mt-2 text-xs text-slate-500 tabular-nums dark:text-slate-400">
-        30 km/h płasko przy {num(totalKg, 0)} kg (Ty + rower) to ok. <b>{goal.watts} W</b> ciągle, czyli ~85 % FTP {goal.ftp} W.{' '}
-        {cda ? `CdA ${num(cda, 3)} m² z jazdy odniesienia.` : 'CdA 0,42 m² (założenie) – wpisz jazdę odniesienia, żeby policzyć dokładniej.'}
+        {goal.kmh != null && goal.watts != null ? (
+          <>
+            {goal.kmh} km/h płasko przy {num(totalKg, 0)} kg (Ty + rower) to ok. <b>{goal.watts} W</b> ciągle, czyli ~85 % FTP {goal.ftp} W.{' '}
+            {cda ? `CdA ${num(cda, 3)} m² z jazdy odniesienia.` : 'CdA 0,42 m² (założenie) – wpisz jazdę odniesienia, żeby policzyć dokładniej.'}
+          </>
+        ) : (
+          <>Cel programu: {goal.label}.</>
+        )}
         {ftpNow ? ` Luka: ${goal.ftp - ftpNow > 0 ? `${goal.ftp - ftpNow} W (${Math.round(((goal.ftp - ftpNow) / ftpNow) * 100)} %)` : 'cel osiągnięty'}.` : ''}
       </p>
 

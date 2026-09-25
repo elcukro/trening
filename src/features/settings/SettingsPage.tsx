@@ -4,7 +4,7 @@ import type { Settings } from '@/engine/schema'
 import { earliestTripStart, layoutWeeks, TripDateError } from '@/engine/layout'
 import { isValidISODate } from '@/engine/dates'
 import { Actions, Button, Card, CardSection, CardTitle, Checkbox, Field, Input, Inset, PageTitle, Row, Segmented, Select } from '@/components/ui'
-import { DEFAULT_PROGRAM_ID, PROGRAMS } from '@/data/program'
+import { DEFAULT_PROGRAM_ID, programOptions } from '@/data/program'
 import { fmtDate } from '@/lib/dates'
 import { PHASE_SHORT } from '@/lib/labels'
 import type { LayoutWeek, PhaseId } from '@/engine/types'
@@ -311,7 +311,7 @@ function ProgramCard() {
           value={current}
           onChange={(e) => void toast.run('Przełączam program…', () => engine.settingsApi.update({ program_id: e.target.value }), () => 'Program przełączony')}
         >
-          {PROGRAMS.map((p) => (
+          {programOptions().map((p) => (
             <option key={p.id} value={p.id}>
               {p.name}
             </option>

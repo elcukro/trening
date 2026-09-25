@@ -74,6 +74,8 @@ export interface EngineContext {
   overrides?: PlanOverride[]
   /** wyniki testów – R11: strefy od następnego dnia po teście (LTHR z terenu, FTP z Wattbike'a) */
   tests?: { date: ISODate; lthr_bpm: number | null; ftp_w?: number | null }[]
+  /** ostatnia zmierzona masa (check-in); bez niej silnik bierze masę startową z ustawień */
+  current_weight_kg?: number | null
 }
 
 export interface ZoneBpm {

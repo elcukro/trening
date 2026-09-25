@@ -1,5 +1,5 @@
 {
- "version": "2026.09.24-1",
+ "version": "2026.09.25-1",
  "settings": {
   "program_start": "2026-09-21",
   "trip_start": "2027-06-28",
@@ -34,8 +34,8 @@
    "bike": null,
    "gym": null,
    "nutrition": {
-    "energy": "deficit_500",
-    "label": "Dzień lekki: deficyt ok. 500 kcal",
+    "energy": "deficit_300",
+    "label": "Dzień lekki: deficyt dobrany do masy",
     "protein_g_per_kg": 1.8,
     "on_bike_carbs_g_per_h": [
      0,
@@ -56,8 +56,8 @@
    "bike": null,
    "gym": null,
    "nutrition": {
-    "energy": "deficit_500",
-    "label": "Dzień lekki: deficyt ok. 500 kcal",
+    "energy": "deficit_300",
+    "label": "Dzień lekki: deficyt dobrany do masy",
     "protein_g_per_kg": 1.8,
     "on_bike_carbs_g_per_h": [
      0,
@@ -77,8 +77,8 @@
    "bike": null,
    "gym": null,
    "nutrition": {
-    "energy": "deficit_500",
-    "label": "Dzień lekki: deficyt ok. 500 kcal",
+    "energy": "deficit_300",
+    "label": "Dzień lekki: deficyt dobrany do masy",
     "protein_g_per_kg": 1.8,
     "on_bike_carbs_g_per_h": [
      0,
@@ -98,8 +98,8 @@
    "bike": null,
    "gym": null,
    "nutrition": {
-    "energy": "deficit_500",
-    "label": "Dzień lekki: deficyt ok. 500 kcal",
+    "energy": "deficit_300",
+    "label": "Dzień lekki: deficyt dobrany do masy",
     "protein_g_per_kg": 1.8,
     "on_bike_carbs_g_per_h": [
      0,
@@ -125,8 +125,8 @@
    },
    "gym": null,
    "nutrition": {
-    "energy": "deficit_500",
-    "label": "Dzień lekki: deficyt ok. 500 kcal",
+    "energy": "deficit_300",
+    "label": "Dzień lekki: deficyt dobrany do masy",
     "protein_g_per_kg": 1.8,
     "on_bike_carbs_g_per_h": [
      0,
@@ -146,8 +146,8 @@
    "bike": null,
    "gym": null,
    "nutrition": {
-    "energy": "deficit_500",
-    "label": "Dzień lekki: deficyt ok. 500 kcal",
+    "energy": "deficit_300",
+    "label": "Dzień lekki: deficyt dobrany do masy",
     "protein_g_per_kg": 1.8,
     "on_bike_carbs_g_per_h": [
      0,
@@ -224,8 +224,8 @@
    "bike": null,
    "gym": null,
    "nutrition": {
-    "energy": "deficit_500",
-    "label": "Dzień lekki: deficyt ok. 500 kcal",
+    "energy": "deficit_300",
+    "label": "Dzień lekki: deficyt dobrany do masy",
     "protein_g_per_kg": 1.8,
     "on_bike_carbs_g_per_h": [
      0,
@@ -278,8 +278,8 @@
    },
    "gym": null,
    "nutrition": {
-    "energy": "deficit_300",
-    "label": "Deficyt ok. 300 kcal",
+    "energy": "maintenance",
+    "label": "Dzień treningowy: bilans zerowy",
     "protein_g_per_kg": 1.8,
     "on_bike_carbs_g_per_h": [
      30,
@@ -305,8 +305,8 @@
    },
    "gym": null,
    "nutrition": {
-    "energy": "deficit_300",
-    "label": "Deficyt ok. 300 kcal",
+    "energy": "maintenance",
+    "label": "Dzień treningowy: bilans zerowy",
     "protein_g_per_kg": 1.8,
     "on_bike_carbs_g_per_h": [
      30,
@@ -425,8 +425,8 @@
     ]
    },
    "nutrition": {
-    "energy": "deficit_300",
-    "label": "Deficyt ok. 300 kcal",
+    "energy": "maintenance",
+    "label": "Dzień treningowy: bilans zerowy",
     "protein_g_per_kg": 1.8,
     "on_bike_carbs_g_per_h": [
      30,
@@ -446,8 +446,8 @@
    "bike": null,
    "gym": null,
    "nutrition": {
-    "energy": "deficit_500",
-    "label": "Dzień lekki: deficyt ok. 500 kcal",
+    "energy": "deficit_300",
+    "label": "Dzień lekki: deficyt dobrany do masy",
     "protein_g_per_kg": 1.8,
     "on_bike_carbs_g_per_h": [
      0,
@@ -494,8 +494,8 @@
    "bike": null,
    "gym": null,
    "nutrition": {
-    "energy": "deficit_500",
-    "label": "Dzień lekki: deficyt ok. 500 kcal",
+    "energy": "deficit_300",
+    "label": "Dzień lekki: deficyt dobrany do masy",
     "protein_g_per_kg": 1.8,
     "on_bike_carbs_g_per_h": [
      0,
@@ -548,8 +548,8 @@
    },
    "gym": null,
    "nutrition": {
-    "energy": "deficit_300",
-    "label": "Deficyt ok. 300 kcal",
+    "energy": "maintenance",
+    "label": "Dzień treningowy: bilans zerowy",
     "protein_g_per_kg": 1.8,
     "on_bike_carbs_g_per_h": [
      30,
@@ -575,8 +575,8 @@
    },
    "gym": null,
    "nutrition": {
-    "energy": "deficit_300",
-    "label": "Deficyt ok. 300 kcal",
+    "energy": "maintenance",
+    "label": "Dzień treningowy: bilans zerowy",
     "protein_g_per_kg": 1.8,
     "on_bike_carbs_g_per_h": [
      30,
@@ -695,8 +695,8 @@
     ]
    },
    "nutrition": {
-    "energy": "deficit_300",
-    "label": "Deficyt ok. 300 kcal",
+    "energy": "maintenance",
+    "label": "Dzień treningowy: bilans zerowy",
     "protein_g_per_kg": 1.8,
     "on_bike_carbs_g_per_h": [
      30,
@@ -716,8 +716,8 @@
    "bike": null,
    "gym": null,
    "nutrition": {
-    "energy": "deficit_500",
-    "label": "Dzień lekki: deficyt ok. 500 kcal",
+    "energy": "deficit_300",
+    "label": "Dzień lekki: deficyt dobrany do masy",
     "protein_g_per_kg": 1.8,
     "on_bike_carbs_g_per_h": [
      0,
@@ -764,8 +764,8 @@
    "bike": null,
    "gym": null,
    "nutrition": {
-    "energy": "deficit_500",
-    "label": "Dzień lekki: deficyt ok. 500 kcal",
+    "energy": "deficit_300",
+    "label": "Dzień lekki: deficyt dobrany do masy",
     "protein_g_per_kg": 1.8,
     "on_bike_carbs_g_per_h": [
      0,
@@ -818,8 +818,8 @@
    },
    "gym": null,
    "nutrition": {
-    "energy": "deficit_300",
-    "label": "Deficyt ok. 300 kcal",
+    "energy": "maintenance",
+    "label": "Dzień treningowy: bilans zerowy",
     "protein_g_per_kg": 1.8,
     "on_bike_carbs_g_per_h": [
      30,
@@ -845,8 +845,8 @@
    },
    "gym": null,
    "nutrition": {
-    "energy": "deficit_300",
-    "label": "Deficyt ok. 300 kcal",
+    "energy": "maintenance",
+    "label": "Dzień treningowy: bilans zerowy",
     "protein_g_per_kg": 1.8,
     "on_bike_carbs_g_per_h": [
      30,
@@ -965,8 +965,8 @@
     ]
    },
    "nutrition": {
-    "energy": "deficit_300",
-    "label": "Deficyt ok. 300 kcal",
+    "energy": "maintenance",
+    "label": "Dzień treningowy: bilans zerowy",
     "protein_g_per_kg": 1.8,
     "on_bike_carbs_g_per_h": [
      30,
@@ -986,8 +986,8 @@
    "bike": null,
    "gym": null,
    "nutrition": {
-    "energy": "deficit_500",
-    "label": "Dzień lekki: deficyt ok. 500 kcal",
+    "energy": "deficit_300",
+    "label": "Dzień lekki: deficyt dobrany do masy",
     "protein_g_per_kg": 1.8,
     "on_bike_carbs_g_per_h": [
      0,
@@ -1034,8 +1034,8 @@
    "bike": null,
    "gym": null,
    "nutrition": {
-    "energy": "deficit_500",
-    "label": "Dzień lekki: deficyt ok. 500 kcal",
+    "energy": "deficit_300",
+    "label": "Dzień lekki: deficyt dobrany do masy",
     "protein_g_per_kg": 1.8,
     "on_bike_carbs_g_per_h": [
      0,
@@ -1088,8 +1088,8 @@
    },
    "gym": null,
    "nutrition": {
-    "energy": "deficit_300",
-    "label": "Deficyt ok. 300 kcal",
+    "energy": "maintenance",
+    "label": "Dzień treningowy: bilans zerowy",
     "protein_g_per_kg": 1.8,
     "on_bike_carbs_g_per_h": [
      30,
@@ -1115,8 +1115,8 @@
    },
    "gym": null,
    "nutrition": {
-    "energy": "deficit_300",
-    "label": "Deficyt ok. 300 kcal",
+    "energy": "maintenance",
+    "label": "Dzień treningowy: bilans zerowy",
     "protein_g_per_kg": 1.8,
     "on_bike_carbs_g_per_h": [
      30,
@@ -1235,8 +1235,8 @@
     ]
    },
    "nutrition": {
-    "energy": "deficit_300",
-    "label": "Deficyt ok. 300 kcal",
+    "energy": "maintenance",
+    "label": "Dzień treningowy: bilans zerowy",
     "protein_g_per_kg": 1.8,
     "on_bike_carbs_g_per_h": [
      30,
@@ -1256,8 +1256,8 @@
    "bike": null,
    "gym": null,
    "nutrition": {
-    "energy": "deficit_500",
-    "label": "Dzień lekki: deficyt ok. 500 kcal",
+    "energy": "deficit_300",
+    "label": "Dzień lekki: deficyt dobrany do masy",
     "protein_g_per_kg": 1.8,
     "on_bike_carbs_g_per_h": [
      0,
@@ -1307,8 +1307,8 @@
    "bike": null,
    "gym": null,
    "nutrition": {
-    "energy": "deficit_500",
-    "label": "Dzień lekki: deficyt ok. 500 kcal",
+    "energy": "deficit_300",
+    "label": "Dzień lekki: deficyt dobrany do masy",
     "protein_g_per_kg": 1.8,
     "on_bike_carbs_g_per_h": [
      0,
@@ -1336,8 +1336,8 @@
    },
    "gym": null,
    "nutrition": {
-    "energy": "deficit_300",
-    "label": "Deficyt ok. 300 kcal",
+    "energy": "maintenance",
+    "label": "Dzień treningowy: bilans zerowy",
     "protein_g_per_kg": 1.8,
     "on_bike_carbs_g_per_h": [
      30,
@@ -1365,8 +1365,8 @@
    },
    "gym": null,
    "nutrition": {
-    "energy": "deficit_500",
-    "label": "Dzień lekki: deficyt ok. 500 kcal",
+    "energy": "deficit_300",
+    "label": "Dzień lekki: deficyt dobrany do masy",
     "protein_g_per_kg": 1.8,
     "on_bike_carbs_g_per_h": [
      0,
@@ -1388,8 +1388,8 @@
    "bike": null,
    "gym": null,
    "nutrition": {
-    "energy": "deficit_500",
-    "label": "Dzień lekki: deficyt ok. 500 kcal",
+    "energy": "deficit_300",
+    "label": "Dzień lekki: deficyt dobrany do masy",
     "protein_g_per_kg": 1.8,
     "on_bike_carbs_g_per_h": [
      0,
@@ -1515,8 +1515,8 @@
     ]
    },
    "nutrition": {
-    "energy": "deficit_300",
-    "label": "Deficyt ok. 300 kcal",
+    "energy": "maintenance",
+    "label": "Dzień treningowy: bilans zerowy",
     "protein_g_per_kg": 1.8,
     "on_bike_carbs_g_per_h": [
      30,
@@ -1538,8 +1538,8 @@
    "bike": null,
    "gym": null,
    "nutrition": {
-    "energy": "deficit_500",
-    "label": "Dzień lekki: deficyt ok. 500 kcal",
+    "energy": "deficit_300",
+    "label": "Dzień lekki: deficyt dobrany do masy",
     "protein_g_per_kg": 1.8,
     "on_bike_carbs_g_per_h": [
      0,
@@ -1589,8 +1589,8 @@
    "bike": null,
    "gym": null,
    "nutrition": {
-    "energy": "deficit_500",
-    "label": "Dzień lekki: deficyt ok. 500 kcal",
+    "energy": "deficit_300",
+    "label": "Dzień lekki: deficyt dobrany do masy",
     "protein_g_per_kg": 1.8,
     "on_bike_carbs_g_per_h": [
      0,
@@ -1643,8 +1643,8 @@
    },
    "gym": null,
    "nutrition": {
-    "energy": "deficit_300",
-    "label": "Deficyt ok. 300 kcal",
+    "energy": "maintenance",
+    "label": "Dzień treningowy: bilans zerowy",
     "protein_g_per_kg": 1.8,
     "on_bike_carbs_g_per_h": [
      30,
@@ -1790,8 +1790,8 @@
     ]
    },
    "nutrition": {
-    "energy": "deficit_300",
-    "label": "Deficyt ok. 300 kcal",
+    "energy": "maintenance",
+    "label": "Dzień treningowy: bilans zerowy",
     "protein_g_per_kg": 1.8,
     "on_bike_carbs_g_per_h": [
      30,
@@ -1811,8 +1811,8 @@
    "bike": null,
    "gym": null,
    "nutrition": {
-    "energy": "deficit_500",
-    "label": "Dzień lekki: deficyt ok. 500 kcal",
+    "energy": "deficit_300",
+    "label": "Dzień lekki: deficyt dobrany do masy",
     "protein_g_per_kg": 1.8,
     "on_bike_carbs_g_per_h": [
      0,
@@ -1859,8 +1859,8 @@
    "bike": null,
    "gym": null,
    "nutrition": {
-    "energy": "deficit_500",
-    "label": "Dzień lekki: deficyt ok. 500 kcal",
+    "energy": "deficit_300",
+    "label": "Dzień lekki: deficyt dobrany do masy",
     "protein_g_per_kg": 1.8,
     "on_bike_carbs_g_per_h": [
      0,
@@ -1913,8 +1913,8 @@
    },
    "gym": null,
    "nutrition": {
-    "energy": "deficit_300",
-    "label": "Deficyt ok. 300 kcal",
+    "energy": "maintenance",
+    "label": "Dzień treningowy: bilans zerowy",
     "protein_g_per_kg": 1.8,
     "on_bike_carbs_g_per_h": [
      30,
@@ -2060,8 +2060,8 @@
     ]
    },
    "nutrition": {
-    "energy": "deficit_300",
-    "label": "Deficyt ok. 300 kcal",
+    "energy": "maintenance",
+    "label": "Dzień treningowy: bilans zerowy",
     "protein_g_per_kg": 1.8,
     "on_bike_carbs_g_per_h": [
      30,
@@ -2081,8 +2081,8 @@
    "bike": null,
    "gym": null,
    "nutrition": {
-    "energy": "deficit_500",
-    "label": "Dzień lekki: deficyt ok. 500 kcal",
+    "energy": "deficit_300",
+    "label": "Dzień lekki: deficyt dobrany do masy",
     "protein_g_per_kg": 1.8,
     "on_bike_carbs_g_per_h": [
      0,
@@ -2129,8 +2129,8 @@
    "bike": null,
    "gym": null,
    "nutrition": {
-    "energy": "deficit_500",
-    "label": "Dzień lekki: deficyt ok. 500 kcal",
+    "energy": "deficit_300",
+    "label": "Dzień lekki: deficyt dobrany do masy",
     "protein_g_per_kg": 1.8,
     "on_bike_carbs_g_per_h": [
      0,
@@ -2183,8 +2183,8 @@
    },
    "gym": null,
    "nutrition": {
-    "energy": "deficit_300",
-    "label": "Deficyt ok. 300 kcal",
+    "energy": "maintenance",
+    "label": "Dzień treningowy: bilans zerowy",
     "protein_g_per_kg": 1.8,
     "on_bike_carbs_g_per_h": [
      30,
@@ -2330,8 +2330,8 @@
     ]
    },
    "nutrition": {
-    "energy": "deficit_300",
-    "label": "Deficyt ok. 300 kcal",
+    "energy": "maintenance",
+    "label": "Dzień treningowy: bilans zerowy",
     "protein_g_per_kg": 1.8,
     "on_bike_carbs_g_per_h": [
      30,
@@ -2351,8 +2351,8 @@
    "bike": null,
    "gym": null,
    "nutrition": {
-    "energy": "deficit_500",
-    "label": "Dzień lekki: deficyt ok. 500 kcal",
+    "energy": "deficit_300",
+    "label": "Dzień lekki: deficyt dobrany do masy",
     "protein_g_per_kg": 1.8,
     "on_bike_carbs_g_per_h": [
      0,
@@ -2401,8 +2401,8 @@
    "bike": null,
    "gym": null,
    "nutrition": {
-    "energy": "deficit_500",
-    "label": "Dzień lekki: deficyt ok. 500 kcal",
+    "energy": "deficit_300",
+    "label": "Dzień lekki: deficyt dobrany do masy",
     "protein_g_per_kg": 1.8,
     "on_bike_carbs_g_per_h": [
      0,
@@ -2430,8 +2430,8 @@
    },
    "gym": null,
    "nutrition": {
-    "energy": "deficit_300",
-    "label": "Deficyt ok. 300 kcal",
+    "energy": "maintenance",
+    "label": "Dzień treningowy: bilans zerowy",
     "protein_g_per_kg": 1.8,
     "on_bike_carbs_g_per_h": [
      30,
@@ -2459,8 +2459,8 @@
    },
    "gym": null,
    "nutrition": {
-    "energy": "deficit_500",
-    "label": "Dzień lekki: deficyt ok. 500 kcal",
+    "energy": "deficit_300",
+    "label": "Dzień lekki: deficyt dobrany do masy",
     "protein_g_per_kg": 1.8,
     "on_bike_carbs_g_per_h": [
      0,
@@ -2482,8 +2482,8 @@
    "bike": null,
    "gym": null,
    "nutrition": {
-    "energy": "deficit_500",
-    "label": "Dzień lekki: deficyt ok. 500 kcal",
+    "energy": "deficit_300",
+    "label": "Dzień lekki: deficyt dobrany do masy",
     "protein_g_per_kg": 1.8,
     "on_bike_carbs_g_per_h": [
      0,
@@ -2609,8 +2609,8 @@
     ]
    },
    "nutrition": {
-    "energy": "deficit_300",
-    "label": "Deficyt ok. 300 kcal",
+    "energy": "maintenance",
+    "label": "Dzień treningowy: bilans zerowy",
     "protein_g_per_kg": 1.8,
     "on_bike_carbs_g_per_h": [
      30,
@@ -2632,8 +2632,8 @@
    "bike": null,
    "gym": null,
    "nutrition": {
-    "energy": "deficit_500",
-    "label": "Dzień lekki: deficyt ok. 500 kcal",
+    "energy": "deficit_300",
+    "label": "Dzień lekki: deficyt dobrany do masy",
     "protein_g_per_kg": 1.8,
     "on_bike_carbs_g_per_h": [
      0,
@@ -2683,8 +2683,8 @@
    "bike": null,
    "gym": null,
    "nutrition": {
-    "energy": "deficit_500",
-    "label": "Dzień lekki: deficyt ok. 500 kcal",
+    "energy": "deficit_300",
+    "label": "Dzień lekki: deficyt dobrany do masy",
     "protein_g_per_kg": 1.8,
     "on_bike_carbs_g_per_h": [
      0,
@@ -2737,8 +2737,8 @@
    },
    "gym": null,
    "nutrition": {
-    "energy": "deficit_300",
-    "label": "Deficyt ok. 300 kcal",
+    "energy": "maintenance",
+    "label": "Dzień treningowy: bilans zerowy",
     "protein_g_per_kg": 1.8,
     "on_bike_carbs_g_per_h": [
      30,
@@ -2884,8 +2884,8 @@
     ]
    },
    "nutrition": {
-    "energy": "deficit_300",
-    "label": "Deficyt ok. 300 kcal",
+    "energy": "maintenance",
+    "label": "Dzień treningowy: bilans zerowy",
     "protein_g_per_kg": 1.8,
     "on_bike_carbs_g_per_h": [
      30,
@@ -2905,8 +2905,8 @@
    "bike": null,
    "gym": null,
    "nutrition": {
-    "energy": "deficit_500",
-    "label": "Dzień lekki: deficyt ok. 500 kcal",
+    "energy": "deficit_300",
+    "label": "Dzień lekki: deficyt dobrany do masy",
     "protein_g_per_kg": 1.8,
     "on_bike_carbs_g_per_h": [
      0,
@@ -2954,8 +2954,8 @@
    "bike": null,
    "gym": null,
    "nutrition": {
-    "energy": "deficit_500",
-    "label": "Dzień lekki: deficyt ok. 500 kcal",
+    "energy": "deficit_300",
+    "label": "Dzień lekki: deficyt dobrany do masy",
     "protein_g_per_kg": 1.8,
     "on_bike_carbs_g_per_h": [
      0,
@@ -3010,8 +3010,8 @@
    },
    "gym": null,
    "nutrition": {
-    "energy": "deficit_500",
-    "label": "Dzień lekki: deficyt ok. 500 kcal",
+    "energy": "deficit_300",
+    "label": "Dzień lekki: deficyt dobrany do masy",
     "protein_g_per_kg": 1.8,
     "on_bike_carbs_g_per_h": [
      0,
@@ -3037,8 +3037,8 @@
    },
    "gym": null,
    "nutrition": {
-    "energy": "deficit_300",
-    "label": "Deficyt ok. 300 kcal",
+    "energy": "maintenance",
+    "label": "Dzień treningowy: bilans zerowy",
     "protein_g_per_kg": 1.8,
     "on_bike_carbs_g_per_h": [
      30,
@@ -3158,8 +3158,8 @@
     ]
    },
    "nutrition": {
-    "energy": "deficit_300",
-    "label": "Deficyt ok. 300 kcal",
+    "energy": "maintenance",
+    "label": "Dzień treningowy: bilans zerowy",
     "protein_g_per_kg": 1.8,
     "on_bike_carbs_g_per_h": [
      30,
@@ -3179,8 +3179,8 @@
    "bike": null,
    "gym": null,
    "nutrition": {
-    "energy": "deficit_500",
-    "label": "Dzień lekki: deficyt ok. 500 kcal",
+    "energy": "deficit_300",
+    "label": "Dzień lekki: deficyt dobrany do masy",
     "protein_g_per_kg": 1.8,
     "on_bike_carbs_g_per_h": [
      0,
@@ -3228,8 +3228,8 @@
    "bike": null,
    "gym": null,
    "nutrition": {
-    "energy": "deficit_500",
-    "label": "Dzień lekki: deficyt ok. 500 kcal",
+    "energy": "deficit_300",
+    "label": "Dzień lekki: deficyt dobrany do masy",
     "protein_g_per_kg": 1.8,
     "on_bike_carbs_g_per_h": [
      0,
@@ -3282,8 +3282,8 @@
    },
    "gym": null,
    "nutrition": {
-    "energy": "deficit_300",
-    "label": "Deficyt ok. 300 kcal",
+    "energy": "maintenance",
+    "label": "Dzień treningowy: bilans zerowy",
     "protein_g_per_kg": 1.8,
     "on_bike_carbs_g_per_h": [
      30,
@@ -3429,8 +3429,8 @@
     ]
    },
    "nutrition": {
-    "energy": "deficit_300",
-    "label": "Deficyt ok. 300 kcal",
+    "energy": "maintenance",
+    "label": "Dzień treningowy: bilans zerowy",
     "protein_g_per_kg": 1.8,
     "on_bike_carbs_g_per_h": [
      30,
@@ -3450,8 +3450,8 @@
    "bike": null,
    "gym": null,
    "nutrition": {
-    "energy": "deficit_500",
-    "label": "Dzień lekki: deficyt ok. 500 kcal",
+    "energy": "deficit_300",
+    "label": "Dzień lekki: deficyt dobrany do masy",
     "protein_g_per_kg": 1.8,
     "on_bike_carbs_g_per_h": [
      0,
@@ -3498,8 +3498,8 @@
    "bike": null,
    "gym": null,
    "nutrition": {
-    "energy": "deficit_500",
-    "label": "Dzień lekki: deficyt ok. 500 kcal",
+    "energy": "deficit_300",
+    "label": "Dzień lekki: deficyt dobrany do masy",
     "protein_g_per_kg": 1.8,
     "on_bike_carbs_g_per_h": [
      0,
@@ -3552,8 +3552,8 @@
    },
    "gym": null,
    "nutrition": {
-    "energy": "deficit_300",
-    "label": "Deficyt ok. 300 kcal",
+    "energy": "maintenance",
+    "label": "Dzień treningowy: bilans zerowy",
     "protein_g_per_kg": 1.8,
     "on_bike_carbs_g_per_h": [
      30,
@@ -3699,8 +3699,8 @@
     ]
    },
    "nutrition": {
-    "energy": "deficit_300",
-    "label": "Deficyt ok. 300 kcal",
+    "energy": "maintenance",
+    "label": "Dzień treningowy: bilans zerowy",
     "protein_g_per_kg": 1.8,
     "on_bike_carbs_g_per_h": [
      30,
@@ -3720,8 +3720,8 @@
    "bike": null,
    "gym": null,
    "nutrition": {
-    "energy": "deficit_500",
-    "label": "Dzień lekki: deficyt ok. 500 kcal",
+    "energy": "deficit_300",
+    "label": "Dzień lekki: deficyt dobrany do masy",
     "protein_g_per_kg": 1.8,
     "on_bike_carbs_g_per_h": [
      0,
@@ -3768,8 +3768,8 @@
    "bike": null,
    "gym": null,
    "nutrition": {
-    "energy": "deficit_500",
-    "label": "Dzień lekki: deficyt ok. 500 kcal",
+    "energy": "deficit_300",
+    "label": "Dzień lekki: deficyt dobrany do masy",
     "protein_g_per_kg": 1.8,
     "on_bike_carbs_g_per_h": [
      0,
@@ -3822,8 +3822,8 @@
    },
    "gym": null,
    "nutrition": {
-    "energy": "deficit_300",
-    "label": "Deficyt ok. 300 kcal",
+    "energy": "maintenance",
+    "label": "Dzień treningowy: bilans zerowy",
     "protein_g_per_kg": 1.8,
     "on_bike_carbs_g_per_h": [
      30,
@@ -3969,8 +3969,8 @@
     ]
    },
    "nutrition": {
-    "energy": "deficit_300",
-    "label": "Deficyt ok. 300 kcal",
+    "energy": "maintenance",
+    "label": "Dzień treningowy: bilans zerowy",
     "protein_g_per_kg": 1.8,
     "on_bike_carbs_g_per_h": [
      30,
@@ -3990,8 +3990,8 @@
    "bike": null,
    "gym": null,
    "nutrition": {
-    "energy": "deficit_500",
-    "label": "Dzień lekki: deficyt ok. 500 kcal",
+    "energy": "deficit_300",
+    "label": "Dzień lekki: deficyt dobrany do masy",
     "protein_g_per_kg": 1.8,
     "on_bike_carbs_g_per_h": [
      0,
@@ -4040,8 +4040,8 @@
    "bike": null,
    "gym": null,
    "nutrition": {
-    "energy": "deficit_500",
-    "label": "Dzień lekki: deficyt ok. 500 kcal",
+    "energy": "deficit_300",
+    "label": "Dzień lekki: deficyt dobrany do masy",
     "protein_g_per_kg": 1.8,
     "on_bike_carbs_g_per_h": [
      0,
@@ -4069,8 +4069,8 @@
    },
    "gym": null,
    "nutrition": {
-    "energy": "deficit_300",
-    "label": "Deficyt ok. 300 kcal",
+    "energy": "maintenance",
+    "label": "Dzień treningowy: bilans zerowy",
     "protein_g_per_kg": 1.8,
     "on_bike_carbs_g_per_h": [
      30,
@@ -4098,8 +4098,8 @@
    },
    "gym": null,
    "nutrition": {
-    "energy": "deficit_500",
-    "label": "Dzień lekki: deficyt ok. 500 kcal",
+    "energy": "deficit_300",
+    "label": "Dzień lekki: deficyt dobrany do masy",
     "protein_g_per_kg": 1.8,
     "on_bike_carbs_g_per_h": [
      0,
@@ -4121,8 +4121,8 @@
    "bike": null,
    "gym": null,
    "nutrition": {
-    "energy": "deficit_500",
-    "label": "Dzień lekki: deficyt ok. 500 kcal",
+    "energy": "deficit_300",
+    "label": "Dzień lekki: deficyt dobrany do masy",
     "protein_g_per_kg": 1.8,
     "on_bike_carbs_g_per_h": [
      0,
@@ -4248,8 +4248,8 @@
     ]
    },
    "nutrition": {
-    "energy": "deficit_300",
-    "label": "Deficyt ok. 300 kcal",
+    "energy": "maintenance",
+    "label": "Dzień treningowy: bilans zerowy",
     "protein_g_per_kg": 1.8,
     "on_bike_carbs_g_per_h": [
      30,
@@ -4271,8 +4271,8 @@
    "bike": null,
    "gym": null,
    "nutrition": {
-    "energy": "deficit_500",
-    "label": "Dzień lekki: deficyt ok. 500 kcal",
+    "energy": "deficit_300",
+    "label": "Dzień lekki: deficyt dobrany do masy",
     "protein_g_per_kg": 1.8,
     "on_bike_carbs_g_per_h": [
      0,
@@ -4321,8 +4321,8 @@
    "bike": null,
    "gym": null,
    "nutrition": {
-    "energy": "deficit_500",
-    "label": "Dzień lekki: deficyt ok. 500 kcal",
+    "energy": "deficit_300",
+    "label": "Dzień lekki: deficyt dobrany do masy",
     "protein_g_per_kg": 1.8,
     "on_bike_carbs_g_per_h": [
      0,
@@ -4375,8 +4375,8 @@
    },
    "gym": null,
    "nutrition": {
-    "energy": "deficit_300",
-    "label": "Deficyt ok. 300 kcal",
+    "energy": "maintenance",
+    "label": "Dzień treningowy: bilans zerowy",
     "protein_g_per_kg": 1.8,
     "on_bike_carbs_g_per_h": [
      30,
@@ -4522,8 +4522,8 @@
     ]
    },
    "nutrition": {
-    "energy": "deficit_300",
-    "label": "Deficyt ok. 300 kcal",
+    "energy": "maintenance",
+    "label": "Dzień treningowy: bilans zerowy",
     "protein_g_per_kg": 1.8,
     "on_bike_carbs_g_per_h": [
      30,
@@ -4543,8 +4543,8 @@
    "bike": null,
    "gym": null,
    "nutrition": {
-    "energy": "deficit_500",
-    "label": "Dzień lekki: deficyt ok. 500 kcal",
+    "energy": "deficit_300",
+    "label": "Dzień lekki: deficyt dobrany do masy",
     "protein_g_per_kg": 1.8,
     "on_bike_carbs_g_per_h": [
      0,
@@ -4591,8 +4591,8 @@
    "bike": null,
    "gym": null,
    "nutrition": {
-    "energy": "deficit_500",
-    "label": "Dzień lekki: deficyt ok. 500 kcal",
+    "energy": "deficit_300",
+    "label": "Dzień lekki: deficyt dobrany do masy",
     "protein_g_per_kg": 1.8,
     "on_bike_carbs_g_per_h": [
      0,
@@ -4645,8 +4645,8 @@
    },
    "gym": null,
    "nutrition": {
-    "energy": "deficit_300",
-    "label": "Deficyt ok. 300 kcal",
+    "energy": "maintenance",
+    "label": "Dzień treningowy: bilans zerowy",
     "protein_g_per_kg": 1.8,
     "on_bike_carbs_g_per_h": [
      30,
@@ -4792,8 +4792,8 @@
     ]
    },
    "nutrition": {
-    "energy": "deficit_300",
-    "label": "Deficyt ok. 300 kcal",
+    "energy": "maintenance",
+    "label": "Dzień treningowy: bilans zerowy",
     "protein_g_per_kg": 1.8,
     "on_bike_carbs_g_per_h": [
      30,
@@ -4813,8 +4813,8 @@
    "bike": null,
    "gym": null,
    "nutrition": {
-    "energy": "deficit_500",
-    "label": "Dzień lekki: deficyt ok. 500 kcal",
+    "energy": "deficit_300",
+    "label": "Dzień lekki: deficyt dobrany do masy",
     "protein_g_per_kg": 1.8,
     "on_bike_carbs_g_per_h": [
      0,
@@ -4861,8 +4861,8 @@
    "bike": null,
    "gym": null,
    "nutrition": {
-    "energy": "deficit_500",
-    "label": "Dzień lekki: deficyt ok. 500 kcal",
+    "energy": "deficit_300",
+    "label": "Dzień lekki: deficyt dobrany do masy",
     "protein_g_per_kg": 1.8,
     "on_bike_carbs_g_per_h": [
      0,
@@ -4915,8 +4915,8 @@
    },
    "gym": null,
    "nutrition": {
-    "energy": "deficit_300",
-    "label": "Deficyt ok. 300 kcal",
+    "energy": "maintenance",
+    "label": "Dzień treningowy: bilans zerowy",
     "protein_g_per_kg": 1.8,
     "on_bike_carbs_g_per_h": [
      30,
@@ -5062,8 +5062,8 @@
     ]
    },
    "nutrition": {
-    "energy": "deficit_300",
-    "label": "Deficyt ok. 300 kcal",
+    "energy": "maintenance",
+    "label": "Dzień treningowy: bilans zerowy",
     "protein_g_per_kg": 1.8,
     "on_bike_carbs_g_per_h": [
      30,
@@ -5083,8 +5083,8 @@
    "bike": null,
    "gym": null,
    "nutrition": {
-    "energy": "deficit_500",
-    "label": "Dzień lekki: deficyt ok. 500 kcal",
+    "energy": "deficit_300",
+    "label": "Dzień lekki: deficyt dobrany do masy",
     "protein_g_per_kg": 1.8,
     "on_bike_carbs_g_per_h": [
      0,
@@ -5133,8 +5133,8 @@
    "bike": null,
    "gym": null,
    "nutrition": {
-    "energy": "deficit_500",
-    "label": "Dzień lekki: deficyt ok. 500 kcal",
+    "energy": "deficit_300",
+    "label": "Dzień lekki: deficyt dobrany do masy",
     "protein_g_per_kg": 1.8,
     "on_bike_carbs_g_per_h": [
      0,
@@ -5162,8 +5162,8 @@
    },
    "gym": null,
    "nutrition": {
-    "energy": "deficit_300",
-    "label": "Deficyt ok. 300 kcal",
+    "energy": "maintenance",
+    "label": "Dzień treningowy: bilans zerowy",
     "protein_g_per_kg": 1.8,
     "on_bike_carbs_g_per_h": [
      30,
@@ -5191,8 +5191,8 @@
    },
    "gym": null,
    "nutrition": {
-    "energy": "deficit_500",
-    "label": "Dzień lekki: deficyt ok. 500 kcal",
+    "energy": "deficit_300",
+    "label": "Dzień lekki: deficyt dobrany do masy",
     "protein_g_per_kg": 1.8,
     "on_bike_carbs_g_per_h": [
      0,
@@ -5214,8 +5214,8 @@
    "bike": null,
    "gym": null,
    "nutrition": {
-    "energy": "deficit_500",
-    "label": "Dzień lekki: deficyt ok. 500 kcal",
+    "energy": "deficit_300",
+    "label": "Dzień lekki: deficyt dobrany do masy",
     "protein_g_per_kg": 1.8,
     "on_bike_carbs_g_per_h": [
      0,
@@ -5341,8 +5341,8 @@
     ]
    },
    "nutrition": {
-    "energy": "deficit_300",
-    "label": "Deficyt ok. 300 kcal",
+    "energy": "maintenance",
+    "label": "Dzień treningowy: bilans zerowy",
     "protein_g_per_kg": 1.8,
     "on_bike_carbs_g_per_h": [
      30,
@@ -5364,8 +5364,8 @@
    "bike": null,
    "gym": null,
    "nutrition": {
-    "energy": "deficit_500",
-    "label": "Dzień lekki: deficyt ok. 500 kcal",
+    "energy": "deficit_300",
+    "label": "Dzień lekki: deficyt dobrany do masy",
     "protein_g_per_kg": 1.8,
     "on_bike_carbs_g_per_h": [
      0,
@@ -5415,8 +5415,8 @@
    "bike": null,
    "gym": null,
    "nutrition": {
-    "energy": "deficit_500",
-    "label": "Dzień lekki: deficyt ok. 500 kcal",
+    "energy": "deficit_300",
+    "label": "Dzień lekki: deficyt dobrany do masy",
     "protein_g_per_kg": 1.8,
     "on_bike_carbs_g_per_h": [
      0,
@@ -5469,8 +5469,8 @@
    },
    "gym": null,
    "nutrition": {
-    "energy": "deficit_300",
-    "label": "Deficyt ok. 300 kcal",
+    "energy": "maintenance",
+    "label": "Dzień treningowy: bilans zerowy",
     "protein_g_per_kg": 1.8,
     "on_bike_carbs_g_per_h": [
      30,
@@ -5616,8 +5616,8 @@
     ]
    },
    "nutrition": {
-    "energy": "deficit_300",
-    "label": "Deficyt ok. 300 kcal",
+    "energy": "maintenance",
+    "label": "Dzień treningowy: bilans zerowy",
     "protein_g_per_kg": 1.8,
     "on_bike_carbs_g_per_h": [
      60,
@@ -5637,8 +5637,8 @@
    "bike": null,
    "gym": null,
    "nutrition": {
-    "energy": "deficit_500",
-    "label": "Dzień lekki: deficyt ok. 500 kcal",
+    "energy": "deficit_300",
+    "label": "Dzień lekki: deficyt dobrany do masy",
     "protein_g_per_kg": 1.8,
     "on_bike_carbs_g_per_h": [
      0,
@@ -5686,8 +5686,8 @@
    "bike": null,
    "gym": null,
    "nutrition": {
-    "energy": "deficit_500",
-    "label": "Dzień lekki: deficyt ok. 500 kcal",
+    "energy": "deficit_300",
+    "label": "Dzień lekki: deficyt dobrany do masy",
     "protein_g_per_kg": 1.8,
     "on_bike_carbs_g_per_h": [
      0,
@@ -5742,8 +5742,8 @@
    },
    "gym": null,
    "nutrition": {
-    "energy": "deficit_500",
-    "label": "Dzień lekki: deficyt ok. 500 kcal",
+    "energy": "deficit_300",
+    "label": "Dzień lekki: deficyt dobrany do masy",
     "protein_g_per_kg": 1.8,
     "on_bike_carbs_g_per_h": [
      0,
@@ -5769,8 +5769,8 @@
    },
    "gym": null,
    "nutrition": {
-    "energy": "deficit_300",
-    "label": "Deficyt ok. 300 kcal",
+    "energy": "maintenance",
+    "label": "Dzień treningowy: bilans zerowy",
     "protein_g_per_kg": 1.8,
     "on_bike_carbs_g_per_h": [
      30,
@@ -5889,8 +5889,8 @@
     ]
    },
    "nutrition": {
-    "energy": "deficit_300",
-    "label": "Deficyt ok. 300 kcal",
+    "energy": "maintenance",
+    "label": "Dzień treningowy: bilans zerowy",
     "protein_g_per_kg": 1.8,
     "on_bike_carbs_g_per_h": [
      30,
@@ -5910,8 +5910,8 @@
    "bike": null,
    "gym": null,
    "nutrition": {
-    "energy": "deficit_500",
-    "label": "Dzień lekki: deficyt ok. 500 kcal",
+    "energy": "deficit_300",
+    "label": "Dzień lekki: deficyt dobrany do masy",
     "protein_g_per_kg": 1.8,
     "on_bike_carbs_g_per_h": [
      0,
@@ -5938,7 +5938,7 @@
    "gym": null,
    "nutrition": {
     "energy": "maintenance",
-    "label": "Dzień ciężki: bez deficytu, paliwo na trening",
+    "label": "Bilans zerowy – jedz na pełną wydajność",
     "protein_g_per_kg": 1.8,
     "on_bike_carbs_g_per_h": [
      60,
@@ -5959,8 +5959,8 @@
    "bike": null,
    "gym": null,
    "nutrition": {
-    "energy": "deficit_500",
-    "label": "Dzień lekki: deficyt ok. 500 kcal",
+    "energy": "maintenance",
+    "label": "Bilans zerowy – jedz na pełną wydajność",
     "protein_g_per_kg": 1.8,
     "on_bike_carbs_g_per_h": [
      0,
@@ -5987,7 +5987,7 @@
    "gym": null,
    "nutrition": {
     "energy": "maintenance",
-    "label": "Dzień ciężki: bez deficytu, paliwo na trening",
+    "label": "Bilans zerowy – jedz na pełną wydajność",
     "protein_g_per_kg": 1.8,
     "on_bike_carbs_g_per_h": [
      0,
@@ -6013,8 +6013,8 @@
    },
    "gym": null,
    "nutrition": {
-    "energy": "deficit_500",
-    "label": "Dzień lekki: deficyt ok. 500 kcal",
+    "energy": "maintenance",
+    "label": "Bilans zerowy – jedz na pełną wydajność",
     "protein_g_per_kg": 1.8,
     "on_bike_carbs_g_per_h": [
      0,
@@ -6041,7 +6041,7 @@
    "gym": null,
    "nutrition": {
     "energy": "maintenance",
-    "label": "Dzień ciężki: bez deficytu, paliwo na trening",
+    "label": "Bilans zerowy – jedz na pełną wydajność",
     "protein_g_per_kg": 1.8,
     "on_bike_carbs_g_per_h": [
      30,
@@ -6160,8 +6160,8 @@
     ]
    },
    "nutrition": {
-    "energy": "deficit_300",
-    "label": "Deficyt ok. 300 kcal",
+    "energy": "maintenance",
+    "label": "Bilans zerowy – jedz na pełną wydajność",
     "protein_g_per_kg": 1.8,
     "on_bike_carbs_g_per_h": [
      30,
@@ -6181,8 +6181,8 @@
    "bike": null,
    "gym": null,
    "nutrition": {
-    "energy": "deficit_500",
-    "label": "Dzień lekki: deficyt ok. 500 kcal",
+    "energy": "maintenance",
+    "label": "Bilans zerowy – jedz na pełną wydajność",
     "protein_g_per_kg": 1.8,
     "on_bike_carbs_g_per_h": [
      0,
@@ -6209,7 +6209,7 @@
    "gym": null,
    "nutrition": {
     "energy": "maintenance",
-    "label": "Dzień ciężki: bez deficytu, paliwo na trening",
+    "label": "Bilans zerowy – jedz na pełną wydajność",
     "protein_g_per_kg": 1.8,
     "on_bike_carbs_g_per_h": [
      60,
@@ -6229,8 +6229,8 @@
    "bike": null,
    "gym": null,
    "nutrition": {
-    "energy": "deficit_500",
-    "label": "Dzień lekki: deficyt ok. 500 kcal",
+    "energy": "maintenance",
+    "label": "Bilans zerowy – jedz na pełną wydajność",
     "protein_g_per_kg": 1.8,
     "on_bike_carbs_g_per_h": [
      0,
@@ -6257,7 +6257,7 @@
    "gym": null,
    "nutrition": {
     "energy": "maintenance",
-    "label": "Dzień ciężki: bez deficytu, paliwo na trening",
+    "label": "Bilans zerowy – jedz na pełną wydajność",
     "protein_g_per_kg": 1.8,
     "on_bike_carbs_g_per_h": [
      30,
@@ -6283,8 +6283,8 @@
    },
    "gym": null,
    "nutrition": {
-    "energy": "deficit_500",
-    "label": "Dzień lekki: deficyt ok. 500 kcal",
+    "energy": "maintenance",
+    "label": "Bilans zerowy – jedz na pełną wydajność",
     "protein_g_per_kg": 1.8,
     "on_bike_carbs_g_per_h": [
      0,
@@ -6311,7 +6311,7 @@
    "gym": null,
    "nutrition": {
     "energy": "maintenance",
-    "label": "Dzień ciężki: bez deficytu, paliwo na trening",
+    "label": "Bilans zerowy – jedz na pełną wydajność",
     "protein_g_per_kg": 1.8,
     "on_bike_carbs_g_per_h": [
      30,
@@ -6430,8 +6430,8 @@
     ]
    },
    "nutrition": {
-    "energy": "deficit_300",
-    "label": "Deficyt ok. 300 kcal",
+    "energy": "maintenance",
+    "label": "Bilans zerowy – jedz na pełną wydajność",
     "protein_g_per_kg": 1.8,
     "on_bike_carbs_g_per_h": [
      30,
@@ -6451,8 +6451,8 @@
    "bike": null,
    "gym": null,
    "nutrition": {
-    "energy": "deficit_500",
-    "label": "Dzień lekki: deficyt ok. 500 kcal",
+    "energy": "maintenance",
+    "label": "Bilans zerowy – jedz na pełną wydajność",
     "protein_g_per_kg": 1.8,
     "on_bike_carbs_g_per_h": [
      0,
@@ -6479,7 +6479,7 @@
    "gym": null,
    "nutrition": {
     "energy": "maintenance",
-    "label": "Dzień ciężki: bez deficytu, paliwo na trening",
+    "label": "Bilans zerowy – jedz na pełną wydajność",
     "protein_g_per_kg": 1.8,
     "on_bike_carbs_g_per_h": [
      60,
@@ -6499,8 +6499,8 @@
    "bike": null,
    "gym": null,
    "nutrition": {
-    "energy": "deficit_500",
-    "label": "Dzień lekki: deficyt ok. 500 kcal",
+    "energy": "maintenance",
+    "label": "Bilans zerowy – jedz na pełną wydajność",
     "protein_g_per_kg": 1.8,
     "on_bike_carbs_g_per_h": [
      0,
@@ -6527,7 +6527,7 @@
    "gym": null,
    "nutrition": {
     "energy": "maintenance",
-    "label": "Dzień ciężki: bez deficytu, paliwo na trening",
+    "label": "Bilans zerowy – jedz na pełną wydajność",
     "protein_g_per_kg": 1.8,
     "on_bike_carbs_g_per_h": [
      30,
@@ -6553,8 +6553,8 @@
    },
    "gym": null,
    "nutrition": {
-    "energy": "deficit_500",
-    "label": "Dzień lekki: deficyt ok. 500 kcal",
+    "energy": "maintenance",
+    "label": "Bilans zerowy – jedz na pełną wydajność",
     "protein_g_per_kg": 1.8,
     "on_bike_carbs_g_per_h": [
      0,
@@ -6581,7 +6581,7 @@
    "gym": null,
    "nutrition": {
     "energy": "maintenance",
-    "label": "Dzień ciężki: bez deficytu, paliwo na trening",
+    "label": "Bilans zerowy – jedz na pełną wydajność",
     "protein_g_per_kg": 1.8,
     "on_bike_carbs_g_per_h": [
      30,
@@ -6702,8 +6702,8 @@
     ]
    },
    "nutrition": {
-    "energy": "deficit_300",
-    "label": "Deficyt ok. 300 kcal",
+    "energy": "maintenance",
+    "label": "Bilans zerowy – jedz na pełną wydajność",
     "protein_g_per_kg": 1.8,
     "on_bike_carbs_g_per_h": [
      30,
@@ -6723,8 +6723,8 @@
    "bike": null,
    "gym": null,
    "nutrition": {
-    "energy": "deficit_500",
-    "label": "Dzień lekki: deficyt ok. 500 kcal",
+    "energy": "maintenance",
+    "label": "Bilans zerowy – jedz na pełną wydajność",
     "protein_g_per_kg": 1.8,
     "on_bike_carbs_g_per_h": [
      0,
@@ -6751,7 +6751,7 @@
    "gym": null,
    "nutrition": {
     "energy": "maintenance",
-    "label": "Dzień ciężki: bez deficytu, paliwo na trening",
+    "label": "Bilans zerowy – jedz na pełną wydajność",
     "protein_g_per_kg": 1.8,
     "on_bike_carbs_g_per_h": [
      60,
@@ -6774,8 +6774,8 @@
    "bike": null,
    "gym": null,
    "nutrition": {
-    "energy": "deficit_500",
-    "label": "Dzień lekki: deficyt ok. 500 kcal",
+    "energy": "maintenance",
+    "label": "Bilans zerowy – jedz na pełną wydajność",
     "protein_g_per_kg": 1.8,
     "on_bike_carbs_g_per_h": [
      0,
@@ -6803,8 +6803,8 @@
    },
    "gym": null,
    "nutrition": {
-    "energy": "deficit_300",
-    "label": "Deficyt ok. 300 kcal",
+    "energy": "maintenance",
+    "label": "Bilans zerowy – jedz na pełną wydajność",
     "protein_g_per_kg": 1.8,
     "on_bike_carbs_g_per_h": [
      30,
@@ -6832,8 +6832,8 @@
    },
    "gym": null,
    "nutrition": {
-    "energy": "deficit_500",
-    "label": "Dzień lekki: deficyt ok. 500 kcal",
+    "energy": "maintenance",
+    "label": "Bilans zerowy – jedz na pełną wydajność",
     "protein_g_per_kg": 1.8,
     "on_bike_carbs_g_per_h": [
      0,
@@ -6855,8 +6855,8 @@
    "bike": null,
    "gym": null,
    "nutrition": {
-    "energy": "deficit_500",
-    "label": "Dzień lekki: deficyt ok. 500 kcal",
+    "energy": "maintenance",
+    "label": "Bilans zerowy – jedz na pełną wydajność",
     "protein_g_per_kg": 1.8,
     "on_bike_carbs_g_per_h": [
      0,
@@ -6982,8 +6982,8 @@
     ]
    },
    "nutrition": {
-    "energy": "deficit_300",
-    "label": "Deficyt ok. 300 kcal",
+    "energy": "maintenance",
+    "label": "Bilans zerowy – jedz na pełną wydajność",
     "protein_g_per_kg": 1.8,
     "on_bike_carbs_g_per_h": [
      30,
@@ -7005,8 +7005,8 @@
    "bike": null,
    "gym": null,
    "nutrition": {
-    "energy": "deficit_500",
-    "label": "Dzień lekki: deficyt ok. 500 kcal",
+    "energy": "maintenance",
+    "label": "Bilans zerowy – jedz na pełną wydajność",
     "protein_g_per_kg": 1.8,
     "on_bike_carbs_g_per_h": [
      0,
@@ -7035,7 +7035,7 @@
    "gym": null,
    "nutrition": {
     "energy": "maintenance",
-    "label": "Dzień ciężki: bez deficytu, paliwo na trening",
+    "label": "Bilans zerowy – jedz na pełną wydajność",
     "protein_g_per_kg": 1.8,
     "on_bike_carbs_g_per_h": [
      60,
@@ -7055,8 +7055,8 @@
    "bike": null,
    "gym": null,
    "nutrition": {
-    "energy": "deficit_500",
-    "label": "Dzień lekki: deficyt ok. 500 kcal",
+    "energy": "maintenance",
+    "label": "Bilans zerowy – jedz na pełną wydajność",
     "protein_g_per_kg": 1.8,
     "on_bike_carbs_g_per_h": [
      0,
@@ -7083,7 +7083,7 @@
    "gym": null,
    "nutrition": {
     "energy": "maintenance",
-    "label": "Dzień ciężki: bez deficytu, paliwo na trening",
+    "label": "Bilans zerowy – jedz na pełną wydajność",
     "protein_g_per_kg": 1.8,
     "on_bike_carbs_g_per_h": [
      30,
@@ -7109,8 +7109,8 @@
    },
    "gym": null,
    "nutrition": {
-    "energy": "deficit_500",
-    "label": "Dzień lekki: deficyt ok. 500 kcal",
+    "energy": "maintenance",
+    "label": "Bilans zerowy – jedz na pełną wydajność",
     "protein_g_per_kg": 1.8,
     "on_bike_carbs_g_per_h": [
      0,
@@ -7137,7 +7137,7 @@
    "gym": null,
    "nutrition": {
     "energy": "maintenance",
-    "label": "Dzień ciężki: bez deficytu, paliwo na trening",
+    "label": "Bilans zerowy – jedz na pełną wydajność",
     "protein_g_per_kg": 1.8,
     "on_bike_carbs_g_per_h": [
      30,
@@ -7276,8 +7276,8 @@
     ]
    },
    "nutrition": {
-    "energy": "deficit_300",
-    "label": "Deficyt ok. 300 kcal",
+    "energy": "maintenance",
+    "label": "Bilans zerowy – jedz na pełną wydajność",
     "protein_g_per_kg": 1.8,
     "on_bike_carbs_g_per_h": [
      30,
@@ -7297,8 +7297,8 @@
    "bike": null,
    "gym": null,
    "nutrition": {
-    "energy": "deficit_500",
-    "label": "Dzień lekki: deficyt ok. 500 kcal",
+    "energy": "maintenance",
+    "label": "Bilans zerowy – jedz na pełną wydajność",
     "protein_g_per_kg": 1.8,
     "on_bike_carbs_g_per_h": [
      0,
@@ -7325,7 +7325,7 @@
    "gym": null,
    "nutrition": {
     "energy": "maintenance",
-    "label": "Dzień ciężki: bez deficytu, paliwo na trening",
+    "label": "Bilans zerowy – jedz na pełną wydajność",
     "protein_g_per_kg": 1.8,
     "on_bike_carbs_g_per_h": [
      60,
@@ -7346,8 +7346,8 @@
    "bike": null,
    "gym": null,
    "nutrition": {
-    "energy": "deficit_500",
-    "label": "Dzień lekki: deficyt ok. 500 kcal",
+    "energy": "maintenance",
+    "label": "Bilans zerowy – jedz na pełną wydajność",
     "protein_g_per_kg": 1.8,
     "on_bike_carbs_g_per_h": [
      0,
@@ -7374,7 +7374,7 @@
    "gym": null,
    "nutrition": {
     "energy": "maintenance",
-    "label": "Dzień ciężki: bez deficytu, paliwo na trening",
+    "label": "Bilans zerowy – jedz na pełną wydajność",
     "protein_g_per_kg": 1.8,
     "on_bike_carbs_g_per_h": [
      30,
@@ -7402,8 +7402,8 @@
    },
    "gym": null,
    "nutrition": {
-    "energy": "deficit_500",
-    "label": "Dzień lekki: deficyt ok. 500 kcal",
+    "energy": "maintenance",
+    "label": "Bilans zerowy – jedz na pełną wydajność",
     "protein_g_per_kg": 1.8,
     "on_bike_carbs_g_per_h": [
      0,
@@ -7429,8 +7429,8 @@
    },
    "gym": null,
    "nutrition": {
-    "energy": "deficit_300",
-    "label": "Deficyt ok. 300 kcal",
+    "energy": "maintenance",
+    "label": "Bilans zerowy – jedz na pełną wydajność",
     "protein_g_per_kg": 1.8,
     "on_bike_carbs_g_per_h": [
      30,
@@ -7569,8 +7569,8 @@
     ]
    },
    "nutrition": {
-    "energy": "deficit_300",
-    "label": "Deficyt ok. 300 kcal",
+    "energy": "maintenance",
+    "label": "Bilans zerowy – jedz na pełną wydajność",
     "protein_g_per_kg": 1.8,
     "on_bike_carbs_g_per_h": [
      30,
@@ -7590,8 +7590,8 @@
    "bike": null,
    "gym": null,
    "nutrition": {
-    "energy": "deficit_500",
-    "label": "Dzień lekki: deficyt ok. 500 kcal",
+    "energy": "maintenance",
+    "label": "Bilans zerowy – jedz na pełną wydajność",
     "protein_g_per_kg": 1.8,
     "on_bike_carbs_g_per_h": [
      0,
@@ -7639,8 +7639,8 @@
    "bike": null,
    "gym": null,
    "nutrition": {
-    "energy": "deficit_500_if_above_target",
-    "label": "Dzień lekki: deficyt ok. 500 kcal (tylko jeśli waga > celu)",
+    "energy": "deficit_300",
+    "label": "Dzień lekki: deficyt dobrany do masy",
     "protein_g_per_kg": 1.8,
     "on_bike_carbs_g_per_h": [
      0,
@@ -7693,8 +7693,8 @@
    },
    "gym": null,
    "nutrition": {
-    "energy": "deficit_300_if_above_target",
-    "label": "Deficyt ok. 300 kcal (tylko jeśli waga > celu)",
+    "energy": "maintenance",
+    "label": "Dzień treningowy: bilans zerowy",
     "protein_g_per_kg": 1.8,
     "on_bike_carbs_g_per_h": [
      30,
@@ -7860,8 +7860,8 @@
     ]
    },
    "nutrition": {
-    "energy": "deficit_300_if_above_target",
-    "label": "Deficyt ok. 300 kcal (tylko jeśli waga > celu)",
+    "energy": "maintenance",
+    "label": "Dzień treningowy: bilans zerowy",
     "protein_g_per_kg": 1.8,
     "on_bike_carbs_g_per_h": [
      30,
@@ -7881,8 +7881,8 @@
    "bike": null,
    "gym": null,
    "nutrition": {
-    "energy": "deficit_500_if_above_target",
-    "label": "Dzień lekki: deficyt ok. 500 kcal (tylko jeśli waga > celu)",
+    "energy": "deficit_300",
+    "label": "Dzień lekki: deficyt dobrany do masy",
     "protein_g_per_kg": 1.8,
     "on_bike_carbs_g_per_h": [
      0,
@@ -7929,8 +7929,8 @@
    "bike": null,
    "gym": null,
    "nutrition": {
-    "energy": "deficit_500_if_above_target",
-    "label": "Dzień lekki: deficyt ok. 500 kcal (tylko jeśli waga > celu)",
+    "energy": "deficit_300",
+    "label": "Dzień lekki: deficyt dobrany do masy",
     "protein_g_per_kg": 1.8,
     "on_bike_carbs_g_per_h": [
      0,
@@ -7983,8 +7983,8 @@
    },
    "gym": null,
    "nutrition": {
-    "energy": "deficit_300_if_above_target",
-    "label": "Deficyt ok. 300 kcal (tylko jeśli waga > celu)",
+    "energy": "maintenance",
+    "label": "Dzień treningowy: bilans zerowy",
     "protein_g_per_kg": 1.8,
     "on_bike_carbs_g_per_h": [
      30,
@@ -8150,8 +8150,8 @@
     ]
    },
    "nutrition": {
-    "energy": "deficit_300_if_above_target",
-    "label": "Deficyt ok. 300 kcal (tylko jeśli waga > celu)",
+    "energy": "maintenance",
+    "label": "Dzień treningowy: bilans zerowy",
     "protein_g_per_kg": 1.8,
     "on_bike_carbs_g_per_h": [
      30,
@@ -8171,8 +8171,8 @@
    "bike": null,
    "gym": null,
    "nutrition": {
-    "energy": "deficit_500_if_above_target",
-    "label": "Dzień lekki: deficyt ok. 500 kcal (tylko jeśli waga > celu)",
+    "energy": "deficit_300",
+    "label": "Dzień lekki: deficyt dobrany do masy",
     "protein_g_per_kg": 1.8,
     "on_bike_carbs_g_per_h": [
      0,
@@ -8219,8 +8219,8 @@
    "bike": null,
    "gym": null,
    "nutrition": {
-    "energy": "deficit_500_if_above_target",
-    "label": "Dzień lekki: deficyt ok. 500 kcal (tylko jeśli waga > celu)",
+    "energy": "deficit_300",
+    "label": "Dzień lekki: deficyt dobrany do masy",
     "protein_g_per_kg": 1.8,
     "on_bike_carbs_g_per_h": [
      0,
@@ -8273,8 +8273,8 @@
    },
    "gym": null,
    "nutrition": {
-    "energy": "deficit_300_if_above_target",
-    "label": "Deficyt ok. 300 kcal (tylko jeśli waga > celu)",
+    "energy": "maintenance",
+    "label": "Dzień treningowy: bilans zerowy",
     "protein_g_per_kg": 1.8,
     "on_bike_carbs_g_per_h": [
      30,
@@ -8440,8 +8440,8 @@
     ]
    },
    "nutrition": {
-    "energy": "deficit_300_if_above_target",
-    "label": "Deficyt ok. 300 kcal (tylko jeśli waga > celu)",
+    "energy": "maintenance",
+    "label": "Dzień treningowy: bilans zerowy",
     "protein_g_per_kg": 1.8,
     "on_bike_carbs_g_per_h": [
      60,
@@ -8461,8 +8461,8 @@
    "bike": null,
    "gym": null,
    "nutrition": {
-    "energy": "deficit_500_if_above_target",
-    "label": "Dzień lekki: deficyt ok. 500 kcal (tylko jeśli waga > celu)",
+    "energy": "deficit_300",
+    "label": "Dzień lekki: deficyt dobrany do masy",
     "protein_g_per_kg": 1.8,
     "on_bike_carbs_g_per_h": [
      0,
@@ -8511,8 +8511,8 @@
    "bike": null,
    "gym": null,
    "nutrition": {
-    "energy": "deficit_500_if_above_target",
-    "label": "Dzień lekki: deficyt ok. 500 kcal (tylko jeśli waga > celu)",
+    "energy": "deficit_300",
+    "label": "Dzień lekki: deficyt dobrany do masy",
     "protein_g_per_kg": 1.8,
     "on_bike_carbs_g_per_h": [
      0,
@@ -8540,8 +8540,8 @@
    },
    "gym": null,
    "nutrition": {
-    "energy": "deficit_300_if_above_target",
-    "label": "Deficyt ok. 300 kcal (tylko jeśli waga > celu)",
+    "energy": "maintenance",
+    "label": "Dzień treningowy: bilans zerowy",
     "protein_g_per_kg": 1.8,
     "on_bike_carbs_g_per_h": [
      30,
@@ -8569,8 +8569,8 @@
    },
    "gym": null,
    "nutrition": {
-    "energy": "deficit_500_if_above_target",
-    "label": "Dzień lekki: deficyt ok. 500 kcal (tylko jeśli waga > celu)",
+    "energy": "deficit_300",
+    "label": "Dzień lekki: deficyt dobrany do masy",
     "protein_g_per_kg": 1.8,
     "on_bike_carbs_g_per_h": [
      0,
@@ -8592,8 +8592,8 @@
    "bike": null,
    "gym": null,
    "nutrition": {
-    "energy": "deficit_500_if_above_target",
-    "label": "Dzień lekki: deficyt ok. 500 kcal (tylko jeśli waga > celu)",
+    "energy": "deficit_300",
+    "label": "Dzień lekki: deficyt dobrany do masy",
     "protein_g_per_kg": 1.8,
     "on_bike_carbs_g_per_h": [
      0,
@@ -8741,8 +8741,8 @@
     ]
    },
    "nutrition": {
-    "energy": "deficit_300_if_above_target",
-    "label": "Deficyt ok. 300 kcal (tylko jeśli waga > celu)",
+    "energy": "maintenance",
+    "label": "Dzień treningowy: bilans zerowy",
     "protein_g_per_kg": 1.8,
     "on_bike_carbs_g_per_h": [
      30,
@@ -8764,8 +8764,8 @@
    "bike": null,
    "gym": null,
    "nutrition": {
-    "energy": "deficit_500_if_above_target",
-    "label": "Dzień lekki: deficyt ok. 500 kcal (tylko jeśli waga > celu)",
+    "energy": "deficit_300",
+    "label": "Dzień lekki: deficyt dobrany do masy",
     "protein_g_per_kg": 1.8,
     "on_bike_carbs_g_per_h": [
      0,
@@ -8814,8 +8814,8 @@
    "bike": null,
    "gym": null,
    "nutrition": {
-    "energy": "deficit_500_if_above_target",
-    "label": "Dzień lekki: deficyt ok. 500 kcal (tylko jeśli waga > celu)",
+    "energy": "deficit_300",
+    "label": "Dzień lekki: deficyt dobrany do masy",
     "protein_g_per_kg": 1.8,
     "on_bike_carbs_g_per_h": [
      0,
@@ -8868,8 +8868,8 @@
    },
    "gym": null,
    "nutrition": {
-    "energy": "deficit_300_if_above_target",
-    "label": "Deficyt ok. 300 kcal (tylko jeśli waga > celu)",
+    "energy": "maintenance",
+    "label": "Dzień treningowy: bilans zerowy",
     "protein_g_per_kg": 1.8,
     "on_bike_carbs_g_per_h": [
      30,
@@ -9035,8 +9035,8 @@
     ]
    },
    "nutrition": {
-    "energy": "deficit_300_if_above_target",
-    "label": "Deficyt ok. 300 kcal (tylko jeśli waga > celu)",
+    "energy": "maintenance",
+    "label": "Dzień treningowy: bilans zerowy",
     "protein_g_per_kg": 1.8,
     "on_bike_carbs_g_per_h": [
      60,
@@ -9056,8 +9056,8 @@
    "bike": null,
    "gym": null,
    "nutrition": {
-    "energy": "deficit_500_if_above_target",
-    "label": "Dzień lekki: deficyt ok. 500 kcal (tylko jeśli waga > celu)",
+    "energy": "deficit_300",
+    "label": "Dzień lekki: deficyt dobrany do masy",
     "protein_g_per_kg": 1.8,
     "on_bike_carbs_g_per_h": [
      0,
@@ -9104,8 +9104,8 @@
    "bike": null,
    "gym": null,
    "nutrition": {
-    "energy": "deficit_500_if_above_target",
-    "label": "Dzień lekki: deficyt ok. 500 kcal (tylko jeśli waga > celu)",
+    "energy": "deficit_300",
+    "label": "Dzień lekki: deficyt dobrany do masy",
     "protein_g_per_kg": 1.8,
     "on_bike_carbs_g_per_h": [
      0,
@@ -9158,8 +9158,8 @@
    },
    "gym": null,
    "nutrition": {
-    "energy": "deficit_300_if_above_target",
-    "label": "Deficyt ok. 300 kcal (tylko jeśli waga > celu)",
+    "energy": "maintenance",
+    "label": "Dzień treningowy: bilans zerowy",
     "protein_g_per_kg": 1.8,
     "on_bike_carbs_g_per_h": [
      30,
@@ -9325,8 +9325,8 @@
     ]
    },
    "nutrition": {
-    "energy": "deficit_300_if_above_target",
-    "label": "Deficyt ok. 300 kcal (tylko jeśli waga > celu)",
+    "energy": "maintenance",
+    "label": "Dzień treningowy: bilans zerowy",
     "protein_g_per_kg": 1.8,
     "on_bike_carbs_g_per_h": [
      60,
@@ -9346,8 +9346,8 @@
    "bike": null,
    "gym": null,
    "nutrition": {
-    "energy": "deficit_500_if_above_target",
-    "label": "Dzień lekki: deficyt ok. 500 kcal (tylko jeśli waga > celu)",
+    "energy": "deficit_300",
+    "label": "Dzień lekki: deficyt dobrany do masy",
     "protein_g_per_kg": 1.8,
     "on_bike_carbs_g_per_h": [
      0,
@@ -9395,8 +9395,8 @@
    "bike": null,
    "gym": null,
    "nutrition": {
-    "energy": "deficit_500_if_above_target",
-    "label": "Dzień lekki: deficyt ok. 500 kcal (tylko jeśli waga > celu)",
+    "energy": "deficit_300",
+    "label": "Dzień lekki: deficyt dobrany do masy",
     "protein_g_per_kg": 1.8,
     "on_bike_carbs_g_per_h": [
      0,
@@ -9449,8 +9449,8 @@
    },
    "gym": null,
    "nutrition": {
-    "energy": "deficit_300_if_above_target",
-    "label": "Deficyt ok. 300 kcal (tylko jeśli waga > celu)",
+    "energy": "maintenance",
+    "label": "Dzień treningowy: bilans zerowy",
     "protein_g_per_kg": 1.8,
     "on_bike_carbs_g_per_h": [
      30,
@@ -9616,8 +9616,8 @@
     ]
    },
    "nutrition": {
-    "energy": "deficit_300_if_above_target",
-    "label": "Deficyt ok. 300 kcal (tylko jeśli waga > celu)",
+    "energy": "maintenance",
+    "label": "Dzień treningowy: bilans zerowy",
     "protein_g_per_kg": 1.8,
     "on_bike_carbs_g_per_h": [
      60,
@@ -9637,8 +9637,8 @@
    "bike": null,
    "gym": null,
    "nutrition": {
-    "energy": "deficit_500_if_above_target",
-    "label": "Dzień lekki: deficyt ok. 500 kcal (tylko jeśli waga > celu)",
+    "energy": "deficit_300",
+    "label": "Dzień lekki: deficyt dobrany do masy",
     "protein_g_per_kg": 1.8,
     "on_bike_carbs_g_per_h": [
      0,
@@ -9687,8 +9687,8 @@
    "bike": null,
    "gym": null,
    "nutrition": {
-    "energy": "deficit_500_if_above_target",
-    "label": "Dzień lekki: deficyt ok. 500 kcal (tylko jeśli waga > celu)",
+    "energy": "deficit_300",
+    "label": "Dzień lekki: deficyt dobrany do masy",
     "protein_g_per_kg": 1.8,
     "on_bike_carbs_g_per_h": [
      0,
@@ -9716,8 +9716,8 @@
    },
    "gym": null,
    "nutrition": {
-    "energy": "deficit_300_if_above_target",
-    "label": "Deficyt ok. 300 kcal (tylko jeśli waga > celu)",
+    "energy": "maintenance",
+    "label": "Dzień treningowy: bilans zerowy",
     "protein_g_per_kg": 1.8,
     "on_bike_carbs_g_per_h": [
      30,
@@ -9745,8 +9745,8 @@
    },
    "gym": null,
    "nutrition": {
-    "energy": "deficit_500_if_above_target",
-    "label": "Dzień lekki: deficyt ok. 500 kcal (tylko jeśli waga > celu)",
+    "energy": "deficit_300",
+    "label": "Dzień lekki: deficyt dobrany do masy",
     "protein_g_per_kg": 1.8,
     "on_bike_carbs_g_per_h": [
      0,
@@ -9768,8 +9768,8 @@
    "bike": null,
    "gym": null,
    "nutrition": {
-    "energy": "deficit_500_if_above_target",
-    "label": "Dzień lekki: deficyt ok. 500 kcal (tylko jeśli waga > celu)",
+    "energy": "deficit_300",
+    "label": "Dzień lekki: deficyt dobrany do masy",
     "protein_g_per_kg": 1.8,
     "on_bike_carbs_g_per_h": [
      0,
@@ -9917,8 +9917,8 @@
     ]
    },
    "nutrition": {
-    "energy": "deficit_300_if_above_target",
-    "label": "Deficyt ok. 300 kcal (tylko jeśli waga > celu)",
+    "energy": "maintenance",
+    "label": "Dzień treningowy: bilans zerowy",
     "protein_g_per_kg": 1.8,
     "on_bike_carbs_g_per_h": [
      30,
@@ -9940,8 +9940,8 @@
    "bike": null,
    "gym": null,
    "nutrition": {
-    "energy": "deficit_500_if_above_target",
-    "label": "Dzień lekki: deficyt ok. 500 kcal (tylko jeśli waga > celu)",
+    "energy": "deficit_300",
+    "label": "Dzień lekki: deficyt dobrany do masy",
     "protein_g_per_kg": 1.8,
     "on_bike_carbs_g_per_h": [
      0,

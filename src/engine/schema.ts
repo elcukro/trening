@@ -148,8 +148,70 @@ export const WeekSummarySchema = z.object({
   notes: z.string().nullable().optional(),
 })
 
+/*
+ * Sekcje osobiste programu (decoupling v1, docs/18). Wszystko, co opisuje zawodnika albo jego plan,
+ * siedzi tutaj – silnik nie ma własnych wartości domyślnych, które byłyby czyimiś założeniami.
+ */
+const EnergyBaseSchema = z.enum(['maintenance', 'maintenance_plus', 'deficit_300', 'deficit_500'])
+const NutritionBucketSchema = z.object({ energy: EnergyBaseSchema, label: z.string() })
+const CarbsRangeSchema = z.tuple([z.number(), z.number()])
+
+export const NutritionPolicySchema = z.object({
+  /** true = deficyt, false = bilans zerowy, `if_above_target` = deficyt tylko powyżej masy docelowej */
+  deficit_by_phase: z.record(z.string(), z.union([z.boolean(), z.literal('if_above_target')])),
+  protein_g_per_kg: z.number(),
+  /** od ilu minut jazdy dzień jest ciężki (bez deficytu) */
+  heavy_min: z.number(),
+  /** od ilu minut jazdy dzień jest średni */
+  medium_min: z.number(),
+  buckets: z.object({ no_deficit: NutritionBucketSchema, heavy: NutritionBucketSchema, medium: NutritionBucketSchema, light: NutritionBucketSchema }),
+  if_above_target_suffix: z.string(),
+  /** progi minut jazdy → węgle na godzinę, od najwyższego; poniżej ostatniego progu [0, 0] */
+  carbs_g_per_h: z.array(z.tuple([z.number(), CarbsRangeSchema])),
+  post_workout: z.object({ min_ride_min: z.number(), text: z.string() }),
+  /**
+   * Deficyt dobierany z danych zawodnika zamiast stałej etykiety: (masa obecna − docelowa) rozłożona
+   * na tygodnie do daty celu i na dni z deficytem, z limitem dziennym i limitem tempa chudnięcia.
+   */
+  weight_based: z
+    .object({ max_kcal_per_day: z.number(), max_loss_pct_per_week: z.number(), deficit_days_per_week: z.number() })
+    .optional(),
+  /** dni wyjazdu (tylko programy z wyjazdem) */
+  trip: z.object({ energy: EnergyBaseSchema, label: z.string(), protein_g_per_kg: z.number(), carbs_g_per_h: CarbsRangeSchema }).optional(),
+})
+
+export const BikesSchema = z.object({
+  default: z.string(),
+  /** treningi pod dachem (Wattbike, trenażer) */
+  indoor: z.string(),
+  by_workout: z.record(z.string(), z.string()).optional(),
+  by_phase: z.record(z.string(), z.string()).optional(),
+})
+
+export const GoalSchema = z.discriminatedUnion('kind', [
+  /** cel prędkościowy: wymagane FTP liczy fizyka (masa, CdA, Crr) */
+  z.object({ kind: z.literal('speed'), kmh: z.number(), label: z.string(), short: z.string() }),
+  /** cel wprost mocą progową – z ustawienia `ftp_w_goal` */
+  z.object({ kind: z.literal('ftp'), label: z.string(), short: z.string() }),
+])
+
+export const CadencePolicySchema = z.object({
+  /** ostrzeżenie, gdy dwa tygodnie z rzędu średnia jest poniżej */
+  floor_rpm: z.number(),
+  /** linia celu na wykresie i w poradzie */
+  goal_rpm: z.number(),
+  tip: z.string().optional(),
+})
+
+export const ProgramMetaSchema = z.object({ name: z.string(), short: z.string() })
+
 export const ProgramSchema = z.object({
   version: z.string(),
+  meta: ProgramMetaSchema,
+  nutrition: NutritionPolicySchema,
+  bikes: BikesSchema,
+  goal: GoalSchema,
+  cadence: CadencePolicySchema,
   default_settings: SettingsSchema,
   hr_zones_lthr_fraction: z.array(HrZoneSchema),
   power_zones_ftp_fraction: z.array(PowerZoneSchema),
@@ -165,11 +227,13 @@ export const ProgramSchema = z.object({
    * Brak pola = układ sezonowy z R14 (rozciąganie fazy IV do daty wyjazdu) – tak działa program alpejski.
    */
   layout: z.object({ mode: z.literal('fixed') }).optional(),
-  /** Rower pokazywany przy treningach; bez niego obowiązuje reguła fazowa z `bikeSuggestion`. */
-  bike_default: z.string().optional(),
 })
 
 export type Program = z.infer<typeof ProgramSchema>
+export type NutritionPolicy = z.infer<typeof NutritionPolicySchema>
+export type Bikes = z.infer<typeof BikesSchema>
+export type Goal = z.infer<typeof GoalSchema>
+export type CadencePolicy = z.infer<typeof CadencePolicySchema>
 export type HrZone = z.infer<typeof HrZoneSchema>
 export type PowerZone = z.infer<typeof PowerZoneSchema>
 export type Step = z.infer<typeof StepSchema>

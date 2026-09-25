@@ -68,7 +68,7 @@ function Report({ kind, from, to, today }: { kind: 'week' | 'month'; from: ISODa
   }, [acts])
   const cadAll = useLiveQuery(() => db.strava_activities.where('date').between(addDays(from, -21), to, true, true).toArray(), [from, to], [] as StravaActivity[])
   const cadTrend = useMemo(() => cadenceTrend(cadAll.filter((a) => !a.deleted_at && a.is_ride), to, kind === 'week' ? 3 : 6), [cadAll, to, kind])
-  const cadWarning = useMemo(() => lowCadenceWarning(cadTrend), [cadTrend])
+  const cadWarning = useMemo(() => lowCadenceWarning(cadTrend, program.cadence), [cadTrend, program.cadence])
   const cadThis = cadTrend.at(-1)?.avg_rpm ?? null
   const nextKey = nextView.days.find((d) => d.day_type === 'key' && d.bike)
   const weekNo = view.days[0]?.week

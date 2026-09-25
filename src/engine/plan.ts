@@ -5,7 +5,7 @@ import { addDays, diffDays, mondayOf, type ISODate } from './dates'
 import { buildCalendar, getCalendarDay, getCalendarWeek } from './calendar'
 import { layoutWeeks } from './layout'
 import { computeZones, resolveWorkout } from './zones'
-import { proteinGrams } from './nutrition'
+import { personalizeNutrition, proteinGrams } from './nutrition'
 import { effectiveFtp, effectiveLthr } from './progress'
 
 export interface DayPlan extends CalendarDay {
@@ -63,6 +63,12 @@ export function enrichDay(day: CalendarDay, ctx: EngineContext): DayPlan {
     lthr,
     lthr_source: eff.source,
     ftp,
+    nutrition: personalizeNutrition(day.nutrition, program.nutrition, {
+      currentKg: ctx.current_weight_kg ?? settings.body_weight_start_kg,
+      targetKg: settings.body_weight_target_kg,
+      date: day.date,
+      goalDate: settings.trip_start,
+    }),
     protein_g: proteinGrams(day.nutrition, settings.body_weight_target_kg),
     warnings,
   }

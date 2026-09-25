@@ -1,15 +1,13 @@
 import type { RideSamples } from './analysis'
 import { addDays, mondayOf, type ISODate } from './dates'
-import type { HrZone, PowerZone } from './schema'
+import type { CadencePolicy, HrZone, PowerZone } from './schema'
 import { computeZones } from './zones'
 
 /**
  * Kadencja i technika pedałowania (pkt 9, docs/14): rozkład kadencji po jeździe, kadencja w strefach,
- * trend tygodniowy i sygnał, gdy w Z2 spada poniżej 75 rpm dwa tygodnie z rzędu. Cel z planu: ≥ 78 rpm.
+ * trend tygodniowy i sygnał, gdy średnia spada poniżej progu z programu (`program.cadence`) dwa tygodnie z rzędu.
  */
 
-export const CADENCE_GOAL_RPM = 78
-export const CADENCE_LOW_RPM = 75
 
 export const CADENCE_BUCKETS: { label: string; min: number; max: number }[] = [
   { label: '< 60', min: 0, max: 60 },
@@ -98,10 +96,11 @@ export function cadenceTrend(rides: { date: ISODate; moving_time_s: number; avg_
   return out
 }
 
-/** Ostrzeżenie, gdy dwa ostatnie tygodnie z danymi mają średnią < 75 rpm. */
-export function lowCadenceWarning(trend: CadenceWeek[]): string | null {
+/** Ostrzeżenie, gdy dwa ostatnie tygodnie z danymi mają średnią poniżej progu z programu (`program.cadence`). */
+export function lowCadenceWarning(trend: CadenceWeek[], policy: CadencePolicy): string | null {
   const withData = trend.filter((w) => w.avg_rpm != null)
   const last2 = withData.slice(-2)
-  if (last2.length < 2 || !last2.every((w) => (w.avg_rpm as number) < CADENCE_LOW_RPM)) return null
-  return `Średnia kadencja poniżej ${CADENCE_LOW_RPM} rpm drugi tydzień z rzędu (${last2.map((w) => w.avg_rpm).join(' i ')}). Na płaskim celuj w ${CADENCE_GOAL_RPM}–90 rpm: lżejszy bieg, „okrągłe” pedałowanie; siłę na niskiej kadencji zostaw na bloki Z2_FORCE.`
+  if (last2.length < 2 || !last2.every((w) => (w.avg_rpm as number) < policy.floor_rpm)) return null
+  const tip = policy.tip ? `; ${policy.tip}` : ''
+  return `Średnia kadencja poniżej ${policy.floor_rpm} rpm drugi tydzień z rzędu (${last2.map((w) => w.avg_rpm).join(' i ')}). Na płaskim celuj w ${policy.goal_rpm}–90 rpm: lżejszy bieg, „okrągłe” pedałowanie${tip}.`
 }

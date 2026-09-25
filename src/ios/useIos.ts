@@ -16,10 +16,9 @@ import { loadStreams } from '@/sync/strava'
 import { matchSteps, rideLoad, statusFromScore, type RideLoad } from '@/engine/analysis'
 import { pmcSeries, weekTss } from '@/engine/pmc'
 import { effectiveFtp, effectiveLthr, weightTrend } from '@/engine/progress'
-import { cdaFromRide, goalPower } from '@/engine/baseline'
+import { cdaFromRide, programGoal } from '@/engine/baseline'
 import { suggestFtp, type FtpSuggestion } from '@/engine/power'
 import { onSyncStatus, type SyncStatus } from '@/sync/sync'
-import { programMeta } from '@/data/program'
 import { todayISO } from '@/lib/dates'
 import { dayFlow, weighDue, type DayFlow, type LogState } from './dayState'
 import type { BoltState } from '@/features/today/WahooStatus'
@@ -321,20 +320,16 @@ export function useSnapshot(): Snapshot {
     )
   }, [acts, ftpEff.ftp, tests, dismissals])
 
-  // Cel bierze się z programu, nie z założeń jednego zawodnika: program alpejski celuje w prędkość
-  // (wymagane FTP liczy fizyka), program „FTP 300” wprost w moc progową z ustawienia `ftp_w_goal`.
-  const meta = programMeta(settings.program_id)
+  // Cel z programu (`program.goal`): prędkościowy liczy fizyka z CdA jazdy odniesienia, mocowy bierze `ftp_w_goal`.
+  const goalDef = engine.ctx.program.goal
   const goal = useMemo(() => {
-    if (meta.goal.kind === 'ftp') return { ftp: settings.ftp_w_goal, watts: null, label: meta.goal.label }
     const massKg = (last?.weight_kg ?? settings.body_weight_start_kg) + settings.bike_and_kit_kg
     const latest = (metric: string) => baseline.filter((b) => b.metric === metric).toSorted((a, b) => (a.date < b.date ? 1 : -1))[0]?.value ?? null
     const kmh = latest('ref_speed_kmh')
     const watts = latest('ref_power_w')
     const cda = kmh && watts ? cdaFromRide(kmh, watts, massKg) : null
-    const kmhTarget = 'kmh' in meta.goal ? meta.goal.kmh : 30
-    const g = goalPower(massKg, kmhTarget, cda)
-    return { ftp: g.ftp, watts: g.watts as number | null, label: meta.goal.label }
-  }, [baseline, last?.weight_kg, settings.body_weight_start_kg, settings.bike_and_kit_kg, settings.ftp_w_goal, meta])
+    return programGoal(goalDef, massKg, settings.ftp_w_goal, cda)
+  }, [baseline, last?.weight_kg, settings.body_weight_start_kg, settings.bike_and_kit_kg, settings.ftp_w_goal, goalDef])
 
   return {
     weight: { kg: last?.weight_kg ?? null, date: last?.date ?? null, perWeek: trend?.kg_per_week ?? null },

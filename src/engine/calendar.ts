@@ -1,4 +1,4 @@
-import type { GymSession, Program, Settings, WeekSummary, WeekTemplate } from './schema'
+import type { Bikes, GymSession, Program, Settings, WeekSummary, WeekTemplate } from './schema'
 import type { CalendarDay, DayFlag, DayType, EngineContext, LayoutWeek, PhaseId } from './types'
 import { addDays, compareISO, WEEKDAYS, weekdayOf, type ISODate, type Weekday } from './dates'
 import { layoutWeeks } from './layout'
@@ -34,14 +34,10 @@ function isKeyWorkout(id: string, key: boolean): boolean {
   return key || /^(SS_|THR_|VO2_|TEST|WATTBIKE|FTP)/.test(id)
 }
 
-export function bikeSuggestion(phase: PhaseId, workoutId: string, fallback?: string): string {
-  if (['WATTBIKE_TEST', 'INDOOR_4x4'].includes(workoutId)) return 'Wattbike / rowerek na siłowni'
-  if (fallback) return fallback
-  if (['MOUNTAIN_DAY', 'B2B_DAY', 'BLOCK_DAY1'].includes(workoutId)) return 'Checkpoint (przełożenie 40/50, tarczówki)'
-  if (phase === 'II') return 'Checkpoint (zima, błotniki)'
-  if (phase === 'V' || phase === 'TAPER') return 'Checkpoint (docelowy rower wyjazdowy)'
-  // Wszystkie treningy na gravelu (decyzja 24.09.2026); Dogma czeka, aż pojawi się rower endurance
-  return 'Checkpoint (gravel)'
+/** Rower dnia z programu (`program.bikes`): pod dachem → trening → faza → domyślny. */
+export function bikeSuggestion(bikes: Bikes, phase: PhaseId, workoutId: string): string {
+  if (['WATTBIKE_TEST', 'INDOOR_4x4'].includes(workoutId)) return bikes.indoor
+  return bikes.by_workout?.[workoutId] ?? bikes.by_phase?.[phase] ?? bikes.default
 }
 
 /** Sesja siłowa na dany dzień: slot „wed” → dzień z gym_days (A/C), slot „fri” → Sesja B. */
@@ -106,9 +102,9 @@ export function buildDay(ctx: EngineContext, lw: LayoutWeek, weekday: Weekday, d
     bike:
       wid === 'REST'
         ? null
-        : { workout_id: wid, name: w.name, duration_min: dur, bike: bikeSuggestion(phase, wid, program.bike_default), fallback_workout_id: fallback },
+        : { workout_id: wid, name: w.name, duration_min: dur, bike: bikeSuggestion(program.bikes, phase, wid), fallback_workout_id: fallback },
     gym: gym ? { session: gym.session, name: gym.name, est_min: gym.est_min, items: gym.items } : null,
-    nutrition: nutritionFor(phase, dayType, bikeMin, key),
+    nutrition: nutritionFor(program.nutrition, phase, dayType, bikeMin, key),
     flags,
   }
   if (weekday === 'mon' && wk.notes) day.week_notes = wk.notes

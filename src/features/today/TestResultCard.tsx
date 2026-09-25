@@ -45,7 +45,7 @@ export function TestResultForm({ date, protocol, program, previousLthr, onSaved 
         {protocol !== 'WATTBIKE_TEST' && input('avg_speed_kmh', 'Śr. prędkość (km/h)', 'decimal', 'np. 31,5')}
         {protocol === 'TEST_LTHR' && input('distance_km', 'Dystans 30 min (km)', 'decimal')}
         {protocol !== 'WATTBIKE_TEST' && input('route', 'Trasa', 'text', 'ta sama co zawsze')}
-        {input('bike', 'Rower', 'text', protocol === 'WATTBIKE_TEST' ? 'Wattbike' : 'Dogma')}
+        {input('bike', 'Rower', 'text', protocol === 'WATTBIKE_TEST' ? program.bikes.indoor : program.bikes.default)}
         {protocol !== 'WATTBIKE_TEST' && input('temp_c', 'Temperatura (°C)', 'decimal')}
         {protocol !== 'WATTBIKE_TEST' && input('wind', 'Wiatr', 'text', 'słaby / silny, kierunek')}
         <Field label="Notatka" className="col-span-2">

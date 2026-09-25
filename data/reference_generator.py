@@ -501,35 +501,63 @@ def gym_for(week, weekday, wk):
 DAY_NAMES = ["mon", "tue", "wed", "thu", "fri", "sat", "sun"]
 DAY_PL = {"mon": "Poniedziałek", "tue": "Wtorek", "wed": "Środa", "thu": "Czwartek", "fri": "Piątek", "sat": "Sobota", "sun": "Niedziela"}
 
-def nutrition_for(phase, day_type, bike_min, key):
-    deficit_phases = {"PREP": True, "I": True, "II": True, "III": True, "IV": "if_above_target", "V": False, "TAPER": False}
-    d = deficit_phases[phase]
-    if day_type in ("trip",):
-        return {"energy": "maintenance_plus", "label": "Wyjazd: jedz do syta, 70–80 g węgli/h na podjazdach", "protein_g_per_kg": 1.6, "on_bike_carbs_g_per_h": [70, 80]}
-    heavy = key or bike_min >= 120
-    if d is False:
-        energy, label = ("maintenance", "Bilans zerowy – jedz na pełną wydajność")
-    elif heavy:
-        energy, label = ("maintenance", "Dzień ciężki: bez deficytu, paliwo na trening")
-    elif bike_min >= 60:
-        energy, label = ("deficit_300", "Deficyt ok. 300 kcal")
-    else:
-        energy, label = ("deficit_500", "Dzień lekki: deficyt ok. 500 kcal")
-    if d == "if_above_target" and energy.startswith("deficit"):
-        label += " (tylko jeśli waga > celu)"
-        energy += "_if_above_target"
-    return {"energy": energy, "label": label, "protein_g_per_kg": 1.8,
-            "on_bike_carbs_g_per_h": [60, 80] if bike_min >= 90 else ([30, 40] if bike_min >= 60 else [0, 0]),
-            "post_workout": "30–40 g białka + węglowodany w ciągu 1–2 h" if (bike_min >= 60 or key) else None}
+# ---------------------------------------------------------------- SEKCJE OSOBISTE PROGRAMU (docs/18)
+# Wszystko, co opisuje TEGO zawodnika, trafia do program.json jako dane – silnik nie ma własnych domyślnych.
 
-def bike_suggestion(phase, wid):
-    if wid in ("MOUNTAIN_DAY", "B2B_DAY", "BLOCK_DAY1"): return "Checkpoint (przełożenie 40/50, tarczówki)"
-    if wid in ("WATTBIKE_TEST", "INDOOR_4x4"): return "Wattbike / rowerek na siłowni"
-    if phase == "II": return "Checkpoint (zima, błotniki)"
-    if phase in ("V", "TAPER"): return "Checkpoint (docelowy rower wyjazdowy)"
-    # Wszystkie treningy na gravelu (decyzja 24.09.2026). Dogma zostaje w garażu do czasu,
-    # aż pojawi się rower endurance – raczej przyszły sezon.
-    return "Checkpoint (gravel)"
+NUTRITION = {
+    # schodzenie ze 110 na 90 kg: deficyt w fazach bazy i zimy, od fazy IV tylko powyżej masy docelowej
+    "deficit_by_phase": {"PREP": True, "I": True, "II": True, "III": True, "IV": "if_above_target", "V": False, "TAPER": False},
+    "protein_g_per_kg": 1.8,
+    "heavy_min": 120,
+    "medium_min": 60,
+    "buckets": {
+        "no_deficit": {"energy": "maintenance", "label": "Bilans zerowy – jedz na pełną wydajność"},
+        "heavy": {"energy": "maintenance", "label": "Dzień ciężki: bez deficytu, paliwo na trening"},
+        "medium": {"energy": "deficit_300", "label": "Deficyt ok. 300 kcal"},
+        "light": {"energy": "deficit_500", "label": "Dzień lekki: deficyt ok. 500 kcal"},
+    },
+    "if_above_target_suffix": " (tylko jeśli waga > celu)",
+    "carbs_g_per_h": [[90, [60, 80]], [60, [30, 40]]],
+    "post_workout": {"min_ride_min": 60, "text": "30–40 g białka + węglowodany w ciągu 1–2 h"},
+    "trip": {"energy": "maintenance_plus", "label": "Wyjazd: jedz do syta, 70–80 g węgli/h na podjazdach", "protein_g_per_kg": 1.6, "carbs_g_per_h": [70, 80]},
+}
+
+BIKES = {
+    # Wszystkie treningi na gravelu (decyzja 24.09.2026); Dogma czeka na rower endurance – raczej przyszły sezon.
+    "default": "Checkpoint (gravel)",
+    "indoor": "Wattbike / rowerek na siłowni",
+    "by_workout": {w: "Checkpoint (przełożenie 40/50, tarczówki)" for w in ("MOUNTAIN_DAY", "B2B_DAY", "BLOCK_DAY1")},
+    "by_phase": {"II": "Checkpoint (zima, błotniki)", "V": "Checkpoint (docelowy rower wyjazdowy)", "TAPER": "Checkpoint (docelowy rower wyjazdowy)"},
+}
+
+GOAL = {"kind": "speed", "kmh": 30, "label": "30 km/h przez 2–3 godziny", "short": "30 km/h"}
+CADENCE = {"floor_rpm": 75, "goal_rpm": 78, "tip": "siłę na niskiej kadencji zostaw na bloki Z2_FORCE"}
+META = {"name": "Alpy 2027 – baza i góry", "short": "Alpy 2027"}
+
+
+def nutrition_for(policy, phase, day_type, bike_min, key):
+    """Port 1:1 `nutritionFor` z src/engine/nutrition.ts – liczy wyłącznie z polityki programu."""
+    if day_type == "trip" and policy.get("trip"):
+        t = policy["trip"]
+        return {"energy": t["energy"], "label": t["label"], "protein_g_per_kg": t["protein_g_per_kg"], "on_bike_carbs_g_per_h": list(t["carbs_g_per_h"])}
+    d = policy["deficit_by_phase"].get(phase, False)
+    heavy = key or bike_min >= policy["heavy_min"]
+    b = policy["buckets"]
+    bucket = b["no_deficit"] if d is False else (b["heavy"] if heavy else (b["medium"] if bike_min >= policy["medium_min"] else b["light"]))
+    energy, label = bucket["energy"], bucket["label"]
+    if d == "if_above_target" and energy.startswith("deficit"):
+        label += policy["if_above_target_suffix"]
+        energy += "_if_above_target"
+    carbs = next((list(c) for m, c in policy["carbs_g_per_h"] if bike_min >= m), [0, 0])
+    return {"energy": energy, "label": label, "protein_g_per_kg": policy["protein_g_per_kg"],
+            "on_bike_carbs_g_per_h": carbs,
+            "post_workout": policy["post_workout"]["text"] if (bike_min >= policy["post_workout"]["min_ride_min"] or key) else None}
+
+
+def bike_suggestion(bikes, phase, wid):
+    """Port 1:1 `bikeSuggestion` z src/engine/calendar.ts."""
+    if wid in ("WATTBIKE_TEST", "INDOOR_4x4"): return bikes["indoor"]
+    return bikes.get("by_workout", {}).get(wid) or bikes.get("by_phase", {}).get(phase) or bikes["default"]
 
 def build_calendar(settings=DEFAULT_SETTINGS):
     start = D.fromisoformat(settings["program_start"])
@@ -572,9 +600,9 @@ def build_calendar(settings=DEFAULT_SETTINGS):
                 "date": date.isoformat(), "weekday": dn, "week": wno, "phase": wk["phase"], "week_type": wk["type"],
                 "day_type": day_type,
                 "bike": None if wid in ("REST",) else {"workout_id": wid, "name": w["name"], "duration_min": dur,
-                                                       "bike": bike_suggestion(wk["phase"], wid), "fallback_workout_id": fallback},
+                                                       "bike": bike_suggestion(BIKES, wk["phase"], wid), "fallback_workout_id": fallback},
                 "gym": None if not gym else {"session": gym["session"], "name": gym["name"], "est_min": gym["est_min"], "items": gym["items"]},
-                "nutrition": nutrition_for(wk["phase"], day_type, dur if wid not in ("REST", "TRAVEL_REST", "TRIP") else 0, key),
+                "nutrition": nutrition_for(NUTRITION, wk["phase"], day_type, dur if wid not in ("REST", "TRAVEL_REST", "TRIP") else 0, key),
                 "flags": flags,
             }
             if dn == "mon" and wk.get("notes"): day["week_notes"] = wk["notes"]
@@ -611,6 +639,11 @@ def main():
     days = build_calendar()
     program = {
         "version": PROGRAM_VERSION,
+        "meta": META,
+        "nutrition": NUTRITION,
+        "bikes": BIKES,
+        "goal": GOAL,
+        "cadence": CADENCE,
         "default_settings": DEFAULT_SETTINGS,
         "hr_zones_lthr_fraction": HR_ZONES,
         "power_zones_ftp_fraction": POWER_ZONES,

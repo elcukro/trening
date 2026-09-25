@@ -28,7 +28,7 @@ _spec.loader.exec_module(gen)
 sys.stdout = _stdout
 
 PROGRAM_ID = "ftp300"
-PROGRAM_VERSION = "2026.09.24-1"
+PROGRAM_VERSION = "2026.09.25-1"
 
 # dłuższy blok VO2max niż w programie alpejskim (6 powtórzeń) – przy trenażerze ERG da się utrzymać moc
 gen.add(gen.interval_workout("VO2_6x3", "VO2max 6×3 min", "vo2max", 6, 3, 3, "Z5b", [85, 95], gen.VO2_DESC, wu=20))
@@ -153,7 +153,33 @@ WEEKS = {
 
 DAY_NAMES = gen.DAY_NAMES
 BIKE_WORKOUTS = gen.BIKE_WORKOUTS
-BIKE_DEFAULT = "Rower"
+
+# ---------------------------------------------------------------- SEKCJE OSOBISTE PROGRAMU (docs/18)
+# Ustalone dla Ferdynanda – nie kopiować z programu alpejskiego.
+NUTRITION = {
+    # Cel mocowy: deficyt tylko w dni lekkie, a jego wielkość silnik dobiera z masy obecnej i docelowej
+    # (`weight_based`). W bloku VO2max i przed testem końcowym bez deficytu – jakość interwałów ważniejsza niż waga.
+    "deficit_by_phase": {"PREP": True, "I": True, "II": True, "III": False, "IV": True, "V": False, "TAPER": False},
+    "protein_g_per_kg": 1.8,
+    "heavy_min": 120,
+    "medium_min": 60,
+    "buckets": {
+        "no_deficit": {"energy": "maintenance", "label": "Bilans zerowy – jedz na pełną wydajność"},
+        "heavy": {"energy": "maintenance", "label": "Dzień ciężki: bez deficytu, paliwo na trening"},
+        "medium": {"energy": "maintenance", "label": "Dzień treningowy: bilans zerowy"},
+        "light": {"energy": "deficit_300", "label": "Dzień lekki: deficyt dobrany do masy"},
+    },
+    "if_above_target_suffix": " (tylko jeśli waga > celu)",
+    "carbs_g_per_h": [[90, [60, 80]], [60, [30, 40]]],
+    "post_workout": {"min_ride_min": 60, "text": "30–40 g białka + węglowodany w ciągu 1–2 h"},
+    # limit 500 kcal na dzień i 0,7 % masy na tydzień – przy tej sylwetce szybciej znaczy kosztem watów;
+    # `deficit_days_per_week` uzupełnia main() średnią z tygodni budujących
+    "weight_based": {"max_kcal_per_day": 500, "max_loss_pct_per_week": 0.7, "deficit_days_per_week": 0},
+}
+BIKES = {"default": "Rower", "indoor": "Trenażer (ERG)"}
+GOAL = {"kind": "ftp", "label": "FTP 300 W i wyższe VO2max", "short": "FTP 300 W"}
+CADENCE = {"floor_rpm": 80, "goal_rpm": 85}   # naturalna kadencja z jego jazd: 85–92 rpm (śr. 88)
+META = {"name": "FTP 300 – próg i VO2max", "short": "FTP 300"}
 
 
 def gym_for(wk, weekday):
@@ -193,14 +219,14 @@ def build_calendar(settings=DEFAULT_SETTINGS):
                 flags.append("test")
             if wk["type"] == "deload":
                 flags.append("deload")
-            bike_name = "Wattbike / rowerek na siłowni" if wid in ("WATTBIKE_TEST", "INDOOR_4x4") else BIKE_DEFAULT
+            bike_name = gen.bike_suggestion(BIKES, wk["phase"], wid)
             days.append({
                 "date": date.isoformat(), "weekday": dn, "week": wno, "phase": wk["phase"], "week_type": wk["type"],
                 "day_type": day_type,
                 "bike": None if wid == "REST" else {"workout_id": wid, "name": w["name"], "duration_min": dur,
                                                     "bike": bike_name, "fallback_workout_id": fallback},
                 "gym": None if not gym else {"session": gym["session"], "name": gym["name"], "est_min": gym["est_min"], "items": gym["items"]},
-                "nutrition": gen.nutrition_for(wk["phase"], day_type, 0 if wid == "REST" else dur, key),
+                "nutrition": gen.nutrition_for(NUTRITION, wk["phase"], day_type, 0 if wid == "REST" else dur, key),
                 "flags": flags,
                 # silnik dokłada uwagi tygodnia tylko do poniedziałku – trzymamy się tego samego
                 **({"week_notes": wk["notes"]} if (wk.get("notes") and dn == "mon") else {}),
@@ -210,12 +236,21 @@ def build_calendar(settings=DEFAULT_SETTINGS):
 
 def main():
     days = build_calendar()
+    # średnia liczba dni z deficytem w tygodniach budujących – mianownik doboru deficytu z masy
+    build = [w for w, t in WEEKS.items() if t["type"] == "build" and NUTRITION["deficit_by_phase"].get(t["phase"])]
+    per_week = [sum(1 for d in days if d["week"] == w and d["nutrition"]["energy"].startswith("deficit")) for w in build]
+    NUTRITION["weight_based"]["deficit_days_per_week"] = round(sum(per_week) / len(per_week), 1)
     weeks_out = {}
     for k, v in WEEKS.items():
         t = {kk: vv for kk, vv in v.items() if kk != "gym_week"}
         weeks_out[str(k)] = t
     program = {
         "version": PROGRAM_VERSION,
+        "meta": META,
+        "nutrition": NUTRITION,
+        "bikes": BIKES,
+        "goal": GOAL,
+        "cadence": CADENCE,
         "default_settings": {**DEFAULT_SETTINGS, "program_id": PROGRAM_ID},
         "hr_zones_lthr_fraction": gen.HR_ZONES,
         "power_zones_ftp_fraction": gen.POWER_ZONES,
@@ -230,7 +265,6 @@ def main():
         "gym_prescriptions": {str(k): {"wed": g} for k, v in WEEKS.items() if (g := gym_for(v, DEFAULT_SETTINGS["gym_days"]["A"]))},
         "week_summary": gen.week_table(days),
         "layout": {"mode": "fixed"},
-        "bike_default": BIKE_DEFAULT,
     }
     with open(os.path.join(HERE, f"program-{PROGRAM_ID}.json"), "w", encoding="utf-8") as f:
         json.dump(program, f, ensure_ascii=False, indent=1)

@@ -1,5 +1,80 @@
 {
- "version": "2026.09.24-1",
+ "version": "2026.09.25-1",
+ "meta": {
+  "name": "FTP 300 – próg i VO2max",
+  "short": "FTP 300"
+ },
+ "nutrition": {
+  "deficit_by_phase": {
+   "PREP": true,
+   "I": true,
+   "II": true,
+   "III": false,
+   "IV": true,
+   "V": false,
+   "TAPER": false
+  },
+  "protein_g_per_kg": 1.8,
+  "heavy_min": 120,
+  "medium_min": 60,
+  "buckets": {
+   "no_deficit": {
+    "energy": "maintenance",
+    "label": "Bilans zerowy – jedz na pełną wydajność"
+   },
+   "heavy": {
+    "energy": "maintenance",
+    "label": "Dzień ciężki: bez deficytu, paliwo na trening"
+   },
+   "medium": {
+    "energy": "maintenance",
+    "label": "Dzień treningowy: bilans zerowy"
+   },
+   "light": {
+    "energy": "deficit_300",
+    "label": "Dzień lekki: deficyt dobrany do masy"
+   }
+  },
+  "if_above_target_suffix": " (tylko jeśli waga > celu)",
+  "carbs_g_per_h": [
+   [
+    90,
+    [
+     60,
+     80
+    ]
+   ],
+   [
+    60,
+    [
+     30,
+     40
+    ]
+   ]
+  ],
+  "post_workout": {
+   "min_ride_min": 60,
+   "text": "30–40 g białka + węglowodany w ciągu 1–2 h"
+  },
+  "weight_based": {
+   "max_kcal_per_day": 500,
+   "max_loss_pct_per_week": 0.7,
+   "deficit_days_per_week": 2.0
+  }
+ },
+ "bikes": {
+  "default": "Rower",
+  "indoor": "Trenażer (ERG)"
+ },
+ "goal": {
+  "kind": "ftp",
+  "label": "FTP 300 W i wyższe VO2max",
+  "short": "FTP 300 W"
+ },
+ "cadence": {
+  "floor_rpm": 80,
+  "goal_rpm": 85
+ },
  "default_settings": {
   "program_start": "2026-09-21",
   "trip_start": "2027-06-28",
@@ -9084,6 +9159,5 @@
  ],
  "layout": {
   "mode": "fixed"
- },
- "bike_default": "Rower"
+ }
 }

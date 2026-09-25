@@ -20,7 +20,7 @@ import { PowerCard } from './PowerCard'
 import { PmcCard } from './PmcCard'
 import { CadenceCard } from './CadenceCard'
 import { FtpSuggestionCard } from './FtpSuggestionCard'
-import { goalPower } from '@/engine/baseline'
+import { programGoal } from '@/engine/baseline'
 
 const MAIN = [
   { id: 'back_squat', label: 'Przysiad', goal: [1.0, 1.2] as [number, number] },
@@ -103,7 +103,7 @@ export function ProgressPage() {
       <div className="space-y-3 lg:grid lg:grid-cols-2 lg:items-start lg:gap-6 lg:space-y-0">
       <div className="min-w-0 space-y-3 lg:space-y-4">
       <BaselineCard engine={engine} checkins={checkins} acts={allActs} />
-      <PowerCard engine={engine} acts={allActs} tests={tests} checkins={checkins} goalFtp={goalPower(avg7 + s.bike_and_kit_kg, 30).ftp} />
+      <PowerCard engine={engine} acts={allActs} tests={tests} checkins={checkins} goalFtp={programGoal(engine.ctx.program.goal, avg7 + s.bike_and_kit_kg, s.ftp_w_goal).ftp} />
       <Card>
         <CardTitle icon="⚖️" right={<Metric>{num(avg7)} kg</Metric>}>
           Masa
@@ -187,7 +187,7 @@ export function ProgressPage() {
 
       <div className="min-w-0 space-y-3 lg:space-y-4">
       <PmcCard engine={engine} />
-      <CadenceCard acts={allActs} today={today} />
+      <CadenceCard acts={allActs} today={today} policy={engine.ctx.program.cadence} />
       <LoadCard acts={allActs} logs={rides} ftp={lastFtp} lthr={lastLthr ?? null} zones={engine.ctx.program.hr_zones_lthr_fraction} today={today} />
       <Card>
         <CardTitle icon="⏱️" right={comp != null ? <Metric>zgodność {comp} %</Metric> : undefined}>

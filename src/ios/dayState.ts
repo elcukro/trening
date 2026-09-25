@@ -129,7 +129,7 @@ export function rideVerdict(score: number | null): { text: string; tone: 'good' 
   return { text: 'Inny trening niż zaplanowany', tone: 'warn' }
 }
 
-/** Postęp do celu „30 km/h przez 2–3 h”: obecne FTP względem wyliczonego docelowego. */
+/** Postęp do celu programu: obecne FTP względem wymaganego. */
 export function goalProgress(ftp: number | null, goalFtp: number): { pct: number; missing: number } | null {
   if (!ftp || !goalFtp) return null
   return { pct: Math.max(0, Math.min(100, Math.round((ftp / goalFtp) * 100))), missing: Math.max(0, Math.round(goalFtp - ftp)) }

@@ -26,7 +26,6 @@ import { days as daysLabel } from '@/lib/format'
 import { PHASE_COLOR, PHASE_SHORT } from '@/lib/labels'
 import type { PhaseId } from '@/engine/types'
 import { FULL_ESCAPE, useUiMode } from '@/ios/useIos'
-import { programMeta } from '@/data/program'
 
 const ProgressPage = lazy(() => import('@/features/progress/ProgressPage').then((m) => ({ default: m.ProgressPage })))
 const IosApp = lazy(() => import('@/ios/IosApp').then((m) => ({ default: m.IosApp })))
@@ -105,7 +104,7 @@ function SeasonStrip() {
   return (
     <div className="mt-auto rounded-xl border border-slate-200 bg-slate-50 p-3 shadow-card dark:border-slate-700 dark:bg-slate-800">
       <div className="flex items-baseline justify-between gap-2">
-        <span className="text-xs font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">{programMeta(engine.ctx.settings.program_id).short}</span>
+        <span className="text-xs font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">{engine.ctx.program.meta.short}</span>
         <span className="text-xs tabular-nums text-slate-500 dark:text-slate-400">{Math.round((elapsed / span) * 100)} %</span>
       </div>
       <p className="mt-0.5 text-sm font-semibold">{left > 0 ? `za ${daysLabel(left)}` : left === 0 ? 'Dziś wyjazd!' : 'Wyjazd trwa'}</p>
@@ -127,7 +126,7 @@ function SideNav() {
     <nav className="sticky top-0 hidden h-dvh w-64 shrink-0 flex-col border-r border-slate-200 bg-white px-4 py-6 lg:flex dark:border-slate-700 dark:bg-slate-900" aria-label="Nawigacja główna">
       <div className="mb-6 px-3">
         <div className="text-xl font-bold tracking-tight">Trening</div>
-        <div className="text-xs text-slate-500 dark:text-slate-400">{programMeta(engine.ctx.settings.program_id).short}</div>
+        <div className="text-xs text-slate-500 dark:text-slate-400">{engine.ctx.program.meta.short}</div>
       </div>
       <ul className="space-y-1">
         {SIDE_MAIN.map((t) => (

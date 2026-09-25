@@ -3,26 +3,12 @@ import ftp300Json from '../../data/program-ftp300.json'
 import { parseProgram, type Program } from '@/engine/schema'
 
 /**
- * Programy treningowe. Każde konto ma swój (`settings.program_id`) – ustalenia jednego zawodnika
- * (strefy, kadencja, żywienie, rower) nie przenoszą się na drugiego, bo siedzą w jego pliku programu.
+ * Rejestr plików programów. Nazwy, cele, żywienie, rowery i kadencja siedzą w samych plikach
+ * (`meta`, `goal`, `nutrition`, `bikes`, `cadence`) – tu jest tylko identyfikator i źródło.
  */
 export const PROGRAMS = [
-  {
-    id: 'alps2027',
-    name: 'Alpy 2027 – baza i góry',
-    short: 'Alpy 2027',
-    /** cel wyrażony prędkością: wymagane FTP liczy fizyka (masa, CdA, Crr) */
-    goal: { kind: 'speed', kmh: 30, label: '30 km/h przez 2–3 godziny' },
-    json: alpsJson as unknown,
-  },
-  {
-    id: 'ftp300',
-    name: 'FTP 300 – próg i VO2max',
-    short: 'FTP 300',
-    /** cel wyrażony wprost mocą progową – z ustawienia `ftp_w_goal` */
-    goal: { kind: 'ftp', label: 'FTP 300 W i wyższe VO2max' },
-    json: ftp300Json as unknown,
-  },
+  { id: 'alps2027', json: alpsJson as unknown },
+  { id: 'ftp300', json: ftp300Json as unknown },
 ] as const
 
 export type ProgramId = (typeof PROGRAMS)[number]['id']
@@ -40,6 +26,7 @@ export function loadProgram(id: string = DEFAULT_PROGRAM_ID): Program {
   return parsed
 }
 
-export function programMeta(id: string | undefined) {
-  return PROGRAMS.find((p) => p.id === id) ?? PROGRAMS[0]
+/** Lista do wyboru w Ustawieniach: identyfikator + nazwa z pliku programu. */
+export function programOptions(): { id: string; name: string }[] {
+  return PROGRAMS.map((p) => ({ id: p.id, name: loadProgram(p.id).meta.name }))
 }

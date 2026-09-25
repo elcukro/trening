@@ -1,6 +1,6 @@
 import { useCallback, useMemo } from 'react'
 import { useLiveQuery } from 'dexie-react-hooks'
-import { db, type TestResult } from '@/db'
+import { db, type Checkin, type TestResult } from '@/db'
 import { DEFAULT_PROGRAM_ID, loadProgram } from '@/data/program'
 import type { Settings } from '@/engine/schema'
 import type { EngineContext } from '@/engine/types'
@@ -49,14 +49,23 @@ export function useEngine(): Engine {
   const { settings } = settingsApi
   const testRows = useLiveQuery(() => db.test_results.where('date').above('').toArray(), [], [] as TestResult[])
   const tests = useMemo(() => testRows.filter((t) => !t.deleted_at && (t.lthr_bpm || t.ftp_w)).map((t) => ({ date: t.date, lthr_bpm: t.lthr_bpm ?? null, ftp_w: t.ftp_w ?? null })), [testRows])
+  // ostatnia zmierzona masa – z niej program z `weight_based` dobiera deficyt
+  const lastWeigh = useLiveQuery(
+    async () => {
+      const rows = (await db.checkins.where('date').above('').toArray()).filter((c: Checkin) => !c.deleted_at && c.weight_kg != null)
+      return rows.toSorted((a, b) => (a.date < b.date ? 1 : -1))[0]?.weight_kg ?? null
+    },
+    [],
+    null as number | null,
+  )
   const { ctx, weeks, settingsError } = useMemo(() => {
     try {
-      return { ctx: { program, settings, tests }, weeks: layoutWeeks(program, settings), settingsError: null }
+      return { ctx: { program, settings, tests, current_weight_kg: lastWeigh }, weeks: layoutWeeks(program, settings), settingsError: null }
     } catch (e) {
       const safe = { ...settings, trip_start: program.default_settings.trip_start }
       const msg = e instanceof TripDateError ? e.message : 'Nieprawidłowe ustawienia – użyto domyślnej daty wyjazdu.'
-      return { ctx: { program, settings: safe, tests }, weeks: layoutWeeks(program, safe), settingsError: msg }
+      return { ctx: { program, settings: safe, tests, current_weight_kg: lastWeigh }, weeks: layoutWeeks(program, safe), settingsError: msg }
     }
-  }, [program, settings, tests])
+  }, [program, settings, tests, lastWeigh])
   return { ctx, weeks, settingsApi, settingsError }
 }

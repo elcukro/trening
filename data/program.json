@@ -1,5 +1,96 @@
 {
  "version": "2026.09.24-3",
+ "meta": {
+  "name": "Alpy 2027 – baza i góry",
+  "short": "Alpy 2027"
+ },
+ "nutrition": {
+  "deficit_by_phase": {
+   "PREP": true,
+   "I": true,
+   "II": true,
+   "III": true,
+   "IV": "if_above_target",
+   "V": false,
+   "TAPER": false
+  },
+  "protein_g_per_kg": 1.8,
+  "heavy_min": 120,
+  "medium_min": 60,
+  "buckets": {
+   "no_deficit": {
+    "energy": "maintenance",
+    "label": "Bilans zerowy – jedz na pełną wydajność"
+   },
+   "heavy": {
+    "energy": "maintenance",
+    "label": "Dzień ciężki: bez deficytu, paliwo na trening"
+   },
+   "medium": {
+    "energy": "deficit_300",
+    "label": "Deficyt ok. 300 kcal"
+   },
+   "light": {
+    "energy": "deficit_500",
+    "label": "Dzień lekki: deficyt ok. 500 kcal"
+   }
+  },
+  "if_above_target_suffix": " (tylko jeśli waga > celu)",
+  "carbs_g_per_h": [
+   [
+    90,
+    [
+     60,
+     80
+    ]
+   ],
+   [
+    60,
+    [
+     30,
+     40
+    ]
+   ]
+  ],
+  "post_workout": {
+   "min_ride_min": 60,
+   "text": "30–40 g białka + węglowodany w ciągu 1–2 h"
+  },
+  "trip": {
+   "energy": "maintenance_plus",
+   "label": "Wyjazd: jedz do syta, 70–80 g węgli/h na podjazdach",
+   "protein_g_per_kg": 1.6,
+   "carbs_g_per_h": [
+    70,
+    80
+   ]
+  }
+ },
+ "bikes": {
+  "default": "Checkpoint (gravel)",
+  "indoor": "Wattbike / rowerek na siłowni",
+  "by_workout": {
+   "MOUNTAIN_DAY": "Checkpoint (przełożenie 40/50, tarczówki)",
+   "B2B_DAY": "Checkpoint (przełożenie 40/50, tarczówki)",
+   "BLOCK_DAY1": "Checkpoint (przełożenie 40/50, tarczówki)"
+  },
+  "by_phase": {
+   "II": "Checkpoint (zima, błotniki)",
+   "V": "Checkpoint (docelowy rower wyjazdowy)",
+   "TAPER": "Checkpoint (docelowy rower wyjazdowy)"
+  }
+ },
+ "goal": {
+  "kind": "speed",
+  "kmh": 30,
+  "label": "30 km/h przez 2–3 godziny",
+  "short": "30 km/h"
+ },
+ "cadence": {
+  "floor_rpm": 75,
+  "goal_rpm": 78,
+  "tip": "siłę na niskiej kadencji zostaw na bloki Z2_FORCE"
+ },
  "default_settings": {
   "program_start": "2026-09-14",
   "trip_start": "2027-09-11",

@@ -46,6 +46,8 @@ describe('cadenceByZone', () => {
   })
 })
 
+const POLICY = { floor_rpm: 75, goal_rpm: 78 }
+
 describe('cadenceTrend / lowCadenceWarning', () => {
   it('tygodnie ważone czasem i ostrzeżenie po dwóch niskich tygodniach', () => {
     const rides = [
@@ -59,7 +61,7 @@ describe('cadenceTrend / lowCadenceWarning', () => {
     expect(t[0]!.avg_rpm).toBe(70)
     expect(t[1]!).toMatchObject({ avg_rpm: 72, rides: 1 })
     expect(t[2]!.avg_rpm).toBeNull()
-    expect(lowCadenceWarning(t)).toContain('drugi tydzień')
-    expect(lowCadenceWarning([{ monday: '2026-09-07', avg_rpm: 70, rides: 1 }, { monday: '2026-09-14', avg_rpm: 80, rides: 1 }])).toBeNull()
+    expect(lowCadenceWarning(t, POLICY)).toContain('drugi tydzień')
+    expect(lowCadenceWarning([{ monday: '2026-09-07', avg_rpm: 70, rides: 1 }, { monday: '2026-09-14', avg_rpm: 80, rides: 1 }], POLICY)).toBeNull()
   })
 })
