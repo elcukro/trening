@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { useLiveQuery } from 'dexie-react-hooks'
 import { db } from '@/db'
-import { DEFAULT_LOCATION, DEFAULT_RIDE_HOURS, geocode, setLocation, setRideHours, type RideHours, type WeatherLocation } from '@/sync/weather'
+import { DEFAULT_RIDE_HOURS, geocode, getLocation, setLocation, setRideHours, type RideHours, type WeatherLocation } from '@/sync/weather'
 import { Actions, Button, Card, CardTitle, Field, Input, Select } from '@/components/ui'
 import { useToast } from '@/components/Toast'
 
@@ -10,7 +10,7 @@ const HOURS = Array.from({ length: 17 }, (_, i) => i + 5) // 5:00–21:00
 /** Lokalizacja prognozy i typowe godziny startu jazdy – dla odprawy przed jazdą (pkt 6). Zapis lokalny (kv). */
 export function WeatherSettings() {
   const toast = useToast()
-  const loc = useLiveQuery(async () => ((await db.kv.get('weather_location'))?.value as WeatherLocation | undefined) ?? DEFAULT_LOCATION, [], DEFAULT_LOCATION)
+  const loc = useLiveQuery(getLocation, [], null)
   const hours = useLiveQuery(async () => ((await db.kv.get('ride_hours'))?.value as RideHours | undefined) ?? DEFAULT_RIDE_HOURS, [], DEFAULT_RIDE_HOURS)
   const [query, setQuery] = useState('')
   const [found, setFound] = useState<WeatherLocation[]>([])
@@ -25,10 +25,16 @@ export function WeatherSettings() {
     <Card>
       <CardTitle icon="🌤️">Pogoda i pora jazdy</CardTitle>
       <p className="text-sm">
-        Prognoza dla: <b>{loc.name}</b> <span className="text-xs text-slate-500 dark:text-slate-400">({loc.lat}, {loc.lon})</span>
+        {loc ? (
+          <>
+            Prognoza dla: <b>{loc.name}</b> <span className="text-xs text-slate-500 dark:text-slate-400">({loc.lat}, {loc.lon})</span>
+          </>
+        ) : (
+          <>Prognoza: <b>miejscowość nieustawiona</b> – wyszukaj ją poniżej, żeby odprawa przed jazdą miała pogodę.</>
+        )}
       </p>
       <div className="mt-2 flex gap-2">
-        <Input aria-label="Miejscowość" placeholder="np. Łódź" value={query} onChange={(e) => setQuery(e.target.value)} onKeyDown={(e) => e.key === 'Enter' && void search()} className="min-w-0 flex-1" />
+        <Input aria-label="Miejscowość" placeholder="Nazwa miejscowości" value={query} onChange={(e) => setQuery(e.target.value)} onKeyDown={(e) => e.key === 'Enter' && void search()} className="min-w-0 flex-1" />
         <Button variant="secondary" onClick={search} disabled={!query.trim()}>
           Szukaj
         </Button>

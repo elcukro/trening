@@ -203,7 +203,25 @@ export const CadencePolicySchema = z.object({
   tip: z.string().optional(),
 })
 
-export const ProgramMetaSchema = z.object({ name: z.string(), short: z.string() })
+/** Jak nazywamy datę końcową programu (`settings.trip_start`) – wyjazd, test końcowy, zawody… */
+export const ProgramTargetSchema = z.object({
+  /** etykieta pola w Ustawieniach */
+  label: z.string(),
+  /** krótko, np. „wyjazd” – „start → wyjazd 12.09.2027” */
+  short: z.string(),
+  /** „12 dni do wyjazdu” */
+  until: z.string(),
+  /** w dniu docelowym */
+  today: z.string(),
+  /** po dacie docelowej */
+  after: z.string(),
+})
+
+export const ProgramMetaSchema = z.object({ name: z.string(), short: z.string(), target: ProgramTargetSchema })
+
+/** Ekrany, które mają sens tylko w niektórych programach (docs/18, krok 3). */
+export const FEATURES = ['gear', 'trip'] as const
+export type Feature = (typeof FEATURES)[number]
 
 /**
  * Zasady adaptacji danego programu (docs/18, krok 2): teksty dla człowieka i parametry,
@@ -233,6 +251,10 @@ export const ProgramSchema = z.object({
   goal: GoalSchema,
   cadence: CadencePolicySchema,
   rules: ProgramRulesSchema,
+  /** `gear` – Sprzęt (zadania serwisowe), `trip` – Wyjazd (checklista, strategia na przełęcz) */
+  features: z.array(z.enum(FEATURES)),
+  /** warianty dni Sesji A/C do wyboru w Ustawieniach; brak = układ siłowni stały, bez wyboru */
+  gym_day_options: z.array(z.object({ value: z.enum(['mon', 'tue', 'wed', 'thu', 'fri', 'sat', 'sun']), label: z.string() })).optional(),
   default_settings: SettingsSchema,
   hr_zones_lthr_fraction: z.array(HrZoneSchema),
   power_zones_ftp_fraction: z.array(PowerZoneSchema),
@@ -256,6 +278,7 @@ export type Bikes = z.infer<typeof BikesSchema>
 export type Goal = z.infer<typeof GoalSchema>
 export type CadencePolicy = z.infer<typeof CadencePolicySchema>
 export type ProgramRules = z.infer<typeof ProgramRulesSchema>
+export type ProgramTarget = z.infer<typeof ProgramTargetSchema>
 export type HrZone = z.infer<typeof HrZoneSchema>
 export type PowerZone = z.infer<typeof PowerZoneSchema>
 export type Step = z.infer<typeof StepSchema>

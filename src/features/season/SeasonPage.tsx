@@ -32,7 +32,7 @@ export function SeasonPage() {
 
   return (
     <div className="space-y-4">
-      <PageTitle sub={`${fmtDate(engine.ctx.settings.program_start)} → wyjazd ${fmtDate(engine.ctx.settings.trip_start)}`}>Sezon</PageTitle>
+      <PageTitle sub={`${fmtDate(engine.ctx.settings.program_start)} → ${engine.ctx.program.meta.target.short} ${fmtDate(engine.ctx.settings.trip_start)}`}>Sezon</PageTitle>
       <Card>
         <div className="flex h-4 w-full overflow-hidden rounded-lg">
           {phases.map((p) => (

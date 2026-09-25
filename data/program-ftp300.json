@@ -1,8 +1,15 @@
 {
- "version": "2026.09.25-2",
+ "version": "2026.09.25-3",
  "meta": {
   "name": "FTP 300 – próg i VO2max",
-  "short": "FTP 300"
+  "short": "FTP 300",
+  "target": {
+   "label": "Koniec programu",
+   "short": "koniec",
+   "until": "do końca programu",
+   "today": "Koniec programu – czas na nowy cel",
+   "after": "Program zakończony"
+  }
  },
  "nutrition": {
   "deficit_by_phase": {
@@ -183,6 +190,7 @@
   "long_catchup_onto": [],
   "deload_note": "Tydzień lżejszy: bez interwałów, piątek wolny, długa krótsza. Na siłowni ciężar −10%, serie −40%, RIR +1. Nogi mają wyjść świeższe."
  },
+ "features": [],
  "default_settings": {
   "program_start": "2026-09-21",
   "trip_start": "2027-06-28",

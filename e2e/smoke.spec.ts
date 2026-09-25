@@ -66,9 +66,12 @@ test('Odprawa przed jazdą: ubiór i żywienie bez prognozy, ustawienia pogody',
   await expect(page.getByRole('heading', { name: 'Odprawa przed jazdą' })).toBeVisible()
   await expect(page.getByText(/Żywienie na \d+ min/)).toBeVisible()
   await expect(page.getByText(/g węgli ≈ \d+ porcji/)).toBeVisible()
+  // bez wartości domyślnej – nie zgadujemy miasta za użytkownika (docs/18, A8)
+  await expect(page.getByText(/Brak miejscowości prognozy/)).toBeVisible()
   await page.goto('/wiecej/ustawienia')
   await expect(page.getByRole('heading', { name: 'Pogoda i pora jazdy' })).toBeVisible()
-  await expect(page.getByText(/Prognoza dla: Łódź/)).toBeVisible()
+  await expect(page.getByText(/miejscowość nieustawiona/)).toBeVisible()
+  await expect(page.getByText('Łódź')).toHaveCount(0)
 })
 
 test('Ustawienia: LTHR 160 daje bpm na ekranie Dziś', async ({ page }) => {

@@ -17,7 +17,10 @@ export function BriefingSheet({ b, onClose, onIndoor }: { b: Briefing; onClose: 
               <Row icon={<RowIcon color="var(--blue)"><IconWind size={18} /></RowIcon>} title="Szansa na deszcz" value={`${s.precip_prob} %`} subtitle={`zachód słońca ${s.sunset}`} />
             </>
           ) : (
-            <Row title={b.loading ? 'Pobieram prognozę…' : 'Brak prognozy na ten dzień'} subtitle={b.loading ? undefined : 'Ubiór i jedzenie liczę bez pogody.'} />
+            <Row
+              title={b.loading ? 'Pobieram prognozę…' : b.location === null ? 'Miejscowość nieustawiona' : 'Brak prognozy na ten dzień'}
+              subtitle={b.loading ? undefined : b.location === null ? 'Ustaw ją w Więcej → Pogoda. Do tego czasu ubiór i jedzenie liczę bez pogody.' : 'Ubiór i jedzenie liczę bez pogody.'}
+            />
           )}
         </List>
       </Section>

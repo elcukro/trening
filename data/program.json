@@ -1,8 +1,15 @@
 {
- "version": "2026.09.25-1",
+ "version": "2026.09.25-2",
  "meta": {
   "name": "Alpy 2027 – baza i góry",
-  "short": "Alpy 2027"
+  "short": "Alpy 2027",
+  "target": {
+   "label": "Data wyjazdu",
+   "short": "wyjazd",
+   "until": "do wyjazdu",
+   "today": "Dzień wyjazdu!",
+   "after": "Wyjazd trwa"
+  }
  },
  "nutrition": {
   "deficit_by_phase": {
@@ -216,6 +223,20 @@
   ],
   "deload_note": "Tydzień lżejszy: bez interwałów poza środą, objętość niżej o 40%. Na siłowni ciężar −10%, serie −40%, RIR +1. Nogi mają wyjść świeższe."
  },
+ "features": [
+  "gear",
+  "trip"
+ ],
+ "gym_day_options": [
+  {
+   "value": "wed",
+   "label": "środa (A/C) + piątek (B)"
+  },
+  {
+   "value": "tue",
+   "label": "wtorek (A/C) + piątek (B)"
+  }
+ ],
  "default_settings": {
   "program_start": "2026-09-14",
   "trip_start": "2027-09-11",

@@ -1,10 +1,11 @@
 import { useEffect, useState } from 'react'
+import { Link } from 'react-router'
 import { useLiveQuery } from 'dexie-react-hooks'
 import { db } from '@/db'
 import type { DayPlan } from '@/engine/plan'
 import type { RuleAction } from '@/engine/rules'
 import { adviseRide, clothingFor, fuelPlan, summarizeWindow, weatherLabel, type Advice, type ClothingTable, type DayForecast, type WindowSummary } from '@/engine/weather'
-import { DEFAULT_LOCATION, DEFAULT_RIDE_HOURS, loadForecast, type RideHours, type WeatherLocation } from '@/sync/weather'
+import { DEFAULT_RIDE_HOURS, getLocation, loadForecast, type RideHours } from '@/sync/weather'
 import clothingJson from '../../../data/clothing.json'
 import { Button, Card, CardSection, CardTitle, Inset, Metric } from '@/components/ui'
 import { num } from '@/lib/format'
@@ -18,13 +19,17 @@ const ICON: Record<Advice['kind'], string> = { indoor: '🧊', ice: '🧊', shor
  * ciemność), ubiór i żywienie w liczbach. Tylko dla dni z jazdą w zasięgu prognozy (7 dni).
  */
 export function BriefingCard({ day, onAction, hasOverride }: { day: DayPlan; onAction?: (a: RuleAction) => void; hasOverride?: boolean }) {
-  const loc = useLiveQuery(async () => ((await db.kv.get('weather_location'))?.value as WeatherLocation | undefined) ?? DEFAULT_LOCATION, [], DEFAULT_LOCATION)
+  // undefined = jeszcze czytam, null = miejscowość nieustawiona
+  const loc = useLiveQuery(getLocation, [], undefined)
   const hoursPref = useLiveQuery(async () => ((await db.kv.get('ride_hours'))?.value as RideHours | undefined) ?? DEFAULT_RIDE_HOURS, [], DEFAULT_RIDE_HOURS)
-  const [forecast, setForecast] = useState<{ days: DayForecast[]; stale: boolean } | null | 'loading'>('loading')
+  const [fetched, setForecast] = useState<{ days: DayForecast[]; stale: boolean } | null | 'loading'>('loading')
+  // bez miejscowości nie ma czego pobierać – „brak prognozy” wynika z ustawień, nie z sieci
+  const forecast = loc === null ? null : fetched
   const bolt = boltLabel(useBoltState(day))
 
   useEffect(() => {
     let alive = true
+    if (!loc) return
     loadForecast(loc)
       .then((f) => {
         if (alive) setForecast(f ? { days: f.days, stale: f.stale } : null)
@@ -56,12 +61,20 @@ export function BriefingCard({ day, onAction, hasOverride }: { day: DayPlan; onA
       </CardTitle>
       {forecast === 'loading' && <p className="text-xs text-slate-500 dark:text-slate-400">Pobieram prognozę…</p>}
       {forecast !== 'loading' && !summary && (
-        <p className="text-xs text-slate-500 dark:text-slate-400">{forecast === null ? 'Brak prognozy (offline i bez bufora).' : 'Prognoza obejmuje 7 dni – dla tego dnia jeszcze jej nie ma.'} Ubiór i żywienie liczę bez pogody.</p>
+        <p className="text-xs text-slate-500 dark:text-slate-400">{loc === null ? (
+            <>
+              Brak miejscowości prognozy – ustaw ją w{' '}
+              <Link to="/wiecej/ustawienia" className="font-medium text-sky-700 underline dark:text-sky-300">
+                Ustawieniach
+              </Link>
+              .
+            </>
+          ) : forecast === null ? 'Brak prognozy (offline i bez bufora).' : 'Prognoza obejmuje 7 dni – dla tego dnia jeszcze jej nie ma.'} Ubiór i żywienie liczę bez pogody.</p>
       )}
       {summary && (
         <>
           <p className="text-sm tabular-nums">
-            {loc.name}, start {startLabel} ({day.bike.duration_min} min): odczuwalne <b>{num(summary.feels_c, 0)} °C</b> ({num(summary.temp_min_c, 0)}–{num(summary.temp_max_c, 0)}), wiatr {summary.wind_kmh} km/h
+            {loc?.name}, start {startLabel} ({day.bike.duration_min} min): odczuwalne <b>{num(summary.feels_c, 0)} °C</b> ({num(summary.temp_min_c, 0)}–{num(summary.temp_max_c, 0)}), wiatr {summary.wind_kmh} km/h
             {summary.gust_kmh >= 40 ? ` (porywy ${summary.gust_kmh})` : ''}, deszcz {summary.precip_prob} %, zachód {summary.sunset}.
             {forecast !== 'loading' && forecast?.stale ? ' Prognoza z bufora (offline).' : ''}
           </p>

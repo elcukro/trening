@@ -25,6 +25,7 @@ import { addDays, diffDays } from '@/engine/dates'
 import { days as daysLabel } from '@/lib/format'
 import { PHASE_COLOR, PHASE_SHORT } from '@/lib/labels'
 import type { PhaseId } from '@/engine/types'
+import type { Feature } from '@/engine/schema'
 import { FULL_ESCAPE, useUiMode } from '@/ios/useIos'
 
 const ProgressPage = lazy(() => import('@/features/progress/ProgressPage').then((m) => ({ default: m.ProgressPage })))
@@ -49,12 +50,18 @@ const SIDE_MAIN = [
   { to: '/biblioteka', label: 'Biblioteka', icon: '📚' },
 ]
 
-const SIDE_MORE = [
+const SIDE_MORE: { to: string; label: string; feature?: Feature }[] = [
   { to: '/wiecej/sezon', label: 'Sezon' },
-  { to: '/wiecej/sprzet', label: 'Sprzęt' },
-  { to: '/wiecej/wyjazd', label: 'Wyjazd' },
+  { to: '/wiecej/sprzet', label: 'Sprzęt', feature: 'gear' },
+  { to: '/wiecej/wyjazd', label: 'Wyjazd', feature: 'trip' },
   { to: '/wiecej/ustawienia', label: 'Ustawienia' },
 ]
+
+/** Ekran włączany przez program (`program.features`); bez niego trasa wraca do „Więcej”. */
+function FeatureRoute({ feature, children }: { feature: Feature; children: ReactNode }) {
+  const engine = useEngine()
+  return engine.ctx.program.features.includes(feature) ? <>{children}</> : <Navigate to="/wiecej" replace />
+}
 
 function BottomNav() {
   return (
@@ -86,6 +93,7 @@ function SeasonStrip() {
   const engine = useEngine()
   const today = todayISO()
   const { program_start, trip_start } = engine.ctx.settings
+  const target = engine.ctx.program.meta.target
   const phases = useMemo(() => {
     const out: { id: PhaseId; count: number }[] = []
     for (const w of engine.weeks) {
@@ -107,7 +115,7 @@ function SeasonStrip() {
         <span className="text-xs font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">{engine.ctx.program.meta.short}</span>
         <span className="text-xs tabular-nums text-slate-500 dark:text-slate-400">{Math.round((elapsed / span) * 100)} %</span>
       </div>
-      <p className="mt-0.5 text-sm font-semibold">{left > 0 ? `za ${daysLabel(left)}` : left === 0 ? 'Dziś wyjazd!' : 'Wyjazd trwa'}</p>
+      <p className="mt-0.5 text-sm font-semibold">{left > 0 ? `za ${daysLabel(left)}` : left === 0 ? target.today : target.after}</p>
       <div className="relative mt-2 flex h-2 w-full overflow-hidden rounded-full">
         {phases.map((p, i) => (
           <div key={`${p.id}-${i}`} className={PHASE_COLOR[p.id]} style={{ width: `${(p.count / total) * 100}%` }} title={PHASE_SHORT[p.id]} />
@@ -148,7 +156,7 @@ function SideNav() {
       </ul>
       <p className="mt-6 mb-1 px-3 text-xs font-semibold uppercase tracking-wide text-slate-400 dark:text-slate-500">Więcej</p>
       <ul className="space-y-0.5 text-sm">
-        {SIDE_MORE.map((t) => (
+        {SIDE_MORE.filter((t) => !t.feature || engine.ctx.program.features.includes(t.feature)).map((t) => (
           <li key={t.to}>
             <NavLink
               to={t.to}
@@ -245,8 +253,8 @@ export function App() {
               <Route path="biblioteka/zasady" element={<RulesPage />} />
               <Route path="wiecej" element={<MorePage />} />
               <Route path="wiecej/sezon" element={<SeasonPage />} />
-              <Route path="wiecej/sprzet" element={<GearPage />} />
-              <Route path="wiecej/wyjazd" element={<TripPage />} />
+              <Route path="wiecej/sprzet" element={<FeatureRoute feature="gear"><GearPage /></FeatureRoute>} />
+              <Route path="wiecej/wyjazd" element={<FeatureRoute feature="trip"><TripPage /></FeatureRoute>} />
               <Route path="wiecej/ustawienia" element={<SettingsPage />} />
               <Route path="*" element={<Navigate to="/" replace />} />
             </Route>

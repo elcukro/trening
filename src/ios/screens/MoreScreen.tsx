@@ -1,5 +1,7 @@
 import { useEffect, useState } from 'react'
+import { useLiveQuery } from 'dexie-react-hooks'
 import { useEngine } from '@/app/useSettings'
+import { geocode, getLocation, setLocation, type WeatherLocation } from '@/sync/weather'
 import { strava, type StravaStatus } from '@/sync/strava'
 import { wahoo, type WahooStatus } from '@/sync/wahoo'
 import { pushStatus, subscribePush, unsubscribePush, type PushStatus } from '@/sync/push'
@@ -79,6 +81,55 @@ function NumbersSheet({ onClose }: { onClose: () => void }) {
   )
 }
 
+/** Miejscowość prognozy dla odprawy – bez niej odprawa liczy ubiór i jedzenie bez pogody. */
+function LocationSheet({ onClose }: { onClose: () => void }) {
+  const toast = useToast()
+  const [query, setQuery] = useState('')
+  const [found, setFound] = useState<WeatherLocation[]>([])
+
+  async function search() {
+    if (!query.trim()) return
+    const r = await toast.run('Szukam…', () => geocode(query), (list) => (list.length ? `Znaleziono ${list.length}` : 'Nic nie znaleziono'))
+    setFound(r ?? [])
+  }
+
+  return (
+    <Sheet title="Pogoda" onClose={onClose}>
+      <Section header="Miejscowość" footer="Prognoza z Open-Meteo dla tej miejscowości trafia do odprawy przed jazdą. Zapis zostaje na tym urządzeniu.">
+        <List>
+          <Row
+            title={
+              <input
+                className="ios-input w-full"
+                placeholder="Nazwa miejscowości"
+                value={query}
+                onChange={(e) => setQuery(e.target.value)}
+                onKeyDown={(e) => e.key === 'Enter' && void search()}
+                aria-label="Miejscowość"
+              />
+            }
+            accessory={
+              <Btn small kind="tinted" onClick={() => void search()} disabled={!query.trim()}>
+                Szukaj
+              </Btn>
+            }
+          />
+          {found.map((f) => (
+            <Row
+              key={`${f.lat},${f.lon}`}
+              title={f.name}
+              onClick={() => {
+                void setLocation(f).then(onClose)
+              }}
+              accessory={<span className="ios-dim-3"><IconChevron size={18} /></span>}
+            />
+          ))}
+        </List>
+      </Section>
+    </Sheet>
+  )
+}
+
 function linkLabel(x: StravaStatus | WahooStatus | 'error' | null): string {
   return x === null ? '…' : x === 'error' ? 'brak danych' : x.connected ? 'połączone' : 'brak'
 }
@@ -100,7 +151,8 @@ export function MoreScreen() {
   const auth = useAuth()
   const sync = useSyncStatus()
   const [theme, setTheme] = useState<ThemePref>(getThemePref())
-  const [sheet, setSheet] = useState<'numbers' | null>(null)
+  const [sheet, setSheet] = useState<'numbers' | 'location' | null>(null)
+  const loc = useLiveQuery(getLocation, [], undefined)
   const [sv, setSv] = useState<StravaStatus | 'error' | null>(null)
   const [wh, setWh] = useState<WahooStatus | 'error' | null>(null)
   const [push, setPush] = useState<PushStatus | null>(null)
@@ -196,6 +248,13 @@ export function MoreScreen() {
             accessory={<span className="ios-dim-3"><IconChevron size={18} /></span>}
           />
           <Row icon={<RowIcon color="var(--indigo)"><IconHeart size={18} /></RowIcon>} title="Waga docelowa" value={`${num(s.body_weight_target_kg, 1)} kg`} />
+          <Row
+            icon={<RowIcon color="var(--orange)"><IconSun size={18} /></RowIcon>}
+            title="Pogoda"
+            subtitle={loc ? loc.name : loc === null ? 'Ustaw miejscowość prognozy' : undefined}
+            onClick={() => setSheet('location')}
+            accessory={<span className="ios-dim-3"><IconChevron size={18} /></span>}
+          />
         </List>
       </Section>
 
@@ -261,7 +320,7 @@ export function MoreScreen() {
         </List>
       </Section>
 
-      <Section header="Pełna aplikacja" footer="Kalendarz z przenoszeniem treningów, krzywa mocy, wykres formy, biblioteka ćwiczeń, sprzęt, wyjazd, kopia danych.">
+      <Section header="Pełna aplikacja" footer={`Kalendarz z przenoszeniem treningów, krzywa mocy, wykres formy, biblioteka ćwiczeń${engine.ctx.program.features.includes('gear') ? ', sprzęt' : ''}${engine.ctx.program.features.includes('trip') ? ', wyjazd' : ''}, kopia danych.`}>
         <List>
           <Row icon={<RowIcon color="var(--label-3)"><IconGear size={18} /></RowIcon>} title="Otwórz pełną aplikację" onClick={() => openFull('/')} accessory={<span className="ios-dim-3"><IconChevron size={18} /></span>} />
         </List>
@@ -276,6 +335,7 @@ export function MoreScreen() {
       </Section>
 
       {sheet === 'numbers' && <NumbersSheet onClose={() => setSheet(null)} />}
+      {sheet === 'location' && <LocationSheet onClose={() => setSheet(null)} />}
     </Screen>
   )
 }

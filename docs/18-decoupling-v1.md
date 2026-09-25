@@ -123,21 +123,30 @@ Wykonanie (prostsze niż pierwotny szkic z dniami tygodnia – silnik patrzy na 
 - Testy: `rules_ftp300.test.ts` (długa w pn przepada, piątkowy akcent przepada, środowy nie ląduje przed
   piątkowym, siłownia z soboty przepada, R12 i trenażer z programu, brak alpejskich słów w tekstach).
 
-### Krok 3 – Literały w interfejsie i funkcje włączane przez program (A8–A11, B2)
+### Krok 3 – Literały w interfejsie i funkcje włączane przez program (A8–A11, B2) ✅ 25.09.2026
 
-- Program deklaruje `features: ["gear", "trip", "baseline_speed"]`; `MorePage`, `SideNav`, trasy
-  `/wiecej/sprzet`, `/wiecej/wyjazd`, karta „Punkt wyjścia” pokazują się tylko, gdy program je włącza.
-  Program alpejski włącza wszystko; ftp300 – nic z tej trójki.
-- `DayView`/`CalendarPage`: nazwa treningu `TRIP` z programu (`w.name`), bez „Alpy”.
-- `TestResultCard`: domyślny rower z `program.bikes.default`.
-- `index.html` i manifest: „Trening” (nazwa aplikacji nie może być per użytkownik, więc musi być
-  neutralna); podtytuł sezonu zostaje w pasku bocznym z `program.meta.short`.
-- Pogoda: `DEFAULT_LOCATION` znika; lokalizacja to pole profilu (`weather_lat/lon/name`), bez wartości
-  odprawa mówi „ustaw miejscowość” zamiast liczyć dla Łodzi.
-- Testy e2e: `ios.spec.ts` i `desktop.spec.ts` dostają wariant „konto z programem ftp300”
-  (ustawienie `program_id` przez `addInitScript` do Dexie) i asercję braku literałów (patrz § Kryterium).
-
-Rozmiar: mały–średni. Efekt: znika A8–A11, B2.
+Wykonanie:
+- Program deklaruje `features` (`gear`, `trip`). Sprzęt i Wyjazd znikają z „Więcej”, z paska bocznego
+  i ze stopki „Pełna aplikacja” w `/i`, a bezpośredni adres wraca do `/wiecej` (`FeatureRoute` w `App.tsx`).
+  Alpy: oba; FTP 300: żaden. **Odstępstwo od szkicu:** bez `baseline_speed` – karta „Punkt wyjścia” jest już
+  sterowana celem programu (krok 1: prędkość tylko przy `goal.kind === "speed"`), a Ferdynandowi przydaje się
+  jako zapis FTP, masy i Pw:HR.
+- `meta.target` (`label`, `short`, `until`, `today`, `after`) nazywa datę końcową: „wyjazd” u Ciebie,
+  „koniec programu” u Ferdynanda. Z tego korzystają: pole w Ustawieniach, odliczanie w nagłówku dnia
+  i w pasku sezonu, podtytuł ekranu Sezon.
+- `gym_day_options` (opcjonalne): warianty dni siłowni w Ustawieniach. Bez nich pole znika, a zapis
+  zachowuje `gym_days` programu (wcześniej formularz nadpisywał `B: "fri"` i pokazywał warianty środa/wtorek
+  także przy siłowni w sobotę).
+- `DayView` bierze nazwę treningu `TRIP` z programu; kafelek w Kalendarzu mówi „Wyjazd”, pełna nazwa w podpowiedzi.
+  „Tydzień 0 od 3 dni wcześniej” tylko w układzie sezonowym. „Tabela 53 tygodni” → „tabela tygodni”.
+- `index.html` i manifest: „Trening”.
+- Pogoda: bez `DEFAULT_LOCATION`. Brak miejscowości → odprawa mówi „ustaw miejscowość” (pełna aplikacja
+  z linkiem do Ustawień, `/i` z nowym arkuszem Więcej → Pogoda). **Odstępstwo:** lokalizacja zostaje w `kv`
+  (pamięć urządzenia, nie konta) – `kv` się nie synchronizuje, więc nie ma wycieku między kontami; przeniesienie
+  do profilu dopiero po kroku 5, bo nowe pole profilu przy obecnym LWW ginie na starszych klientach.
+- Testy: `e2e/program-ftp300.spec.ts` – przełącza program w Ustawieniach i sprawdza 8 ekranów pełnej aplikacji
+  oraz 4 ekrany `/i` pod kątem literałów alpejskich (Alpy, przełęcz, Łódź, Checkpoint, Dogma, 30 km/h, Sesja B,
+  „do wyjazdu”…), brak Sprzętu/Wyjazdu i przekierowanie z `/wiecej/wyjazd`.
 
 ### Krok 4 – Sprzęt per użytkownik (B1)
 

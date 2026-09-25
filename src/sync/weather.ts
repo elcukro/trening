@@ -17,12 +17,15 @@ export interface RideHours {
   weekend: number
 }
 
-export const DEFAULT_LOCATION: WeatherLocation = { name: 'Łódź', lat: 51.77, lon: 19.46 }
 export const DEFAULT_RIDE_HOURS: RideHours = { weekday: 18, weekend: 10 }
 const TTL_MS = 3 * 60 * 60 * 1000
 
-export async function getLocation(): Promise<WeatherLocation> {
-  return ((await db.kv.get('weather_location'))?.value as WeatherLocation | undefined) ?? DEFAULT_LOCATION
+/**
+ * Miejscowość prognozy z pamięci urządzenia; `null` = jeszcze nieustawiona. Bez wartości domyślnej –
+ * cudze miasto dawałoby odprawę z pogodą z niewłaściwego miejsca (docs/18, A8).
+ */
+export async function getLocation(): Promise<WeatherLocation | null> {
+  return ((await db.kv.get('weather_location'))?.value as WeatherLocation | undefined) ?? null
 }
 
 export async function setLocation(loc: WeatherLocation): Promise<void> {

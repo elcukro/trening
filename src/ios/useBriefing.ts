@@ -3,14 +3,15 @@ import { useLiveQuery } from 'dexie-react-hooks'
 import { db } from '@/db'
 import type { DayPlan } from '@/engine/plan'
 import { adviseRide, clothingFor, fuelPlan, summarizeWindow, weatherLabel, type Advice, type ClothingTable, type DayForecast, type FuelPlan, type WindowSummary } from '@/engine/weather'
-import { DEFAULT_LOCATION, DEFAULT_RIDE_HOURS, loadForecast, type RideHours, type WeatherLocation } from '@/sync/weather'
+import { DEFAULT_RIDE_HOURS, getLocation, loadForecast, type RideHours } from '@/sync/weather'
 import clothingJson from '../../data/clothing.json'
 
 const CLOTHING = clothingJson as ClothingTable
 
 export interface Briefing {
   loading: boolean
-  location: string
+  /** null = miejscowość nieustawiona */
+  location: string | null
   startLabel: string
   summary: WindowSummary | null
   label: string | null
@@ -22,12 +23,16 @@ export interface Briefing {
 
 /** Pogoda w oknie treningu plus ubiór i jedzenie – ta sama logika co „Odprawa” w pełnej aplikacji. */
 export function useBriefing(day: DayPlan | null, hasIndoorOverride = false): Briefing | null {
-  const loc = useLiveQuery(async () => ((await db.kv.get('weather_location'))?.value as WeatherLocation | undefined) ?? DEFAULT_LOCATION, [], DEFAULT_LOCATION)
+  // undefined = jeszcze czytam, null = miejscowość nieustawiona
+  const loc = useLiveQuery(getLocation, [], undefined)
   const hoursPref = useLiveQuery(async () => ((await db.kv.get('ride_hours'))?.value as RideHours | undefined) ?? DEFAULT_RIDE_HOURS, [], DEFAULT_RIDE_HOURS)
-  const [forecast, setForecast] = useState<{ days: DayForecast[]; stale: boolean } | null | 'loading'>('loading')
+  const [fetched, setForecast] = useState<{ days: DayForecast[]; stale: boolean } | null | 'loading'>('loading')
+  // bez miejscowości nie ma czego pobierać – „brak prognozy” wynika z ustawień, nie z sieci
+  const forecast = loc === null ? null : fetched
 
   useEffect(() => {
     let alive = true
+    if (!loc) return
     loadForecast(loc)
       .then((f) => alive && setForecast(f ? { days: f.days, stale: f.stale } : null))
       .catch(() => alive && setForecast(null))
@@ -47,7 +52,7 @@ export function useBriefing(day: DayPlan | null, hasIndoorOverride = false): Bri
 
   return {
     loading: forecast === 'loading',
-    location: loc.name,
+    location: loc ? loc.name : loc === null ? null : '',
     startLabel: `${String(startHour).padStart(2, '0')}:00`,
     summary,
     label: summary ? weatherLabel(summary.code) : null,

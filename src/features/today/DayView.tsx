@@ -1,3 +1,4 @@
+import { useEngine } from '@/app/useSettings'
 import { Link } from 'react-router'
 import type { DayPlan } from '@/engine/plan'
 import type { Engine } from '@/app/useSettings'
@@ -34,7 +35,8 @@ function typeBadges(day: DayPlan) {
 
 /** Hierarchia: data (podpis) → tydzień i faza (tytuł) → typ tygodnia i odliczanie. */
 export function DayHeader({ day }: { day: DayPlan }) {
-  const countdown = day.days_to_trip > 0 ? `${days(day.days_to_trip)} do wyjazdu` : day.days_to_trip === 0 ? 'Dzień wyjazdu!' : 'Wyjazd trwa'
+  const target = useEngine().ctx.program.meta.target
+  const countdown = day.days_to_trip > 0 ? `${days(day.days_to_trip)} ${target.until}` : day.days_to_trip === 0 ? target.today : target.after
   return (
     <header className="mb-3 lg:mb-5 lg:border-b lg:border-slate-200 lg:pb-4 lg:dark:border-slate-700">
       <p className="text-sm font-medium text-slate-500 first-letter:uppercase dark:text-slate-400">{fmtLong(day.date)}</p>
@@ -73,7 +75,7 @@ export function BikeCard({ day, engine, onAction }: { day: DayPlan; engine: Engi
   if (day.bike.workout_id === 'TRIP') {
     return (
       <Card tone="accent">
-        <CardTitle icon="🏔️">Wyjazd w Alpy</CardTitle>
+        <CardTitle icon="🏔️">{w.name}</CardTitle>
         <p className="text-sm">{w.description}</p>
       </Card>
     )

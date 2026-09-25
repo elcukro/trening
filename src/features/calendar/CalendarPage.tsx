@@ -127,7 +127,7 @@ function DayCell({ date, day, inMonth, today, logs, hasOverride, dragApi }: { da
       {travel && (
         <>
           <span className={`h-1.5 w-full rounded-full lg:hidden ${DAY_TYPE_COLOR.trip}`} />
-          <CellItem color={DAY_TYPE_COLOR.trip} name={travel.workout_id === 'TRIP' ? 'Alpy' : 'Dojazd'} title={travel.name} />
+          <CellItem color={DAY_TYPE_COLOR.trip} name={travel.workout_id === 'TRIP' ? 'Wyjazd' : 'Dojazd'} title={travel.name} />
         </>
       )}
       {day.gym && (

@@ -87,7 +87,7 @@ function fromForm(f: Form, base: Settings): { settings: Settings; errors: FieldE
     power_meter: f.power_meter,
     program_start: f.program_start,
     trip_start: f.trip_start,
-    gym_days: { A: f.gym_a, B: 'fri', C: f.gym_a },
+    gym_days: { ...base.gym_days, A: f.gym_a, C: f.gym_a },
     volume_scale: Math.round(req('volume_scale', f.volume_scale, 0.7, 1) * 100) / 100,
   }
   return { settings, errors }
@@ -195,7 +195,7 @@ function SettingsForm({ engine, saved, setSaved }: { engine: ReturnType<typeof u
               <Field label="Start programu" hint="poniedziałek tygodnia 1" error={err('program_start')}>
                 <Input type="date" value={form.program_start} onChange={set('program_start')} invalid={!!err('program_start')} />
               </Field>
-              <Field label="Data wyjazdu" error={err('trip_start') ?? (preview && !preview.ok ? preview.message : null)}>
+              <Field label={engine.ctx.program.meta.target.label} error={err('trip_start') ?? (preview && !preview.ok ? preview.message : null)}>
                 <Input type="date" value={form.trip_start} onChange={set('trip_start')} min={earliestTripStart(form.program_start || settings.program_start)} invalid={!!err('trip_start') || !!(preview && !preview.ok)} />
               </Field>
             </div>
@@ -235,12 +235,17 @@ function SettingsForm({ engine, saved, setSaved }: { engine: ReturnType<typeof u
           <Card>
             <CardTitle icon="🏋️">Siłownia i objętość</CardTitle>
             <div className="space-y-3">
-              <Field label="Dni siłowni">
-                <Select value={form.gym_a} onChange={set('gym_a')}>
-                  <option value="wed">środa (A/C) + piątek (B)</option>
-                  <option value="tue">wtorek (A/C) + piątek (B)</option>
-                </Select>
-              </Field>
+              {engine.ctx.program.gym_day_options && (
+                <Field label="Dni siłowni">
+                  <Select value={form.gym_a} onChange={set('gym_a')}>
+                    {engine.ctx.program.gym_day_options.map((o) => (
+                      <option key={o.value} value={o.value}>
+                        {o.label}
+                      </option>
+                    ))}
+                  </Select>
+                </Field>
+              )}
               <Field label={`Skala objętości (R16): ${Number(form.volume_scale).toLocaleString('pl-PL')}`} hint="0,7–1,0 – skraca Z2, długie jazdy i pagórki; akcenty, testy i góry bez zmian" error={err('volume_scale')}>
                 <input className="block min-h-11 w-full accent-sky-600" type="range" min={0.7} max={1} step={0.05} value={form.volume_scale} onChange={set('volume_scale')} />
               </Field>

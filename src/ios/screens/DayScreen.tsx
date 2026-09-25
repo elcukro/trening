@@ -368,7 +368,7 @@ export function DayScreen() {
             <Row
               icon={<RowIcon color="var(--orange)"><IconSun size={18} /></RowIcon>}
               title="Odprawa"
-              subtitle={brief.summary ? `${num(brief.summary.feels_c, 0)} °C odczuwalne · wiatr ${brief.summary.wind_kmh} km/h · deszcz ${brief.summary.precip_prob} %` : brief.loading ? 'Pobieram prognozę…' : 'Bez prognozy – ubiór i jedzenie z planu'}
+              subtitle={brief.summary ? `${num(brief.summary.feels_c, 0)} °C odczuwalne · wiatr ${brief.summary.wind_kmh} km/h · deszcz ${brief.summary.precip_prob} %` : brief.location === null ? 'Bez prognozy – ustaw miejscowość w Więcej → Pogoda' : brief.loading ? 'Pobieram prognozę…' : 'Bez prognozy – ubiór i jedzenie z planu'}
               onClick={() => setSheet('brief')}
               accessory={<span className="ios-dim-3"><IconChevron size={18} /></span>}
             />

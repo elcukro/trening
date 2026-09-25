@@ -28,7 +28,7 @@ _spec.loader.exec_module(gen)
 sys.stdout = _stdout
 
 PROGRAM_ID = "ftp300"
-PROGRAM_VERSION = "2026.09.25-2"
+PROGRAM_VERSION = "2026.09.25-3"
 
 # dłuższy blok VO2max niż w programie alpejskim (6 powtórzeń) – przy trenażerze ERG da się utrzymać moc
 gen.add(gen.interval_workout("VO2_6x3", "VO2max 6×3 min", "vo2max", 6, 3, 3, "Z5b", [85, 95], gen.VO2_DESC, wu=20))
@@ -179,7 +179,13 @@ NUTRITION = {
 BIKES = {"default": "Rower", "indoor": "Trenażer (ERG)"}
 GOAL = {"kind": "ftp", "label": "FTP 300 W i wyższe VO2max", "short": "FTP 300 W"}
 CADENCE = {"floor_rpm": 80, "goal_rpm": 85}   # naturalna kadencja z jego jazd: 85–92 rpm (śr. 88)
-META = {"name": "FTP 300 – próg i VO2max", "short": "FTP 300"}
+META = {
+    "name": "FTP 300 – próg i VO2max",
+    "short": "FTP 300",
+    # data końcowa to poniedziałek po tygodniu z testem końcowym – nie wyjazd
+    "target": {"label": "Koniec programu", "short": "koniec", "until": "do końca programu", "today": "Koniec programu – czas na nowy cel", "after": "Program zakończony"},
+}
+FEATURES = []   # bez wyjazdu i bez listy serwisowej cudzych rowerów
 
 # Zasady adaptacji (docs/18, krok 2) – układ tygodnia Ferdynanda: pn długa, śr akcent, pt drugi akcent (od tyg. 6),
 # sb Z2 + jedyna siłownia, wt i nd wolne. Silnik czyta parametry, człowiek teksty.
@@ -296,6 +302,7 @@ def main():
         "goal": GOAL,
         "cadence": CADENCE,
         "rules": RULES,
+        "features": FEATURES,
         "default_settings": {**DEFAULT_SETTINGS, "program_id": PROGRAM_ID},
         "hr_zones_lthr_fraction": gen.HR_ZONES,
         "power_zones_ftp_fraction": gen.POWER_ZONES,

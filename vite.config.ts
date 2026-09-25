@@ -20,7 +20,7 @@ export default defineConfig({
       registerType: 'autoUpdate',
       includeAssets: ['apple-touch-icon.png', 'icon.svg'],
       manifest: {
-        name: 'Trening – Alpy 2027',
+        name: 'Trening',
         short_name: 'Trening',
         description: 'Osobisty asystent treningowy: rower, siłownia, żywienie.',
         lang: 'pl',

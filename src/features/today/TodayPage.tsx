@@ -15,7 +15,7 @@ export function TodayPage() {
       <Card tone="muted">
         <h1 className="text-lg font-bold">Poza kalendarzem</h1>
         <p className="mt-1 text-sm">
-          Plan obejmuje dni od {fmtDate(program_start)} (tydzień 0 od 3 dni wcześniej) do {fmtDate(trip_start)}. Dziś jest {fmtDate(today)}.
+          Plan obejmuje dni od {fmtDate(program_start)}{engine.ctx.program.layout?.mode === 'fixed' ? '' : ' (tydzień 0 od 3 dni wcześniej)'} do {fmtDate(trip_start)}. Dziś jest {fmtDate(today)}.
         </p>
         <Link to="/wiecej/ustawienia" className="mt-3 inline-block text-sm font-semibold text-sky-700 hover:underline dark:text-sky-300">
           Zmień daty w ustawieniach →

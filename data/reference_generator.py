@@ -17,7 +17,7 @@ import json, datetime as dt, os, copy
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 D = dt.date
-PROGRAM_VERSION = "2026.09.25-1"
+PROGRAM_VERSION = "2026.09.25-2"
 
 DEFAULT_SETTINGS = {
     "program_start": "2026-09-14",          # poniedziałek tygodnia 1
@@ -532,7 +532,13 @@ BIKES = {
 
 GOAL = {"kind": "speed", "kmh": 30, "label": "30 km/h przez 2–3 godziny", "short": "30 km/h"}
 CADENCE = {"floor_rpm": 75, "goal_rpm": 78, "tip": "siłę na niskiej kadencji zostaw na bloki Z2_FORCE"}
-META = {"name": "Alpy 2027 – baza i góry", "short": "Alpy 2027"}
+META = {
+    "name": "Alpy 2027 – baza i góry",
+    "short": "Alpy 2027",
+    "target": {"label": "Data wyjazdu", "short": "wyjazd", "until": "do wyjazdu", "today": "Dzień wyjazdu!", "after": "Wyjazd trwa"},
+}
+FEATURES = ["gear", "trip"]
+GYM_DAY_OPTIONS = [{"value": "wed", "label": "środa (A/C) + piątek (B)"}, {"value": "tue", "label": "wtorek (A/C) + piątek (B)"}]
 
 # Zasady adaptacji (docs/18, krok 2) – teksty dla człowieka i parametry reguł silnika. Osobiste dla tego programu.
 RULES = {
@@ -768,6 +774,8 @@ def main():
         "goal": GOAL,
         "cadence": CADENCE,
         "rules": RULES,
+        "features": FEATURES,
+        "gym_day_options": GYM_DAY_OPTIONS,
         "default_settings": DEFAULT_SETTINGS,
         "hr_zones_lthr_fraction": HR_ZONES,
         "power_zones_ftp_fraction": POWER_ZONES,
