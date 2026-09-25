@@ -2,6 +2,7 @@ import { useCallback, useMemo } from 'react'
 import { useLiveQuery } from 'dexie-react-hooks'
 import { db, type Checkin, type TestResult } from '@/db'
 import { DEFAULT_PROGRAM_ID, loadProgram } from '@/data/program'
+import { changedKeys, withFieldStamps } from '@/sync/profileMerge'
 import type { Settings } from '@/engine/schema'
 import type { EngineContext } from '@/engine/types'
 import { layoutWeeks, TripDateError } from '@/engine/layout'
@@ -23,8 +24,21 @@ export function useSettings(): SettingsApi {
   const settings = useMemo<Settings>(() => ({ ...program.default_settings, ...row?.value, program_id: programId }), [program, row, programId])
   const update = useCallback(
     async (patch: Partial<Settings>) => {
-      const current = (await db.settings.get('user'))?.value ?? {}
-      await db.settings.put({ key: 'user', value: { ...current, ...patch }, updated_at: new Date().toISOString() })
+      const row = await db.settings.get('user')
+      const current = row?.value ?? {}
+      // znacznik tylko dla pól, które naprawdę się zmieniły – zapis całego formularza nie może „odświeżyć”
+      // pól, których użytkownik nie ruszał, bo nadpisałby nowszą wartość z innego urządzenia (docs/18, krok 5)
+      const effective = { ...loadProgram((current.program_id as string | undefined) ?? DEFAULT_PROGRAM_ID).default_settings, ...current }
+      const keys = changedKeys(current, effective, patch) as (keyof Settings)[]
+      if (keys.length === 0) return
+      const now = new Date().toISOString()
+      const stamps = row ? withFieldStamps({ value: current, updated_at: row.updated_at, field_updated_at: row.field_updated_at }) : {}
+      const value: Partial<Settings> = { ...current }
+      for (const k of keys) {
+        ;(value as Record<string, unknown>)[k] = patch[k]
+        stamps[k] = now
+      }
+      await db.settings.put({ key: 'user', value, updated_at: now, field_updated_at: stamps })
     },
     [],
   )

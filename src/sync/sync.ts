@@ -1,4 +1,5 @@
-import { db, SYNC_TABLES, UPDATE_ONLY_TABLES, USER_SCOPED_ID_TABLES, type SyncTable, type SyncedRow } from '@/db'
+import { mergeProfile, type RemoteProfile } from './profileMerge'
+import { db, SYNC_TABLES, UPDATE_ONLY_TABLES, USER_SCOPED_ID_TABLES, type SettingsRow, type SyncTable, type SyncedRow } from '@/db'
 import { supabase } from './supabase'
 import type { Settings } from '@/engine/schema'
 
@@ -116,25 +117,28 @@ const PROFILE_MAP: [keyof Settings, string][] = [
   ['program_id', 'program_id'],
 ]
 
+const PROFILE_TEXT_KEYS = new Set(['program_start', 'trip_start', 'program_id', 'athlete_name'])
+
+/**
+ * Profil scalany per pole (`profileMerge.ts`): wysyłamy tylko pola nowsze lokalnie, pobieramy tylko nowsze na serwerze.
+ * Serwer (trigger `profiles_merge`) i tak porównuje znaczniki pól, więc wyścig dwóch urządzeń nie cofa nowszej wartości.
+ */
 async function syncProfile(userId: string, programVersion: string): Promise<void> {
   if (!supabase) return
   const local = await db.settings.get('user')
   const { data: remote, error } = await supabase.from('profiles').select('*').eq('user_id', userId).maybeSingle()
   if (error) throw new Error(`profiles: ${error.message}`)
-  const remoteUpdated = remote?.updated_at as string | undefined
-  if (local && (!remoteUpdated || local.updated_at > remoteUpdated)) {
-    const row: Record<string, unknown> = { user_id: userId, updated_at: local.updated_at, program_version: programVersion }
-    for (const [k, col] of PROFILE_MAP) if (k in local.value) row[col] = local.value[k]
+  const m = mergeProfile(local ? { value: local.value, updated_at: local.updated_at, field_updated_at: local.field_updated_at } : undefined, (remote as RemoteProfile | null) ?? null, PROFILE_MAP, PROFILE_TEXT_KEYS)
+  if (m.push) {
+    const row = { user_id: userId, ...m.push.row, field_updated_at: m.push.field_updated_at, updated_at: m.push.updated_at, program_version: programVersion }
     const { error: e2 } = await supabase.from('profiles').upsert(row, { onConflict: 'user_id' })
     if (e2) throw new Error(`profiles: ${e2.message}`)
-  } else if (remote && remoteUpdated && (!local || remoteUpdated > local.updated_at)) {
-    const value: Record<string, unknown> = {}
-    for (const [k, col] of PROFILE_MAP) {
-      const v = remote[col]
-      if (v === null || v === undefined) continue
-      value[k] = typeof v === 'string' && /^-?\d+(\.\d+)?$/.test(v) && k !== 'program_start' && k !== 'trip_start' ? Number(v) : v
-    }
-    await db.settings.put({ key: 'user', value: value as Partial<Settings>, updated_at: remoteUpdated })
+  }
+  if (m.pull) {
+    // odczyt jeszcze raz: użytkownik mógł zmienić ustawienia w trakcie zapytania
+    const now = await db.settings.get('user')
+    if (now && local && now.updated_at !== local.updated_at) return
+    await db.settings.put({ key: 'user', value: m.pull.value as Partial<Settings>, updated_at: m.pull.updated_at, field_updated_at: m.pull.field_updated_at as SettingsRow['field_updated_at'] })
   }
 }
 

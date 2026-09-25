@@ -75,13 +75,11 @@ i `goal`: `{kind:'speed', kmh}` liczy wymagane FTP z fizyki (masa, CdA z jazdy o
 a `{kind:'ftp'}` bierze je wprost z `ftp_w_goal`. `App.tsx` i `ios/screens/ProgressScreen.tsx`
 czytają to z programu, nie z literałów.
 
-## Pułapka przy pierwszym przełączeniu konta na nowy program
+## ~~Pułapka przy pierwszym przełączeniu konta na nowy program~~ (rozwiązane 25.09.2026)
 
-Jeśli aplikacja pobrała profil **starą wersją** (bez `program_id`), zrównała lokalny `updated_at`
-ze zdalnym – a wtedy `syncProfile` ani nie wysyła, ani nie pobiera i wybór programu nie dociera.
-Ratunek: `update public.profiles set program_id = …, updated_at = now()` (zdalny znacznik musi być
-świeższy niż lokalny) albo po prostu wybór programu w Ustawieniach na urządzeniu – to zapis lokalny,
-niezależny od synchronizacji.
+Stara synchronizacja porównywała jeden `updated_at` całego profilu, więc pole nieznane staremu buildowi
+(`program_id`) nie docierało po zrównaniu znaczników. Od docs/18 krok 5 profil scala się per pole,
+a zmiana w SQL Editorze dostaje znacznik z triggera – wystarczy `update public.profiles set program_id = …`.
 
 ## Znane ograniczenia
 

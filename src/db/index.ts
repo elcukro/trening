@@ -17,6 +17,8 @@ export interface SettingsRow {
   key: 'user'
   value: Partial<Settings>
   updated_at: string
+  /** znacznik zmiany per pole (docs/18, krok 5); brak wpisu = `updated_at` */
+  field_updated_at?: Partial<Record<keyof Settings, string>>
 }
 
 export interface KeyValueRow {

@@ -169,14 +169,21 @@ Wykonanie:
 - `service_log.bike` trzyma `bikes.id`. Dane Łukasza: dwa rowery wpisane skryptem SQL (poza repo), zrobiona
   kontrola łańcucha z 24.09 przepisana na Checkpointa; dziennik serwisu był pusty.
 
-### Krok 5 – Synchronizacja profilu odporna na nowe pola (C1)
+### Krok 5 – Synchronizacja profilu odporna na nowe pola (C1) ✅ 25.09.2026
 
-- `profiles.field_updated_at jsonb` (znacznik per pole) albo prościej: `profiles.schema_version int`
-  i po stronie klienta „jeśli moja wersja schematu > zapisana w profilu, pobierz profil bezwarunkowo
-  i scal per pole (zdalne pole wygrywa tylko tam, gdzie lokalne jest puste)”.
-- Test jednostkowy `sync.test.ts`: scenariusz „stary klient zrównał znaczniki, nowe pole ma dojść”.
-
-Rozmiar: mały. Efekt: koniec ręcznego podbijania `updated_at` w bazie.
+Wykonanie – znaczniki per pole po obu stronach (wariant `field_updated_at`, nie `schema_version`):
+- **Klient** (`src/sync/profileMerge.ts`, czysty TS, testy w `src/sync/__tests__/profileMerge.test.ts`):
+  `settings.field_updated_at` trzyma znacznik każdego pola; brak wpisu = `updated_at` wiersza. `mergeProfile`
+  wysyła tylko pola nowsze lokalnie, pobiera tylko nowsze na serwerze (także wyczyszczone – `null` ze znacznikiem).
+  `settingsApi.update` stempluje wyłącznie pola, które naprawdę się zmieniły (`changedKeys` – porównanie z tym,
+  co użytkownik widzi), więc zapis całego formularza nie „odświeża” pól nieruszanych i nie cofa zmiany z innego
+  urządzenia. Przy pierwszym zapisie po aktualizacji stare pola dostają znacznik wiersza (`withFieldStamps`).
+- **Serwer** (migracja `20260925140000_profile_field_merge.sql`): kolumna `profiles.field_updated_at jsonb`
+  i trigger `profiles_merge` zamiast `lww_guard` na `profiles`. Pole ze starszym znacznikiem nie nadpisuje nowszego;
+  pole zmienione **bez** znacznika (SQL Editor, stary klient) dostaje `now()`; `updated_at` wiersza się nie cofa.
+  Scenariusze sprawdzone na lokalnym Postgresie przed wdrożeniem.
+- **Skutek:** zmiana w bazie (np. `update profiles set program_id = …`) dociera do urządzeń sama –
+  **koniec ręcznego podbijania `updated_at`** (docs/17 § pułapka synchronizacji jest nieaktualna).
 
 ### Krok 6 – Testy pilnujące, że to nie wróci
 
