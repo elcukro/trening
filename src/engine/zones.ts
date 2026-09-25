@@ -132,7 +132,16 @@ export function zoneDistribution(histogram: number[], zones: HrZone[], lthr: num
     if (!sec) return
     total += sec
     const idx = bpmZones.findIndex((z, i) => bpm >= z.low_bpm && (bpm < z.high_bpm || (i === bpmZones.length - 1 && bpm >= z.low_bpm)))
-    const target = idx >= 0 ? idx : bpm < bpmZones[0]!.low_bpm ? 0 : bpmZones.length - 1
+    // granice po zaokrągleniu mają dziury (np. Z3 do 140, Z4 od 141): wartość z dziury należy do najbliższej strefy
+    // poniżej – wcześniej trafiała do ostatniej (Z5c na spokojnej jeździe)
+    let target = idx
+    if (target < 0) {
+      target = 0
+      bpmZones.forEach((z, i) => {
+        if (bpm >= z.high_bpm && z.high_bpm >= bpmZones[target]!.high_bpm) target = i
+      })
+      if (bpm > bpmZones.at(-1)!.high_bpm) target = bpmZones.length - 1
+    }
     out[target]!.seconds += sec
   })
   if (total > 0) for (const o of out) o.pct = Math.round((o.seconds / total) * 100)
