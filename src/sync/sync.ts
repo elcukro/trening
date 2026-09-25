@@ -115,6 +115,8 @@ const PROFILE_MAP: [keyof Settings, string][] = [
   ['gym_days', 'gym_days'],
   ['volume_scale', 'volume_scale'],
   ['program_id', 'program_id'],
+  ['email_morning', 'email_morning'],
+  ['email_workout', 'email_workout'],
 ]
 
 const PROFILE_TEXT_KEYS = new Set(['program_start', 'trip_start', 'program_id', 'athlete_name'])

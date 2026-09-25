@@ -13,6 +13,7 @@ import { useToast } from '@/components/Toast'
 import { getThemePref, setThemePref, type ThemePref } from '@/lib/theme'
 import { IntegrationsSection } from './IntegrationsSection'
 import { PushSection } from './PushSection'
+import { EmailSection } from './EmailSection'
 import { WeatherSettings } from './WeatherSettings'
 
 type Form = {
@@ -158,6 +159,7 @@ function SettingsForm({ engine, saved, setSaved }: { engine: ReturnType<typeof u
           <AccountSection />
           <IntegrationsSection />
           <PushSection />
+          <EmailSection />
         </div>
         <div className="min-w-0 space-y-3 lg:order-first lg:space-y-4">
           <ProgramCard />

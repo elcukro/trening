@@ -3,6 +3,7 @@ import { NavLink, Navigate, Route, Routes } from 'react-router'
 import { useAuth } from '@/sync/auth'
 import { useSyncRunner } from '@/sync/useSync'
 import { useWahooAutoPush } from '@/sync/useWahoo'
+import { useEmailSnapshots } from '@/sync/emailSnapshots'
 import { usePushKeepalive } from '@/sync/usePush'
 import './ios.css'
 import { DayScreen } from './screens/DayScreen'
@@ -41,6 +42,7 @@ function TabBar() {
 export function IosApp() {
   useSyncRunner()
   useWahooAutoPush()
+  useEmailSnapshots()
   usePushKeepalive()
   const auth = useAuth()
   const [skipped, setSkipped] = useState(() => {

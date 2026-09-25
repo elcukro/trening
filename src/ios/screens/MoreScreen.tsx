@@ -130,6 +130,14 @@ function LocationSheet({ onClose }: { onClose: () => void }) {
   )
 }
 
+function Switch({ on, label, onChange }: { on: boolean; label: string; onChange: (v: boolean) => void }) {
+  return (
+    <button role="switch" aria-checked={on} aria-label={label} onClick={() => onChange(!on)} className="relative h-8 w-[52px] shrink-0 rounded-full transition-colors" style={{ background: on ? 'var(--green)' : 'var(--fill-2)' }}>
+      <span className="absolute top-0.5 h-7 w-7 rounded-full bg-white shadow transition-all" style={{ left: on ? 22 : 2 }} />
+    </button>
+  )
+}
+
 function linkLabel(x: StravaStatus | WahooStatus | 'error' | null): string {
   return x === null ? '…' : x === 'error' ? 'brak danych' : x.connected ? 'połączone' : 'brak'
 }
@@ -257,6 +265,15 @@ export function MoreScreen() {
           />
         </List>
       </Section>
+
+      {auth.session && (
+        <Section header="E-mail" footer="Poranna odprawa o 7:00 tylko w dni z treningiem; podsumowanie zaraz po wgraniu jazdy ze Stravy. Z adresu trening@felsztukier.pl.">
+          <List>
+            <Row title="Poranna odprawa" accessory={<Switch on={!!s.email_morning} label="Poranna odprawa mailem" onChange={(v) => void engine.settingsApi.update({ email_morning: v })} />} />
+            <Row title="Podsumowanie po treningu" accessory={<Switch on={!!s.email_workout} label="Podsumowanie po treningu mailem" onChange={(v) => void engine.settingsApi.update({ email_workout: v })} />} />
+          </List>
+        </Section>
+      )}
 
       <Section header="Połączenia" footer="Logowanie, ponowne łączenie i pobieranie historii są w pełnej aplikacji.">
         <List>

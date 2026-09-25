@@ -129,6 +129,9 @@ export const SettingsSchema = z.object({
   volume_scale: z.number().min(0.7).max(1),
   /** Który program treningowy obowiązuje tego użytkownika (klucz z `src/data/program.ts`). */
   program_id: z.string().optional(),
+  /** maile (docs/19): poranna odprawa w dni z treningiem i podsumowanie zaraz po wgraniu jazdy */
+  email_morning: z.boolean().optional(),
+  email_workout: z.boolean().optional(),
   units: z.string(),
   language: z.string(),
 })

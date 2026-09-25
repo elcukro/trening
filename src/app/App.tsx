@@ -18,6 +18,7 @@ import { GymModePage } from '@/features/gym/GymModePage'
 import { useSyncRunner } from '@/sync/useSync'
 import { ToastProvider } from '@/components/Toast'
 import { useWahooAutoPush } from '@/sync/useWahoo'
+import { useEmailSnapshots } from '@/sync/emailSnapshots'
 import { usePushKeepalive } from '@/sync/usePush'
 import { useEngine } from '@/app/useSettings'
 import { todayISO } from '@/lib/dates'
@@ -195,6 +196,7 @@ function ModeGate({ children }: { children: ReactNode }) {
 function Layout() {
   useSyncRunner()
   useWahooAutoPush()
+  useEmailSnapshots()
   usePushKeepalive()
   return (
     <div className="flex w-full flex-1">

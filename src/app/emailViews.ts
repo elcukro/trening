@@ -1,11 +1,12 @@
 import type { DayPlan } from '@/engine/plan'
 import type { Program } from '@/engine/schema'
 import type { ResolvedStep } from '@/engine/types'
-import { computeZones, zoneDistribution } from '@/engine/zones'
-import { rideLoad } from '@/engine/analysis'
+import { computeZones } from '@/engine/zones'
+import { mondayOf } from '@/engine/dates'
 import { fmtLong } from '@/lib/dates'
-import { days as daysLabel, num } from '@/lib/format'
+import { days as daysLabel } from '@/lib/format'
 import type { MorningView, StepView, WorkoutView } from '../../supabase/functions/_shared/email_templates'
+import { buildWorkoutView, type DaySnapshot, type RideLite, type ZoneBpmLite } from '../../supabase/functions/_shared/email_views'
 
 /**
  * Model widoku maili (poranna odprawa, podsumowanie treningu) z danych silnika i Stravy.
@@ -85,20 +86,34 @@ export function morningTimeline(day: DayPlan): { zone: string; minutes: number }
   return (day.workout?.steps ?? []).map((s) => ({ zone: s.zone, minutes: s.duration_s / 60 }))
 }
 
-export interface RideRow {
-  date: string
-  name: string
-  moving_time_s: number
-  distance_m: number
-  elevation_m: number
-  avg_hr: number | null
-  max_hr: number | null
-  avg_cadence: number | null
-  avg_watts: number | null
-  np_w: number | null
-  device_watts: boolean | null
-  decoupling_pct: number | null
-  hr_histogram: number[] | null
+export type RideRow = RideLite & { max_hr?: number | null }
+
+/** Strefy tętna dnia w bpm – tak, jak liczy je silnik (te same granice co w aplikacji). */
+export function zonesFor(program: Program, lthr: number | null): ZoneBpmLite[] {
+  return lthr ? computeZones(program.hr_zones_lthr_fraction, lthr).map((z) => ({ id: z.id, name: z.name, low_bpm: z.low_bpm, high_bpm: z.high_bpm })) : []
+}
+
+/**
+ * Migawka dnia dla serwera (tabela `email_days`): serwer nie ma silnika, więc dostaje gotowy plan dnia,
+ * progi i strefy tego dnia, plan tygodnia, następny trening i poranną odprawę.
+ */
+export function snapshotFor(day: DayPlan, window: DayPlan[], program: Program, opts: { athlete: string; appUrl: string }): DaySnapshot {
+  const monday = mondayOf(day.date)
+  const weekPlanned = window.filter((d) => mondayOf(d.date) === monday).reduce((a, d) => a + (d.bike && d.workout ? d.bike.duration_min : 0), 0)
+  const next = window.find((d) => d.date > day.date && d.bike && d.workout)
+  const hasTraining = (!!day.bike && !!day.workout && day.bike.duration_min > 0) || !!day.gym
+  return {
+    date: day.date,
+    dateLabel: fmtLong(day.date),
+    planned: day.bike && day.workout ? { name: day.workout.name, minutes: day.bike.duration_min, day_type: day.day_type } : null,
+    ftp: day.ftp,
+    lthr: day.lthr,
+    zones: zonesFor(program, day.lthr),
+    cadence_floor: program.cadence.floor_rpm,
+    week_planned_min: weekPlanned,
+    next: next ? { dateLabel: fmtLong(next.date), name: next.workout!.name, minutes: next.bike!.duration_min } : null,
+    morning: hasTraining ? morningView(day, program, opts) : null,
+  }
 }
 
 export function workoutView(
@@ -107,60 +122,18 @@ export function workoutView(
   program: Program,
   opts: { athlete: string; appUrl: string; ftp: number | null; lthr: number | null; week?: WorkoutView['week']; next?: WorkoutView['next'] },
 ): WorkoutView {
-  const min = ride.moving_time_s / 60
-  const load = rideLoad({ moving_s: ride.moving_time_s, device_watts: ride.device_watts, np_w: ride.np_w, avg_watts: ride.avg_watts, ftp: opts.ftp, hr_histogram: ride.hr_histogram, zones: program.hr_zones_lthr_fraction, lthr: opts.lthr })
-  const planned = day?.bike && day.workout ? { name: day.workout.name, minutes: day.bike.duration_min } : null
-
-  const stats: WorkoutView['stats'] = [{ label: 'czas jazdy', value: min >= 60 ? `${Math.floor(min / 60)}:${String(Math.round(min % 60)).padStart(2, '0')}` : `${Math.round(min)}`, unit: min >= 60 ? 'h' : 'min' }]
-  stats.push({ label: 'dystans', value: num(ride.distance_m / 1000, 1), unit: 'km' })
-  if (ride.device_watts && ride.np_w) stats.push({ label: 'moc znormalizowana', value: String(ride.np_w), unit: 'W' })
-  if (ride.device_watts && ride.avg_watts) stats.push({ label: 'średnia moc', value: String(ride.avg_watts), unit: 'W' })
-  if (ride.avg_hr) stats.push({ label: 'średnie tętno', value: String(ride.avg_hr), unit: 'bpm' })
-  if (load) stats.push({ label: load.method === 'power' ? 'TSS (z mocy)' : 'TSS (z tętna)', value: String(load.tss) })
-  if (load) stats.push({ label: 'intensywność (IF)', value: load.if.toFixed(2).replace('.', ',') })
-  if (ride.avg_cadence) stats.push({ label: 'kadencja', value: String(Math.round(ride.avg_cadence)), unit: 'rpm' })
-  if (ride.elevation_m >= 1) stats.push({ label: 'przewyższenie', value: String(Math.round(ride.elevation_m)), unit: 'm' })
-
-  const zones: WorkoutView['zones'] = []
-  if (ride.hr_histogram && opts.lthr) {
-    const bpm = computeZones(program.hr_zones_lthr_fraction, opts.lthr)
-    for (const z of zoneDistribution(ride.hr_histogram, program.hr_zones_lthr_fraction, opts.lthr)) {
-      const b = bpm.find((x) => x.id === z.id)
-      zones.push({ zone: z.id, label: b ? `${z.id} ${b.name} (${b.low_bpm}–${b.high_bpm} bpm)` : z.id, pct: z.pct })
-    }
+  const snap: DaySnapshot = {
+    date: ride.date,
+    dateLabel: fmtLong(ride.date),
+    planned: day?.bike && day.workout ? { name: day.workout.name, minutes: day.bike.duration_min, day_type: day.day_type } : null,
+    ftp: opts.ftp,
+    lthr: opts.lthr,
+    zones: zonesFor(program, opts.lthr),
+    cadence_floor: program.cadence.floor_rpm,
+    week_planned_min: 0,
+    next: opts.next ?? null,
+    morning: null,
   }
-
-  // werdykt: długość względem planu (intensywność opisują obserwacje niżej)
-  let verdict: WorkoutView['verdict'] = { tone: 'ok', text: 'Jazda poza planem – policzona do obciążenia tygodnia' }
-  if (planned) {
-    const ratio = min / planned.minutes
-    verdict =
-      ratio >= 0.9 && ratio <= 1.2
-        ? { tone: 'good', text: 'Zrobione zgodnie z planem' }
-        : ratio < 0.9
-          ? { tone: 'warn', text: `Krócej niż w planie (${Math.round(ratio * 100)} %)` }
-          : { tone: 'ok', text: `Dłużej niż w planie (${Math.round(ratio * 100)} %)` }
-  }
-
-  const insights: string[] = []
-  const easy = !day || day.day_type === 'easy' || day.day_type === 'long'
-  if (load && easy) {
-    insights.push(load.if <= 0.75 ? `IF ${load.if.toFixed(2).replace('.', ',')} – spokojnie, tak jak ma być na jeździe tlenowej.` : `IF ${load.if.toFixed(2).replace('.', ',')} – jak na spokojną jazdę za mocno; Z2 kończy się ok. 0,75.`)
-  }
-  if (ride.decoupling_pct != null) {
-    const d = ride.decoupling_pct
-    insights.push(
-      d < 5
-        ? `Dryf tętna względem mocy ${num(d, 1)} % – baza tlenowa trzyma (poniżej 5 %).`
-        : d < 10
-          ? `Dryf tętna względem mocy ${num(d, 1)} % – w drugiej połowie tętno uciekało; zjedz i napij się wcześniej, a tempo trzymaj równiej.`
-          : `Dryf tętna względem mocy ${num(d, 1)} % – duży. Zmęczenie, upał albo za mało jedzenia; ta intensywność to jeszcze nie Twoje Z2 na tak długo.`,
-    )
-  }
-  if (ride.avg_cadence && program.cadence) {
-    const c = Math.round(ride.avg_cadence)
-    if (c < program.cadence.floor_rpm) insights.push(`Średnia kadencja ${c} rpm – poniżej progu ${program.cadence.floor_rpm} rpm.`)
-  }
-
-  return { athlete: opts.athlete, appUrl: `${opts.appUrl}/i/dzien/${ride.date}`, dateLabel: fmtLong(ride.date), name: ride.name, planned, verdict, stats, zones, insights, week: opts.week ?? null, next: opts.next ?? null }
+  const v = buildWorkoutView(ride, snap, { athlete: opts.athlete, appUrl: opts.appUrl, rideDateLabel: fmtLong(ride.date) })
+  return { ...v, week: opts.week ?? null }
 }

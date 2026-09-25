@@ -1,38 +1,63 @@
 /**
- * Wysyłka maili treningowych (docs/19): poranna odprawa i podsumowanie po treningu.
- * Model widoku liczy aplikacja (silnik jest w TS po stronie klienta – jak plan dla Wahoo), funkcja składa szablon
- * i wysyła przez Resend **wyłącznie na adres zalogowanego użytkownika** – nie da się jej użyć do wysyłki do kogoś innego.
- *
- * POST { kind: 'morning' | 'workout', view: MorningView | WorkoutView, test?: boolean }
+ * email-send – maile treningowe (docs/19).
+ *  POST {action:'cron', secret}               – harmonogram bazy (co godzinę): poranna odprawa o godzinie z profilu
+ *  POST {action:'sample', kind} + JWT          – mail próbny na adres zalogowanego (Ustawienia → „Wyślij próbny”)
+ *  GET|POST ?unsub=<podpisany token>           – rezygnacja jednym kliknięciem (nagłówek List-Unsubscribe)
+ * Podsumowanie po treningu wysyła strava-webhook zaraz po imporcie jazdy (`sendWorkout` w _shared/email_send.ts).
+ * Maile idą wyłącznie na adres właściciela konta – funkcji nie da się użyć do pisania do kogoś innego.
  */
-import { CORS, env, json } from '../_shared/env.ts'
-import { userFromRequest } from '../_shared/supabase.ts'
-import { morningEmail, workoutEmail, type EmailOut, type MorningView, type WorkoutView } from '../_shared/email_templates.ts'
+import { CORS, APP_URL, env, json } from '../_shared/env.ts'
+import { adminClient, userFromRequest } from '../_shared/supabase.ts'
+import { morningEmail, workoutEmail } from '../_shared/email_templates.ts'
+import { buildWorkoutView, type DaySnapshot, type RideLite } from '../_shared/email_views.ts'
+import { resend, runMorning, unsubscribe, warsawNow } from '../_shared/email_send.ts'
 
-const FROM = 'Trening <trening@felsztukier.pl>'
+function page(text: string): Response {
+  const html = `<!DOCTYPE html><html lang="pl"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Trening</title></head><body style="font-family:-apple-system,Segoe UI,Roboto,sans-serif;background:#f1f5f9;margin:0;padding:48px 16px;"><div style="max-width:420px;margin:0 auto;background:#fff;border:1px solid #e2e8f0;border-radius:16px;padding:24px;"><h1 style="font-size:20px;margin:0 0 8px;">Trening</h1><p style="margin:0 0 16px;color:#475569;">${text}</p><a href="${APP_URL}/wiecej/ustawienia" style="color:#0284c7;">Ustawienia maili w aplikacji</a></div></body></html>`
+  return new Response(html, { headers: { 'content-type': 'text/html; charset=utf-8' } })
+}
 
 Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') return new Response(null, { headers: CORS })
+  const url = new URL(req.url)
+  const unsub = url.searchParams.get('unsub')
+  if (unsub) {
+    const kind = await unsubscribe(adminClient(), unsub)
+    return page(kind ? `Wyłączone: ${kind === 'morning' ? 'poranna odprawa' : 'podsumowanie po treningu'}. Włączysz z powrotem w Ustawieniach.` : 'Link jest nieprawidłowy albo wygasł.')
+  }
   if (req.method !== 'POST') return json({ error: 'method' }, 405)
-  const user = await userFromRequest(req)
-  if (!user?.email) return json({ error: 'unauthorized' }, 401)
+  const body = (await req.json().catch(() => ({}))) as { action?: string; secret?: string; kind?: 'morning' | 'workout' }
 
-  const body = (await req.json().catch(() => ({}))) as { kind?: string; view?: unknown; test?: boolean }
-  let mail: EmailOut
-  try {
-    if (body.kind === 'morning') mail = morningEmail(body.view as MorningView)
-    else if (body.kind === 'workout') mail = workoutEmail(body.view as WorkoutView)
-    else return json({ error: 'kind' }, 400)
-  } catch (e) {
-    return json({ error: 'view', detail: e instanceof Error ? e.message : String(e) }, 400)
+  if (body.action === 'cron') {
+    if (!body.secret || body.secret !== env('PUSH_CRON_SECRET')) return json({ error: 'unauthorized' }, 401)
+    return json({ ok: true, ...warsawNow(), results: await runMorning(adminClient()) })
   }
 
-  const res = await fetch('https://api.resend.com/emails', {
-    method: 'POST',
-    headers: { Authorization: `Bearer ${env('RESEND_API_KEY')}`, 'Content-Type': 'application/json' },
-    body: JSON.stringify({ from: FROM, to: [user.email], subject: `${body.test ? '[TEST] ' : ''}${mail.subject}`, html: mail.html, text: mail.text }),
-  })
-  const out = (await res.json().catch(() => ({}))) as { id?: string; message?: string }
-  if (!res.ok) return json({ error: 'resend', status: res.status, detail: out.message ?? null }, 502)
-  return json({ ok: true, id: out.id ?? null, to: user.email })
+  const user = await userFromRequest(req)
+  if (!user?.email) return json({ error: 'unauthorized' }, 401)
+  const admin = adminClient()
+
+  if (body.action === 'sample') {
+    const today = warsawNow().date
+    if (body.kind === 'morning') {
+      // najbliższy dzień z treningiem z migawek wgranych przez aplikację
+      const { data } = await admin.from('email_days').select('date, payload').eq('user_id', user.id).gte('date', today).order('date').limit(14)
+      const day = (data ?? []).find((d) => (d.payload as DaySnapshot).morning)
+      if (!day) return json({ error: 'no_snapshot' }, 404)
+      const r = await resend(user.email, morningEmail((day.payload as DaySnapshot).morning!), null, '[PRÓBA] ')
+      return r.error ? json({ error: 'resend', detail: r.error }, 502) : json({ ok: true, date: day.date, to: user.email })
+    }
+    if (body.kind === 'workout') {
+      const { data: a } = await admin.from('strava_activities').select('*').eq('user_id', user.id).eq('is_ride', true).is('deleted_at', null).order('start_at', { ascending: false }).limit(1).maybeSingle()
+      if (!a) return json({ error: 'no_ride' }, 404)
+      const { data: snapRow } = await admin.from('email_days').select('payload').eq('user_id', user.id).eq('date', a.date).maybeSingle()
+      const snap = (snapRow?.payload as DaySnapshot | undefined) ?? null
+      const ride: RideLite = { date: a.date, name: a.name, moving_time_s: Number(a.moving_time_s), distance_m: Number(a.distance_m ?? 0), elevation_m: Number(a.elevation_m ?? 0), avg_hr: a.avg_hr, avg_cadence: a.avg_cadence, avg_watts: a.avg_watts, np_w: a.np_w, device_watts: a.device_watts, decoupling_pct: a.decoupling_pct == null ? null : Number(a.decoupling_pct), hr_histogram: a.hr_histogram }
+      const view = buildWorkoutView(ride, snap, { athlete: '', appUrl: APP_URL, rideDateLabel: snap?.dateLabel ?? a.date })
+      const r = await resend(user.email, workoutEmail(view), null, '[PRÓBA] ')
+      return r.error ? json({ error: 'resend', detail: r.error }, 502) : json({ ok: true, date: a.date, to: user.email })
+    }
+    return json({ error: 'kind' }, 400)
+  }
+  return json({ error: 'action' }, 400)
 })

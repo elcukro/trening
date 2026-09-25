@@ -7,6 +7,7 @@ import { json } from '../_shared/env.ts'
 import { timingSafeEqual, webhookPathSecret, webhookVerifyToken } from '../_shared/crypto.ts'
 import { adminClient } from '../_shared/supabase.ts'
 import { accessTokenFor, activityExists, athleteAuthorized, importActivity, markDeleted, userIdForAthlete } from '../_shared/strava.ts'
+import { sendWorkout } from '../_shared/email_send.ts'
 
 interface StravaEvent {
   object_type: 'activity' | 'athlete'
@@ -52,6 +53,11 @@ async function handle(ev: StravaEvent): Promise<void> {
   }
   const ok = await importActivity(admin, userId, ev.object_id)
   console.log('webhook:', ev.aspect_type, ev.object_id, ok ? 'zaimportowana' : 'pominięta')
+  // podsumowanie mailem zaraz po wgraniu nowej jazdy (docs/19) – tylko przy „create”, jeden mail na jazdę
+  if (ok && ev.aspect_type === 'create') {
+    const res = await sendWorkout(admin, userId, ev.object_id).catch((e) => `błąd: ${e instanceof Error ? e.message : e}`)
+    console.log('webhook: mail po treningu', ev.object_id, res)
+  }
 }
 
 Deno.serve(async (req) => {

@@ -114,7 +114,7 @@ function hm(min: number): string {
   return h > 0 ? `${h} h${m ? ` ${m} min` : ''}` : `${m} min`
 }
 
-function shell(preheader: string, inner: string, appUrl: string): string {
+function shell(preheader: string, inner: string, appUrl: string, unsubscribeUrl?: string | null): string {
   return `<!DOCTYPE html>
 <html lang="pl"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="color-scheme" content="light only"><title>Trening</title></head>
 <body bgcolor="${C.bg}" style="margin:0;padding:0;background-color:${C.bg};">
@@ -124,7 +124,7 @@ function shell(preheader: string, inner: string, appUrl: string): string {
 <table role="presentation" width="600" cellpadding="0" cellspacing="0" style="width:100%;max-width:600px;font-family:${FONT};color:${C.ink};">
 ${inner}
 <tr><td style="padding:20px 8px 0;font-size:12px;line-height:18px;color:${C.mute};text-align:center;">
-Trening · <a href="${esc(appUrl)}" style="color:${C.mute};">otwórz aplikację</a>
+Trening · <a href="${esc(appUrl)}" style="color:${C.mute};">otwórz aplikację</a>${unsubscribeUrl ? ` · <a href="${esc(unsubscribeUrl)}" style="color:${C.mute};">wyłącz te maile</a>` : ''}
 </td></tr>
 </table></td></tr></table></body></html>`
 }
@@ -158,7 +158,7 @@ function zoneDot(zone: string): string {
 
 // ---------------------------------------------------------------- poranna odprawa
 
-export function morningEmail(v: MorningView): EmailOut {
+export function morningEmail(v: MorningView, opts: { unsubscribeUrl?: string | null } = {}): EmailOut {
   const w = v.workout
   const title = w ? w.name : v.gym ? v.gym.name : 'Dzień wolny'
   const subject = w ? `Dziś: ${w.name} · ${hm(w.minutes)}${v.gym ? ' + siłownia' : ''}` : v.gym ? `Dziś: ${v.gym.name}` : 'Dziś odpoczynek'
@@ -234,12 +234,12 @@ ${v.nutrition.after ? `<tr><td style="padding-right:12px;color:${C.mute};">po tr
     v.appUrl,
   ].join('\n')
 
-  return { subject, preheader, text, html: shell(preheader, head + notes + steps + gym + food, v.appUrl) }
+  return { subject, preheader, text, html: shell(preheader, head + notes + steps + gym + food, v.appUrl, opts.unsubscribeUrl) }
 }
 
 // ---------------------------------------------------------------- po treningu
 
-export function workoutEmail(v: WorkoutView): EmailOut {
+export function workoutEmail(v: WorkoutView, opts: { unsubscribeUrl?: string | null } = {}): EmailOut {
   const tone = v.verdict.tone === 'good' ? C.good : v.verdict.tone === 'warn' ? C.warn : C.accent
   const toneBg = v.verdict.tone === 'good' ? '#ecfdf5' : v.verdict.tone === 'warn' ? '#fffbeb' : '#f0f9ff'
   const subject = `Zrobione: ${v.name} · ${v.stats[0]?.value ?? ''}${v.stats[0]?.unit ? ` ${v.stats[0].unit}` : ''}`
@@ -311,5 +311,5 @@ ${button('Zobacz w aplikacji', v.appUrl)}`,
     v.appUrl,
   ].join('\n')
 
-  return { subject, preheader, text, html: shell(preheader, head + zones + insights + week, v.appUrl) }
+  return { subject, preheader, text, html: shell(preheader, head + zones + insights + week, v.appUrl, opts.unsubscribeUrl) }
 }
