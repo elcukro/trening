@@ -12,9 +12,9 @@ import { morningEmail, workoutEmail } from '../_shared/email_templates.ts'
 import { buildWorkoutView, type DaySnapshot, type RideLite } from '../_shared/email_views.ts'
 import { resend, runMorning, unsubscribe, warsawNow } from '../_shared/email_send.ts'
 
+/** Odpowiedź na kliknięcie „wyłącz te maile”. Zwykły tekst – domena functions Supabase podaje HTML jako text/plain. */
 function page(text: string): Response {
-  const html = `<!DOCTYPE html><html lang="pl"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Trening</title></head><body style="font-family:-apple-system,Segoe UI,Roboto,sans-serif;background:#f1f5f9;margin:0;padding:48px 16px;"><div style="max-width:420px;margin:0 auto;background:#fff;border:1px solid #e2e8f0;border-radius:16px;padding:24px;"><h1 style="font-size:20px;margin:0 0 8px;">Trening</h1><p style="margin:0 0 16px;color:#475569;">${text}</p><a href="${APP_URL}/wiecej/ustawienia" style="color:#0284c7;">Ustawienia maili w aplikacji</a></div></body></html>`
-  return new Response(html, { headers: { 'content-type': 'text/html; charset=utf-8' } })
+  return new Response(`Trening\n\n${text}\n\nUstawienia maili: ${APP_URL}/wiecej/ustawienia\n`, { headers: { 'content-type': 'text/plain; charset=utf-8' } })
 }
 
 Deno.serve(async (req) => {

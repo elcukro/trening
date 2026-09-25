@@ -38,7 +38,8 @@ export async function unsubscribeUrl(userId: string, kind: EmailKind): Promise<s
 }
 
 export async function unsubscribe(admin: SupabaseClient, token: string): Promise<EmailKind | null> {
-  const payload = await verify(token)
+  // uszkodzony token (np. obcięty w kliencie poczty) = nieprawidłowy link, nie błąd serwera
+  const payload = await verify(token).catch(() => null)
   const m = payload?.match(/^unsub:([0-9a-f-]{36}):(morning|workout)$/)
   if (!m) return null
   const kind = m[2] as EmailKind

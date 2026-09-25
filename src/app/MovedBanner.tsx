@@ -32,7 +32,7 @@ export function MovedBanner() {
   }
 
   return (
-    <div role="status" className="safe-top fixed inset-x-0 top-0 z-50 bg-sky-600 px-4 py-2 text-sm text-white shadow">
+    <div role="status" className="safe-top relative z-50 bg-sky-600 px-4 py-2 text-sm text-white shadow">
       <div className="mx-auto flex max-w-lg items-center gap-3">
         <span className="min-w-0 flex-1">
           Aplikacja ma nowy adres: <b>trening.felsztukier.pl</b>. Zaloguj się tam kodem i dodaj do ekranu początkowego.
