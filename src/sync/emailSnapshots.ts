@@ -10,6 +10,7 @@ import { loadOverridesFor } from './wahoo'
 
 /** Tydzień wstecz (podsumowania jazd wgranych z opóźnieniem) i dwa tygodnie w przód (poranki, gdy aplikacja długo zamknięta). */
 const BACK = 7
+export const EMAIL_APP_URL = 'https://trening.felsztukier.pl'
 const AHEAD = 14
 
 /**
@@ -26,7 +27,8 @@ export async function uploadEmailSnapshots(today: string, ctx: EngineContext, we
   const overrides = await loadOverridesFor(from, days)
   // okno szersze o tydzień z każdej strony: suma planu tygodnia i „następny trening” na krańcach
   const window = planWindow(addDays(from, -7), days + 14, ctx, weeks, overrides)
-  const opts = { athlete: ctx.settings.athlete_name, appUrl: typeof location !== 'undefined' ? location.origin : 'https://trening-inky.vercel.app' }
+  // linki w mailach zawsze na własną domenę – nadawca i linki z jednej domeny (spam), niezależnie od tego, skąd otwarto aplikację
+  const opts = { athlete: ctx.settings.athlete_name, appUrl: EMAIL_APP_URL }
   const rows = window
     .filter((d) => d.date >= from && d.date <= addDays(today, AHEAD))
     .map((d) => ({ user_id: userId, date: d.date, payload: snapshotFor(d, window, ctx.program, opts), updated_at: new Date().toISOString() }))
