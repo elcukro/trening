@@ -117,9 +117,9 @@ function hm(min: number): string {
 function shell(preheader: string, inner: string, appUrl: string): string {
   return `<!DOCTYPE html>
 <html lang="pl"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="color-scheme" content="light only"><title>Trening</title></head>
-<body style="margin:0;padding:0;background:${C.bg};">
+<body bgcolor="${C.bg}" style="margin:0;padding:0;background-color:${C.bg};">
 <div style="display:none;max-height:0;overflow:hidden;opacity:0;color:${C.bg};">${esc(preheader)}&#8199;&#65279;&#847;&#8199;&#65279;&#847;&#8199;&#65279;&#847;</div>
-<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:${C.bg};">
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" bgcolor="${C.bg}" style="background-color:${C.bg};">
 <tr><td align="center" style="padding:24px 12px;">
 <table role="presentation" width="600" cellpadding="0" cellspacing="0" style="width:100%;max-width:600px;font-family:${FONT};color:${C.ink};">
 ${inner}
@@ -130,7 +130,7 @@ Trening · <a href="${esc(appUrl)}" style="color:${C.mute};">otwórz aplikację<
 }
 
 function card(inner: string, pad = '24px'): string {
-  return `<tr><td style="padding:0 0 12px;"><table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:${C.card};border-radius:16px;border:1px solid ${C.line};"><tr><td style="padding:${pad};">${inner}</td></tr></table></td></tr>`
+  return `<tr><td style="padding:0 0 12px;"><table role="presentation" width="100%" cellpadding="0" cellspacing="0" bgcolor="${C.card}" style="background-color:${C.card};border-radius:16px;border:1px solid ${C.line};"><tr><td bgcolor="${C.card}" style="padding:${pad};background-color:${C.card};border-radius:16px;">${inner}</td></tr></table></td></tr>`
 }
 
 function eyebrow(text: string, color = C.soft): string {
@@ -138,7 +138,7 @@ function eyebrow(text: string, color = C.soft): string {
 }
 
 function button(label: string, href: string): string {
-  return `<table role="presentation" cellpadding="0" cellspacing="0" style="margin-top:20px;"><tr><td style="background:${C.accent};border-radius:12px;"><a href="${esc(href)}" style="display:inline-block;padding:13px 22px;font-size:15px;font-weight:600;color:#ffffff;text-decoration:none;">${esc(label)}</a></td></tr></table>`
+  return `<table role="presentation" cellpadding="0" cellspacing="0" style="margin-top:20px;"><tr><td bgcolor="${C.accent}" style="background-color:${C.accent};border-radius:12px;"><a href="${esc(href)}" style="display:inline-block;padding:13px 22px;font-size:15px;font-weight:600;color:#ffffff;text-decoration:none;background-color:${C.accent};border:1px solid ${C.accent};border-radius:12px;">${esc(label)}</a></td></tr></table>`
 }
 
 /** Pasek osi czasu: segmenty szerokości proporcjonalnej do czasu, w kolorach stref. */
@@ -146,13 +146,14 @@ function timeline(parts: { zone: string; weight: number }[]): string {
   const total = parts.reduce((a, p) => a + p.weight, 0) || 1
   const cells = parts
     .filter((p) => p.weight > 0)
-    .map((p) => `<td width="${Math.max(1, Math.round((p.weight / total) * 100))}%" style="background:${ZONE_HEX[p.zone] ?? C.mute};height:10px;font-size:0;line-height:0;">&nbsp;</td>`)
+    .map((p) => `<td width="${Math.max(1, Math.round((p.weight / total) * 100))}%" height="10" bgcolor="${ZONE_HEX[p.zone] ?? C.mute}" style="background-color:${ZONE_HEX[p.zone] ?? C.mute};height:10px;font-size:1px;line-height:10px;">&nbsp;</td>`)
     .join('')
   return `<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="border-radius:6px;overflow:hidden;border-collapse:separate;"><tr>${cells}</tr></table>`
 }
 
 function zoneDot(zone: string): string {
-  return `<span style="display:inline-block;width:10px;height:10px;border-radius:5px;background:${ZONE_HEX[zone] ?? C.mute};vertical-align:middle;margin-right:8px;"></span>`
+  // kropka jako znak w kolorze – Gmail wycina tła z <span>, a kolor tekstu zostawia
+  return `<span style="color:${ZONE_HEX[zone] ?? C.mute};font-size:16px;line-height:16px;">&#9679;</span>&nbsp;&nbsp;`
 }
 
 // ---------------------------------------------------------------- poranna odprawa
@@ -262,7 +263,7 @@ export function workoutEmail(v: WorkoutView): EmailOut {
     `${eyebrow(`${v.dateLabel} · trening wykonany`, C.good)}
 <div style="margin-top:6px;font-size:26px;line-height:32px;font-weight:700;">${esc(v.name)}</div>
 ${v.planned ? `<div style="margin-top:4px;font-size:14px;color:${C.soft};">w planie: ${esc(v.planned.name)}, ${esc(hm(v.planned.minutes))}</div>` : ''}
-<table role="presentation" cellpadding="0" cellspacing="0" style="margin-top:14px;"><tr><td style="background:${toneBg};border-radius:10px;padding:8px 12px;font-size:14px;font-weight:600;color:${tone};">${esc(v.verdict.text)}</td></tr></table>
+<table role="presentation" cellpadding="0" cellspacing="0" style="margin-top:14px;"><tr><td bgcolor="${toneBg}" style="background-color:${toneBg};border-radius:10px;padding:8px 12px;font-size:14px;font-weight:600;color:${tone};">${esc(v.verdict.text)}</td></tr></table>
 ${grid}`,
   )
 
@@ -289,7 +290,7 @@ ${v.zones
 <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="margin-top:10px;"><tr>
 <td style="font-size:20px;font-weight:700;">${esc(v.week.done)} <span style="font-size:14px;font-weight:500;color:${C.soft};">z ${esc(v.week.planned)}</span></td>
 <td align="right" style="font-size:14px;font-weight:600;color:${C.soft};">${Math.round(v.week.pct)} %</td></tr></table>
-<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="margin-top:8px;background:${C.line};border-radius:6px;"><tr><td width="${Math.min(100, Math.max(2, Math.round(v.week.pct)))}%" style="background:${C.accent};height:8px;border-radius:6px;font-size:0;line-height:0;">&nbsp;</td><td style="font-size:0;line-height:0;">&nbsp;</td></tr></table>
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" bgcolor="${C.line}" style="margin-top:8px;background-color:${C.line};border-radius:6px;"><tr><td width="${Math.min(100, Math.max(2, Math.round(v.week.pct)))}%" height="8" bgcolor="${C.accent}" style="background-color:${C.accent};height:8px;border-radius:6px;font-size:1px;line-height:8px;">&nbsp;</td><td height="8" style="font-size:1px;line-height:8px;">&nbsp;</td></tr></table>
 ${v.next ? `<div style="margin-top:16px;font-size:14px;line-height:20px;color:${C.soft};">Następny: <b style="color:${C.ink};">${esc(v.next.name)}</b> · ${esc(v.next.dateLabel)} · ${esc(hm(v.next.minutes))}</div>` : ''}
 ${button('Zobacz w aplikacji', v.appUrl)}`,
       )
