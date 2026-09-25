@@ -28,7 +28,7 @@ _spec.loader.exec_module(gen)
 sys.stdout = _stdout
 
 PROGRAM_ID = "ftp300"
-PROGRAM_VERSION = "2026.09.25-1"
+PROGRAM_VERSION = "2026.09.25-2"
 
 # dłuższy blok VO2max niż w programie alpejskim (6 powtórzeń) – przy trenażerze ERG da się utrzymać moc
 gen.add(gen.interval_workout("VO2_6x3", "VO2max 6×3 min", "vo2max", 6, 3, 3, "Z5b", [85, 95], gen.VO2_DESC, wu=20))
@@ -181,6 +181,50 @@ GOAL = {"kind": "ftp", "label": "FTP 300 W i wyższe VO2max", "short": "FTP 300 
 CADENCE = {"floor_rpm": 80, "goal_rpm": 85}   # naturalna kadencja z jego jazd: 85–92 rpm (śr. 88)
 META = {"name": "FTP 300 – próg i VO2max", "short": "FTP 300"}
 
+# Zasady adaptacji (docs/18, krok 2) – układ tygodnia Ferdynanda: pn długa, śr akcent, pt drugi akcent (od tyg. 6),
+# sb Z2 + jedyna siłownia, wt i nd wolne. Silnik czyta parametry, człowiek teksty.
+RULES = {
+    "text": [
+        {"id": "R1", "title": "Pominięty akcent", "text": "Środowy albo piątkowy akcent przenieś na najbliższy dzień ze spokojną jazdą, bez siłowni i nie tuż przed kolejnym akcentem. W praktyce: środa → czwartek w tygodniach z jednym akcentem; piątkowy przepada (sobota ma siłownię). Nigdy dwóch akcentów dzień po dniu."},
+        {"id": "R2", "title": "Pominięta poniedziałkowa długa jazda", "text": "Przepada – wtorek jest wolny i ma nim zostać, a środa to akcent. Nie dokładaj jej w weekend."},
+        {"id": "R3", "title": "Pominięta sesja siłowa", "text": "Jedyna sesja w tygodniu przepada – w niedzielę odpoczywasz, a w poniedziałek jest długa jazda. W przyszłym tygodniu wracasz do planu."},
+        {"id": "R4", "title": "Gołoledź, śnieg, poniżej −5 °C", "text": "Wszystko na trenażer w ERG: akcent bez zmian, Z2 45–60 min, długa jazda 90 min."},
+        {"id": "R5", "title": "Choroba", "text": "Gorączka lub objawy „poniżej szyi” → zero treningu. Katar bez gorączki → tylko Z1 do 45 min, bez siłowni. Po ≥ 3 dniach przerwy: 2 dni krótkiego Z2 przed akcentem."},
+        {"id": "R6", "title": "Słaby poranny check-in", "text": "Tętno spoczynkowe > średnia 7-dniowa + 7 bpm dwa dni z rzędu albo suma ocen (sen + nogi + motywacja) ≤ 6 → obniż dzień: akcent → Z2 60 min, siłownia lżejsza (−1 seria, RIR +1)."},
+        {"id": "R7", "title": "Rower ma pierwszeństwo", "text": "Jeśli 2 tygodnie z rzędu akcent „nie wyszedł” (RPE ≥ 9 przy niewykonanych celach) → −1 seria w sesji siłowej do końca bloku."},
+        {"id": "R8", "title": "Progresja ciężarów", "text": "Wszystkie serie z zadanym RIR → +2,5 kg (sztanga), +1–2 kg na hantel. 1 seria z brakiem → ten sam ciężar. ≥ 2 serie z brakami drugi raz z rzędu → −10%. Rozładowanie: −10% ciężaru, −40% serii, RIR +1."},
+        {"id": "R9", "title": "48 h ochrony", "text": "Brak siłowni nóg w ciągu 48 h przed testem FTP. Przy naruszeniu: ostrzeżenie i propozycja przeniesienia albo zamiany na core."},
+        {"id": "R10", "title": "Masa ciała", "text": "Deficyt tylko w dni lekkie, dobrany z masy obecnej i docelowej: najwyżej 500 kcal na dzień i 0,7% masy na tydzień. W bloku VO2max, w fazie szczytu i przed testem końcowym – bez deficytu. Spadek FTP w teście przy redukcji → pauza w deficycie."},
+        {"id": "R11", "title": "Nowy wynik testu", "text": "Strefy mocy i tętna przeliczone od następnego dnia; aplikacja pokazuje różnicę względem poprzedniego testu."},
+        {"id": "R12", "title": "Tydzień rozładowania", "text": "Co 4–5 tygodni: środa DELOAD_WED zamiast interwałów, piątek wolny, długa krótsza. Siła: −40% serii, −10% ciężaru, RIR +1."},
+        {"id": "R13", "title": "Upał > 28 °C", "text": "Cele tętna Z2–SS obniżone o 3–5 bpm, picie 750 ml/h + elektrolity, przy VO2 skróć do 4 powtórzeń."},
+        {"id": "R14", "title": "Program o stałej długości", "text": "40 tygodni po kolei od tygodnia pomiarowego (21.09.2026). Data celu nie rozciąga ani nie skraca faz."},
+        {"id": "R15", "title": "Zamiana dni", "text": "Dozwolona w obrębie tygodnia. Walidacja: brak dwóch akcentów dzień po dniu i siłowni nóg 48 h przed testem."},
+        {"id": "R16", "title": "Skalowanie objętości", "text": "Ustawienie 0,7–1,0 skraca jazdy Z2 i długie (min. 45 min dla Z2, 90 min dla długiej). Akcenty i testy bez zmian."},
+    ],
+    "hierarchy": [
+        "Środowy akcent",
+        "Poniedziałkowa długa jazda",
+        "Piątkowy akcent",
+        "Siłownia w sobotę",
+        "Sobotnie Z2",
+        "Czwartkowe Z2",
+    ],
+    "tests": [
+        {
+            "id": "FTP_TEST",
+            "name": "Test FTP (20 min, moc)",
+            "when": "tydz. 0 (niedziela 27.09), 11, 21, 27 i 39 (środa)",
+            "protocol": "Rozgrzewka z krótkimi przyspieszeniami, potem 20 min maksymalnie równego wysiłku – najlepiej na trenażerze w trybie wolnym (nie ERG), zawsze w tych samych warunkach. Pierwsze 5 min nie za mocno.",
+            "result": "FTP = 0,95 × średnia moc z 20 min; tętno progowe = średnie tętno z ostatnich 10 min.",
+        },
+    ],
+    # jedyna sesja w tygodniu – nie ma dnia, na który dałoby się ją przenieść bez szkody dla poniedziałkowej długiej
+    "gym_catchup": {"A": "drop", "B": "drop", "C": "drop"},
+    "long_catchup_onto": [],
+    "deload_note": "Tydzień lżejszy: bez interwałów, piątek wolny, długa krótsza. Na siłowni ciężar −10%, serie −40%, RIR +1. Nogi mają wyjść świeższe.",
+}
+
 
 def gym_for(wk, weekday):
     """Jedna sesja w tygodniu: Sesja A (siła nóg) w dniu z `gym_days.A`. Slot w programie to „wed”,
@@ -251,6 +295,7 @@ def main():
         "bikes": BIKES,
         "goal": GOAL,
         "cadence": CADENCE,
+        "rules": RULES,
         "default_settings": {**DEFAULT_SETTINGS, "program_id": PROGRAM_ID},
         "hr_zones_lthr_fraction": gen.HR_ZONES,
         "power_zones_ftp_fraction": gen.POWER_ZONES,

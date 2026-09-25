@@ -5,7 +5,6 @@ import { effectiveFtp, effectiveLthr } from '@/engine/progress'
 import { fmtDayMonth, todayISO } from '@/lib/dates'
 import { Card, CardTitle, Inset, PageTitle } from '@/components/ui'
 import { zoneColor } from '@/lib/zones'
-import { TESTS } from '@/data/rules'
 
 export function ZonesPage() {
   const engine = useEngine()
@@ -65,7 +64,7 @@ export function ZonesPage() {
           </Inset>
         </Link>
       )}
-      {TESTS.map((t) => (
+      {engine.ctx.program.rules.tests.map((t) => (
         <Card key={t.id}>
           <CardTitle icon="🧪">{t.name}</CardTitle>
           <p className="text-xs text-slate-500 dark:text-slate-400">Kiedy: {t.when}</p>

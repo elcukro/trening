@@ -205,6 +205,26 @@ export const CadencePolicySchema = z.object({
 
 export const ProgramMetaSchema = z.object({ name: z.string(), short: z.string() })
 
+/**
+ * Zasady adaptacji danego programu (docs/18, krok 2): teksty dla człowieka i parametry,
+ * z których korzysta `src/engine/rules.ts`. Silnik nie zna dni tygodnia ani sesji konkretnego zawodnika.
+ */
+export const ProgramRulesSchema = z.object({
+  /** R1–R16 w wersji dla człowieka (Biblioteka → Zasady) */
+  text: z.array(z.object({ id: z.string(), title: z.string(), text: z.string() })),
+  /** hierarchia ważności – co wycinać najpierw, od dołu */
+  hierarchy: z.array(z.string()),
+  tests: z.array(z.object({ id: z.string(), name: z.string(), when: z.string(), protocol: z.string(), result: z.string() })),
+  /** strategia na przełęcz – tylko programy z wyjazdem w góry */
+  pass_strategy: z.array(z.string()).optional(),
+  /** R3: pominięta sesja siłowa – `move` proponuje odrobienie w ciągu 2 dni, `drop` mówi, że przepada */
+  gym_catchup: z.record(z.string(), z.enum(['move', 'drop'])),
+  /** R2: na jaki typ dnia po pominiętej długiej jeździe wolno ją przenieść (pusta lista = przepada) */
+  long_catchup_onto: z.array(z.enum(['rest', 'gym', 'easy', 'long', 'key', 'trip'])),
+  /** R12: komunikat w tygodniu rozładowania */
+  deload_note: z.string(),
+})
+
 export const ProgramSchema = z.object({
   version: z.string(),
   meta: ProgramMetaSchema,
@@ -212,6 +232,7 @@ export const ProgramSchema = z.object({
   bikes: BikesSchema,
   goal: GoalSchema,
   cadence: CadencePolicySchema,
+  rules: ProgramRulesSchema,
   default_settings: SettingsSchema,
   hr_zones_lthr_fraction: z.array(HrZoneSchema),
   power_zones_ftp_fraction: z.array(PowerZoneSchema),
@@ -234,6 +255,7 @@ export type NutritionPolicy = z.infer<typeof NutritionPolicySchema>
 export type Bikes = z.infer<typeof BikesSchema>
 export type Goal = z.infer<typeof GoalSchema>
 export type CadencePolicy = z.infer<typeof CadencePolicySchema>
+export type ProgramRules = z.infer<typeof ProgramRulesSchema>
 export type HrZone = z.infer<typeof HrZoneSchema>
 export type PowerZone = z.infer<typeof PowerZoneSchema>
 export type Step = z.infer<typeof StepSchema>

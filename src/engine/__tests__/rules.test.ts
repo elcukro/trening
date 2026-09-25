@@ -166,11 +166,12 @@ describe('R1, R2, R3 – pominięte treningi', () => {
     const w3 = week('2026-09-19', 4, 1)
     const logsB: LogLike[] = [{ date: '2026-09-18', kind: 'gym', status: 'skipped' }]
     const wb = warningsFor('2026-09-19', w3, rules({ today: '2026-09-19', logs: logsB })).find((x) => x.rule === 'R3')!
-    expect(wb.message).toContain('przepada')
+    expect(wb.message).toContain('Sesja B z piątku przepada')
     const w4 = week('2026-09-17', 2, 1)
     const logsA: LogLike[] = [{ date: '2026-09-16', kind: 'gym', status: 'skipped' }]
     const wa = warningsFor('2026-09-17', w4, rules({ today: '2026-09-17', logs: logsA })).find((x) => x.rule === 'R3')!
     expect(wa.actions![0]!.payload).toMatchObject({ what: 'gym', to: '2026-09-17' })
+    expect(wa.message).toContain('Sesja A ze środy')
   })
 })
 

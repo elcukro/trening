@@ -104,19 +104,24 @@ niego masa startowa z ustawień. Gdy limit obcina tempo, etykieta mówi wprost, 
 Włączone w programie FTP 300 (500 kcal, 0,7 %/tydz.); program alpejski zostaje przy stałych etykietach,
 dopóki jego właściciel nie zdecyduje inaczej. Testy: `weight_deficit.test.ts`.
 
-### Krok 2 – Reguły sterowane programem (A2, A3)
+### Krok 2 – Reguły sterowane programem (A2, A3) ✅ 25.09.2026
 
-- W programie: `rules: { long_ride_day: "sat"|"mon", long_catchup_day: "sun"|"tue"|null,
-  accent_days: ["wed"] , gym_sessions: {A: {role:"legs"}, B: {role:"single_leg"}}, protected_hours_before_key: 48 }`.
-- `rules.ts`: R2 używa `long_ride_day`/`long_catchup_day` zamiast `sat`/`sun`; R1 przenosi akcent na
-  najbliższy dzień z lekką jazdą wg `day_type`, nie wg nazw dni; R3 rozróżnia sesje po `role`, nie po
-  literze; R9/`validateMove` czytają `protected_hours_before_key`. Reguły, które program nie deklaruje
-  (np. brak Sesji B), po prostu nie odpalają.
-- `data/rules.ts`: opisy z placeholderami (`{long_day}`, `{accent_day}`) wypełnianymi z programu,
-  albo osobna lista opisów w programie. Prościej: program niesie `rules_text` – generator go pisze.
-- Testy: `rules.test.ts` rozszerzony o scenariusze na programie ftp300 (długa w pn, siłownia sob).
-
-Rozmiar: średni–duży (reguły to ~450 linii). Efekt: drugie konto przestaje dostawać fałszywe ostrzeżenia.
+Wykonanie (prostsze niż pierwotny szkic z dniami tygodnia – silnik patrzy na `day_type` kalendarza):
+- Program niesie sekcję `rules` (`ProgramRulesSchema` w `schema.ts`): `text` (R1–R16 dla człowieka),
+  `hierarchy`, `tests`, opcjonalne `pass_strategy`, oraz parametry reguł: `gym_catchup`
+  (`{A: "move"|"drop", …}` – R3), `long_catchup_onto` (typy dni, na które wolno przenieść pominiętą długą – R2;
+  pusta lista = przepada) i `deload_note` (R12). `src/data/rules.ts` usunięty; Zasady, Strefy i Wyjazd
+  czytają `engine.ctx.program.rules`, strategia na przełęcz pokazuje się tylko, gdy program ją ma.
+- `rules.ts`: R1 przenosi akcent tylko na dzień `easy` z jazdą, bez siłowni, niechroniony i nie tuż przed
+  kolejnym akcentem (`canTakeAccent`); wzmianka o lżejszej sesji tylko, gdy jutro jest siłownia, i z jej literą.
+  R2 działa od wczorajszej `long` na dowolny dzień tygodnia. R3 wg `gym_catchup`, odrabianie nie na akcent,
+  długą, drugą siłownię ani przed dniem chronionym; dzień w dopełniaczu („Sesja A ze środy”, wcześniej „z środę”).
+  Wersja pod dachem bierze rower z `program.bikes.indoor`. R9/`validateMove`/`validateSwap` już były ogólne.
+- Program alpejski: teksty przepisane 1:1, `gym_catchup {A,C: move, B: drop}`, `long_catchup_onto ["easy"]` –
+  zachowanie bez zmian, kalendarz identyczny. FTP 300: własne teksty, wszystko przepada (`drop`, `[]`),
+  hierarchia z pn długą i sobotnią siłownią, test FTP w tyg. 0, 11, 21, 27, 39.
+- Testy: `rules_ftp300.test.ts` (długa w pn przepada, piątkowy akcent przepada, środowy nie ląduje przed
+  piątkowym, siłownia z soboty przepada, R12 i trenażer z programu, brak alpejskich słów w tekstach).
 
 ### Krok 3 – Literały w interfejsie i funkcje włączane przez program (A8–A11, B2)
 

@@ -9,7 +9,6 @@ import { diffDays } from '@/engine/dates'
 import { todayISO, fmtDate } from '@/lib/dates'
 import { days as daysLabel, num } from '@/lib/format'
 import { Button, Card, CardSection, CardTitle, Metric, PageTitle, Segmented } from '@/components/ui'
-import { PASS_STRATEGY } from '@/data/rules'
 
 type TripMode = 'hotel' | 'camp'
 
@@ -105,14 +104,16 @@ export function TripPage() {
         </ul>
       </Card>
 
-      <Card tone="accent">
-        <CardTitle icon="🏔️">Strategia na przełęcz</CardTitle>
-        <ul className="list-disc space-y-1 pl-5 text-sm">
-          {PASS_STRATEGY.map((s, i) => (
-            <li key={i}>{s}</li>
-          ))}
-        </ul>
-      </Card>
+      {engine.ctx.program.rules.pass_strategy && (
+        <Card tone="accent">
+          <CardTitle icon="🏔️">Strategia na przełęcz</CardTitle>
+          <ul className="list-disc space-y-1 pl-5 text-sm">
+            {engine.ctx.program.rules.pass_strategy.map((s, i) => (
+              <li key={i}>{s}</li>
+            ))}
+          </ul>
+        </Card>
+      )}
     </div>
   )
 }
