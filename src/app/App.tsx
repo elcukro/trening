@@ -19,6 +19,7 @@ import { useSyncRunner } from '@/sync/useSync'
 import { ToastProvider } from '@/components/Toast'
 import { useWahooAutoPush } from '@/sync/useWahoo'
 import { useEmailSnapshots } from '@/sync/emailSnapshots'
+import { MovedBanner } from './MovedBanner'
 import { usePushKeepalive } from '@/sync/usePush'
 import { useEngine } from '@/app/useSettings'
 import { todayISO } from '@/lib/dates'
@@ -236,6 +237,7 @@ export function App() {
   return (
     <ErrorBoundary>
       <ToastProvider>
+        <MovedBanner />
         <BrowserRouter>
           <Routes>
             <Route element={<Layout />}>

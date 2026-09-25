@@ -32,5 +32,29 @@
         }
       ]
     }
+  ],
+  "redirects": [
+    {
+      "source": "/",
+      "has": [
+        {
+          "type": "host",
+          "value": "trening-inky.vercel.app"
+        }
+      ],
+      "destination": "https://trening.felsztukier.pl/",
+      "permanent": true
+    },
+    {
+      "source": "/:path([^.]+)",
+      "has": [
+        {
+          "type": "host",
+          "value": "trening-inky.vercel.app"
+        }
+      ],
+      "destination": "https://trening.felsztukier.pl/:path",
+      "permanent": true
+    }
   ]
 }
