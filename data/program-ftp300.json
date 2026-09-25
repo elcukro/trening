@@ -1,5 +1,5 @@
 {
- "version": "2026.09.25-5",
+ "version": "2026.09.25-6",
  "meta": {
   "name": "FTP 300 – próg i VO2max",
   "short": "FTP 300",
@@ -3111,6 +3111,80 @@
    ],
    "duration_min": 66,
    "description": "VO2max: 3 min mocno, ale równo (RPE 9) – nie sprint na starcie. Tętno dojdzie do 103–106% LTHR dopiero w końcówce kolejnych powtórzeń. Przerwa 3 min bardzo luźno."
+  },
+  "Z2_SS_2x10": {
+   "id": "Z2_SS_2x10",
+   "name": "Z2 z wstawkami sweet spot 2×10 min",
+   "category": "endurance",
+   "key": false,
+   "steps": [
+    {
+     "name": "Z2 z wstawkami sweet spot 2×10 min",
+     "duration_s": 4500,
+     "zone": "Z2",
+     "target": {
+      "type": "threshold_hr",
+      "low": 0.81,
+      "high": 0.89
+     },
+     "rpe": [
+      3,
+      4
+     ],
+     "intensity_type": "active",
+     "cadence_rpm": [
+      85,
+      95
+     ],
+     "note": "Spokojne Z2 z dwiema wstawkami sweet spot po 10 min (88–94 % FTP) i 5 min luzu między nimi. Wstawki równo, bez szarpania na starcie; reszta jazdy naprawdę w Z2 – nie „prawie tempo”. Przy zmęczeniu po środzie zostaw jedną wstawkę."
+    }
+   ],
+   "duration_min": 75,
+   "description": "Spokojne Z2 z dwiema wstawkami sweet spot po 10 min (88–94 % FTP) i 5 min luzu między nimi. Wstawki równo, bez szarpania na starcie; reszta jazdy naprawdę w Z2 – nie „prawie tempo”. Przy zmęczeniu po środzie zostaw jedną wstawkę.",
+   "parametric_duration": true,
+   "insert": {
+    "repeat": 2,
+    "steps": [
+     {
+      "name": "Sweet spot",
+      "duration_s": 600,
+      "zone": "SS",
+      "target": {
+       "type": "threshold_hr",
+       "low": 0.92,
+       "high": 0.96
+      },
+      "rpe": [
+       6,
+       7
+      ],
+      "intensity_type": "active",
+      "cadence_rpm": [
+       80,
+       90
+      ]
+     },
+     {
+      "name": "Z2 luźno",
+      "duration_s": 300,
+      "zone": "Z2",
+      "target": {
+       "type": "threshold_hr",
+       "low": 0.81,
+       "high": 0.89
+      },
+      "rpe": [
+       3,
+       4
+      ],
+      "intensity_type": "recover",
+      "cadence_rpm": [
+       85,
+       95
+      ]
+     }
+    ]
+   }
   }
  },
  "exercises": {
@@ -3573,7 +3647,7 @@
     60
    ],
    "fri": [
-    "Z2",
+    "Z2_SS_2x10",
     75
    ],
    "sat": [
@@ -3607,7 +3681,7 @@
     60
    ],
    "fri": [
-    "Z2",
+    "Z2_SS_2x10",
     75
    ],
    "sat": [
@@ -3640,7 +3714,7 @@
     60
    ],
    "fri": [
-    "Z2",
+    "Z2_SS_2x10",
     75
    ],
    "sat": [
@@ -3673,7 +3747,7 @@
     60
    ],
    "fri": [
-    "Z2",
+    "Z2_SS_2x10",
     75
    ],
    "sat": [

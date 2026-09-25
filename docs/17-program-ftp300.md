@@ -81,6 +81,15 @@ Stara synchronizacja porównywała jeden `updated_at` całego profilu, więc pol
 (`program_id`) nie docierało po zrównaniu znaczników. Od docs/18 krok 5 profil scala się per pole,
 a zmiana w SQL Editorze dostaje znacznik z triggera – wystarczy `update public.profiles set program_id = …`.
 
+## Zmiana 25.09.2026: piątek z wstawkami sweet spot (tygodnie 1–4)
+
+Ferdynand zapytał, czy Z2 jest potrzebne, i zaproponował sweet spot w sobotę zamiast Z2. Jego jazdy ze Stravy
+(sierpień–wrzesień) mają NP 165–205 W przy FTP 235 – czyli IF 0,70–0,87: tempa ma dużo, spokojnej objętości mało.
+Z2 zostaje (baza pod +28 % FTP i regeneracja między akcentami), ale w tygodniach z jednym akcentem (1–4)
+piątkowe Z2 75 min to **`Z2_SS_2x10`**: Z2 z dwiema wstawkami SS po 10 min. Nie sobota – tam jest siłownia nóg
+i dzień później długa. Trening nie jest akcentem (`key: False`), więc reguły R1/R15 i żywienie traktują piątek
+jak spokojny dzień. Od tygodnia 6 piątek to pełny akcent SS. Czwartek i sobota – naprawdę Z2 (ok. 130–170 W).
+
 ## Znane ograniczenia
 
 - ~~Żywienie wspólne z programem alpejskim~~ – rozwiązane 25.09.2026 (docs/18, krok 1): własna polityka

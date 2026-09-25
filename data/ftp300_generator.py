@@ -28,10 +28,20 @@ _spec.loader.exec_module(gen)
 sys.stdout = _stdout
 
 PROGRAM_ID = "ftp300"
-PROGRAM_VERSION = "2026.09.25-5"
+PROGRAM_VERSION = "2026.09.25-6"
 
 # dłuższy blok VO2max niż w programie alpejskim (6 powtórzeń) – przy trenażerze ERG da się utrzymać moc
 gen.add(gen.interval_workout("VO2_6x3", "VO2max 6×3 min", "vo2max", 6, 3, 3, "Z5b", [85, 95], gen.VO2_DESC, wu=20))
+# Kompromis z 25.09.2026 (prośba Ferdynanda o więcej sweet spotu): w tygodniach 1–4, gdy jest tylko jeden akcent,
+# piątkowe Z2 dostaje dwie wstawki SS. Nie akcent (`key: False`) – dzień zostaje spokojny w regułach i żywieniu,
+# a czwartek i sobota nadal naprawdę w Z2. Od tygodnia 6 piątek to pełny akcent sweet spot.
+gen.add(gen.endurance(
+    "Z2_SS_2x10", "Z2 z wstawkami sweet spot 2×10 min", 75, "Z2",
+    "Spokojne Z2 z dwiema wstawkami sweet spot po 10 min (88–94 % FTP) i 5 min luzu między nimi. Wstawki równo, "
+    "bez szarpania na starcie; reszta jazdy naprawdę w Z2 – nie „prawie tempo”. Przy zmęczeniu po środzie zostaw jedną wstawkę.",
+    "endurance",
+    extras={"insert": gen.repeat(2, [gen.step("Sweet spot", 10, "SS", "active", [80, 90]), gen.step("Z2 luźno", 5, "Z2", "recover", gen.CAD_EASY)])},
+))
 
 DEFAULT_SETTINGS = {
     "program_start": "2026-09-21",          # tydzień 0 = pomiar (test w niedzielę 27.09), plan właściwy od 28.09
@@ -89,11 +99,11 @@ WEEKS = {
     0: W("PREP", "test", R, R, R, Z2(45), R, None, sun=TEST,
          notes="Tydzień pomiarowy: w niedzielę test FTP 20 min, wcześniej tylko lekkie rozjeżdżenie w piątek. Od jego wyniku liczą się wszystkie strefy mocy i tętna. Plan właściwy startuje w poniedziałek 28.09."),
     # ---------------------------------------------------------------- I: baza + sweet spot
-    1: W("I", "build", LONG(195), ("SS_2x10", None), Z2(60), Z2(75), Z2(60), ("intro", 2),
+    1: W("I", "build", LONG(195), ("SS_2x10", None), Z2(60), ("Z2_SS_2x10", 75), Z2(60), ("intro", 2),
          notes="Start bloku bazowego. Długa w poniedziałek ma być nudna – rozmowa pełnymi zdaniami. Jedyny dzień, w którym wolno się zmęczyć, to środa."),
-    2: W("I", "build", LONG(210), ("SS_2x12", None), Z2(60), Z2(75), Z2(60), ("I_a", 3)),
-    3: W("I", "build", LONG(210), ("SS_2x15", None), Z2(60), Z2(75), Z2(60), ("I_a", 4)),
-    4: W("I", "build", LONG(225), ("SS_3x12", None), Z2(60), Z2(75), Z2(60), ("I_a", 5)),
+    2: W("I", "build", LONG(210), ("SS_2x12", None), Z2(60), ("Z2_SS_2x10", 75), Z2(60), ("I_a", 3)),
+    3: W("I", "build", LONG(210), ("SS_2x15", None), Z2(60), ("Z2_SS_2x10", 75), Z2(60), ("I_a", 4)),
+    4: W("I", "build", LONG(225), ("SS_3x12", None), Z2(60), ("Z2_SS_2x10", 75), Z2(60), ("I_a", 5)),
     5: W("I", "deload", LONG(135), DELOAD, Z2(45), R, Z2(60), ("I_a", 5),
          notes="Tydzień lżejszy: żadnych interwałów, piątek wolny. Nogi mają wyjść świeższe niż weszły."),
     6: W("I", "build", LONG(225), ("SS_3x12", None), Z2(60), ("SS_2x10", None), Z2(60), ("I_b", 7),

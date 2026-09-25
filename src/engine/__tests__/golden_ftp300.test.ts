@@ -38,7 +38,11 @@ describe('golden file: calendar-ftp300.json', () => {
     expect(w[0]!.day_type).toBe('long')
     expect(w[1]!.bike).toBeNull()
     expect(w[2]!.day_type).toBe('key')
-    expect(w[4]!.bike?.workout_id).toBe('Z2')
+    // kompromis z 25.09: w tygodniach z jednym akcentem piątek to Z2 z wstawkami SS – spokojny dzień, nie akcent
+    expect(w[4]!.bike?.workout_id).toBe('Z2_SS_2x10')
+    expect(w[4]!.day_type).toBe('easy')
+    expect(w[3]!.bike?.workout_id).toBe('Z2')
+    expect(w[5]!.bike?.workout_id).toBe('Z2')
     expect(w[6]!.bike).toBeNull()
   })
 
