@@ -1,5 +1,5 @@
 {
- "version": "2026.09.25-4",
+ "version": "2026.09.25-5",
  "settings": {
   "program_start": "2026-09-21",
   "trip_start": "2027-06-28",
@@ -41,7 +41,8 @@
      0,
      0
     ],
-    "post_workout": null
+    "post_workout": null,
+    "deficit_share": 1
    },
    "flags": [],
    "week_notes": "Tydzień pomiarowy: w niedzielę test FTP 20 min, wcześniej tylko lekkie rozjeżdżenie w piątek. Od jego wyniku liczą się wszystkie strefy mocy i tętna. Plan właściwy startuje w poniedziałek 28.09."
@@ -63,7 +64,8 @@
      0,
      0
     ],
-    "post_workout": null
+    "post_workout": null,
+    "deficit_share": 1
    },
    "flags": []
   },
@@ -84,7 +86,8 @@
      0,
      0
     ],
-    "post_workout": null
+    "post_workout": null,
+    "deficit_share": 1
    },
    "flags": []
   },
@@ -105,7 +108,8 @@
      0,
      0
     ],
-    "post_workout": null
+    "post_workout": null,
+    "deficit_share": 1
    },
    "flags": []
   },
@@ -132,7 +136,8 @@
      0,
      0
     ],
-    "post_workout": null
+    "post_workout": null,
+    "deficit_share": 1
    },
    "flags": []
   },
@@ -153,7 +158,8 @@
      0,
      0
     ],
-    "post_workout": null
+    "post_workout": null,
+    "deficit_share": 1
    },
    "flags": []
   },
@@ -231,7 +237,8 @@
      0,
      0
     ],
-    "post_workout": null
+    "post_workout": null,
+    "deficit_share": 1
    },
    "flags": []
   },
@@ -278,14 +285,15 @@
    },
    "gym": null,
    "nutrition": {
-    "energy": "maintenance",
-    "label": "Dzień treningowy: bilans zerowy",
+    "energy": "deficit_300",
+    "label": "Dzień treningowy: deficyt dobrany do masy",
     "protein_g_per_kg": 1.8,
     "on_bike_carbs_g_per_h": [
      30,
      40
     ],
-    "post_workout": "30–40 g białka + węglowodany w ciągu 1–2 h"
+    "post_workout": "30–40 g białka + węglowodany w ciągu 1–2 h",
+    "deficit_share": 0.5
    },
    "flags": []
   },
@@ -305,14 +313,15 @@
    },
    "gym": null,
    "nutrition": {
-    "energy": "maintenance",
-    "label": "Dzień treningowy: bilans zerowy",
+    "energy": "deficit_300",
+    "label": "Dzień treningowy: deficyt dobrany do masy",
     "protein_g_per_kg": 1.8,
     "on_bike_carbs_g_per_h": [
      30,
      40
     ],
-    "post_workout": "30–40 g białka + węglowodany w ciągu 1–2 h"
+    "post_workout": "30–40 g białka + węglowodany w ciągu 1–2 h",
+    "deficit_share": 0.5
    },
    "flags": []
   },
@@ -425,14 +434,15 @@
     ]
    },
    "nutrition": {
-    "energy": "maintenance",
-    "label": "Dzień treningowy: bilans zerowy",
+    "energy": "deficit_300",
+    "label": "Dzień treningowy: deficyt dobrany do masy",
     "protein_g_per_kg": 1.8,
     "on_bike_carbs_g_per_h": [
      30,
      40
     ],
-    "post_workout": "30–40 g białka + węglowodany w ciągu 1–2 h"
+    "post_workout": "30–40 g białka + węglowodany w ciągu 1–2 h",
+    "deficit_share": 0.5
    },
    "flags": []
   },
@@ -453,7 +463,8 @@
      0,
      0
     ],
-    "post_workout": null
+    "post_workout": null,
+    "deficit_share": 1
    },
    "flags": []
   },
@@ -501,7 +512,8 @@
      0,
      0
     ],
-    "post_workout": null
+    "post_workout": null,
+    "deficit_share": 1
    },
    "flags": []
   },
@@ -548,14 +560,15 @@
    },
    "gym": null,
    "nutrition": {
-    "energy": "maintenance",
-    "label": "Dzień treningowy: bilans zerowy",
+    "energy": "deficit_300",
+    "label": "Dzień treningowy: deficyt dobrany do masy",
     "protein_g_per_kg": 1.8,
     "on_bike_carbs_g_per_h": [
      30,
      40
     ],
-    "post_workout": "30–40 g białka + węglowodany w ciągu 1–2 h"
+    "post_workout": "30–40 g białka + węglowodany w ciągu 1–2 h",
+    "deficit_share": 0.5
    },
    "flags": []
   },
@@ -575,14 +588,15 @@
    },
    "gym": null,
    "nutrition": {
-    "energy": "maintenance",
-    "label": "Dzień treningowy: bilans zerowy",
+    "energy": "deficit_300",
+    "label": "Dzień treningowy: deficyt dobrany do masy",
     "protein_g_per_kg": 1.8,
     "on_bike_carbs_g_per_h": [
      30,
      40
     ],
-    "post_workout": "30–40 g białka + węglowodany w ciągu 1–2 h"
+    "post_workout": "30–40 g białka + węglowodany w ciągu 1–2 h",
+    "deficit_share": 0.5
    },
    "flags": []
   },
@@ -695,14 +709,15 @@
     ]
    },
    "nutrition": {
-    "energy": "maintenance",
-    "label": "Dzień treningowy: bilans zerowy",
+    "energy": "deficit_300",
+    "label": "Dzień treningowy: deficyt dobrany do masy",
     "protein_g_per_kg": 1.8,
     "on_bike_carbs_g_per_h": [
      30,
      40
     ],
-    "post_workout": "30–40 g białka + węglowodany w ciągu 1–2 h"
+    "post_workout": "30–40 g białka + węglowodany w ciągu 1–2 h",
+    "deficit_share": 0.5
    },
    "flags": []
   },
@@ -723,7 +738,8 @@
      0,
      0
     ],
-    "post_workout": null
+    "post_workout": null,
+    "deficit_share": 1
    },
    "flags": []
   },
@@ -771,7 +787,8 @@
      0,
      0
     ],
-    "post_workout": null
+    "post_workout": null,
+    "deficit_share": 1
    },
    "flags": []
   },
@@ -818,14 +835,15 @@
    },
    "gym": null,
    "nutrition": {
-    "energy": "maintenance",
-    "label": "Dzień treningowy: bilans zerowy",
+    "energy": "deficit_300",
+    "label": "Dzień treningowy: deficyt dobrany do masy",
     "protein_g_per_kg": 1.8,
     "on_bike_carbs_g_per_h": [
      30,
      40
     ],
-    "post_workout": "30–40 g białka + węglowodany w ciągu 1–2 h"
+    "post_workout": "30–40 g białka + węglowodany w ciągu 1–2 h",
+    "deficit_share": 0.5
    },
    "flags": []
   },
@@ -845,14 +863,15 @@
    },
    "gym": null,
    "nutrition": {
-    "energy": "maintenance",
-    "label": "Dzień treningowy: bilans zerowy",
+    "energy": "deficit_300",
+    "label": "Dzień treningowy: deficyt dobrany do masy",
     "protein_g_per_kg": 1.8,
     "on_bike_carbs_g_per_h": [
      30,
      40
     ],
-    "post_workout": "30–40 g białka + węglowodany w ciągu 1–2 h"
+    "post_workout": "30–40 g białka + węglowodany w ciągu 1–2 h",
+    "deficit_share": 0.5
    },
    "flags": []
   },
@@ -965,14 +984,15 @@
     ]
    },
    "nutrition": {
-    "energy": "maintenance",
-    "label": "Dzień treningowy: bilans zerowy",
+    "energy": "deficit_300",
+    "label": "Dzień treningowy: deficyt dobrany do masy",
     "protein_g_per_kg": 1.8,
     "on_bike_carbs_g_per_h": [
      30,
      40
     ],
-    "post_workout": "30–40 g białka + węglowodany w ciągu 1–2 h"
+    "post_workout": "30–40 g białka + węglowodany w ciągu 1–2 h",
+    "deficit_share": 0.5
    },
    "flags": []
   },
@@ -993,7 +1013,8 @@
      0,
      0
     ],
-    "post_workout": null
+    "post_workout": null,
+    "deficit_share": 1
    },
    "flags": []
   },
@@ -1041,7 +1062,8 @@
      0,
      0
     ],
-    "post_workout": null
+    "post_workout": null,
+    "deficit_share": 1
    },
    "flags": []
   },
@@ -1088,14 +1110,15 @@
    },
    "gym": null,
    "nutrition": {
-    "energy": "maintenance",
-    "label": "Dzień treningowy: bilans zerowy",
+    "energy": "deficit_300",
+    "label": "Dzień treningowy: deficyt dobrany do masy",
     "protein_g_per_kg": 1.8,
     "on_bike_carbs_g_per_h": [
      30,
      40
     ],
-    "post_workout": "30–40 g białka + węglowodany w ciągu 1–2 h"
+    "post_workout": "30–40 g białka + węglowodany w ciągu 1–2 h",
+    "deficit_share": 0.5
    },
    "flags": []
   },
@@ -1115,14 +1138,15 @@
    },
    "gym": null,
    "nutrition": {
-    "energy": "maintenance",
-    "label": "Dzień treningowy: bilans zerowy",
+    "energy": "deficit_300",
+    "label": "Dzień treningowy: deficyt dobrany do masy",
     "protein_g_per_kg": 1.8,
     "on_bike_carbs_g_per_h": [
      30,
      40
     ],
-    "post_workout": "30–40 g białka + węglowodany w ciągu 1–2 h"
+    "post_workout": "30–40 g białka + węglowodany w ciągu 1–2 h",
+    "deficit_share": 0.5
    },
    "flags": []
   },
@@ -1235,14 +1259,15 @@
     ]
    },
    "nutrition": {
-    "energy": "maintenance",
-    "label": "Dzień treningowy: bilans zerowy",
+    "energy": "deficit_300",
+    "label": "Dzień treningowy: deficyt dobrany do masy",
     "protein_g_per_kg": 1.8,
     "on_bike_carbs_g_per_h": [
      30,
      40
     ],
-    "post_workout": "30–40 g białka + węglowodany w ciągu 1–2 h"
+    "post_workout": "30–40 g białka + węglowodany w ciągu 1–2 h",
+    "deficit_share": 0.5
    },
    "flags": []
   },
@@ -1263,7 +1288,8 @@
      0,
      0
     ],
-    "post_workout": null
+    "post_workout": null,
+    "deficit_share": 1
    },
    "flags": []
   },
@@ -1314,7 +1340,8 @@
      0,
      0
     ],
-    "post_workout": null
+    "post_workout": null,
+    "deficit_share": 1
    },
    "flags": [
     "deload"
@@ -1336,14 +1363,15 @@
    },
    "gym": null,
    "nutrition": {
-    "energy": "maintenance",
-    "label": "Dzień treningowy: bilans zerowy",
+    "energy": "deficit_300",
+    "label": "Dzień treningowy: deficyt dobrany do masy",
     "protein_g_per_kg": 1.8,
     "on_bike_carbs_g_per_h": [
      30,
      40
     ],
-    "post_workout": "30–40 g białka + węglowodany w ciągu 1–2 h"
+    "post_workout": "30–40 g białka + węglowodany w ciągu 1–2 h",
+    "deficit_share": 0.5
    },
    "flags": [
     "deload"
@@ -1372,7 +1400,8 @@
      0,
      0
     ],
-    "post_workout": null
+    "post_workout": null,
+    "deficit_share": 1
    },
    "flags": [
     "deload"
@@ -1395,7 +1424,8 @@
      0,
      0
     ],
-    "post_workout": null
+    "post_workout": null,
+    "deficit_share": 1
    },
    "flags": [
     "deload"
@@ -1515,14 +1545,15 @@
     ]
    },
    "nutrition": {
-    "energy": "maintenance",
-    "label": "Dzień treningowy: bilans zerowy",
+    "energy": "deficit_300",
+    "label": "Dzień treningowy: deficyt dobrany do masy",
     "protein_g_per_kg": 1.8,
     "on_bike_carbs_g_per_h": [
      30,
      40
     ],
-    "post_workout": "30–40 g białka + węglowodany w ciągu 1–2 h"
+    "post_workout": "30–40 g białka + węglowodany w ciągu 1–2 h",
+    "deficit_share": 0.5
    },
    "flags": [
     "deload"
@@ -1545,7 +1576,8 @@
      0,
      0
     ],
-    "post_workout": null
+    "post_workout": null,
+    "deficit_share": 1
    },
    "flags": [
     "deload"
@@ -1596,7 +1628,8 @@
      0,
      0
     ],
-    "post_workout": null
+    "post_workout": null,
+    "deficit_share": 1
    },
    "flags": []
   },
@@ -1643,14 +1676,15 @@
    },
    "gym": null,
    "nutrition": {
-    "energy": "maintenance",
-    "label": "Dzień treningowy: bilans zerowy",
+    "energy": "deficit_300",
+    "label": "Dzień treningowy: deficyt dobrany do masy",
     "protein_g_per_kg": 1.8,
     "on_bike_carbs_g_per_h": [
      30,
      40
     ],
-    "post_workout": "30–40 g białka + węglowodany w ciągu 1–2 h"
+    "post_workout": "30–40 g białka + węglowodany w ciągu 1–2 h",
+    "deficit_share": 0.5
    },
    "flags": []
   },
@@ -1790,14 +1824,15 @@
     ]
    },
    "nutrition": {
-    "energy": "maintenance",
-    "label": "Dzień treningowy: bilans zerowy",
+    "energy": "deficit_300",
+    "label": "Dzień treningowy: deficyt dobrany do masy",
     "protein_g_per_kg": 1.8,
     "on_bike_carbs_g_per_h": [
      30,
      40
     ],
-    "post_workout": "30–40 g białka + węglowodany w ciągu 1–2 h"
+    "post_workout": "30–40 g białka + węglowodany w ciągu 1–2 h",
+    "deficit_share": 0.5
    },
    "flags": []
   },
@@ -1818,7 +1853,8 @@
      0,
      0
     ],
-    "post_workout": null
+    "post_workout": null,
+    "deficit_share": 1
    },
    "flags": []
   },
@@ -1866,7 +1902,8 @@
      0,
      0
     ],
-    "post_workout": null
+    "post_workout": null,
+    "deficit_share": 1
    },
    "flags": []
   },
@@ -1913,14 +1950,15 @@
    },
    "gym": null,
    "nutrition": {
-    "energy": "maintenance",
-    "label": "Dzień treningowy: bilans zerowy",
+    "energy": "deficit_300",
+    "label": "Dzień treningowy: deficyt dobrany do masy",
     "protein_g_per_kg": 1.8,
     "on_bike_carbs_g_per_h": [
      30,
      40
     ],
-    "post_workout": "30–40 g białka + węglowodany w ciągu 1–2 h"
+    "post_workout": "30–40 g białka + węglowodany w ciągu 1–2 h",
+    "deficit_share": 0.5
    },
    "flags": []
   },
@@ -2060,14 +2098,15 @@
     ]
    },
    "nutrition": {
-    "energy": "maintenance",
-    "label": "Dzień treningowy: bilans zerowy",
+    "energy": "deficit_300",
+    "label": "Dzień treningowy: deficyt dobrany do masy",
     "protein_g_per_kg": 1.8,
     "on_bike_carbs_g_per_h": [
      30,
      40
     ],
-    "post_workout": "30–40 g białka + węglowodany w ciągu 1–2 h"
+    "post_workout": "30–40 g białka + węglowodany w ciągu 1–2 h",
+    "deficit_share": 0.5
    },
    "flags": []
   },
@@ -2088,7 +2127,8 @@
      0,
      0
     ],
-    "post_workout": null
+    "post_workout": null,
+    "deficit_share": 1
    },
    "flags": []
   },
@@ -2136,7 +2176,8 @@
      0,
      0
     ],
-    "post_workout": null
+    "post_workout": null,
+    "deficit_share": 1
    },
    "flags": []
   },
@@ -2183,14 +2224,15 @@
    },
    "gym": null,
    "nutrition": {
-    "energy": "maintenance",
-    "label": "Dzień treningowy: bilans zerowy",
+    "energy": "deficit_300",
+    "label": "Dzień treningowy: deficyt dobrany do masy",
     "protein_g_per_kg": 1.8,
     "on_bike_carbs_g_per_h": [
      30,
      40
     ],
-    "post_workout": "30–40 g białka + węglowodany w ciągu 1–2 h"
+    "post_workout": "30–40 g białka + węglowodany w ciągu 1–2 h",
+    "deficit_share": 0.5
    },
    "flags": []
   },
@@ -2330,14 +2372,15 @@
     ]
    },
    "nutrition": {
-    "energy": "maintenance",
-    "label": "Dzień treningowy: bilans zerowy",
+    "energy": "deficit_300",
+    "label": "Dzień treningowy: deficyt dobrany do masy",
     "protein_g_per_kg": 1.8,
     "on_bike_carbs_g_per_h": [
      30,
      40
     ],
-    "post_workout": "30–40 g białka + węglowodany w ciągu 1–2 h"
+    "post_workout": "30–40 g białka + węglowodany w ciągu 1–2 h",
+    "deficit_share": 0.5
    },
    "flags": []
   },
@@ -2358,7 +2401,8 @@
      0,
      0
     ],
-    "post_workout": null
+    "post_workout": null,
+    "deficit_share": 1
    },
    "flags": []
   },
@@ -2408,7 +2452,8 @@
      0,
      0
     ],
-    "post_workout": null
+    "post_workout": null,
+    "deficit_share": 1
    },
    "flags": [
     "deload"
@@ -2430,14 +2475,15 @@
    },
    "gym": null,
    "nutrition": {
-    "energy": "maintenance",
-    "label": "Dzień treningowy: bilans zerowy",
+    "energy": "deficit_300",
+    "label": "Dzień treningowy: deficyt dobrany do masy",
     "protein_g_per_kg": 1.8,
     "on_bike_carbs_g_per_h": [
      30,
      40
     ],
-    "post_workout": "30–40 g białka + węglowodany w ciągu 1–2 h"
+    "post_workout": "30–40 g białka + węglowodany w ciągu 1–2 h",
+    "deficit_share": 0.5
    },
    "flags": [
     "deload"
@@ -2466,7 +2512,8 @@
      0,
      0
     ],
-    "post_workout": null
+    "post_workout": null,
+    "deficit_share": 1
    },
    "flags": [
     "deload"
@@ -2489,7 +2536,8 @@
      0,
      0
     ],
-    "post_workout": null
+    "post_workout": null,
+    "deficit_share": 1
    },
    "flags": [
     "deload"
@@ -2609,14 +2657,15 @@
     ]
    },
    "nutrition": {
-    "energy": "maintenance",
-    "label": "Dzień treningowy: bilans zerowy",
+    "energy": "deficit_300",
+    "label": "Dzień treningowy: deficyt dobrany do masy",
     "protein_g_per_kg": 1.8,
     "on_bike_carbs_g_per_h": [
      30,
      40
     ],
-    "post_workout": "30–40 g białka + węglowodany w ciągu 1–2 h"
+    "post_workout": "30–40 g białka + węglowodany w ciągu 1–2 h",
+    "deficit_share": 0.5
    },
    "flags": [
     "deload"
@@ -2639,7 +2688,8 @@
      0,
      0
     ],
-    "post_workout": null
+    "post_workout": null,
+    "deficit_share": 1
    },
    "flags": [
     "deload"
@@ -2690,7 +2740,8 @@
      0,
      0
     ],
-    "post_workout": null
+    "post_workout": null,
+    "deficit_share": 1
    },
    "flags": []
   },
@@ -2737,14 +2788,15 @@
    },
    "gym": null,
    "nutrition": {
-    "energy": "maintenance",
-    "label": "Dzień treningowy: bilans zerowy",
+    "energy": "deficit_300",
+    "label": "Dzień treningowy: deficyt dobrany do masy",
     "protein_g_per_kg": 1.8,
     "on_bike_carbs_g_per_h": [
      30,
      40
     ],
-    "post_workout": "30–40 g białka + węglowodany w ciągu 1–2 h"
+    "post_workout": "30–40 g białka + węglowodany w ciągu 1–2 h",
+    "deficit_share": 0.5
    },
    "flags": []
   },
@@ -2884,14 +2936,15 @@
     ]
    },
    "nutrition": {
-    "energy": "maintenance",
-    "label": "Dzień treningowy: bilans zerowy",
+    "energy": "deficit_300",
+    "label": "Dzień treningowy: deficyt dobrany do masy",
     "protein_g_per_kg": 1.8,
     "on_bike_carbs_g_per_h": [
      30,
      40
     ],
-    "post_workout": "30–40 g białka + węglowodany w ciągu 1–2 h"
+    "post_workout": "30–40 g białka + węglowodany w ciągu 1–2 h",
+    "deficit_share": 0.5
    },
    "flags": []
   },
@@ -2912,7 +2965,8 @@
      0,
      0
     ],
-    "post_workout": null
+    "post_workout": null,
+    "deficit_share": 1
    },
    "flags": []
   },
@@ -2961,7 +3015,8 @@
      0,
      0
     ],
-    "post_workout": null
+    "post_workout": null,
+    "deficit_share": 1
    },
    "flags": []
   },
@@ -3017,7 +3072,8 @@
      0,
      0
     ],
-    "post_workout": null
+    "post_workout": null,
+    "deficit_share": 1
    },
    "flags": []
   },
@@ -3037,14 +3093,15 @@
    },
    "gym": null,
    "nutrition": {
-    "energy": "maintenance",
-    "label": "Dzień treningowy: bilans zerowy",
+    "energy": "deficit_300",
+    "label": "Dzień treningowy: deficyt dobrany do masy",
     "protein_g_per_kg": 1.8,
     "on_bike_carbs_g_per_h": [
      30,
      40
     ],
-    "post_workout": "30–40 g białka + węglowodany w ciągu 1–2 h"
+    "post_workout": "30–40 g białka + węglowodany w ciągu 1–2 h",
+    "deficit_share": 0.5
    },
    "flags": []
   },
@@ -3158,14 +3215,15 @@
     ]
    },
    "nutrition": {
-    "energy": "maintenance",
-    "label": "Dzień treningowy: bilans zerowy",
+    "energy": "deficit_300",
+    "label": "Dzień treningowy: deficyt dobrany do masy",
     "protein_g_per_kg": 1.8,
     "on_bike_carbs_g_per_h": [
      30,
      40
     ],
-    "post_workout": "30–40 g białka + węglowodany w ciągu 1–2 h"
+    "post_workout": "30–40 g białka + węglowodany w ciągu 1–2 h",
+    "deficit_share": 0.5
    },
    "flags": []
   },
@@ -3186,7 +3244,8 @@
      0,
      0
     ],
-    "post_workout": null
+    "post_workout": null,
+    "deficit_share": 1
    },
    "flags": []
   },
@@ -3235,7 +3294,8 @@
      0,
      0
     ],
-    "post_workout": null
+    "post_workout": null,
+    "deficit_share": 1
    },
    "flags": []
   },
@@ -3282,14 +3342,15 @@
    },
    "gym": null,
    "nutrition": {
-    "energy": "maintenance",
-    "label": "Dzień treningowy: bilans zerowy",
+    "energy": "deficit_300",
+    "label": "Dzień treningowy: deficyt dobrany do masy",
     "protein_g_per_kg": 1.8,
     "on_bike_carbs_g_per_h": [
      30,
      40
     ],
-    "post_workout": "30–40 g białka + węglowodany w ciągu 1–2 h"
+    "post_workout": "30–40 g białka + węglowodany w ciągu 1–2 h",
+    "deficit_share": 0.5
    },
    "flags": []
   },
@@ -3429,14 +3490,15 @@
     ]
    },
    "nutrition": {
-    "energy": "maintenance",
-    "label": "Dzień treningowy: bilans zerowy",
+    "energy": "deficit_300",
+    "label": "Dzień treningowy: deficyt dobrany do masy",
     "protein_g_per_kg": 1.8,
     "on_bike_carbs_g_per_h": [
      30,
      40
     ],
-    "post_workout": "30–40 g białka + węglowodany w ciągu 1–2 h"
+    "post_workout": "30–40 g białka + węglowodany w ciągu 1–2 h",
+    "deficit_share": 0.5
    },
    "flags": []
   },
@@ -3457,7 +3519,8 @@
      0,
      0
     ],
-    "post_workout": null
+    "post_workout": null,
+    "deficit_share": 1
    },
    "flags": []
   },
@@ -3505,7 +3568,8 @@
      0,
      0
     ],
-    "post_workout": null
+    "post_workout": null,
+    "deficit_share": 1
    },
    "flags": []
   },
@@ -3552,14 +3616,15 @@
    },
    "gym": null,
    "nutrition": {
-    "energy": "maintenance",
-    "label": "Dzień treningowy: bilans zerowy",
+    "energy": "deficit_300",
+    "label": "Dzień treningowy: deficyt dobrany do masy",
     "protein_g_per_kg": 1.8,
     "on_bike_carbs_g_per_h": [
      30,
      40
     ],
-    "post_workout": "30–40 g białka + węglowodany w ciągu 1–2 h"
+    "post_workout": "30–40 g białka + węglowodany w ciągu 1–2 h",
+    "deficit_share": 0.5
    },
    "flags": []
   },
@@ -3699,14 +3764,15 @@
     ]
    },
    "nutrition": {
-    "energy": "maintenance",
-    "label": "Dzień treningowy: bilans zerowy",
+    "energy": "deficit_300",
+    "label": "Dzień treningowy: deficyt dobrany do masy",
     "protein_g_per_kg": 1.8,
     "on_bike_carbs_g_per_h": [
      30,
      40
     ],
-    "post_workout": "30–40 g białka + węglowodany w ciągu 1–2 h"
+    "post_workout": "30–40 g białka + węglowodany w ciągu 1–2 h",
+    "deficit_share": 0.5
    },
    "flags": []
   },
@@ -3727,7 +3793,8 @@
      0,
      0
     ],
-    "post_workout": null
+    "post_workout": null,
+    "deficit_share": 1
    },
    "flags": []
   },
@@ -3775,7 +3842,8 @@
      0,
      0
     ],
-    "post_workout": null
+    "post_workout": null,
+    "deficit_share": 1
    },
    "flags": []
   },
@@ -3822,14 +3890,15 @@
    },
    "gym": null,
    "nutrition": {
-    "energy": "maintenance",
-    "label": "Dzień treningowy: bilans zerowy",
+    "energy": "deficit_300",
+    "label": "Dzień treningowy: deficyt dobrany do masy",
     "protein_g_per_kg": 1.8,
     "on_bike_carbs_g_per_h": [
      30,
      40
     ],
-    "post_workout": "30–40 g białka + węglowodany w ciągu 1–2 h"
+    "post_workout": "30–40 g białka + węglowodany w ciągu 1–2 h",
+    "deficit_share": 0.5
    },
    "flags": []
   },
@@ -3969,14 +4038,15 @@
     ]
    },
    "nutrition": {
-    "energy": "maintenance",
-    "label": "Dzień treningowy: bilans zerowy",
+    "energy": "deficit_300",
+    "label": "Dzień treningowy: deficyt dobrany do masy",
     "protein_g_per_kg": 1.8,
     "on_bike_carbs_g_per_h": [
      30,
      40
     ],
-    "post_workout": "30–40 g białka + węglowodany w ciągu 1–2 h"
+    "post_workout": "30–40 g białka + węglowodany w ciągu 1–2 h",
+    "deficit_share": 0.5
    },
    "flags": []
   },
@@ -3997,7 +4067,8 @@
      0,
      0
     ],
-    "post_workout": null
+    "post_workout": null,
+    "deficit_share": 1
    },
    "flags": []
   },
@@ -4047,7 +4118,8 @@
      0,
      0
     ],
-    "post_workout": null
+    "post_workout": null,
+    "deficit_share": 1
    },
    "flags": [
     "deload"
@@ -4069,14 +4141,15 @@
    },
    "gym": null,
    "nutrition": {
-    "energy": "maintenance",
-    "label": "Dzień treningowy: bilans zerowy",
+    "energy": "deficit_300",
+    "label": "Dzień treningowy: deficyt dobrany do masy",
     "protein_g_per_kg": 1.8,
     "on_bike_carbs_g_per_h": [
      30,
      40
     ],
-    "post_workout": "30–40 g białka + węglowodany w ciągu 1–2 h"
+    "post_workout": "30–40 g białka + węglowodany w ciągu 1–2 h",
+    "deficit_share": 0.5
    },
    "flags": [
     "deload"
@@ -4105,7 +4178,8 @@
      0,
      0
     ],
-    "post_workout": null
+    "post_workout": null,
+    "deficit_share": 1
    },
    "flags": [
     "deload"
@@ -4128,7 +4202,8 @@
      0,
      0
     ],
-    "post_workout": null
+    "post_workout": null,
+    "deficit_share": 1
    },
    "flags": [
     "deload"
@@ -4248,14 +4323,15 @@
     ]
    },
    "nutrition": {
-    "energy": "maintenance",
-    "label": "Dzień treningowy: bilans zerowy",
+    "energy": "deficit_300",
+    "label": "Dzień treningowy: deficyt dobrany do masy",
     "protein_g_per_kg": 1.8,
     "on_bike_carbs_g_per_h": [
      30,
      40
     ],
-    "post_workout": "30–40 g białka + węglowodany w ciągu 1–2 h"
+    "post_workout": "30–40 g białka + węglowodany w ciągu 1–2 h",
+    "deficit_share": 0.5
    },
    "flags": [
     "deload"
@@ -4278,7 +4354,8 @@
      0,
      0
     ],
-    "post_workout": null
+    "post_workout": null,
+    "deficit_share": 1
    },
    "flags": [
     "deload"
@@ -4328,7 +4405,8 @@
      0,
      0
     ],
-    "post_workout": null
+    "post_workout": null,
+    "deficit_share": 1
    },
    "flags": []
   },
@@ -4375,14 +4453,15 @@
    },
    "gym": null,
    "nutrition": {
-    "energy": "maintenance",
-    "label": "Dzień treningowy: bilans zerowy",
+    "energy": "deficit_300",
+    "label": "Dzień treningowy: deficyt dobrany do masy",
     "protein_g_per_kg": 1.8,
     "on_bike_carbs_g_per_h": [
      30,
      40
     ],
-    "post_workout": "30–40 g białka + węglowodany w ciągu 1–2 h"
+    "post_workout": "30–40 g białka + węglowodany w ciągu 1–2 h",
+    "deficit_share": 0.5
    },
    "flags": []
   },
@@ -4522,14 +4601,15 @@
     ]
    },
    "nutrition": {
-    "energy": "maintenance",
-    "label": "Dzień treningowy: bilans zerowy",
+    "energy": "deficit_300",
+    "label": "Dzień treningowy: deficyt dobrany do masy",
     "protein_g_per_kg": 1.8,
     "on_bike_carbs_g_per_h": [
      30,
      40
     ],
-    "post_workout": "30–40 g białka + węglowodany w ciągu 1–2 h"
+    "post_workout": "30–40 g białka + węglowodany w ciągu 1–2 h",
+    "deficit_share": 0.5
    },
    "flags": []
   },
@@ -4550,7 +4630,8 @@
      0,
      0
     ],
-    "post_workout": null
+    "post_workout": null,
+    "deficit_share": 1
    },
    "flags": []
   },
@@ -4598,7 +4679,8 @@
      0,
      0
     ],
-    "post_workout": null
+    "post_workout": null,
+    "deficit_share": 1
    },
    "flags": []
   },
@@ -4645,14 +4727,15 @@
    },
    "gym": null,
    "nutrition": {
-    "energy": "maintenance",
-    "label": "Dzień treningowy: bilans zerowy",
+    "energy": "deficit_300",
+    "label": "Dzień treningowy: deficyt dobrany do masy",
     "protein_g_per_kg": 1.8,
     "on_bike_carbs_g_per_h": [
      30,
      40
     ],
-    "post_workout": "30–40 g białka + węglowodany w ciągu 1–2 h"
+    "post_workout": "30–40 g białka + węglowodany w ciągu 1–2 h",
+    "deficit_share": 0.5
    },
    "flags": []
   },
@@ -4792,14 +4875,15 @@
     ]
    },
    "nutrition": {
-    "energy": "maintenance",
-    "label": "Dzień treningowy: bilans zerowy",
+    "energy": "deficit_300",
+    "label": "Dzień treningowy: deficyt dobrany do masy",
     "protein_g_per_kg": 1.8,
     "on_bike_carbs_g_per_h": [
      30,
      40
     ],
-    "post_workout": "30–40 g białka + węglowodany w ciągu 1–2 h"
+    "post_workout": "30–40 g białka + węglowodany w ciągu 1–2 h",
+    "deficit_share": 0.5
    },
    "flags": []
   },
@@ -4820,7 +4904,8 @@
      0,
      0
     ],
-    "post_workout": null
+    "post_workout": null,
+    "deficit_share": 1
    },
    "flags": []
   },
@@ -4868,7 +4953,8 @@
      0,
      0
     ],
-    "post_workout": null
+    "post_workout": null,
+    "deficit_share": 1
    },
    "flags": []
   },
@@ -4915,14 +5001,15 @@
    },
    "gym": null,
    "nutrition": {
-    "energy": "maintenance",
-    "label": "Dzień treningowy: bilans zerowy",
+    "energy": "deficit_300",
+    "label": "Dzień treningowy: deficyt dobrany do masy",
     "protein_g_per_kg": 1.8,
     "on_bike_carbs_g_per_h": [
      30,
      40
     ],
-    "post_workout": "30–40 g białka + węglowodany w ciągu 1–2 h"
+    "post_workout": "30–40 g białka + węglowodany w ciągu 1–2 h",
+    "deficit_share": 0.5
    },
    "flags": []
   },
@@ -5062,14 +5149,15 @@
     ]
    },
    "nutrition": {
-    "energy": "maintenance",
-    "label": "Dzień treningowy: bilans zerowy",
+    "energy": "deficit_300",
+    "label": "Dzień treningowy: deficyt dobrany do masy",
     "protein_g_per_kg": 1.8,
     "on_bike_carbs_g_per_h": [
      30,
      40
     ],
-    "post_workout": "30–40 g białka + węglowodany w ciągu 1–2 h"
+    "post_workout": "30–40 g białka + węglowodany w ciągu 1–2 h",
+    "deficit_share": 0.5
    },
    "flags": []
   },
@@ -5090,7 +5178,8 @@
      0,
      0
     ],
-    "post_workout": null
+    "post_workout": null,
+    "deficit_share": 1
    },
    "flags": []
   },
@@ -5140,7 +5229,8 @@
      0,
      0
     ],
-    "post_workout": null
+    "post_workout": null,
+    "deficit_share": 1
    },
    "flags": [
     "deload"
@@ -5162,14 +5252,15 @@
    },
    "gym": null,
    "nutrition": {
-    "energy": "maintenance",
-    "label": "Dzień treningowy: bilans zerowy",
+    "energy": "deficit_300",
+    "label": "Dzień treningowy: deficyt dobrany do masy",
     "protein_g_per_kg": 1.8,
     "on_bike_carbs_g_per_h": [
      30,
      40
     ],
-    "post_workout": "30–40 g białka + węglowodany w ciągu 1–2 h"
+    "post_workout": "30–40 g białka + węglowodany w ciągu 1–2 h",
+    "deficit_share": 0.5
    },
    "flags": [
     "deload"
@@ -5198,7 +5289,8 @@
      0,
      0
     ],
-    "post_workout": null
+    "post_workout": null,
+    "deficit_share": 1
    },
    "flags": [
     "deload"
@@ -5221,7 +5313,8 @@
      0,
      0
     ],
-    "post_workout": null
+    "post_workout": null,
+    "deficit_share": 1
    },
    "flags": [
     "deload"
@@ -5341,14 +5434,15 @@
     ]
    },
    "nutrition": {
-    "energy": "maintenance",
-    "label": "Dzień treningowy: bilans zerowy",
+    "energy": "deficit_300",
+    "label": "Dzień treningowy: deficyt dobrany do masy",
     "protein_g_per_kg": 1.8,
     "on_bike_carbs_g_per_h": [
      30,
      40
     ],
-    "post_workout": "30–40 g białka + węglowodany w ciągu 1–2 h"
+    "post_workout": "30–40 g białka + węglowodany w ciągu 1–2 h",
+    "deficit_share": 0.5
    },
    "flags": [
     "deload"
@@ -5371,7 +5465,8 @@
      0,
      0
     ],
-    "post_workout": null
+    "post_workout": null,
+    "deficit_share": 1
    },
    "flags": [
     "deload"
@@ -5422,7 +5517,8 @@
      0,
      0
     ],
-    "post_workout": null
+    "post_workout": null,
+    "deficit_share": 1
    },
    "flags": []
   },
@@ -5469,14 +5565,15 @@
    },
    "gym": null,
    "nutrition": {
-    "energy": "maintenance",
-    "label": "Dzień treningowy: bilans zerowy",
+    "energy": "deficit_300",
+    "label": "Dzień treningowy: deficyt dobrany do masy",
     "protein_g_per_kg": 1.8,
     "on_bike_carbs_g_per_h": [
      30,
      40
     ],
-    "post_workout": "30–40 g białka + węglowodany w ciągu 1–2 h"
+    "post_workout": "30–40 g białka + węglowodany w ciągu 1–2 h",
+    "deficit_share": 0.5
    },
    "flags": []
   },
@@ -5616,14 +5713,15 @@
     ]
    },
    "nutrition": {
-    "energy": "maintenance",
-    "label": "Dzień treningowy: bilans zerowy",
+    "energy": "deficit_300",
+    "label": "Dzień treningowy: deficyt dobrany do masy",
     "protein_g_per_kg": 1.8,
     "on_bike_carbs_g_per_h": [
      60,
      80
     ],
-    "post_workout": "30–40 g białka + węglowodany w ciągu 1–2 h"
+    "post_workout": "30–40 g białka + węglowodany w ciągu 1–2 h",
+    "deficit_share": 0.5
    },
    "flags": []
   },
@@ -5644,7 +5742,8 @@
      0,
      0
     ],
-    "post_workout": null
+    "post_workout": null,
+    "deficit_share": 1
    },
    "flags": []
   },
@@ -5693,7 +5792,8 @@
      0,
      0
     ],
-    "post_workout": null
+    "post_workout": null,
+    "deficit_share": 1
    },
    "flags": []
   },
@@ -5749,7 +5849,8 @@
      0,
      0
     ],
-    "post_workout": null
+    "post_workout": null,
+    "deficit_share": 1
    },
    "flags": []
   },
@@ -5769,14 +5870,15 @@
    },
    "gym": null,
    "nutrition": {
-    "energy": "maintenance",
-    "label": "Dzień treningowy: bilans zerowy",
+    "energy": "deficit_300",
+    "label": "Dzień treningowy: deficyt dobrany do masy",
     "protein_g_per_kg": 1.8,
     "on_bike_carbs_g_per_h": [
      30,
      40
     ],
-    "post_workout": "30–40 g białka + węglowodany w ciągu 1–2 h"
+    "post_workout": "30–40 g białka + węglowodany w ciągu 1–2 h",
+    "deficit_share": 0.5
    },
    "flags": []
   },
@@ -5889,14 +5991,15 @@
     ]
    },
    "nutrition": {
-    "energy": "maintenance",
-    "label": "Dzień treningowy: bilans zerowy",
+    "energy": "deficit_300",
+    "label": "Dzień treningowy: deficyt dobrany do masy",
     "protein_g_per_kg": 1.8,
     "on_bike_carbs_g_per_h": [
      30,
      40
     ],
-    "post_workout": "30–40 g białka + węglowodany w ciągu 1–2 h"
+    "post_workout": "30–40 g białka + węglowodany w ciągu 1–2 h",
+    "deficit_share": 0.5
    },
    "flags": []
   },
@@ -5917,7 +6020,8 @@
      0,
      0
     ],
-    "post_workout": null
+    "post_workout": null,
+    "deficit_share": 1
    },
    "flags": []
   },
@@ -7646,7 +7750,8 @@
      0,
      0
     ],
-    "post_workout": null
+    "post_workout": null,
+    "deficit_share": 1
    },
    "flags": []
   },
@@ -7693,14 +7798,15 @@
    },
    "gym": null,
    "nutrition": {
-    "energy": "maintenance",
-    "label": "Dzień treningowy: bilans zerowy",
+    "energy": "deficit_300",
+    "label": "Dzień treningowy: deficyt dobrany do masy",
     "protein_g_per_kg": 1.8,
     "on_bike_carbs_g_per_h": [
      30,
      40
     ],
-    "post_workout": "30–40 g białka + węglowodany w ciągu 1–2 h"
+    "post_workout": "30–40 g białka + węglowodany w ciągu 1–2 h",
+    "deficit_share": 0.5
    },
    "flags": []
   },
@@ -7860,14 +7966,15 @@
     ]
    },
    "nutrition": {
-    "energy": "maintenance",
-    "label": "Dzień treningowy: bilans zerowy",
+    "energy": "deficit_300",
+    "label": "Dzień treningowy: deficyt dobrany do masy",
     "protein_g_per_kg": 1.8,
     "on_bike_carbs_g_per_h": [
      30,
      40
     ],
-    "post_workout": "30–40 g białka + węglowodany w ciągu 1–2 h"
+    "post_workout": "30–40 g białka + węglowodany w ciągu 1–2 h",
+    "deficit_share": 0.5
    },
    "flags": []
   },
@@ -7888,7 +7995,8 @@
      0,
      0
     ],
-    "post_workout": null
+    "post_workout": null,
+    "deficit_share": 1
    },
    "flags": []
   },
@@ -7936,7 +8044,8 @@
      0,
      0
     ],
-    "post_workout": null
+    "post_workout": null,
+    "deficit_share": 1
    },
    "flags": []
   },
@@ -7983,14 +8092,15 @@
    },
    "gym": null,
    "nutrition": {
-    "energy": "maintenance",
-    "label": "Dzień treningowy: bilans zerowy",
+    "energy": "deficit_300",
+    "label": "Dzień treningowy: deficyt dobrany do masy",
     "protein_g_per_kg": 1.8,
     "on_bike_carbs_g_per_h": [
      30,
      40
     ],
-    "post_workout": "30–40 g białka + węglowodany w ciągu 1–2 h"
+    "post_workout": "30–40 g białka + węglowodany w ciągu 1–2 h",
+    "deficit_share": 0.5
    },
    "flags": []
   },
@@ -8150,14 +8260,15 @@
     ]
    },
    "nutrition": {
-    "energy": "maintenance",
-    "label": "Dzień treningowy: bilans zerowy",
+    "energy": "deficit_300",
+    "label": "Dzień treningowy: deficyt dobrany do masy",
     "protein_g_per_kg": 1.8,
     "on_bike_carbs_g_per_h": [
      30,
      40
     ],
-    "post_workout": "30–40 g białka + węglowodany w ciągu 1–2 h"
+    "post_workout": "30–40 g białka + węglowodany w ciągu 1–2 h",
+    "deficit_share": 0.5
    },
    "flags": []
   },
@@ -8178,7 +8289,8 @@
      0,
      0
     ],
-    "post_workout": null
+    "post_workout": null,
+    "deficit_share": 1
    },
    "flags": []
   },
@@ -8226,7 +8338,8 @@
      0,
      0
     ],
-    "post_workout": null
+    "post_workout": null,
+    "deficit_share": 1
    },
    "flags": []
   },
@@ -8273,14 +8386,15 @@
    },
    "gym": null,
    "nutrition": {
-    "energy": "maintenance",
-    "label": "Dzień treningowy: bilans zerowy",
+    "energy": "deficit_300",
+    "label": "Dzień treningowy: deficyt dobrany do masy",
     "protein_g_per_kg": 1.8,
     "on_bike_carbs_g_per_h": [
      30,
      40
     ],
-    "post_workout": "30–40 g białka + węglowodany w ciągu 1–2 h"
+    "post_workout": "30–40 g białka + węglowodany w ciągu 1–2 h",
+    "deficit_share": 0.5
    },
    "flags": []
   },
@@ -8440,14 +8554,15 @@
     ]
    },
    "nutrition": {
-    "energy": "maintenance",
-    "label": "Dzień treningowy: bilans zerowy",
+    "energy": "deficit_300",
+    "label": "Dzień treningowy: deficyt dobrany do masy",
     "protein_g_per_kg": 1.8,
     "on_bike_carbs_g_per_h": [
      60,
      80
     ],
-    "post_workout": "30–40 g białka + węglowodany w ciągu 1–2 h"
+    "post_workout": "30–40 g białka + węglowodany w ciągu 1–2 h",
+    "deficit_share": 0.5
    },
    "flags": []
   },
@@ -8468,7 +8583,8 @@
      0,
      0
     ],
-    "post_workout": null
+    "post_workout": null,
+    "deficit_share": 1
    },
    "flags": []
   },
@@ -8518,7 +8634,8 @@
      0,
      0
     ],
-    "post_workout": null
+    "post_workout": null,
+    "deficit_share": 1
    },
    "flags": [
     "deload"
@@ -8540,14 +8657,15 @@
    },
    "gym": null,
    "nutrition": {
-    "energy": "maintenance",
-    "label": "Dzień treningowy: bilans zerowy",
+    "energy": "deficit_300",
+    "label": "Dzień treningowy: deficyt dobrany do masy",
     "protein_g_per_kg": 1.8,
     "on_bike_carbs_g_per_h": [
      30,
      40
     ],
-    "post_workout": "30–40 g białka + węglowodany w ciągu 1–2 h"
+    "post_workout": "30–40 g białka + węglowodany w ciągu 1–2 h",
+    "deficit_share": 0.5
    },
    "flags": [
     "deload"
@@ -8576,7 +8694,8 @@
      0,
      0
     ],
-    "post_workout": null
+    "post_workout": null,
+    "deficit_share": 1
    },
    "flags": [
     "deload"
@@ -8599,7 +8718,8 @@
      0,
      0
     ],
-    "post_workout": null
+    "post_workout": null,
+    "deficit_share": 1
    },
    "flags": [
     "deload"
@@ -8741,14 +8861,15 @@
     ]
    },
    "nutrition": {
-    "energy": "maintenance",
-    "label": "Dzień treningowy: bilans zerowy",
+    "energy": "deficit_300",
+    "label": "Dzień treningowy: deficyt dobrany do masy",
     "protein_g_per_kg": 1.8,
     "on_bike_carbs_g_per_h": [
      30,
      40
     ],
-    "post_workout": "30–40 g białka + węglowodany w ciągu 1–2 h"
+    "post_workout": "30–40 g białka + węglowodany w ciągu 1–2 h",
+    "deficit_share": 0.5
    },
    "flags": [
     "deload"
@@ -8771,7 +8892,8 @@
      0,
      0
     ],
-    "post_workout": null
+    "post_workout": null,
+    "deficit_share": 1
    },
    "flags": [
     "deload"
@@ -8821,7 +8943,8 @@
      0,
      0
     ],
-    "post_workout": null
+    "post_workout": null,
+    "deficit_share": 1
    },
    "flags": []
   },
@@ -8868,14 +8991,15 @@
    },
    "gym": null,
    "nutrition": {
-    "energy": "maintenance",
-    "label": "Dzień treningowy: bilans zerowy",
+    "energy": "deficit_300",
+    "label": "Dzień treningowy: deficyt dobrany do masy",
     "protein_g_per_kg": 1.8,
     "on_bike_carbs_g_per_h": [
      30,
      40
     ],
-    "post_workout": "30–40 g białka + węglowodany w ciągu 1–2 h"
+    "post_workout": "30–40 g białka + węglowodany w ciągu 1–2 h",
+    "deficit_share": 0.5
    },
    "flags": []
   },
@@ -9035,14 +9159,15 @@
     ]
    },
    "nutrition": {
-    "energy": "maintenance",
-    "label": "Dzień treningowy: bilans zerowy",
+    "energy": "deficit_300",
+    "label": "Dzień treningowy: deficyt dobrany do masy",
     "protein_g_per_kg": 1.8,
     "on_bike_carbs_g_per_h": [
      60,
      80
     ],
-    "post_workout": "30–40 g białka + węglowodany w ciągu 1–2 h"
+    "post_workout": "30–40 g białka + węglowodany w ciągu 1–2 h",
+    "deficit_share": 0.5
    },
    "flags": []
   },
@@ -9063,7 +9188,8 @@
      0,
      0
     ],
-    "post_workout": null
+    "post_workout": null,
+    "deficit_share": 1
    },
    "flags": []
   },
@@ -9111,7 +9237,8 @@
      0,
      0
     ],
-    "post_workout": null
+    "post_workout": null,
+    "deficit_share": 1
    },
    "flags": []
   },
@@ -9158,14 +9285,15 @@
    },
    "gym": null,
    "nutrition": {
-    "energy": "maintenance",
-    "label": "Dzień treningowy: bilans zerowy",
+    "energy": "deficit_300",
+    "label": "Dzień treningowy: deficyt dobrany do masy",
     "protein_g_per_kg": 1.8,
     "on_bike_carbs_g_per_h": [
      30,
      40
     ],
-    "post_workout": "30–40 g białka + węglowodany w ciągu 1–2 h"
+    "post_workout": "30–40 g białka + węglowodany w ciągu 1–2 h",
+    "deficit_share": 0.5
    },
    "flags": []
   },
@@ -9325,14 +9453,15 @@
     ]
    },
    "nutrition": {
-    "energy": "maintenance",
-    "label": "Dzień treningowy: bilans zerowy",
+    "energy": "deficit_300",
+    "label": "Dzień treningowy: deficyt dobrany do masy",
     "protein_g_per_kg": 1.8,
     "on_bike_carbs_g_per_h": [
      60,
      80
     ],
-    "post_workout": "30–40 g białka + węglowodany w ciągu 1–2 h"
+    "post_workout": "30–40 g białka + węglowodany w ciągu 1–2 h",
+    "deficit_share": 0.5
    },
    "flags": []
   },
@@ -9353,7 +9482,8 @@
      0,
      0
     ],
-    "post_workout": null
+    "post_workout": null,
+    "deficit_share": 1
    },
    "flags": []
   },
@@ -9402,7 +9532,8 @@
      0,
      0
     ],
-    "post_workout": null
+    "post_workout": null,
+    "deficit_share": 1
    },
    "flags": []
   },
@@ -9449,14 +9580,15 @@
    },
    "gym": null,
    "nutrition": {
-    "energy": "maintenance",
-    "label": "Dzień treningowy: bilans zerowy",
+    "energy": "deficit_300",
+    "label": "Dzień treningowy: deficyt dobrany do masy",
     "protein_g_per_kg": 1.8,
     "on_bike_carbs_g_per_h": [
      30,
      40
     ],
-    "post_workout": "30–40 g białka + węglowodany w ciągu 1–2 h"
+    "post_workout": "30–40 g białka + węglowodany w ciągu 1–2 h",
+    "deficit_share": 0.5
    },
    "flags": []
   },
@@ -9616,14 +9748,15 @@
     ]
    },
    "nutrition": {
-    "energy": "maintenance",
-    "label": "Dzień treningowy: bilans zerowy",
+    "energy": "deficit_300",
+    "label": "Dzień treningowy: deficyt dobrany do masy",
     "protein_g_per_kg": 1.8,
     "on_bike_carbs_g_per_h": [
      60,
      80
     ],
-    "post_workout": "30–40 g białka + węglowodany w ciągu 1–2 h"
+    "post_workout": "30–40 g białka + węglowodany w ciągu 1–2 h",
+    "deficit_share": 0.5
    },
    "flags": []
   },
@@ -9644,7 +9777,8 @@
      0,
      0
     ],
-    "post_workout": null
+    "post_workout": null,
+    "deficit_share": 1
    },
    "flags": []
   },
@@ -9694,7 +9828,8 @@
      0,
      0
     ],
-    "post_workout": null
+    "post_workout": null,
+    "deficit_share": 1
    },
    "flags": [
     "deload"
@@ -9716,14 +9851,15 @@
    },
    "gym": null,
    "nutrition": {
-    "energy": "maintenance",
-    "label": "Dzień treningowy: bilans zerowy",
+    "energy": "deficit_300",
+    "label": "Dzień treningowy: deficyt dobrany do masy",
     "protein_g_per_kg": 1.8,
     "on_bike_carbs_g_per_h": [
      30,
      40
     ],
-    "post_workout": "30–40 g białka + węglowodany w ciągu 1–2 h"
+    "post_workout": "30–40 g białka + węglowodany w ciągu 1–2 h",
+    "deficit_share": 0.5
    },
    "flags": [
     "deload"
@@ -9752,7 +9888,8 @@
      0,
      0
     ],
-    "post_workout": null
+    "post_workout": null,
+    "deficit_share": 1
    },
    "flags": [
     "deload"
@@ -9775,7 +9912,8 @@
      0,
      0
     ],
-    "post_workout": null
+    "post_workout": null,
+    "deficit_share": 1
    },
    "flags": [
     "deload"
@@ -9917,14 +10055,15 @@
     ]
    },
    "nutrition": {
-    "energy": "maintenance",
-    "label": "Dzień treningowy: bilans zerowy",
+    "energy": "deficit_300",
+    "label": "Dzień treningowy: deficyt dobrany do masy",
     "protein_g_per_kg": 1.8,
     "on_bike_carbs_g_per_h": [
      30,
      40
     ],
-    "post_workout": "30–40 g białka + węglowodany w ciągu 1–2 h"
+    "post_workout": "30–40 g białka + węglowodany w ciągu 1–2 h",
+    "deficit_share": 0.5
    },
    "flags": [
     "deload"
@@ -9947,7 +10086,8 @@
      0,
      0
     ],
-    "post_workout": null
+    "post_workout": null,
+    "deficit_share": 1
    },
    "flags": [
     "deload"

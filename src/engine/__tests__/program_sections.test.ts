@@ -36,7 +36,8 @@ describe('sekcje osobiste programu', () => {
     expect(ftp.cadence.goal_rpm).toBeGreaterThanOrEqual(85)
     // blok VO2max bez deficytu, dzień treningowy na bilansie zerowym
     expect(nutritionFor(ftp.nutrition, 'III', 'easy', 45, false).energy).toBe('maintenance')
-    expect(nutritionFor(ftp.nutrition, 'I', 'easy', 75, false).energy).toBe('maintenance')
+    expect(nutritionFor(ftp.nutrition, 'I', 'easy', 75, false)).toMatchObject({ energy: 'deficit_300', deficit_share: 0.5 }) // spokojna jazda: pół udziału
+    expect(nutritionFor(ftp.nutrition, 'I', 'key', 75, true).energy).toBe('maintenance') // akcent bez deficytu
   })
 
   it('kalendarz FTP 300 nie zawiera żywienia ani rowerów z programu alpejskiego', () => {

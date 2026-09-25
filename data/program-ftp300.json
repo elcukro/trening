@@ -1,5 +1,5 @@
 {
- "version": "2026.09.25-4",
+ "version": "2026.09.25-5",
  "meta": {
   "name": "FTP 300 – próg i VO2max",
   "short": "FTP 300",
@@ -34,12 +34,14 @@
     "label": "Dzień ciężki: bez deficytu, paliwo na trening"
    },
    "medium": {
-    "energy": "maintenance",
-    "label": "Dzień treningowy: bilans zerowy"
+    "energy": "deficit_300",
+    "label": "Dzień treningowy: deficyt dobrany do masy",
+    "deficit_share": 0.5
    },
    "light": {
     "energy": "deficit_300",
-    "label": "Dzień lekki: deficyt dobrany do masy"
+    "label": "Dzień lekki: deficyt dobrany do masy",
+    "deficit_share": 1
    }
   },
   "if_above_target_suffix": " (tylko jeśli waga > celu)",
@@ -66,7 +68,7 @@
   "weight_based": {
    "max_kcal_per_day": 500,
    "max_loss_pct_per_week": 0.7,
-   "deficit_days_per_week": 2.0
+   "deficit_shares_per_week": 3.63
   }
  },
  "bikes": {

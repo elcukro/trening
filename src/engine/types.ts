@@ -19,6 +19,8 @@ export interface Nutrition {
   protein_g_per_kg: number
   on_bike_carbs_g_per_h: [number, number]
   post_workout?: string | null
+  /** udział w tygodniowym deficycie (tylko programy z `weight_based`) */
+  deficit_share?: number
 }
 
 export interface BikeDay {

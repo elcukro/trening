@@ -696,7 +696,8 @@ def nutrition_for(policy, phase, day_type, bike_min, key):
     carbs = next((list(c) for m, c in policy["carbs_g_per_h"] if bike_min >= m), [0, 0])
     return {"energy": energy, "label": label, "protein_g_per_kg": policy["protein_g_per_kg"],
             "on_bike_carbs_g_per_h": carbs,
-            "post_workout": policy["post_workout"]["text"] if (bike_min >= policy["post_workout"]["min_ride_min"] or key) else None}
+            "post_workout": policy["post_workout"]["text"] if (bike_min >= policy["post_workout"]["min_ride_min"] or key) else None,
+            **({"deficit_share": bucket["deficit_share"]} if "deficit_share" in bucket else {})}
 
 
 def bike_suggestion(bikes, phase, wid):

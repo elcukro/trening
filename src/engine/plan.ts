@@ -5,7 +5,7 @@ import { addDays, diffDays, mondayOf, type ISODate } from './dates'
 import { buildCalendar, getCalendarDay, getCalendarWeek } from './calendar'
 import { layoutWeeks } from './layout'
 import { computeZones, resolveWorkout } from './zones'
-import { personalizeNutrition, proteinGrams } from './nutrition'
+import { deficitWeeksLeft, personalizeNutrition, proteinGrams } from './nutrition'
 import { effectiveFtp, effectiveLthr } from './progress'
 
 export interface DayPlan extends CalendarDay {
@@ -40,6 +40,17 @@ export function getDayPlan(date: ISODate, ctx: EngineContext, weeks?: LayoutWeek
   return enrichDay(day, ctx)
 }
 
+/** Układ tygodni na potrzeby deficytu – liczony raz na kontekst silnika, nie dla każdego dnia. */
+const weeksCache = new WeakMap<EngineContext, LayoutWeek[]>()
+function weeksFor(ctx: EngineContext): LayoutWeek[] {
+  let w = weeksCache.get(ctx)
+  if (!w) {
+    w = layoutWeeks(ctx.program, ctx.settings)
+    weeksCache.set(ctx, w)
+  }
+  return w
+}
+
 export function enrichDay(day: CalendarDay, ctx: EngineContext): DayPlan {
   const { program, settings } = ctx
   const eff = effectiveLthr(day.date, settings.lthr_bpm, (ctx.tests ?? []).filter((t): t is { date: string; lthr_bpm: number } => !!t.lthr_bpm))
@@ -63,12 +74,13 @@ export function enrichDay(day: CalendarDay, ctx: EngineContext): DayPlan {
     lthr,
     lthr_source: eff.source,
     ftp,
-    nutrition: personalizeNutrition(day.nutrition, program.nutrition, {
-      currentKg: ctx.current_weight_kg ?? settings.body_weight_start_kg,
-      targetKg: settings.body_weight_target_kg,
-      date: day.date,
-      goalDate: settings.trip_start,
-    }),
+    nutrition: program.nutrition.weight_based
+      ? personalizeNutrition(day.nutrition, program.nutrition, {
+          currentKg: ctx.current_weight_kg ?? settings.body_weight_start_kg,
+          targetKg: settings.body_weight_target_kg,
+          deficitWeeksLeft: deficitWeeksLeft(weeksFor(ctx), program.nutrition, day.date, settings.trip_start),
+        })
+      : day.nutrition,
     protein_g: proteinGrams(day.nutrition, settings.body_weight_target_kg),
     warnings,
   }

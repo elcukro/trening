@@ -153,7 +153,12 @@ export const WeekSummarySchema = z.object({
  * siedzi tutaj – silnik nie ma własnych wartości domyślnych, które byłyby czyimiś założeniami.
  */
 const EnergyBaseSchema = z.enum(['maintenance', 'maintenance_plus', 'deficit_300', 'deficit_500'])
-const NutritionBucketSchema = z.object({ energy: EnergyBaseSchema, label: z.string() })
+const NutritionBucketSchema = z.object({
+  energy: EnergyBaseSchema,
+  label: z.string(),
+  /** udział dnia w tygodniowym deficycie przy `weight_based` (1 = pełny, 0,5 = połowa); brak = stała etykieta */
+  deficit_share: z.number().min(0).max(1).optional(),
+})
 const CarbsRangeSchema = z.tuple([z.number(), z.number()])
 
 export const NutritionPolicySchema = z.object({
@@ -171,10 +176,16 @@ export const NutritionPolicySchema = z.object({
   post_workout: z.object({ min_ride_min: z.number(), text: z.string() }),
   /**
    * Deficyt dobierany z danych zawodnika zamiast stałej etykiety: (masa obecna − docelowa) rozłożona
-   * na tygodnie do daty celu i na dni z deficytem, z limitem dziennym i limitem tempa chudnięcia.
+   * proporcjonalnie na pozostałe tygodnie faz z deficytem, a w tygodniu – na dni wg `deficit_share` kubełka.
+   * Limit dzienny i limit tempa chudnięcia; na masie docelowej (ostatni check-in) deficyt znika.
    */
   weight_based: z
-    .object({ max_kcal_per_day: z.number(), max_loss_pct_per_week: z.number(), deficit_days_per_week: z.number() })
+    .object({
+      max_kcal_per_day: z.number(),
+      max_loss_pct_per_week: z.number(),
+      /** suma udziałów dni w typowym tygodniu z deficytem – mianownik podziału (liczy generator) */
+      deficit_shares_per_week: z.number(),
+    })
     .optional(),
   /** dni wyjazdu (tylko programy z wyjazdem) */
   trip: z.object({ energy: EnergyBaseSchema, label: z.string(), protein_g_per_kg: z.number(), carbs_g_per_h: CarbsRangeSchema }).optional(),

@@ -28,7 +28,7 @@ _spec.loader.exec_module(gen)
 sys.stdout = _stdout
 
 PROGRAM_ID = "ftp300"
-PROGRAM_VERSION = "2026.09.25-4"
+PROGRAM_VERSION = "2026.09.25-5"
 
 # dłuższy blok VO2max niż w programie alpejskim (6 powtórzeń) – przy trenażerze ERG da się utrzymać moc
 gen.add(gen.interval_workout("VO2_6x3", "VO2max 6×3 min", "vo2max", 6, 3, 3, "Z5b", [85, 95], gen.VO2_DESC, wu=20))
@@ -166,15 +166,17 @@ NUTRITION = {
     "buckets": {
         "no_deficit": {"energy": "maintenance", "label": "Bilans zerowy – jedz na pełną wydajność"},
         "heavy": {"energy": "maintenance", "label": "Dzień ciężki: bez deficytu, paliwo na trening"},
-        "medium": {"energy": "maintenance", "label": "Dzień treningowy: bilans zerowy"},
-        "light": {"energy": "deficit_300", "label": "Dzień lekki: deficyt dobrany do masy"},
+        # deficyt rozłożony proporcjonalnie (decyzja 25.09.2026): dzień lekki pełny udział, spokojna jazda Z2 pół,
+        # akcenty i długie jazdy zero; na masie docelowej z check-inu deficyt znika
+        "medium": {"energy": "deficit_300", "label": "Dzień treningowy: deficyt dobrany do masy", "deficit_share": 0.5},
+        "light": {"energy": "deficit_300", "label": "Dzień lekki: deficyt dobrany do masy", "deficit_share": 1},
     },
     "if_above_target_suffix": " (tylko jeśli waga > celu)",
     "carbs_g_per_h": [[90, [60, 80]], [60, [30, 40]]],
     "post_workout": {"min_ride_min": 60, "text": "30–40 g białka + węglowodany w ciągu 1–2 h"},
     # limit 500 kcal na dzień i 0,7 % masy na tydzień – przy tej sylwetce szybciej znaczy kosztem watów;
-    # `deficit_days_per_week` uzupełnia main() średnią z tygodni budujących
-    "weight_based": {"max_kcal_per_day": 500, "max_loss_pct_per_week": 0.7, "deficit_days_per_week": 0},
+    # `deficit_shares_per_week` uzupełnia main() średnią ze wszystkich tygodni faz z deficytem
+    "weight_based": {"max_kcal_per_day": 500, "max_loss_pct_per_week": 0.7, "deficit_shares_per_week": 0},
 }
 BIKES = {"default": "Rower", "indoor": "Trenażer (ERG)"}
 GOAL = {"kind": "ftp", "label": "FTP 300 W i wyższe VO2max", "short": "FTP 300 W"}
@@ -286,10 +288,10 @@ def build_calendar(settings=DEFAULT_SETTINGS):
 
 def main():
     days = build_calendar()
-    # średnia liczba dni z deficytem w tygodniach budujących – mianownik doboru deficytu z masy
-    build = [w for w, t in WEEKS.items() if t["type"] == "build" and NUTRITION["deficit_by_phase"].get(t["phase"])]
-    per_week = [sum(1 for d in days if d["week"] == w and d["nutrition"]["energy"].startswith("deficit")) for w in build]
-    NUTRITION["weight_based"]["deficit_days_per_week"] = round(sum(per_week) / len(per_week), 1)
+    # średnia suma udziałów w tygodniach z deficytem (także rozładowania i testowe) – mianownik podziału puli tygodniowej
+    dw = [w for w, t in WEEKS.items() if NUTRITION["deficit_by_phase"].get(t["phase"])]
+    per_week = [sum(d["nutrition"].get("deficit_share", 0) for d in days if d["week"] == w) for w in dw]
+    NUTRITION["weight_based"]["deficit_shares_per_week"] = round(sum(per_week) / len(per_week), 2)
     weeks_out = {}
     for k, v in WEEKS.items():
         t = {kk: vv for kk, vv in v.items() if kk != "gym_week"}

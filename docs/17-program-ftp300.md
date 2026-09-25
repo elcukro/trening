@@ -84,9 +84,13 @@ a zmiana w SQL Editorze dostaje znacznik z triggera – wystarczy `update public
 ## Znane ograniczenia
 
 - ~~Żywienie wspólne z programem alpejskim~~ – rozwiązane 25.09.2026 (docs/18, krok 1): własna polityka
-  żywienia i deficyt dobierany z masy obecnej i docelowej. Przy 73 → 67 kg, deficycie tylko w dni wolne
-  (2 w tygodniu) i limicie 500 kcal wychodzi ok. 0,13 kg/tydz. – czyli ok. 68–69 kg w lipcu, nie 67.
-  Świadomy wybór: jakość interwałów przed tempem chudnięcia. Etykieta dnia mówi to wprost.
+  żywienia i deficyt dobierany z masy obecnej i docelowej.
+- **Deficyt rozłożony proporcjonalnie (decyzja 25.09.2026):** brakujące kilogramy dzielone na pozostałe tygodnie
+  faz z deficytem (I, II, IV – bez VO2max, szczytu i tapera), a pula tygodnia na dni wg `deficit_share`:
+  dzień lekki 1, spokojna jazda Z2 (60–119 min) 0,5, akcenty i długa 0. Przy 72,1 kg (check-in 25.09):
+  ok. 350 kcal w dni wolne i 200 kcal w dni Z2, ≈ 0,18 kg/tydz. – 67 kg w terminie. Masa z każdego check-inu
+  przelicza deficyt na bieżąco; na 67 kg i poniżej deficyt znika („bilans zerowy – masa docelowa osiągnięta”).
+  Limit 500 kcal/dzień i 0,7 % masy/tydz. zostaje jako bezpiecznik.
 - ~~Sprzęt i wyjazd globalne~~ – rozwiązane w docs/18 (krok 3: Wyjazd tylko w programie alpejskim;
   krok 4: rowery i serwis per konto).
 - ~~Karta „Punkt wyjścia” wokół celu prędkościowego~~ – rozwiązane w docs/18, krok 1 (`program.goal`).

@@ -1,5 +1,5 @@
 import type { NutritionPolicy } from './schema'
-import { diffDays, type ISODate } from './dates'
+import { mondayOf, type ISODate } from './dates'
 import type { Nutrition, PhaseId, DayType } from './types'
 
 /**
@@ -33,6 +33,7 @@ export function nutritionFor(policy: NutritionPolicy, phase: PhaseId, dayType: D
     protein_g_per_kg: policy.protein_g_per_kg,
     on_bike_carbs_g_per_h: carbs ? [...carbs[1]] : [0, 0],
     post_workout: bikeMin >= policy.post_workout.min_ride_min || key ? policy.post_workout.text : null,
+    ...(bucket.deficit_share !== undefined ? { deficit_share: bucket.deficit_share } : {}),
   }
 }
 
@@ -45,7 +46,7 @@ export function proteinGrams(nutrition: Nutrition, targetWeightKg: number): numb
 export const KCAL_PER_KG = 7700
 
 export interface WeightDeficit {
-  /** dzienny deficyt w dni z deficytem, zaokrąglony do 50 kcal (0 = bilans zerowy) */
+  /** deficyt tego dnia, zaokrąglony do 50 kcal (0 = bilans zerowy) */
   kcal: number
   /** tempo chudnięcia, które z tego wynika */
   kg_per_week: number
@@ -54,45 +55,55 @@ export interface WeightDeficit {
 }
 
 /**
- * Deficyt z danych zawodnika: brakujące kilogramy rozłożone na tygodnie do daty celu i na dni z deficytem.
- * Dwa bezpieczniki: limit kcal na dzień i limit tempa (% masy na tydzień). Przy masie ≤ docelowej – zero.
+ * Deficyt z danych zawodnika, rozłożony proporcjonalnie: brakujące kilogramy dzielimy na pozostałe tygodnie
+ * faz z deficytem, a tygodniową pulę na dni wg udziału (`share`: dzień lekki 1, treningowy 0,5, akcent 0).
+ * Bezpieczniki: limit kcal na dzień i limit tempa (% masy na tydzień). Przy masie ≤ docelowej – zero.
  */
 export function weightBasedDeficit(inp: {
   currentKg: number
   targetKg: number
-  date: ISODate
-  goalDate: ISODate
+  /** ile tygodni z deficytem zostało do daty celu (łącznie z bieżącym) */
+  deficitWeeksLeft: number
   maxKcalPerDay: number
   maxLossPctPerWeek: number
-  deficitDaysPerWeek: number
+  sharesPerWeek: number
+  /** udział tego dnia */
+  share: number
 }): WeightDeficit {
   const gap = inp.currentKg - inp.targetKg
-  if (gap <= 0 || inp.deficitDaysPerWeek <= 0) return { kcal: 0, kg_per_week: 0, capped: false }
-  const weeksLeft = Math.max(1, diffDays(inp.goalDate, inp.date) / 7)
-  const needKgPerWeek = gap / weeksLeft
+  if (gap <= 0 || inp.sharesPerWeek <= 0 || inp.share <= 0) return { kcal: 0, kg_per_week: 0, capped: false }
+  const needKgPerWeek = gap / Math.max(1, inp.deficitWeeksLeft)
   const maxKgPerWeek = (inp.currentKg * inp.maxLossPctPerWeek) / 100
   const kgPerWeek = Math.min(needKgPerWeek, maxKgPerWeek)
-  const rawKcal = (kgPerWeek * KCAL_PER_KG) / inp.deficitDaysPerWeek
-  const kcal = Math.round(Math.min(rawKcal, inp.maxKcalPerDay) / 50) * 50
-  const effectiveKgPerWeek = (kcal * inp.deficitDaysPerWeek) / KCAL_PER_KG
-  return { kcal, kg_per_week: Math.round(effectiveKgPerWeek * 100) / 100, capped: kcal < Math.round(((needKgPerWeek * KCAL_PER_KG) / inp.deficitDaysPerWeek) / 50) * 50 }
+  const perShare = (kgPerWeek * KCAL_PER_KG) / inp.sharesPerWeek
+  const kcal = Math.round(Math.min(perShare * inp.share, inp.maxKcalPerDay) / 50) * 50
+  // tempo przy limicie dziennym liczone ostrożnie: jakby każdy udział był obcięty tak jak dzień pełny
+  const effKgPerWeek = (Math.min(perShare, inp.maxKcalPerDay) * inp.sharesPerWeek) / KCAL_PER_KG
+  return { kcal, kg_per_week: Math.round(effKgPerWeek * 100) / 100, capped: needKgPerWeek > maxKgPerWeek || perShare > inp.maxKcalPerDay }
 }
 
 /**
  * Zamienia stałą etykietę dnia z deficytem na deficyt policzony z masy zawodnika (gdy program ma `weight_based`).
  * Dni bez deficytu i programy bez tej polityki zostają bez zmian.
  */
-export function personalizeNutrition(n: Nutrition, policy: NutritionPolicy, inp: { currentKg: number; targetKg: number; date: ISODate; goalDate: ISODate }): Nutrition {
+export function personalizeNutrition(n: Nutrition, policy: NutritionPolicy, inp: { currentKg: number; targetKg: number; deficitWeeksLeft: number }): Nutrition {
   const wb = policy.weight_based
   if (!wb || !n.energy.startsWith('deficit')) return n
-  const d = weightBasedDeficit({ ...inp, maxKcalPerDay: wb.max_kcal_per_day, maxLossPctPerWeek: wb.max_loss_pct_per_week, deficitDaysPerWeek: wb.deficit_days_per_week })
-  if (d.kcal < 100) return { ...n, energy: 'maintenance', label: 'Bilans zerowy – masa docelowa osiągnięta albo blisko' }
+  const d = weightBasedDeficit({ ...inp, maxKcalPerDay: wb.max_kcal_per_day, maxLossPctPerWeek: wb.max_loss_pct_per_week, sharesPerWeek: wb.deficit_shares_per_week, share: n.deficit_share ?? 1 })
+  const kind = n.label.split(':')[0] ?? 'Dzień'
+  if (d.kcal < 100) return { ...n, energy: 'maintenance', label: inp.currentKg <= inp.targetKg ? `${kind}: bilans zerowy – masa docelowa osiągnięta` : `${kind}: bilans zerowy – do celu zostało niewiele` }
   const kg = d.kg_per_week.toLocaleString('pl-PL', { maximumFractionDigits: 2 })
   const target = inp.targetKg.toLocaleString('pl-PL', { maximumFractionDigits: 1 })
   return {
     ...n,
     energy: d.kcal >= 400 ? 'deficit_500' : 'deficit_300',
     // przy obciętym deficycie mówimy wprost, że cel w terminie wymagałby więcej – bez udawania, że się zdąży
-    label: `Dzień lekki: deficyt ok. ${d.kcal} kcal (≈ ${kg} kg/tydz. do ${target} kg${d.capped ? ', limit dzienny – cel później niż w terminie' : ''})`,
+    label: `${kind}: deficyt ok. ${d.kcal} kcal (≈ ${kg} kg/tydz. do ${target} kg${d.capped ? ', limit – cel później niż w terminie' : ''})`,
   }
+}
+
+/** Tygodnie z deficytem od tygodnia z `date` do daty celu – mianownik rozkładu brakujących kilogramów. */
+export function deficitWeeksLeft(weeks: { monday: ISODate; phase: PhaseId }[], policy: NutritionPolicy, date: ISODate, goalDate: ISODate): number {
+  const from = mondayOf(date)
+  return weeks.filter((w) => w.monday >= from && w.monday < goalDate && policy.deficit_by_phase[w.phase]).length
 }
