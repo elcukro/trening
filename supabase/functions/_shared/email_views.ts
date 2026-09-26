@@ -12,11 +12,38 @@ export interface ZoneBpmLite {
   high_bpm: number
 }
 
+/** Krok roboczy planu (interwał) z celem – do sprawdzenia wykonania w notatce po treningu. */
+export interface WorkStep {
+  name: string
+  zone: string
+  minutes: number
+  /** ile powtórzeń (1 = pojedynczy blok) */
+  reps: number
+  watts: [number, number] | null
+  bpm: [number, number] | null
+}
+
+/** Kontekst planu dla notatki AI (docs/20) – po co był ten trening i na jakim etapie programu. */
+export interface PlanContext {
+  workout_id: string
+  category: string
+  description: string
+  work: WorkStep[]
+  phase: string
+  phase_goal: string
+  week_type: string
+  flags: string[]
+  goal: string
+  coach_notes: string[]
+}
+
 /** Migawka dnia zapisywana przez aplikację w `email_days.payload`. */
 export interface DaySnapshot {
   date: string
   dateLabel: string
   planned: { name: string; minutes: number; day_type: string } | null
+  /** brak w migawkach sprzed 26.09.2026 */
+  context?: PlanContext | null
   ftp: number | null
   lthr: number | null
   zones: ZoneBpmLite[]
@@ -99,7 +126,7 @@ const dec = (x: number, d = 1) => x.toFixed(d).replace('.', ',')
 const if2 = (x: number) => x.toFixed(2).replace('.', ',')
 const hmLabel = (min: number) => `${Math.floor(min / 60)}:${String(Math.round(min % 60)).padStart(2, '0')} h`
 
-export function buildWorkoutView(ride: RideLite, snap: DaySnapshot | null, opts: { athlete: string; appUrl: string; weekDoneMin?: number | null; rideDateLabel: string }): WorkoutView {
+export function buildWorkoutView(ride: RideLite, snap: DaySnapshot | null, opts: { athlete: string; appUrl: string; weekDoneMin?: number | null; rideDateLabel: string; note?: string | null }): WorkoutView {
   const min = ride.moving_time_s / 60
   const zones = snap?.zones ?? []
   const load = rideLoadLite(ride, snap?.ftp ?? null, zones)
@@ -156,5 +183,5 @@ export function buildWorkoutView(ride: RideLite, snap: DaySnapshot | null, opts:
       ? { label: 'Ten tydzień', done: hmLabel(opts.weekDoneMin), planned: hmLabel(snap.week_planned_min), pct: (opts.weekDoneMin / snap.week_planned_min) * 100 }
       : null
 
-  return { athlete: opts.athlete, appUrl: `${opts.appUrl}/i/dzien/${ride.date}`, dateLabel: opts.rideDateLabel, name: ride.name, planned, verdict, stats, zones: shares, insights, week, next: snap?.next ?? null }
+  return { athlete: opts.athlete, appUrl: `${opts.appUrl}/i/dzien/${ride.date}`, dateLabel: opts.rideDateLabel, name: ride.name, planned, verdict, stats, zones: shares, insights, week, next: snap?.next ?? null, note: opts.note ?? null }
 }

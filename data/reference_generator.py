@@ -17,7 +17,7 @@ import json, datetime as dt, os, copy
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 D = dt.date
-PROGRAM_VERSION = "2026.09.26-1"
+PROGRAM_VERSION = "2026.09.26-3"
 
 DEFAULT_SETTINGS = {
     "program_start": "2026-09-14",          # poniedziałek tygodnia 1
@@ -538,6 +538,16 @@ META = {
     "target": {"label": "Data wyjazdu", "short": "wyjazd", "until": "do wyjazdu", "today": "Dzień wyjazdu!", "after": "Wyjazd trwa"},
 }
 FEATURES = ["trip"]
+# Ustalenia o zawodniku dla notatek po treningu (docs/20) – z jego danych, patrz docs/13 § 24.09.2026
+COACH_NOTES = [
+    "Naturalna kadencja ok. 80 rpm (spokojne jazdy 80–95) – NIE namawiaj do szybszego kręcenia; wymuszone 90 podnosi mu tętno przy tej samej mocy.",
+    "Ogranicznikiem jest wydolność oddechowo-sercowa, nie nogi: 5 dni Innsbruck–Monachium (539 km, 4500 m) nogi wytrzymały.",
+    "Wskaźnik postępu numer jeden to stosunek mocy do tętna (Pw:HR) i dryf tętna na jazdach Z2, nie średnia moc.",
+    "Redukcja masy ze ok. 107 do 90 kg przy zachowaniu watów – deficyt tylko w dni lekkie; pod górę masa kosztuje go najwięcej.",
+    "Cel: utrzymać 30 km/h przez 2–3 h (wymaga FTP ok. 270 W przy jego oporze powietrza na gravelu); Alpy we wrześniu 2027 to horyzont.",
+    "Jeździ na gravelu (Trek Checkpoint) po płaskich okolicach Łodzi – wiatr ma duży wpływ na prędkość i moc.",
+    "Jednostronny pomiar mocy SRAM na lewej korbie (wynik podwojony) – różnice kilku procent między jazdami mogą wynikać z asymetrii nóg.",
+]
 
 
 def load_gear_tasks():
@@ -793,6 +803,7 @@ def main():
         "rules": RULES,
         "features": FEATURES,
         "gear_tasks": load_gear_tasks(),
+        "coach_notes": COACH_NOTES,
         "gym_day_options": GYM_DAY_OPTIONS,
         "default_settings": DEFAULT_SETTINGS,
         "hr_zones_lthr_fraction": HR_ZONES,

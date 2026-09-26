@@ -73,6 +73,8 @@ export interface WorkoutView {
   insights: string[]
   week?: { label: string; done: string; planned: string; pct: number } | null
   next?: { dateLabel: string; name: string; minutes: number } | null
+  /** notatka trenera (AI albo z reguł) – na samej górze maila */
+  note?: string | null
 }
 
 // ---------------------------------------------------------------- styl
@@ -243,7 +245,7 @@ export function workoutEmail(v: WorkoutView, opts: { unsubscribeUrl?: string | n
   const tone = v.verdict.tone === 'good' ? C.good : v.verdict.tone === 'warn' ? C.warn : C.accent
   const toneBg = v.verdict.tone === 'good' ? '#ecfdf5' : v.verdict.tone === 'warn' ? '#fffbeb' : '#f0f9ff'
   const subject = `Zrobione: ${v.name} · ${v.stats[0]?.value ?? ''}${v.stats[0]?.unit ? ` ${v.stats[0].unit}` : ''}`
-  const preheader = `${v.verdict.text}${v.insights[0] ? ` · ${v.insights[0]}` : ''}`
+  const preheader = v.note ?? `${v.verdict.text}${v.insights[0] ? ` · ${v.insights[0]}` : ''}`
 
   const grid = (() => {
     const rows: string[] = []
@@ -266,6 +268,10 @@ ${v.planned ? `<div style="margin-top:4px;font-size:14px;color:${C.soft};">w pla
 <table role="presentation" cellpadding="0" cellspacing="0" style="margin-top:14px;"><tr><td bgcolor="${toneBg}" style="background-color:${toneBg};border-radius:10px;padding:8px 12px;font-size:14px;font-weight:600;color:${tone};">${esc(v.verdict.text)}</td></tr></table>
 ${grid}`,
   )
+
+  const note = v.note
+    ? card(`${eyebrow('Notatka trenera', C.accent)}<div style="margin-top:8px;font-size:16px;line-height:25px;color:${C.ink};">${esc(v.note)}</div>`, '20px 24px')
+    : ''
 
   const zones = v.zones.length
     ? card(
@@ -299,6 +305,7 @@ ${button('Zobacz w aplikacji', v.appUrl)}`,
   const text = [
     `${v.dateLabel} – zrobione: ${v.name}`,
     v.verdict.text,
+    ...(v.note ? ['', v.note] : []),
     '',
     ...v.stats.map((s) => `${s.label}: ${s.value}${s.unit ? ` ${s.unit}` : ''}`),
     '',
@@ -311,5 +318,5 @@ ${button('Zobacz w aplikacji', v.appUrl)}`,
     v.appUrl,
   ].join('\n')
 
-  return { subject, preheader, text, html: shell(preheader, head + zones + insights + week, v.appUrl, opts.unsubscribeUrl) }
+  return { subject, preheader, text, html: shell(preheader, head + note + zones + insights + week, v.appUrl, opts.unsubscribeUrl) }
 }

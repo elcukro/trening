@@ -109,6 +109,9 @@ export interface StravaActivity extends SyncedRow {
   best_speed_kmh?: Record<string, number | null> | null
   decoupling_pct?: number | null
   has_streams?: boolean | null
+  /** notatka trenera po jeździe (docs/20) – AI albo z reguł; pisze serwer po imporcie */
+  note?: string | null
+  note_source?: 'ai' | 'rules' | null
 }
 
 /** Stan wysyłki dnia na Bolta (tylko odczyt – zapisuje funkcja wahoo-push). */

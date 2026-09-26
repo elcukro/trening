@@ -37,16 +37,14 @@ export async function uploadEmailSnapshots(today: string, ctx: EngineContext, we
   return rows.length
 }
 
-/** Po starcie i po każdej zmianie planu/ustawień – tylko gdy któryś mail jest włączony. */
+/** Po starcie i po każdej zmianie planu/ustawień. Zawsze (nie tylko przy włączonych mailach) – z migawek korzystają też notatki po treningu. */
 export function useEmailSnapshots(): void {
   const engine = useEngine()
   const { ctx, weeks } = engine
-  const on = !!(ctx.settings.email_morning || ctx.settings.email_workout)
   useEffect(() => {
-    if (!on) return
     const id = setTimeout(() => {
       uploadEmailSnapshots(todayISO(), ctx, weeks).catch((e) => console.warn('Migawki maili:', e))
     }, 6000) // po synchronizacji Supabase i wysyłce na Bolta
     return () => clearTimeout(id)
-  }, [on, ctx, weeks])
+  }, [ctx, weeks])
 }

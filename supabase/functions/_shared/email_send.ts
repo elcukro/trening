@@ -126,7 +126,7 @@ export async function sendWorkout(admin: SupabaseClient, userId: string, activit
     decoupling_pct: a.decoupling_pct == null ? null : Number(a.decoupling_pct),
     hr_histogram: (a.hr_histogram as number[] | null) ?? null,
   }
-  const view = buildWorkoutView(ride, snap, { athlete: (profile.name as string) ?? '', appUrl: APP_URL, weekDoneMin, rideDateLabel: snap?.dateLabel ?? (a.date as string) })
+  const view = buildWorkoutView(ride, snap, { athlete: (profile.name as string) ?? '', appUrl: APP_URL, weekDoneMin, rideDateLabel: snap?.dateLabel ?? (a.date as string), note: (a.note as string | null) ?? null })
   const to = await emailOf(admin, userId)
   if (!to) return 'brak adresu'
   const unsub = await unsubscribeUrl(userId, 'workout')

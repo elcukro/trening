@@ -28,7 +28,7 @@ _spec.loader.exec_module(gen)
 sys.stdout = _stdout
 
 PROGRAM_ID = "ftp300"
-PROGRAM_VERSION = "2026.09.26-1"
+PROGRAM_VERSION = "2026.09.26-2"
 
 # dłuższy blok VO2max niż w programie alpejskim (6 powtórzeń) – przy trenażerze ERG da się utrzymać moc
 gen.add(gen.interval_workout("VO2_6x3", "VO2max 6×3 min", "vo2max", 6, 3, 3, "Z5b", [85, 95], gen.VO2_DESC, wu=20))
@@ -198,6 +198,15 @@ META = {
     "target": {"label": "Koniec programu", "short": "koniec", "until": "do końca programu", "today": "Koniec programu – czas na nowy cel", "after": "Program zakończony"},
 }
 FEATURES = []   # bez wyjazdu; Sprzęt ma każdy – z własnymi rowerami
+# Ustalenia o zawodniku dla notatek po treningu (docs/20) – z jego jazd ze Stravy (sierpień–wrzesień 2026)
+COACH_NOTES = [
+    "Na spokojnych jazdach ma skłonność do jazdy w tempie (typowo IF 0,70–0,87 przy FTP ok. 235 W) – chwal prawdziwe Z2, a jazdę za mocno w dzień spokojny nazywaj wprost.",
+    "Naturalna kadencja 85–92 rpm – nie wymaga poprawiania.",
+    "Jednostronny pomiar mocy 4iiii (lewa korba, wynik podwojony) – różnice kilku procent między jazdami mogą wynikać z asymetrii nóg.",
+    "Cel: FTP 300 W i wyższe VO2max; jedyna siłownia w sobotę, długa jazda w poniedziałek, akcenty w środę i piątek.",
+    "Redukcja masy z ok. 73 do 67 kg, powoli – jakość interwałów ważniejsza niż tempo chudnięcia.",
+    "Szosa Bianchi Infinito, zimą trenażer w trybie ERG.",
+]
 
 # Zasady adaptacji (docs/18, krok 2) – układ tygodnia Ferdynanda: pn długa, śr akcent, pt drugi akcent (od tyg. 6),
 # sb Z2 + jedyna siłownia, wt i nd wolne. Silnik czyta parametry, człowiek teksty.
@@ -315,6 +324,7 @@ def main():
         "cadence": CADENCE,
         "rules": RULES,
         "features": FEATURES,
+        "coach_notes": COACH_NOTES,
         "default_settings": {**DEFAULT_SETTINGS, "program_id": PROGRAM_ID},
         "hr_zones_lthr_fraction": gen.HR_ZONES,
         "power_zones_ftp_fraction": gen.POWER_ZONES,

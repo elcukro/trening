@@ -139,6 +139,7 @@ function RideResult({
   ascentM,
   decoupling,
   score,
+  note,
   className = '',
 }: {
   name: string
@@ -154,6 +155,7 @@ function RideResult({
   ascentM: number | null
   decoupling: number | null
   score: number | null
+  note?: string | null
   className?: string
 }) {
   const verdict = rideVerdict(score)
@@ -187,6 +189,11 @@ function RideResult({
           </p>
         )}
         {verdict && <p className="ios-foot ios-dim mt-1">{verdict.text}</p>}
+        {note && (
+          <p className="ios-body mt-3 border-t pt-3" style={{ borderColor: 'var(--separator)' }}>
+            {note}
+          </p>
+        )}
       </div>
     </Card>
   )
@@ -310,6 +317,7 @@ export function DayScreen() {
               ascentM={a.elevation_m ?? null}
               decoupling={i === 0 ? (a.decoupling_pct ?? null) : null}
               score={i === 0 ? score : null}
+              note={a.note ?? null}
             />
           ))}
         </Section>

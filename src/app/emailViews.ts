@@ -6,7 +6,7 @@ import { mondayOf } from '@/engine/dates'
 import { fmtLong } from '@/lib/dates'
 import { days as daysLabel } from '@/lib/format'
 import type { MorningView, StepView, WorkoutView } from '../../supabase/functions/_shared/email_templates'
-import { buildWorkoutView, type DaySnapshot, type RideLite, type ZoneBpmLite } from '../../supabase/functions/_shared/email_views'
+import { buildWorkoutView, type DaySnapshot, type PlanContext, type RideLite, type WorkStep, type ZoneBpmLite } from '../../supabase/functions/_shared/email_views'
 
 /**
  * Model widoku maili (poranna odprawa, podsumowanie treningu) z danych silnika i Stravy.
@@ -106,6 +106,7 @@ export function snapshotFor(day: DayPlan, window: DayPlan[], program: Program, o
     date: day.date,
     dateLabel: fmtLong(day.date),
     planned: day.bike && day.workout ? { name: day.workout.name, minutes: day.bike.duration_min, day_type: day.day_type } : null,
+    context: planContext(day, program),
     ftp: day.ftp,
     lthr: day.lthr,
     zones: zonesFor(program, day.lthr),
@@ -113,6 +114,37 @@ export function snapshotFor(day: DayPlan, window: DayPlan[], program: Program, o
     week_planned_min: weekPlanned,
     next: next ? { dateLabel: fmtLong(next.date), name: next.workout!.name, minutes: next.bike!.duration_min } : null,
     morning: hasTraining ? morningView(day, program, opts) : null,
+  }
+}
+
+/**
+ * Kroki robocze (interwały) do sprawdzenia wykonania: powtórzenia zwinięte, bez rozgrzewki, przerw i schłodzenia.
+ * Z2 w środku jazdy też jest „robocze” tylko wtedy, gdy trening nie ma nic mocniejszego (czysta jazda tlenowa).
+ */
+export function workSteps(steps: ResolvedStep[]): WorkStep[] {
+  const out: WorkStep[] = []
+  for (const s of steps) {
+    const rep = s.repeat_label?.split('/')
+    if (rep && rep[0] !== '1') continue
+    if (['wu', 'cd', 'recover'].includes(s.intensity_type)) continue
+    out.push({ name: s.name, zone: s.zone, minutes: Math.round(s.duration_s / 60), reps: rep ? Number(rep[1]) : 1, watts: s.watts, bpm: s.bpm })
+  }
+  return out
+}
+
+export function planContext(day: DayPlan, program: Program): PlanContext {
+  const phase = program.phases.find((p) => p.id === day.phase)
+  return {
+    workout_id: day.bike?.workout_id ?? '',
+    category: day.workout?.category ?? '',
+    description: day.workout?.description ?? '',
+    work: day.workout ? workSteps(day.workout.steps) : [],
+    phase: day.phase_name,
+    phase_goal: phase?.goal ?? '',
+    week_type: day.week_type,
+    flags: day.flags,
+    goal: program.goal.label,
+    coach_notes: program.coach_notes ?? [],
   }
 }
 

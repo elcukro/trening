@@ -281,6 +281,11 @@ export const ProgramSchema = z.object({
   features: z.array(z.enum(FEATURES)),
   /** zadania sprzętowe z planu sezonu (Sprzęt); brak = tylko serwis cykliczny z szablonu */
   gear_tasks: z.array(ProgramGearTaskSchema).optional(),
+  /**
+   * Indywidualne ustalenia o zawodniku dla notatek AI po treningu (docs/20): co jest u niego normą, a co sygnałem.
+   * Należą do programu – ustalenia jednego zawodnika nie mogą trafić do drugiego.
+   */
+  coach_notes: z.array(z.string()).optional(),
   /** warianty dni Sesji A/C do wyboru w Ustawieniach; brak = układ siłowni stały, bez wyboru */
   gym_day_options: z.array(z.object({ value: z.enum(['mon', 'tue', 'wed', 'thu', 'fri', 'sat', 'sun']), label: z.string() })).optional(),
   default_settings: SettingsSchema,

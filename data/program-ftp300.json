@@ -1,5 +1,5 @@
 {
- "version": "2026.09.26-1",
+ "version": "2026.09.26-2",
  "meta": {
   "name": "FTP 300 – próg i VO2max",
   "short": "FTP 300",
@@ -193,6 +193,14 @@
   "deload_note": "Tydzień lżejszy: bez interwałów, piątek wolny, długa krótsza. Na siłowni ciężar −10%, serie −40%, RIR +1. Nogi mają wyjść świeższe."
  },
  "features": [],
+ "coach_notes": [
+  "Na spokojnych jazdach ma skłonność do jazdy w tempie (typowo IF 0,70–0,87 przy FTP ok. 235 W) – chwal prawdziwe Z2, a jazdę za mocno w dzień spokojny nazywaj wprost.",
+  "Naturalna kadencja 85–92 rpm – nie wymaga poprawiania.",
+  "Jednostronny pomiar mocy 4iiii (lewa korba, wynik podwojony) – różnice kilku procent między jazdami mogą wynikać z asymetrii nóg.",
+  "Cel: FTP 300 W i wyższe VO2max; jedyna siłownia w sobotę, długa jazda w poniedziałek, akcenty w środę i piątek.",
+  "Redukcja masy z ok. 73 do 67 kg, powoli – jakość interwałów ważniejsza niż tempo chudnięcia.",
+  "Szosa Bianchi Infinito, zimą trenażer w trybie ERG."
+ ],
  "default_settings": {
   "program_start": "2026-09-21",
   "trip_start": "2027-06-28",
