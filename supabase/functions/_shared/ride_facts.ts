@@ -41,7 +41,8 @@ export interface History {
   previous_same: { date: string; np_w: number | null; avg_hr: number | null; work_avg_w: number | null; work_avg_hr: number | null } | null
   week: { done_min: number; planned_min: number; rides: number } | null
   /** poranny check-in i RPE z dziennika, jeśli są */
-  checkin: { sleep: number | null; legs: number | null; motivation: number | null; resting_hr: number | null } | null
+  /** oceny 1–5 (5 = najlepiej) – nie godziny snu */
+  checkin: { sleep_1to5: number | null; legs_1to5: number | null; motivation_1to5: number | null; resting_hr: number | null } | null
   rpe: number | null
 }
 
@@ -291,11 +292,14 @@ export function rideFacts(ride: RideRowLite, samples: StoredSamples | null, snap
   }
 
   // interwały: tylko gdy plan ma kroki mocniejsze niż Z3 (albo nie ma planu, a jazda wygląda na interwałową)
+  // interwały z planu, a bez planu – z nazwy jazdy („3x12 słodki”, „4×8”)
   const hard = (ctx?.work ?? []).filter((s) => HARD_ZONES.has(s.zone))
-  if (W && !facts.test && (hard.length || !ctx)) {
-    const main = hard.toSorted((a, b) => b.minutes * b.reps - a.minutes * a.reps)[0] ?? null
+  const named = ride.name.match(/(\d{1,2})\s*[x×]\s*(\d{1,2})/)
+  const fromName = !hard.length && !snap?.planned && named ? { name: named[0], zone: 'SS', minutes: Number(named[2]), reps: Number(named[1]), watts: null, bpm: null } : null
+  if (W && !facts.test && (hard.length || fromName)) {
+    const main = fromName ?? hard.toSorted((a, b) => b.minutes * b.reps - a.minutes * a.reps)[0] ?? null
     const target = main?.watts ?? null
-    const threshold = target ? 0.9 * target[0] : ftp ? 0.88 * ftp : null
+    const threshold = target ? 0.9 * target[0] : ftp ? (fromName ? 0.78 : 0.88) * ftp : null
     if (threshold) {
       const minSec = main ? Math.max(60, main.minutes * 60 * 0.5) : 120
       const runs = detectEfforts(W, H, dt, threshold, minSec)
@@ -376,12 +380,16 @@ export function factNumbers(facts: unknown): number[] {
  */
 export function numbersOk(note: string, facts: unknown): { ok: boolean; unknown: number[] } {
   const known = factNumbers(facts)
-  const near = (n: number, v: number) => Math.abs(n - v) <= Math.max(0.51, Math.abs(v) * 0.005)
+  // tolerancja zaokrąglenia do wypisanej precyzji: „0,7” ~ 0,70, „247” ~ 246,6 – ale „1,13” nie przejdzie jako „1”
+  const near = (n: number, v: number, raw: string) => {
+    const decimals = raw.split(/[.,]/)[1]?.length ?? 0
+    return Math.abs(n - v) <= 0.5 * 10 ** -decimals + 1e-9
+  }
   const bad: number[] = []
   for (const m of note.matchAll(/\d+(?:[.,]\d+)?/g)) {
     const n = Number(m[0].replace(',', '.'))
-    if (n <= 12 && Number.isInteger(n)) continue
-    if (!known.some((v) => near(n, v) || near(n, Math.abs(v)))) bad.push(n)
+    if (n <= 12 && Number.isInteger(n) && !/[.,]/.test(m[0])) continue
+    if (!known.some((v) => near(n, v, m[0]) || near(n, Math.abs(v), m[0]))) bad.push(n)
   }
   return { ok: bad.length === 0, unknown: bad }
 }

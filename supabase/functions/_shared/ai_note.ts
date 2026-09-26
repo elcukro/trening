@@ -7,9 +7,11 @@ import type { SupabaseClient } from 'npm:@supabase/supabase-js@2'
 import { env } from './env.ts'
 import type { DaySnapshot } from './email_views.ts'
 import { numbersOk, rideFacts, type History, type RideFacts, type RideRowLite, type StoredSamples } from './ride_facts.ts'
-import { COACH_HANDBOOK, ruleNote, userMessage } from './ride_note_prompt.ts'
+import { COACH_HANDBOOK, promptFacts, ruleNote, userMessage, wordCount } from './ride_note_prompt.ts'
 
-const MODEL = 'claude-haiku-4-5-20251001'
+// Sonnet: w ocenie 26.09 (9 jazd, docs/20) wyraźnie lepszy od Haiku – dobrze czyta skale check-inu i ustalenia o zawodniku;
+// koszt ok. 1 grosza za notatkę. Zmiana bez wdrożenia: sekret AI_MODEL.
+const MODEL = Deno.env.get('AI_MODEL') ?? 'claude-sonnet-5'
 const MONTHLY_LIMIT = Number(Deno.env.get('AI_MONTHLY_LIMIT') ?? '300')
 
 function addDays(iso: string, n: number): string {
@@ -95,7 +97,7 @@ export async function gatherFacts(admin: SupabaseClient, userId: string, activit
     mmp90,
     previous_same,
     week,
-    checkin: ci ? { sleep: num(ci.sleep), legs: num(ci.legs), motivation: num(ci.motivation), resting_hr: num(ci.resting_hr) } : null,
+    checkin: ci ? { sleep_1to5: num(ci.sleep), legs_1to5: num(ci.legs), motivation_1to5: num(ci.motivation), resting_hr: num(ci.resting_hr) } : null,
     rpe: num(log?.rpe),
   })
   return { facts, ride: a }
@@ -107,14 +109,13 @@ async function underLimit(admin: SupabaseClient): Promise<boolean> {
   return (count ?? 0) < MONTHLY_LIMIT
 }
 
-async function callClaude(system: string, user: string): Promise<{ text: string; usage: Record<string, number> }> {
+async function callClaude(system: string, user: string, model = MODEL): Promise<{ text: string; usage: Record<string, number> }> {
   const res = await fetch('https://api.anthropic.com/v1/messages', {
     method: 'POST',
     headers: { 'x-api-key': env('ANTHROPIC_API_KEY'), 'anthropic-version': '2023-06-01', 'content-type': 'application/json' },
     body: JSON.stringify({
-      model: MODEL,
+      model,
       max_tokens: 300,
-      temperature: 0.4,
       // stały podręcznik w pamięci podręcznej – przy kolejnych jazdach płacimy za niego ułamek
       system: [{ type: 'text', text: system, cache_control: { type: 'ephemeral' } }],
       messages: [{ role: 'user', content: user }],
@@ -133,7 +134,7 @@ export interface NoteResult {
 }
 
 /** Notatka dla jazdy: model (z jedną poprawką, gdy zmyśli liczbę) albo reguły; zapis przy jeździe. */
-export async function writeNote(admin: SupabaseClient, userId: string, activityId: number | string, opts: { force?: boolean } = {}): Promise<NoteResult | null> {
+export async function writeNote(admin: SupabaseClient, userId: string, activityId: number | string, opts: { force?: boolean; model?: string; dryRun?: boolean } = {}): Promise<NoteResult | null> {
   if (!opts.force) {
     const { data: done } = await admin.from('strava_activities').select('note').eq('user_id', userId).eq('id', activityId).maybeSingle()
     if (done?.note) return null
@@ -150,22 +151,25 @@ export async function writeNote(admin: SupabaseClient, userId: string, activityI
     if (!(await underLimit(admin))) throw new Error('limit miesięczny')
     let user = userMessage(facts)
     for (let attempt = 0; attempt < 2; attempt++) {
-      const r = await callClaude(system, user)
+      const r = await callClaude(system, user, opts.model ?? MODEL)
       await admin.from('ai_calls').insert({ user_id: userId, activity_id: activityId, input_tokens: r.usage.input_tokens ?? 0, output_tokens: r.usage.output_tokens ?? 0, cache_read_tokens: r.usage.cache_read_input_tokens ?? 0, cache_write_tokens: r.usage.cache_creation_input_tokens ?? 0 })
-      const check = numbersOk(r.text, facts)
-      if (r.text && check.ok) {
+      const check = numbersOk(r.text, promptFacts(facts))
+      const words = wordCount(r.text)
+      if (r.text && check.ok && words <= 70) {
         note = r.text
         source = 'ai'
-        detail = attempt ? 'ai po poprawce' : 'ai'
+        detail = `${opts.model ?? MODEL}${attempt ? ' po poprawce' : ''}`
         break
       }
-      detail = `liczby spoza faktów: ${check.unknown.join(', ')}`
-      user = `${userMessage(facts)}\n\nPoprzednia wersja zawierała liczby, których nie ma w faktach (${check.unknown.join(', ')}). Napisz notatkę jeszcze raz, używając wyłącznie liczb z faktów.`
+      const problems = [check.ok ? null : `liczby spoza faktów: ${check.unknown.join(', ')}`, words > 70 ? `za długa: ${words} słów` : null].filter(Boolean).join('; ')
+      detail = problems
+      user = `${userMessage(facts)}\n\nPoprzednia wersja była odrzucona (${problems}). Napisz ją jeszcze raz: 2–3 zdania, najwyżej 55 słów, wyłącznie liczby z faktów.`
     }
   } catch (e) {
     detail = e instanceof Error ? e.message : String(e)
   }
   if (!note) note = ruleNote(facts)
+  if (opts.dryRun) return { note, source, detail, facts }
   await admin.from('strava_activities').update({ note, note_source: source, note_at: new Date().toISOString(), note_facts: facts, updated_at: new Date().toISOString() }).eq('user_id', userId).eq('id', activityId)
   return { note, source, detail, facts }
 }

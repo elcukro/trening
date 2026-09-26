@@ -24,37 +24,84 @@ ZASADY TRENINGU, NA KTÓRYCH OPIERA SIĘ PLAN
 - Jedna jazda nie zmienia planu. Nie zmieniaj planu i nie wymyślaj nowych treningów – najwyżej wskaż, na co zwrócić uwagę następnym razem.
 
 JAK PISZESZ
-- Po polsku, bezpośrednio do zawodnika („zrobiłeś”, „Twoje”), 2–3 zdania, łącznie do ok. 60 słów. Bez nagłówków, list, emoji i wykrzykników co zdanie.
+- Po polsku, bezpośrednio do zawodnika („zrobiłeś”, „Twoje”), 2–3 zdania, łącznie najwyżej 55 słów – to twardy limit. Bez nagłówków, list, emoji i wykrzykników co zdanie.
 - Najpierw konkretny pozytyw oparty na liczbach (wykonanie celu, równość, rekord, postęp względem poprzedniego razu), potem jedna najważniejsza obserwacja z przebiegu jazdy, na końcu – jeśli ma sens – jedna praktyczna wskazówka na następny raz.
 - Oceniaj względem celu tego treningu i etapu programu, nie względem abstrakcyjnego ideału: spokojna jazda wykonana spokojnie to sukces, nawet jeśli była wolna.
-- Liczby podawaj oszczędnie (1–3) i tylko te, które są w faktach – nie licz nowych, nie zaokrąglaj inaczej, nie zgaduj. Jeśli czegoś nie ma w danych (np. brak mocy), nie wspominaj o tym.
+- Liczby podawaj oszczędnie (1–3) i tylko te, które są w faktach – nie licz nowych (także ilorazów typu W/bpm), nie zaokrąglaj inaczej, nie zgaduj. Porównania są gotowe w polu „derived”. Jeśli czegoś nie ma w danych (np. brak mocy), nie wspominaj o tym.
+- Pole „ride_kind” mówi, czym była jazda: „test” – oceniaj wynik testu (best20_w, ftp_est, bloki 5-minutowe, rekordy), nie całą jazdę; „intervals” – oceniaj wykonanie interwałów względem celu i ich równość; „endurance” – spokój (IF, czas powyżej Z2), równość i dryf tętna.
+- Nie zgaduj przyczyn, których nie ma w danych (wiatr, pogoda, trasa, dieta, stres). Check-in to oceny w skali 1–5 (5 = najlepiej), nie godziny – słabą ocenę snu albo nóg możesz przywołać jako możliwe wyjaśnienie.
 - Uwzględnij ustalenia o zawodniku – mają pierwszeństwo przed ogólnymi zasadami.
 - Nie diagnozuj zdrowia i nie dawaj porad medycznych. Nie pisz o wadze ciała, chyba że jest w ustaleniach i ma związek z jazdą.
 - Ton jak dobry trener: rzeczowo, życzliwie, motywująco – bez przesadnych pochwał i bez tonu wyrzutu.
 Odpowiedz wyłącznie treścią notatki.`
 
-/** Fakty bez pustych pól – krótszy prompt, mniej tokenów. */
-export function compactFacts(f: RideFacts): Record<string, unknown> {
-  const prune = (v: unknown): unknown => {
-    if (Array.isArray(v)) {
-      const a = v.map(prune).filter((x) => x !== undefined)
-      return a.length ? a : undefined
-    }
-    if (v && typeof v === 'object') {
-      const o: Record<string, unknown> = {}
-      for (const [k, x] of Object.entries(v)) {
-        const p = prune(x)
-        if (p !== undefined) o[k] = p
-      }
-      return Object.keys(o).length ? o : undefined
-    }
-    return v === null || v === '' ? undefined : v
+export type RideKind = 'test' | 'intervals' | 'endurance'
+
+export function rideKind(f: RideFacts): RideKind {
+  if (f.test) return 'test'
+  if (f.efforts && f.efforts.detected.length) return 'intervals'
+  return 'endurance'
+}
+
+/** Bez pustych pól – krótszy prompt, mniej tokenów. */
+function prune(v: unknown): unknown {
+  if (Array.isArray(v)) {
+    const a = v.map(prune).filter((x) => x !== undefined)
+    return a.length ? a : undefined
   }
+  if (v && typeof v === 'object') {
+    const o: Record<string, unknown> = {}
+    for (const [k, x] of Object.entries(v)) {
+      const p = prune(x)
+      if (p !== undefined) o[k] = p
+    }
+    return Object.keys(o).length ? o : undefined
+  }
+  return v === null || v === '' ? undefined : v
+}
+
+/**
+ * Fakty dla modelu, dobrane do rodzaju jazdy: przy teście nie ma połówek jazdy (rozgrzewka je fałszuje),
+ * przy interwałach – czasu powyżej Z2, przy jeździe spokojnej – interwałów. Mniej pól = mniej pomyłek i taniej.
+ * Te same fakty służą do weryfikacji liczb w notatce.
+ */
+export function promptFacts(f: RideFacts): Record<string, unknown> {
+  const kind = rideKind(f)
+  const r = f.ride
+  const ride: Record<string, unknown> = { name: r.name, minutes: r.minutes, km: r.km, elevation_m: r.elevation_m, np_w: r.np_w, if: r.if, tss: r.tss, avg_hr: r.avg_hr, cadence: r.cadence }
+  if (kind === 'endurance') Object.assign(ride, { avg_w: r.avg_w, variability: r.variability, decoupling_pct: r.decoupling_pct, above_z2_pct: f.above_z2_pct, hr_zones_pct: f.hr_zones_pct, halves: f.halves })
+  if (kind === 'test') Object.assign(ride, { max_hr: r.max_hr })
+  const d = f.derived
+  const keep = (keys: string[]) => Object.fromEntries(Object.entries(d).filter(([k]) => keys.some((x) => k.startsWith(x))))
+  const derived = kind === 'test' ? keep(['ftp_change', 'record_', 'week_']) : kind === 'intervals' ? keep(['work_', 'minutes_vs_plan', 'record_', 'week_', 'np_vs', 'hr_vs']) : keep(['minutes_vs_plan', 'hr_second_half', 'w_second_half', 'np_vs', 'hr_vs', 'record_', 'week_'])
+  const plan = f.plan ? { name: f.plan.name, minutes: f.plan.minutes, day_type: f.plan.day_type, purpose: f.plan.purpose.slice(0, 300), phase: f.plan.phase, phase_goal: f.plan.phase_goal, week_type: f.plan.week_type, work: kind === 'endurance' ? undefined : f.plan.work } : null
+  return (prune({
+    ride_kind: kind,
+    ride,
+    plan: plan ?? 'brak planu na ten dzień – jazda dodatkowa albo przed startem programu',
+    athlete: { ftp: f.athlete.ftp, lthr: f.athlete.lthr, goal: f.athlete.goal },
+    test: kind === 'test' ? f.test : undefined,
+    efforts: kind === 'intervals' ? f.efforts : undefined,
+    records: f.records.filter((x) => x.previous_best != null),
+    previous_same: f.previous_same,
+    week: f.week,
+    checkin: f.checkin,
+    rpe: f.rpe,
+    derived,
+  }) as Record<string, unknown>) ?? {}
+}
+
+/** @deprecated zostawione dla testów – pełne fakty bez pustych pól */
+export function compactFacts(f: RideFacts): Record<string, unknown> {
   return (prune(f) as Record<string, unknown>) ?? {}
 }
 
 export function userMessage(f: RideFacts): string {
-  return `Fakty o dzisiejszej jeździe (policzone z danych, jedyne źródło liczb):\n${JSON.stringify(compactFacts(f))}\n\nNapisz notatkę trenera po tej jeździe.`
+  return `Fakty o dzisiejszej jeździe (policzone z danych, jedyne źródło liczb):\n${JSON.stringify(promptFacts(f))}\n\nNapisz notatkę trenera po tej jeździe: 2–3 zdania, najwyżej 55 słów.`
+}
+
+export function wordCount(text: string): number {
+  return text.split(/\s+/).filter(Boolean).length
 }
 
 const pl = (x: number, d = 1) => x.toFixed(d).replace('.', ',')

@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import { numbersOk, rideFacts, type History, type RideRowLite, type StoredSamples } from '../../../supabase/functions/_shared/ride_facts'
-import { compactFacts, ruleNote, userMessage } from '../../../supabase/functions/_shared/ride_note_prompt'
+import { compactFacts, promptFacts, rideKind, ruleNote, userMessage } from '../../../supabase/functions/_shared/ride_note_prompt'
 import type { DaySnapshot } from '../../../supabase/functions/_shared/email_views'
 
 const DT = 5
@@ -100,5 +100,29 @@ describe('weryfikacja notatki i prompt', () => {
     const c = compactFacts(f)
     expect(JSON.stringify(c)).not.toContain('null')
     expect(userMessage(f).length).toBeLessThan(4000)
+  })
+})
+
+describe('fakty dla modelu według rodzaju jazdy', () => {
+  it('test: bez połówek jazdy i równości, z blokami testu', () => {
+    const s = build([...seg(20, 150, 125), ...seg(5, 200, 145), ...seg(10, 110, 120), ...seg(20, 247, 165), ...seg(10, 100, 120)])
+    const f = rideFacts(row(s, { name: 'Test FTP 20 min' }), s, snap('FTP_TEST', []), HIST)
+    const p = promptFacts(f)
+    expect(rideKind(f)).toBe('test')
+    expect(JSON.stringify(p)).not.toContain('halves')
+    expect(JSON.stringify(p)).not.toContain('variability')
+    expect((p.test as { best20_w: number }).best20_w).toBe(247)
+  })
+  it('interwały bez planu rozpoznane z nazwy jazdy („3x12”)', () => {
+    const s = build([...seg(15, 150, 128), ...seg(12, 195, 150), ...seg(4, 120, 125), ...seg(12, 196, 152), ...seg(4, 120, 125), ...seg(12, 192, 154), ...seg(10, 110, 120)])
+    const f = rideFacts(row(s, { name: '3x12 słodki Dell' }), s, { ...snap('', []), planned: null, context: null }, HIST)
+    expect(f.efforts?.planned_reps).toBe(3)
+    expect(f.efforts?.detected).toHaveLength(3)
+    expect(rideKind(f)).toBe('intervals')
+  })
+  it('liczba dziesiętna musi pasować z dokładnością do wypisanych miejsc', () => {
+    const facts = { a: 1, b: 0.7, c: 246.6 }
+    expect(numbersOk('IF 0,70 i 247 W', facts).ok).toBe(true)
+    expect(numbersOk('stosunek 1,13 W/bpm', facts).ok).toBe(false)
   })
 })
