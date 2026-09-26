@@ -7,6 +7,7 @@
  * Maile idą wyłącznie na adres właściciela konta – funkcji nie da się użyć do pisania do kogoś innego.
  */
 import { CORS, APP_URL, env, json } from '../_shared/env.ts'
+import { timingSafeEqual } from '../_shared/crypto.ts'
 import { adminClient, userFromRequest } from '../_shared/supabase.ts'
 import { morningEmail, workoutEmail } from '../_shared/email_templates.ts'
 import { buildWorkoutView, type DaySnapshot, type RideLite } from '../_shared/email_views.ts'
@@ -26,16 +27,23 @@ Deno.serve(async (req) => {
     return page(kind ? `Wyłączone: ${kind === 'morning' ? 'poranna odprawa' : 'podsumowanie po treningu'}. Włączysz z powrotem w Ustawieniach.` : 'Link jest nieprawidłowy albo wygasł.')
   }
   if (req.method !== 'POST') return json({ error: 'method' }, 405)
-  const body = (await req.json().catch(() => ({}))) as { action?: string; secret?: string; kind?: 'morning' | 'workout' }
+  const body = (await req.json().catch(() => ({}))) as { action?: string; secret?: string; kind?: 'morning' | 'workout'; activity_id?: number | string }
 
   if (body.action === 'cron') {
     if (!body.secret || body.secret !== env('PUSH_CRON_SECRET')) return json({ error: 'unauthorized' }, 401)
     return json({ ok: true, ...warsawNow(), results: await runMorning(adminClient()) })
   }
 
-  const user = await userFromRequest(req)
-  if (!user?.email) return json({ error: 'unauthorized' }, 401)
   const admin = adminClient()
+  let user = await userFromRequest(req)
+  // próba bez sesji (ocena zmian): tymczasowy sekret EMAIL_TEST_SECRET, mail tylko do właściciela jazdy
+  const testSecret = Deno.env.get('EMAIL_TEST_SECRET')
+  if (!user && body.secret && testSecret && timingSafeEqual(body.secret, testSecret) && body.activity_id) {
+    const { data: owner } = await admin.from('strava_activities').select('user_id').eq('id', body.activity_id).maybeSingle()
+    const { data: u } = owner ? await admin.auth.admin.getUserById(owner.user_id as string) : { data: null }
+    user = u?.user ? { id: u.user.id, email: u.user.email ?? null } : null
+  }
+  if (!user?.email) return json({ error: 'unauthorized' }, 401)
 
   if (body.action === 'sample') {
     const today = warsawNow().date
@@ -48,12 +56,14 @@ Deno.serve(async (req) => {
       return r.error ? json({ error: 'resend', detail: r.error }, 502) : json({ ok: true, date: day.date, to: user.email })
     }
     if (body.kind === 'workout') {
-      const { data: a } = await admin.from('strava_activities').select('*').eq('user_id', user.id).eq('is_ride', true).is('deleted_at', null).order('start_at', { ascending: false }).limit(1).maybeSingle()
+      // wskazana jazda albo ostatnia
+      const q = admin.from('strava_activities').select('*').eq('user_id', user.id).eq('is_ride', true).is('deleted_at', null)
+      const { data: a } = body.activity_id ? await q.eq('id', body.activity_id).maybeSingle() : await q.order('start_at', { ascending: false }).limit(1).maybeSingle()
       if (!a) return json({ error: 'no_ride' }, 404)
       const { data: snapRow } = await admin.from('email_days').select('payload').eq('user_id', user.id).eq('date', a.date).maybeSingle()
       const snap = (snapRow?.payload as DaySnapshot | undefined) ?? null
       const ride: RideLite = { date: a.date, name: a.name, moving_time_s: Number(a.moving_time_s), distance_m: Number(a.distance_m ?? 0), elevation_m: Number(a.elevation_m ?? 0), avg_hr: a.avg_hr, avg_cadence: a.avg_cadence, avg_watts: a.avg_watts, np_w: a.np_w, device_watts: a.device_watts, decoupling_pct: a.decoupling_pct == null ? null : Number(a.decoupling_pct), hr_histogram: a.hr_histogram }
-      const view = buildWorkoutView(ride, snap, { athlete: '', appUrl: APP_URL, rideDateLabel: snap?.dateLabel ?? a.date })
+      const view = buildWorkoutView(ride, snap, { athlete: '', appUrl: APP_URL, rideDateLabel: snap?.dateLabel ?? a.date, note: (a.note as string | null) ?? null })
       const r = await resend(user.email, workoutEmail(view), null, '[PRÓBA] ')
       return r.error ? json({ error: 'resend', detail: r.error }, 502) : json({ ok: true, date: a.date, to: user.email })
     }

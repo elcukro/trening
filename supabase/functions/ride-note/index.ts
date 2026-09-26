@@ -13,7 +13,7 @@ import { promptFacts } from '../_shared/ride_note_prompt.ts'
 Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') return new Response(null, { headers: CORS })
   if (req.method !== 'POST') return json({ error: 'method' }, 405)
-  const body = (await req.json().catch(() => ({}))) as { activity_id?: number | string; force?: boolean; secret?: string; facts?: boolean; model?: string; dry_run?: boolean }
+  const body = (await req.json().catch(() => ({}))) as { activity_id?: number | string; force?: boolean; secret?: string; facts?: boolean; model?: string; dry_run?: boolean; ftp_before?: number }
   if (!body.activity_id) return json({ error: 'activity_id' }, 400)
   const admin = adminClient()
   let userId: string | null = null
@@ -28,7 +28,7 @@ Deno.serve(async (req) => {
   }
   if (!userId) return json({ error: 'unauthorized' }, 401)
   // wybór modelu i próba bez zapisu tylko w trybie oceny (porównanie modeli na tych samych jazdach)
-  const r = await writeNote(admin, userId, body.activity_id, { force: body.force ?? true, model: testMode ? body.model : undefined, dryRun: testMode && body.dry_run })
+  const r = await writeNote(admin, userId, body.activity_id, { force: body.force ?? true, model: testMode ? body.model : undefined, dryRun: testMode && body.dry_run, ftpBefore: testMode ? body.ftp_before : undefined })
   if (!r) return json({ error: 'not_found' }, 404)
   return json({ ok: true, note: r.note, source: r.source, detail: r.detail, ...(body.facts ? { facts: promptFacts(r.facts) } : {}) })
 })

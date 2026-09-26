@@ -134,7 +134,7 @@ export interface NoteResult {
 }
 
 /** Notatka dla jazdy: model (z jedną poprawką, gdy zmyśli liczbę) albo reguły; zapis przy jeździe. */
-export async function writeNote(admin: SupabaseClient, userId: string, activityId: number | string, opts: { force?: boolean; model?: string; dryRun?: boolean } = {}): Promise<NoteResult | null> {
+export async function writeNote(admin: SupabaseClient, userId: string, activityId: number | string, opts: { force?: boolean; model?: string; dryRun?: boolean; ftpBefore?: number } = {}): Promise<NoteResult | null> {
   if (!opts.force) {
     const { data: done } = await admin.from('strava_activities').select('note').eq('user_id', userId).eq('id', activityId).maybeSingle()
     if (done?.note) return null
@@ -142,6 +142,12 @@ export async function writeNote(admin: SupabaseClient, userId: string, activityI
   const g = await gatherFacts(admin, userId, activityId)
   if (!g) return null
   const { facts } = g
+  // korekta FTP sprzed testu (tryb oceny): gdy wynik testu wpisano do profilu przed napisaniem notatki
+  if (opts.ftpBefore && facts.test) {
+    facts.athlete.ftp = opts.ftpBefore
+    facts.derived.ftp_change_w = facts.test.ftp_est - opts.ftpBefore
+    facts.derived.ftp_change_pct = Math.round(((facts.test.ftp_est - opts.ftpBefore) / opts.ftpBefore) * 100)
+  }
   const system = `${COACH_HANDBOOK}\n\nUSTALENIA O TYM ZAWODNIKU\n${facts.athlete.coach_notes.map((n) => `- ${n}`).join('\n') || '- brak'}`
   let note = ''
   let source: 'ai' | 'rules' = 'rules'
