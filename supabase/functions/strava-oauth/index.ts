@@ -64,10 +64,12 @@ Deno.serve(async (req) => {
   }
 
   if (req.method !== 'POST') return json({ error: 'method' }, 405)
-  const user = await userFromRequest(req)
-  if (!user) return json({ error: 'unauthorized' }, 401)
   const admin = adminClient()
-  const body = (await req.json().catch(() => ({}))) as { action?: string; days?: number }
+  const body = (await req.json().catch(() => ({}))) as { action?: string; days?: number; secret?: string; user_id?: string }
+  let user = await userFromRequest(req)
+  // backfill historii z serwera (bez sesji użytkownika): sekret harmonogramu + wskazane konto
+  if (!user && body.action === 'backfill' && body.secret && body.user_id && body.secret === env('PUSH_CRON_SECRET')) user = { id: body.user_id, email: null }
+  if (!user) return json({ error: 'unauthorized' }, 401)
 
   switch (body.action) {
     case 'start': {
@@ -112,6 +114,27 @@ Deno.serve(async (req) => {
         imported++
       }
       return json({ ok: true, imported, scanned: list.length })
+    }
+    // Historia do kontekstu notatek (docs/20): do 400 dni, bez próbek dla jazd starszych niż 90 dni (1 zapytanie na jazdę),
+    // tylko brakujące; najwyżej 80 jazd na wywołanie – wołaj ponownie, dopóki `remaining` > 0.
+    case 'backfill': {
+      const token = await accessTokenFor(admin, user.id)
+      if (!token) return json({ error: 'not_connected' }, 400)
+      const days = Math.min(400, Math.max(1, body.days ?? 365))
+      const after = Math.floor(Date.now() / 1000) - days * 86400
+      const list = (await listActivities(token, after)).filter((a) => RIDE_TYPES.has(a.sport_type ?? a.type ?? ''))
+      const { data: have } = await admin.from('strava_activities').select('id').eq('user_id', user.id)
+      const known = new Set((have ?? []).map((r) => String(r.id)))
+      const missing = list.filter((a) => !known.has(String(a.id)))
+      let imported = 0
+      for (const a of missing.slice(0, 80)) {
+        const recent = Date.now() - new Date(a.start_date).getTime() < 90 * 86400 * 1000
+        const full = await fetchActivity(token, a.id, recent)
+        if (!full) continue
+        await upsertActivity(admin, user.id, full.activity, full.streams)
+        imported++
+      }
+      return json({ ok: true, imported, scanned: list.length, remaining: Math.max(0, missing.length - imported) })
     }
     default:
       return json({ error: 'unknown_action' }, 400)

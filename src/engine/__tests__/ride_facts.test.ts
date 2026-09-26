@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { numbersOk, rideFacts, type History, type RideRowLite, type StoredSamples } from '../../../supabase/functions/_shared/ride_facts'
+import { historyContext, numbersOk, rideFacts, type HistRide, type History, type RideRowLite, type StoredSamples } from '../../../supabase/functions/_shared/ride_facts'
 import { compactFacts, promptFacts, rideKind, ruleNote, userMessage } from '../../../supabase/functions/_shared/ride_note_prompt'
 import type { DaySnapshot } from '../../../supabase/functions/_shared/email_views'
 
@@ -124,5 +124,56 @@ describe('fakty dla modelu według rodzaju jazdy', () => {
     const facts = { a: 1, b: 0.7, c: 246.6 }
     expect(numbersOk('IF 0,70 i 247 W', facts).ok).toBe(true)
     expect(numbersOk('stosunek 1,13 W/bpm', facts).ok).toBe(false)
+  })
+  it('liczby z nazw pól (rides_90d, ctl_change_28d) i okien modelu przechodzą', () => {
+    expect(numbersOk('CTL w ostatnich 28 dniach wzrosło; 5 jazd w 90 dni', { derived: { ctl_change_28d: 4 }, rides_90d: 5 }).ok).toBe(true)
+  })
+})
+
+describe('kontekst historyczny', () => {
+  const R = (id: number, date: string, min: number, km: number, w: number | null, hr: number | null, extra: Partial<HistRide> = {}): HistRide => ({ id, date, moving_time_s: min * 60, distance_m: km * 1000, elevation_m: 50, np_w: w, avg_watts: w, avg_hr: hr, device_watts: w != null, decoupling_pct: null, ...extra })
+  const rides = [
+    R(1, '2026-07-05', 120, 45, 140, 130), R(2, '2026-07-12', 60, 22, 150, 138), R(3, '2026-08-02', 180, 70, 145, 135), R(4, '2026-08-20', 60, 24, 155, 140),
+    R(5, '2026-09-08', 60, 23, 150, 131), R(6, '2026-09-15', 90, 35, 200, 150, { work_avg_w: 205 }), R(7, '2026-09-22', 70, 27, 152, 130),
+    // gęstość danych do CTL: ≥ 6 jazd w 42 dniach (krótkie, poza rankingami czasu i km)
+    R(9, '2026-09-10', 30, 10, 140, 125), R(10, '2026-09-17', 30, 10, 140, 125), R(11, '2026-09-24', 30, 10, 140, 125),
+  ]
+  const cur = R(8, '2026-09-29', 100, 40, 148, 128)
+  const ctx = historyContext({ rides: [...rides, cur], current: cur, ftp: 235, lthr: 160, weekPlanned: { '2026-09-21': 60, '2026-09-14': 80, '2026-09-07': 200 }, sameWorkoutDates: ['2026-09-15'], tests: [{ date: '2026-09-26', ftp_w: 235 }, { date: '2026-07-01', ftp_w: 200 }] })
+
+  it('miejsce jazdy, najdłuższa od…, tygodnie i miesiące', () => {
+    expect(ctx.since).toBe('2026-07-05')
+    expect(ctx.duration_rank_90d).toBe(3) // dłuższe: 120 min z 5.07 i 180 min z 2.08
+    expect(ctx.longest_since).toBe('2026-08-02')
+    expect(ctx.km_rank_90d).toBe(3)
+    expect(ctx.weekly_hours_last_4).toEqual([1.5, 2, 1.7, 1.7])
+    expect(ctx.rides_this_month).toBe(7)
+    expect(ctx.rides_last_month).toBe(2)
+    expect(ctx.hours_last_month).toBe(4)
+  })
+  it('seria tygodni na planie liczy od poprzedniego tygodnia i pęka na brakującym', () => {
+    expect(ctx.weeks_on_plan_streak).toBe(2) // 21.09: 100 ≥ 48; 14.09: 120 ≥ 64; 7.09: 90 < 160
+  })
+  it('EF na spokojnych jazdach i historia FTP posortowana', () => {
+    expect(ctx.ef_this).toBe(1.16)
+    // 6 spokojnych jazd z mocą i tętnem ≥ 40 min – bierzemy 5 ostatnich (krótkie 30-minutowe odpadają)
+    expect(ctx.ef_recent.map((x) => x.date)).toEqual(['2026-07-12', '2026-08-02', '2026-08-20', '2026-09-08', '2026-09-22'])
+    expect(ctx.ftp_history.map((t) => t.ftp_w)).toEqual([200, 235])
+    expect(ctx.same_workout_times).toBe(1)
+    expect(ctx.same_workout_best).toEqual({ date: '2026-09-15', work_avg_w: 205 })
+  })
+  it('forma tylko przy ≥ 42 dniach danych; z krótką historią null', () => {
+    expect(ctx.fitness).not.toBeNull()
+    expect(ctx.fitness!.ctl).toBeGreaterThan(0)
+    const short = historyContext({ rides: [R(7, '2026-09-22', 70, 27, 152, 130), cur], current: cur, ftp: 235, lthr: 160, weekPlanned: {}, sameWorkoutDates: [], tests: [] })
+    expect(short.fitness).toBeNull()
+    expect(short.weeks_on_plan_streak).toBeNull()
+    expect(short.data_days).toBe(7)
+  })
+  it('porównania z historii trafiają do derived', () => {
+    const f = rideFacts({ ...row(build([...seg(50, 148, 128), ...seg(50, 148, 128)]), { name: 'Z2', np_w: 148, avg_hr: 128 }), id: 8, date: '2026-09-29' }, null, null, { ...HIST, context: ctx })
+    expect(f.derived.ef_vs_recent_z2_pct).toBeDefined()
+    expect(f.derived.ftp_change_since_first_test).toBe(35)
+    expect(f.derived.ctl_change_28d).toBeDefined()
   })
 })

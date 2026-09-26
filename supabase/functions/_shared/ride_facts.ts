@@ -44,6 +44,204 @@ export interface History {
   /** oceny 1–5 (5 = najlepiej) – nie godziny snu */
   checkin: { sleep_1to5: number | null; legs_1to5: number | null; motivation_1to5: number | null; resting_hr: number | null } | null
   rpe: number | null
+  /** kontekst historyczny (docs/20 § historia) – policzony z jazd w bazie */
+  context?: HistoryContext | null
+  /** następny trening z planu */
+  next_planned?: { dateLabel: string; name: string; minutes: number } | null
+}
+
+/** Jazda z historii (wiersz `strava_activities`; bez próbek). */
+export interface HistRide {
+  id: number | string
+  date: string
+  moving_time_s: number
+  distance_m: number
+  elevation_m: number
+  np_w: number | null
+  avg_watts: number | null
+  avg_hr: number | null
+  device_watts: boolean | null
+  decoupling_pct: number | null
+  /** średnia moc odcinków roboczych z zapisanych faktów (jeśli notatka już była) */
+  work_avg_w?: number | null
+}
+
+/** Kontekst historyczny jazdy – jak „Athlete Intelligence” na Stravie, tylko z liczb, które mamy. */
+export interface HistoryContext {
+  /** od kiedy aplikacja ma jazdy (data pierwszej) i ile to dni */
+  since: string
+  data_days: number
+  rides_90d: number
+  hours_90d: number
+  avg_ride_min_90d: number | null
+  /** miejsce tej jazdy wśród jazd z 90 dni pod względem czasu (1 = najdłuższa) */
+  duration_rank_90d: number | null
+  /** data ostatniej dłuższej jazdy; null = to najdłuższa jazda w danych */
+  longest_since: string | null
+  km_rank_90d: number | null
+  /** godziny jazdy w kolejnych tygodniach (od najstarszego); ostatni element = bieżący tydzień łącznie z tą jazdą */
+  weekly_hours_last_4: number[]
+  /** ile tygodni z rzędu (łącznie z poprzednim, bez bieżącego) zrobiono ≥ 80 % planu */
+  weeks_on_plan_streak: number | null
+  rides_this_month: number
+  rides_last_month: number
+  hours_this_month: number
+  hours_last_month: number
+  km_this_month: number
+  km_last_month: number
+  /** ile razy ten sam trening z planu wykonano wcześniej (180 dni) i najlepsze wykonanie */
+  same_workout_times: number | null
+  same_workout_best: { date: string; work_avg_w: number } | null
+  ftp_history: { date: string; ftp_w: number }[]
+  /**
+   * Pw:HR na spokojnych jazdach (moc ÷ tętno): ta jazda i ostatnie do 5 wcześniejszych spokojnych jazd
+   * z mocą i tętnem ≥ 40 min – wzrost EF przy tym samym tętnie = postęp bazy
+   */
+  ef_this: number | null
+  ef_recent: { date: string; ef: number; decoupling_pct: number | null }[]
+  /** forma z modelu CTL/ATL (obciążenie z mocy, a bez niej z tętna – przybliżenie); tylko przy ≥ 42 dniach danych */
+  fitness: { ctl: number; atl: number; tsb: number; ctl_28d_ago: number } | null
+}
+
+const r1h = (x: number) => Math.round(x * 10) / 10
+
+function monday(iso: string): string {
+  const d = new Date(`${iso}T00:00:00Z`)
+  d.setUTCDate(d.getUTCDate() - ((d.getUTCDay() + 6) % 7))
+  return d.toISOString().slice(0, 10)
+}
+
+function plusDays(iso: string, n: number): string {
+  const d = new Date(`${iso}T00:00:00Z`)
+  d.setUTCDate(d.getUTCDate() + n)
+  return d.toISOString().slice(0, 10)
+}
+
+function daysBetween(a: string, b: string): number {
+  return Math.round((new Date(`${a}T00:00:00Z`).getTime() - new Date(`${b}T00:00:00Z`).getTime()) / 86400000)
+}
+
+/** Obciążenie jazdy: z mocy (NP albo średnia) względem FTP, bez mocy – z tętna względem LTHR (przybliżenie). */
+export function loadOf(r: HistRide, ftp: number | null, lthr: number | null): number | null {
+  const h = r.moving_time_s / 3600
+  const p = r.device_watts ? (r.np_w ?? r.avg_watts) : null
+  if (p && ftp) return Math.round(h * (p / ftp) ** 2 * 100)
+  if (r.avg_hr && lthr) return Math.round(h * (r.avg_hr / lthr) ** 2 * 100)
+  return null
+}
+
+const isEasy = (r: HistRide, ftp: number | null) => {
+  const p = r.device_watts ? (r.np_w ?? r.avg_watts) : null
+  return !!p && !!ftp && p / ftp <= 0.75 && r.moving_time_s >= 40 * 60 && !!r.avg_hr
+}
+
+export function historyContext(inp: {
+  /** wszystkie jazdy w bazie do dnia tej jazdy włącznie (z nią), bez usuniętych */
+  rides: HistRide[]
+  current: HistRide
+  ftp: number | null
+  lthr: number | null
+  /** plan minut na tydzień wg poniedziałku (z migawek) */
+  weekPlanned: Record<string, number>
+  /** daty wcześniejszych wykonań tego samego treningu z planu */
+  sameWorkoutDates: string[]
+  tests: { date: string; ftp_w: number }[]
+}): HistoryContext {
+  const cur = inp.current
+  const date = cur.date
+  const all = inp.rides.filter((r) => r.date <= date).toSorted((a, b) => (a.date < b.date ? -1 : 1))
+  const since = all[0]?.date ?? date
+  const before = all.filter((r) => String(r.id) !== String(cur.id))
+  const last90 = all.filter((r) => daysBetween(date, r.date) <= 90)
+  const hours = (rs: HistRide[]) => r1h(rs.reduce((s, r) => s + r.moving_time_s, 0) / 3600)
+  const km = (rs: HistRide[]) => r1h(rs.reduce((s, r) => s + r.distance_m, 0) / 1000)
+
+  const longer = before.filter((r) => r.moving_time_s > cur.moving_time_s)
+  const longerRecent = longer.filter((r) => daysBetween(date, r.date) <= 90)
+  const kmRank = last90.filter((r) => r.distance_m > cur.distance_m).length + 1
+
+  const weeks: number[] = []
+  for (let w = 3; w >= 0; w--) {
+    const mon = plusDays(monday(date), -7 * w)
+    weeks.push(hours(all.filter((r) => r.date >= mon && r.date <= plusDays(mon, 6))))
+  }
+  let streak: number | null = null
+  if (Object.keys(inp.weekPlanned).length) {
+    streak = 0
+    for (let w = 1; w <= 12; w++) {
+      const mon = plusDays(monday(date), -7 * w)
+      const planned = inp.weekPlanned[mon]
+      if (planned == null) break
+      const done = all.filter((r) => r.date >= mon && r.date <= plusDays(mon, 6)).reduce((s, r) => s + r.moving_time_s / 60, 0)
+      if (planned > 0 && done >= 0.8 * planned) streak++
+      else break
+    }
+  }
+
+  const ym = date.slice(0, 7)
+  const lastYm = plusDays(`${ym}-01`, -1).slice(0, 7)
+  const thisMonth = all.filter((r) => r.date.startsWith(ym))
+  const lastMonth = all.filter((r) => r.date.startsWith(lastYm))
+
+  const sameDates = new Set(inp.sameWorkoutDates)
+  const sameRides = before.filter((r) => sameDates.has(r.date) && r.work_avg_w != null)
+  const best = sameRides.toSorted((a, b) => (b.work_avg_w ?? 0) - (a.work_avg_w ?? 0))[0]
+
+  const ef = (r: HistRide) => {
+    const p = r.device_watts ? (r.np_w ?? r.avg_watts) : null
+    return p && r.avg_hr ? Math.round((p / r.avg_hr) * 100) / 100 : null
+  }
+  const efRecent = before
+    .filter((r) => isEasy(r, inp.ftp))
+    .slice(-5)
+    .map((r) => ({ date: r.date, ef: ef(r) as number, decoupling_pct: r.decoupling_pct }))
+
+  let fitness: HistoryContext['fitness'] = null
+  const dataDays = daysBetween(date, since)
+  // CTL ma sens tylko przy gęstych danych – kilka jazd dociągniętych z historii dałoby „formę 4” i fałszywy wniosek
+  const dense = all.filter((r) => daysBetween(date, r.date) <= 42).length >= 6
+  if (dataDays >= 42 && dense) {
+    const byDay = new Map<string, number>()
+    for (const r of all) {
+      const l = loadOf(r, inp.ftp, inp.lthr)
+      if (l != null) byDay.set(r.date, (byDay.get(r.date) ?? 0) + l)
+    }
+    let ctl = 0
+    let atl = 0
+    let ctl28 = 0
+    for (let d = since; d <= date; d = plusDays(d, 1)) {
+      const load = byDay.get(d) ?? 0
+      ctl += (load - ctl) / 42
+      atl += (load - atl) / 7
+      if (d === plusDays(date, -28)) ctl28 = ctl
+    }
+    fitness = { ctl: Math.round(ctl), atl: Math.round(atl), tsb: Math.round(ctl - atl), ctl_28d_ago: Math.round(ctl28) }
+  }
+
+  return {
+    since,
+    data_days: dataDays,
+    rides_90d: last90.length,
+    hours_90d: hours(last90),
+    avg_ride_min_90d: last90.length ? Math.round(last90.reduce((s, r) => s + r.moving_time_s / 60, 0) / last90.length) : null,
+    duration_rank_90d: longerRecent.length + 1,
+    longest_since: longer.length ? longer.toSorted((a, b) => (a.date < b.date ? 1 : -1))[0]!.date : null,
+    km_rank_90d: kmRank,
+    weekly_hours_last_4: weeks,
+    weeks_on_plan_streak: streak,
+    rides_this_month: thisMonth.length,
+    rides_last_month: lastMonth.length,
+    hours_this_month: hours(thisMonth),
+    hours_last_month: hours(lastMonth),
+    km_this_month: km(thisMonth),
+    km_last_month: km(lastMonth),
+    same_workout_times: inp.sameWorkoutDates.length ? inp.sameWorkoutDates.length : null,
+    same_workout_best: best ? { date: best.date, work_avg_w: best.work_avg_w as number } : null,
+    ftp_history: inp.tests.toSorted((a, b) => (a.date < b.date ? -1 : 1)),
+    ef_this: isEasy(cur, inp.ftp) ? ef(cur) : null,
+    ef_recent: efRecent,
+    fitness,
+  }
 }
 
 export interface Effort {
@@ -101,6 +299,8 @@ export interface RideFacts {
   week: History['week']
   checkin: History['checkin']
   rpe: number | null
+  history: HistoryContext | null
+  next_planned: { dateLabel: string; name: string; minutes: number } | null
   /** gotowe porównania – model nie liczy sam, więc każda liczba w notatce jest w faktach */
   derived: Record<string, number>
 }
@@ -258,6 +458,8 @@ export function rideFacts(ride: RideRowLite, samples: StoredSamples | null, snap
     week: hist.week,
     checkin: hist.checkin,
     rpe: hist.rpe,
+    history: hist.context ?? null,
+    next_planned: hist.next_planned ?? snap?.next ?? null,
     derived: {},
   }
 
@@ -340,6 +542,7 @@ export function rideFacts(ride: RideRowLite, samples: StoredSamples | null, snap
   const workW = work.length ? work.reduce((a, e) => a + e.avg_w, 0) / work.length : null
   const workHr = work.length && work.every((e) => e.avg_hr != null) ? work.reduce((a, e) => a + (e.avg_hr ?? 0), 0) / work.length : null
   put('work_avg_w', workW == null ? null : Math.round(workW))
+  if (workW != null && ftp) put('work_pct_ftp', Math.round((workW / ftp) * 100))
   put('work_avg_hr', workHr == null ? null : Math.round(workHr))
   const prev = hist.previous_same
   if (prev) {
@@ -348,26 +551,48 @@ export function rideFacts(ride: RideRowLite, samples: StoredSamples | null, snap
     if (facts.ride.np_w != null && prev.np_w != null) put('np_vs_previous', facts.ride.np_w - prev.np_w)
     if (facts.ride.avg_hr != null && prev.avg_hr != null) put('hr_vs_previous', facts.ride.avg_hr - prev.avg_hr)
   }
-  if (facts.week) {
+  if (facts.week && facts.week.planned_min >= 90) {
     put('week_left_min', Math.max(0, facts.week.planned_min - facts.week.done_min))
-    if (facts.week.planned_min > 0) put('week_done_pct', Math.round((facts.week.done_min / facts.week.planned_min) * 100))
+    put('week_done_pct', Math.round((facts.week.done_min / facts.week.planned_min) * 100))
   }
   if (facts.test && ftp) put('ftp_change_w', facts.test.ftp_est - ftp)
   if (facts.test && ftp) put('ftp_change_pct', Math.round(((facts.test.ftp_est - ftp) / ftp) * 100))
   for (const r of facts.records) if (r.previous_best != null) put(`record_${r.seconds}s_gain_w`, r.watts - r.previous_best)
   if (facts.halves?.first.avg_hr != null && facts.halves.second.avg_hr != null) put('hr_second_half_change', facts.halves.second.avg_hr - facts.halves.first.avg_hr)
   if (facts.halves?.first.avg_w != null && facts.halves.second.avg_w != null) put('w_second_half_change', facts.halves.second.avg_w - facts.halves.first.avg_w)
+  const h = facts.history
+  if (h) {
+    if (h.ef_this != null && h.ef_recent.length) {
+      const avg = h.ef_recent.reduce((s, x) => s + x.ef, 0) / h.ef_recent.length
+      put('ef_vs_recent_z2_pct', Math.round(((h.ef_this - avg) / avg) * 100))
+    }
+    if (h.fitness) put('ctl_change_28d', h.fitness.ctl - h.fitness.ctl_28d_ago)
+    if (h.hours_last_month > 0) put('hours_vs_last_month_pct', Math.round(((h.hours_this_month - h.hours_last_month) / h.hours_last_month) * 100))
+    if (h.avg_ride_min_90d) put('minutes_vs_avg_ride_pct', Math.round(((facts.ride.minutes - h.avg_ride_min_90d) / h.avg_ride_min_90d) * 100))
+    if (h.same_workout_best && workW != null) put('work_w_vs_best_same', Math.round(workW) - h.same_workout_best.work_avg_w)
+    const lastFtp = h.ftp_history.at(-1)
+    const firstFtp = h.ftp_history[0]
+    if (lastFtp && firstFtp && lastFtp.date !== firstFtp.date) put('ftp_change_since_first_test', lastFtp.ftp_w - firstFtp.ftp_w)
+  }
   return facts
 }
 
-/** Wszystkie liczby z paczki faktów (także zaokrąglone) – do sprawdzenia, czy notatka niczego nie zmyśliła. */
+/** Okna czasowe z nazw pól i modelu formy („w 28 dniach”, „w 90 dni”, CTL 42 / ATL 7) – model ma prawo je nazwać. */
+const WINDOW_DAYS = [7, 28, 42, 90, 180]
+
+/** Wszystkie liczby z paczki faktów (wartości i nazwy pól, np. `rides_90d`) – do sprawdzenia, czy notatka niczego nie zmyśliła. */
 export function factNumbers(facts: unknown): number[] {
-  const out: number[] = []
+  const out: number[] = [...WINDOW_DAYS]
   const walk = (v: unknown) => {
     if (typeof v === 'number' && Number.isFinite(v)) out.push(v)
     else if (typeof v === 'string') for (const m of v.matchAll(/\d+(?:[.,]\d+)?/g)) out.push(Number(m[0].replace(',', '.')))
     else if (Array.isArray(v)) v.forEach(walk)
-    else if (v && typeof v === 'object') Object.values(v).forEach(walk)
+    else if (v && typeof v === 'object') {
+      for (const [k, x] of Object.entries(v)) {
+        walk(k)
+        walk(x)
+      }
+    }
   }
   walk(facts)
   return out

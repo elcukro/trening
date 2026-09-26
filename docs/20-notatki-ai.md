@@ -16,11 +16,24 @@ po treningu. Prośba Ferdynanda: jak na Stravie, bo to motywuje.
 4. **Weryfikacja** – każda liczba w notatce musi być w faktach (z dokładnością do wypisanych miejsc po przecinku;
    `numbersOk`), notatka ≤ 70 słów. Inaczej jedna poprawka z listą błędów, a potem notatka z reguł (`ruleNote`).
 
+## Kontekst historyczny (26.09.2026, wersja 6–8 zdań)
+Notatka ma 6–8 zdań (90–140 słów): (1) wykonanie względem planu, (2) przebieg, (3) 2–3 zdania historii,
+(4) wskazówka albo co czeka w planie (`next_planned`). Historię liczy `historyContext` w `ride_facts.ts`
+(czysty TS, testy) ze wszystkich jazd konta w bazie: miejsce tej jazdy wśród ostatnich 90 dni i „najdłuższa od…”,
+godziny w 4 ostatnich tygodniach, ten i poprzedni miesiąc, seria tygodni ≥ 80 % planu (plan z migawek `email_days`),
+ile razy i najlepiej wykonano ten sam trening, historia FTP z testów, **EF (moc ÷ tętno) na spokojnych jazdach**
+– ta jazda i 5 poprzednich (wskaźnik postępu bazy), forma CTL/ATL/TSB (obciążenie z mocy, bez niej z tętna;
+tylko przy ≥ 42 dniach danych). Porównania (`derived`: EF vs średnia, CTL za 28 dni, godziny vs poprzedni miesiąc,
+FTP od pierwszego testu, moc interwałów vs najlepsze wykonanie) liczy kod. Przy < 21 dniach danych model ma
+napisać, że historia dopiero się buduje. Żeby historia była prawdziwa, `strava-oauth {action:'backfill'}`
+(JWT albo sekret harmonogramu + `user_id`) dociąga do 400 dni jazd ze Stravy – bez próbek dla jazd starszych
+niż 90 dni, 80 na wywołanie, tylko brakujące. Wykonane 26.09: Łukasz 26 jazd/rok, Ferdynand 66.
+
 ## Uruchamianie i koszt
 - `strava-webhook` po imporcie nowej jazdy: notatka → mail po treningu (z notatką). Funkcja `ride-note` pisze ją ponownie
   na żądanie (JWT, własna jazda).
 - Model: `claude-sonnet-5` (sekret `AI_MODEL` zmienia bez wdrożenia), klucz `ANTHROPIC_API_KEY` z osobnego workspace
-  z limitem wydatków. Średnio ok. 1,8 tys. tokenów wejścia i 150 wyjścia – ok. 1 grosz za notatkę, ok. 2 zł/miesiąc
+  z limitem wydatków. Ok. 2,5–3 tys. tokenów wejścia (z historią) i ok. 250 wyjścia – ok. 2 grosze za notatkę, ok. 2 zł/miesiąc
   przy dwóch zawodnikach. `ai_calls` = dziennik i limit miesięczny (`AI_MONTHLY_LIMIT`, domyślnie 300).
 - Plan dnia serwer bierze z migawek `email_days` (kontekst: kroki robocze z celami, faza i jej cel, tydzień, ustalenia) –
   aplikacja wgrywa je zawsze, nie tylko przy włączonych mailach.

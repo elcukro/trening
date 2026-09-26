@@ -6,7 +6,7 @@
 import type { SupabaseClient } from 'npm:@supabase/supabase-js@2'
 import { env } from './env.ts'
 import type { DaySnapshot } from './email_views.ts'
-import { numbersOk, rideFacts, type History, type RideFacts, type RideRowLite, type StoredSamples } from './ride_facts.ts'
+import { historyContext, numbersOk, rideFacts, type HistRide, type History, type RideFacts, type RideRowLite, type StoredSamples } from './ride_facts.ts'
 import { COACH_HANDBOOK, promptFacts, ruleNote, userMessage, wordCount } from './ride_note_prompt.ts'
 
 // Sonnet: w ocenie 26.09 (9 jazd, docs/20) wyraźnie lepszy od Haiku – dobrze czyta skale check-inu i ustalenia o zawodniku;
@@ -33,30 +33,41 @@ export async function gatherFacts(admin: SupabaseClient, userId: string, activit
   const { data: a } = await admin.from('strava_activities').select('*').eq('user_id', userId).eq('id', activityId).maybeSingle()
   if (!a || !a.is_ride || a.deleted_at) return null
   const date = a.date as string
-  const [{ data: st }, { data: snapRow }, { data: others }, { data: ci }, { data: log }] = await Promise.all([
+  const [{ data: st }, { data: snapRow }, { data: allRows }, { data: ci }, { data: log }, { data: days }, { data: tests }] = await Promise.all([
     admin.from('strava_streams').select('dt, samples').eq('activity_id', activityId).maybeSingle(),
     admin.from('email_days').select('payload').eq('user_id', userId).eq('date', date).maybeSingle(),
-    admin.from('strava_activities').select('id, date, moving_time_s, mmp_w, np_w, avg_hr, note_facts').eq('user_id', userId).eq('is_ride', true).is('deleted_at', null).gte('date', addDays(date, -90)).lte('date', date).neq('id', activityId),
+    // cała historia jazd do tej daty (bez próbek) – kontekst historyczny, rekordy, forma
+    admin.from('strava_activities').select('id, date, moving_time_s, distance_m, elevation_m, mmp_w, np_w, avg_watts, avg_hr, device_watts, decoupling_pct, note_facts').eq('user_id', userId).eq('is_ride', true).is('deleted_at', null).lte('date', date).order('date'),
     admin.from('checkins').select('sleep, legs, motivation, resting_hr').eq('user_id', userId).eq('date', date).is('deleted_at', null).maybeSingle(),
     admin.from('session_logs').select('rpe').eq('user_id', userId).eq('date', date).eq('kind', 'bike').is('deleted_at', null).maybeSingle(),
+    admin.from('email_days').select('date, payload').eq('user_id', userId).gte('date', addDays(date, -180)).lt('date', date).order('date', { ascending: false }),
+    admin.from('test_results').select('date, ftp_w').eq('user_id', userId).is('deleted_at', null).not('ftp_w', 'is', null).lte('date', date).order('date'),
   ])
   const snap = (snapRow?.payload as DaySnapshot | undefined) ?? null
+  const others = (allRows ?? []).filter((o) => String(o.id) !== String(activityId) && (o.date as string) >= addDays(date, -90))
 
   const mmp90: Record<string, number | null> = {}
-  for (const o of others ?? []) {
+  for (const o of others) {
     for (const [k, v] of Object.entries((o.mmp_w as Record<string, number | null> | null) ?? {})) {
       if (v != null && (mmp90[k] == null || v > (mmp90[k] as number))) mmp90[k] = v
     }
   }
 
-  // ostatnie wykonanie tego samego treningu: jazda z dnia, którego migawka miała ten sam workout_id
-  let previous_same: History['previous_same'] = null
+  // wcześniejsze wykonania tego samego treningu: dni, których migawka miała ten sam workout_id i była jazda ≥ połowy planu
   const wid = snap?.context?.workout_id
+  const sameWorkoutDates: string[] = []
+  const weekPlanned: Record<string, number> = {}
+  for (const d of days ?? []) {
+    const pl = d.payload as DaySnapshot
+    weekPlanned[mondayOf(d.date as string)] = pl.week_planned_min
+    if (wid && pl.context?.workout_id === wid && pl.planned && (allRows ?? []).some((o) => o.date === d.date && Number(o.moving_time_s) >= pl.planned!.minutes * 30)) sameWorkoutDates.push(d.date as string)
+  }
+
+  let previous_same: History['previous_same'] = null
   if (wid) {
-    const { data: days } = await admin.from('email_days').select('date, payload').eq('user_id', userId).gte('date', addDays(date, -60)).lt('date', date).order('date', { ascending: false })
     for (const d of days ?? []) {
       if ((d.payload as DaySnapshot).context?.workout_id !== wid) continue
-      const prev = (others ?? []).filter((o) => o.date === d.date).sort((x, y) => Number(y.moving_time_s) - Number(x.moving_time_s))[0]
+      const prev = others.filter((o) => o.date === d.date).sort((x, y) => Number(y.moving_time_s) - Number(x.moving_time_s))[0]
       if (!prev) continue
       const pf = prev.note_facts as RideFacts | null
       const work = pf?.efforts?.detected ?? []
@@ -72,7 +83,7 @@ export async function gatherFacts(admin: SupabaseClient, userId: string, activit
   }
 
   const monday = mondayOf(date)
-  const inWeek = [...(others ?? []), a].filter((o) => (o.date as string) >= monday && (o.date as string) <= addDays(monday, 6))
+  const inWeek = [...others, a].filter((o) => (o.date as string) >= monday && (o.date as string) <= addDays(monday, 6))
   const week = snap ? { done_min: Math.round(inWeek.reduce((s, o) => s + Number(o.moving_time_s) / 60, 0)), planned_min: snap.week_planned_min, rides: inWeek.length } : null
 
   const ride: RideRowLite = {
@@ -93,12 +104,39 @@ export async function gatherFacts(admin: SupabaseClient, userId: string, activit
     mmp_w: (a.mmp_w as Record<string, number | null> | null) ?? null,
   }
   const samples: StoredSamples | null = st ? { dt: Number(st.dt), ...(st.samples as Omit<StoredSamples, 'dt'>) } : null
+  const toHist = (o: Record<string, unknown>): HistRide => ({
+    id: o.id as number,
+    date: o.date as string,
+    moving_time_s: Number(o.moving_time_s),
+    distance_m: Number(o.distance_m ?? 0),
+    elevation_m: Number(o.elevation_m ?? 0),
+    np_w: num(o.np_w),
+    avg_watts: num(o.avg_watts),
+    avg_hr: num(o.avg_hr),
+    device_watts: (o.device_watts as boolean | null) ?? null,
+    decoupling_pct: num(o.decoupling_pct),
+    work_avg_w: (() => {
+      const w = (o.note_facts as RideFacts | null)?.efforts?.detected ?? []
+      return w.length ? Math.round(w.reduce((s, e) => s + e.avg_w, 0) / w.length) : null
+    })(),
+  })
+  const context = historyContext({
+    rides: (allRows ?? []).map(toHist),
+    current: toHist(a),
+    ftp: snap?.ftp ?? null,
+    lthr: snap?.lthr ?? null,
+    weekPlanned,
+    sameWorkoutDates,
+    tests: (tests ?? []).map((t) => ({ date: t.date as string, ftp_w: Number(t.ftp_w) })),
+  })
   const facts = rideFacts(ride, samples, snap, {
     mmp90,
     previous_same,
     week,
     checkin: ci ? { sleep_1to5: num(ci.sleep), legs_1to5: num(ci.legs), motivation_1to5: num(ci.motivation), resting_hr: num(ci.resting_hr) } : null,
     rpe: num(log?.rpe),
+    context,
+    next_planned: snap?.next ?? null,
   })
   return { facts, ride: a }
 }
@@ -115,7 +153,7 @@ async function callClaude(system: string, user: string, model = MODEL): Promise<
     headers: { 'x-api-key': env('ANTHROPIC_API_KEY'), 'anthropic-version': '2023-06-01', 'content-type': 'application/json' },
     body: JSON.stringify({
       model,
-      max_tokens: 300,
+      max_tokens: 500,
       // stały podręcznik w pamięci podręcznej – przy kolejnych jazdach płacimy za niego ułamek
       system: [{ type: 'text', text: system, cache_control: { type: 'ephemeral' } }],
       messages: [{ role: 'user', content: user }],
@@ -156,20 +194,22 @@ export async function writeNote(admin: SupabaseClient, userId: string, activityI
     if (!Deno.env.get('ANTHROPIC_API_KEY')) throw new Error('brak klucza')
     if (!(await underLimit(admin))) throw new Error('limit miesięczny')
     let user = userMessage(facts)
-    for (let attempt = 0; attempt < 2; attempt++) {
+    // trzy podejścia: pierwsza wersja, poprawka z listą błędów, jeszcze jedna – dopiero potem notatka z reguł
+    for (let attempt = 0; attempt < 3; attempt++) {
       const r = await callClaude(system, user, opts.model ?? MODEL)
       await admin.from('ai_calls').insert({ user_id: userId, activity_id: activityId, input_tokens: r.usage.input_tokens ?? 0, output_tokens: r.usage.output_tokens ?? 0, cache_read_tokens: r.usage.cache_read_input_tokens ?? 0, cache_write_tokens: r.usage.cache_creation_input_tokens ?? 0 })
       const check = numbersOk(r.text, promptFacts(facts))
       const words = wordCount(r.text)
-      if (r.text && check.ok && words <= 70) {
+      if (r.text && check.ok && words >= 60 && words <= 160) {
         note = r.text
         source = 'ai'
         detail = `${opts.model ?? MODEL}${attempt ? ' po poprawce' : ''}`
         break
       }
-      const problems = [check.ok ? null : `liczby spoza faktów: ${check.unknown.join(', ')}`, words > 70 ? `za długa: ${words} słów` : null].filter(Boolean).join('; ')
-      detail = problems
-      user = `${userMessage(facts)}\n\nPoprzednia wersja była odrzucona (${problems}). Napisz ją jeszcze raz: 2–3 zdania, najwyżej 55 słów, wyłącznie liczby z faktów.`
+      const problems = [check.ok ? null : `liczby spoza faktów: ${check.unknown.join(', ')}`, words > 160 ? `za długa: ${words} słów` : words < 60 ? `za krótka: ${words} słów` : null].filter(Boolean).join('; ')
+      // odrzucony szkic zostaje w szczegółach – bez tego nie da się stroić podręcznika
+      detail = `${problems} | szkic: ${r.text.slice(0, 700)}`
+      user = `${userMessage(facts)}\n\nPoprzednia wersja była odrzucona (${problems}). Napisz ją jeszcze raz: jeden akapit, 6 zdań, 90–120 słów – krótkie zdania, bez wtrąceń w nawiasach; wyłącznie liczby z faktów (porównania tylko z „derived”, bez własnych odejmowań ani dat spoza faktów).`
     }
   } catch (e) {
     detail = e instanceof Error ? e.message : String(e)

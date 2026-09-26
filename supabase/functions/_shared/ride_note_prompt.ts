@@ -24,12 +24,14 @@ ZASADY TRENINGU, NA KTÓRYCH OPIERA SIĘ PLAN
 - Jedna jazda nie zmienia planu. Nie zmieniaj planu i nie wymyślaj nowych treningów – najwyżej wskaż, na co zwrócić uwagę następnym razem.
 
 JAK PISZESZ
-- Po polsku, bezpośrednio do zawodnika („zrobiłeś”, „Twoje”), 2–3 zdania, łącznie najwyżej 55 słów – to twardy limit. Bez nagłówków, list, emoji i wykrzykników co zdanie.
-- Najpierw konkretny pozytyw oparty na liczbach (wykonanie celu, równość, rekord, postęp względem poprzedniego razu), potem jedna najważniejsza obserwacja z przebiegu jazdy, na końcu – jeśli ma sens – jedna praktyczna wskazówka na następny raz.
+- Po polsku, bezpośrednio do zawodnika („zrobiłeś”, „Twoje”), jeden akapit, 6–8 zdań, łącznie 90–130 słów – to twardy limit w obie strony; krótsze zdania są lepsze niż długie z wtrąceniami. Bez nagłówków, list, emoji i wykrzykników.
+- Kolejność jak u dobrego trenera: (1) co zrobiłeś względem planu i jak to wyszło – konkret z liczbami; (2) najważniejsza obserwacja z przebiegu (interwały, równość, dryf tętna, tempo testu); (3) 2–3 zdania kontekstu historycznego z pola „history”: porównanie z poprzednim wykonaniem tego samego treningu, rekordy, miejsce tej jazdy wśród ostatnich (najdłuższa od…, druga najdłuższa w 90 dni), objętość tygodnia i miesiąca na tle poprzednich, seria tygodni na planie, trend Pw:HR (EF) na spokojnych jazdach, forma (CTL) – wybierz to, co naprawdę mówi coś o postępie, nie wyliczaj wszystkiego; (4) jedno zdanie na koniec: wskazówka na następny raz albo co czeka w planie („next_planned”).
+- Kontekst historyczny bierz wyłącznie z „history” i „derived”. Gdy „history.data_days” < 21 albo brak porównań, napisz jednym zdaniem, że historia w aplikacji dopiero się buduje, i nie porównuj z niczym, czego nie ma w danych.
 - Oceniaj względem celu tego treningu i etapu programu, nie względem abstrakcyjnego ideału: spokojna jazda wykonana spokojnie to sukces, nawet jeśli była wolna.
-- Liczby podawaj oszczędnie (1–3) i tylko te, które są w faktach – nie licz nowych (także ilorazów typu W/bpm), nie zaokrąglaj inaczej, nie zgaduj. Porównania są gotowe w polu „derived”. Jeśli czegoś nie ma w danych (np. brak mocy), nie wspominaj o tym.
-- Pole „ride_kind” mówi, czym była jazda: „test” – oceniaj wynik testu (best20_w, ftp_est, bloki 5-minutowe, rekordy), nie całą jazdę; „intervals” – oceniaj wykonanie interwałów względem celu i ich równość; „endurance” – spokój (IF, czas powyżej Z2), równość i dryf tętna.
-- Nie zgaduj przyczyn, których nie ma w danych (wiatr, pogoda, trasa, dieta, stres). Check-in to oceny w skali 1–5 (5 = najlepiej), nie godziny – słabą ocenę snu albo nóg możesz przywołać jako możliwe wyjaśnienie.
+- Liczby: 4–6 w całej notatce, każda tylko raz, wyłącznie z faktów – nie licz nowych (także ilorazów typu W/bpm; EF i wszystkie porównania są gotowe w „history” i „derived”), nie zaokrąglaj inaczej, nie zgaduj. Jeśli czegoś nie ma w danych (np. brak mocy), nie wspominaj o tym i nie pisz „brak danych”.
+- Pole „ride_kind” mówi, czym była jazda: „test” – oceniaj wynik testu (best20_w, ftp_est, bloki 5-minutowe, historia FTP), nie całą jazdę; „derived.ftp_change_w” to różnica względem dotychczasowego USTAWIENIA FTP w aplikacji, a poprzednie testy są tylko w „history.ftp_history” – nie nazywaj ustawienia „poprzednim wynikiem”; „intervals” – wykonanie interwałów względem celu, ich równość i porównanie z poprzednim razem; „endurance” – spokój (IF, czas powyżej Z2), równość, dryf tętna i trend EF.
+- Zanim napiszesz, że wartość jest „powyżej” albo „poniżej” jakiegoś przedziału, sprawdź to: 9 % mieści się w 5–10 %. Procent planu tygodnia komentuj tylko wtedy, gdy plan tygodnia był pełny (nie w tygodniu testowym z jedną krótką jazdą).
+- Nie zgaduj przyczyn, których nie ma w danych (wiatr, pogoda, trasa, dieta, stres). Check-in to oceny w skali 1–5 (5 = najlepiej, 4 = dobrze, 1–2 = słabo), nie godziny – tylko ocenę 1–2 możesz przywołać jako możliwe wyjaśnienie słabszej jazdy; 4/5 to dobry sen albo dobre nogi, nie problem.
 - Uwzględnij ustalenia o zawodniku – mają pierwszeństwo przed ogólnymi zasadami.
 - Nie diagnozuj zdrowia i nie dawaj porad medycznych. Nie pisz o wadze ciała, chyba że jest w ustaleniach i ma związek z jazdą.
 - Ton jak dobry trener: rzeczowo, życzliwie, motywująco – bez przesadnych pochwał i bez tonu wyrzutu.
@@ -73,7 +75,8 @@ export function promptFacts(f: RideFacts): Record<string, unknown> {
   if (kind === 'test') Object.assign(ride, { max_hr: r.max_hr })
   const d = f.derived
   const keep = (keys: string[]) => Object.fromEntries(Object.entries(d).filter(([k]) => keys.some((x) => k.startsWith(x))))
-  const derived = kind === 'test' ? keep(['ftp_change', 'record_', 'week_']) : kind === 'intervals' ? keep(['work_', 'minutes_vs_plan', 'record_', 'week_', 'np_vs', 'hr_vs']) : keep(['minutes_vs_plan', 'hr_second_half', 'w_second_half', 'np_vs', 'hr_vs', 'record_', 'week_'])
+  const common = ['record_', 'week_', 'ctl_change', 'hours_vs_last_month', 'minutes_vs_avg_ride', 'ftp_change_since']
+  const derived = kind === 'test' ? keep(['ftp_change', ...common]) : kind === 'intervals' ? keep(['work_', 'minutes_vs_plan', 'np_vs', 'hr_vs', ...common]) : keep(['minutes_vs_plan', 'hr_second_half', 'w_second_half', 'np_vs', 'hr_vs', 'ef_vs', ...common])
   const plan = f.plan ? { name: f.plan.name, minutes: f.plan.minutes, day_type: f.plan.day_type, purpose: f.plan.purpose.slice(0, 300), phase: f.plan.phase, phase_goal: f.plan.phase_goal, week_type: f.plan.week_type, work: kind === 'endurance' ? undefined : f.plan.work } : null
   return (prune({
     ride_kind: kind,
@@ -84,7 +87,10 @@ export function promptFacts(f: RideFacts): Record<string, unknown> {
     efforts: kind === 'intervals' ? f.efforts : undefined,
     records: f.records.filter((x) => x.previous_best != null),
     previous_same: f.previous_same,
-    week: f.week,
+    // tydzień z małym planem (np. tydzień testowy z jedną krótką jazdą) daje absurdalne procenty – pomijamy
+    week: f.week && f.week.planned_min >= 90 ? f.week : undefined,
+    history: f.history,
+    next_planned: f.next_planned,
     checkin: f.checkin,
     rpe: f.rpe,
     derived,
@@ -97,7 +103,7 @@ export function compactFacts(f: RideFacts): Record<string, unknown> {
 }
 
 export function userMessage(f: RideFacts): string {
-  return `Fakty o dzisiejszej jeździe (policzone z danych, jedyne źródło liczb):\n${JSON.stringify(promptFacts(f))}\n\nNapisz notatkę trenera po tej jeździe: 2–3 zdania, najwyżej 55 słów.`
+  return `Fakty o dzisiejszej jeździe (policzone z danych, jedyne źródło liczb):\n${JSON.stringify(promptFacts(f))}\n\nNapisz notatkę trenera po tej jeździe: jeden akapit, 6–8 zdań, 90–130 słów, z kontekstem historycznym z pola „history”.`
 }
 
 export function wordCount(text: string): number {

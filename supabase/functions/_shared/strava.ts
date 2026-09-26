@@ -113,9 +113,10 @@ export function hrHistogram(streams: Streams | null): number[] | null {
   return Array.from(hist, (v) => v ?? 0)
 }
 
-export async function fetchActivity(token: string, id: number): Promise<{ activity: StravaActivity; streams: Streams | null } | null> {
+export async function fetchActivity(token: string, id: number, withStreams = true): Promise<{ activity: StravaActivity; streams: Streams | null } | null> {
   const activity = await stravaGet<StravaActivity>(token, `/activities/${id}`)
   if (!activity) return null
+  if (!withStreams) return { activity, streams: null }
   // pełne strumienie do analizy (plan vs wykonanie, NP, MMP, kadencja) – Strava zwraca tylko te, które istnieją
   const streams = await stravaGet<Streams>(token, `/activities/${id}/streams?keys=time,heartrate,watts,cadence,velocity_smooth,distance,altitude,moving&key_by_type=true`)
   return { activity, streams }
