@@ -41,9 +41,11 @@ test('oznaczenie jazdy jako wykonanej z danymi', async ({ page }) => {
 test('wynik testu FTP: strefy od następnego dnia (R11)', async ({ page }) => {
   await page.goto('/?today=2026-09-26')
   await expect(page.getByRole('heading', { name: 'Wynik testu' })).toBeVisible()
-  await fillNumber(page, 'Śr. tętno z ostatnich 10 min', '160')
+  // test 20-minutowy: LTHR = 0,97 × średnie tętno z 20 min (165 → 160)
+  await fillNumber(page, 'Śr. tętno z 20 min', '165')
   await fillNumber(page, 'Śr. moc z 20 min (W)', '235')
   await expect(page.getByText('LTHR = 160 bpm')).toBeVisible()
+  await expect(page.getByText('(0,97 × 165)')).toBeVisible()
   await expect(page.getByText('FTP = 223 W')).toBeVisible()
   await page.getByRole('button', { name: 'Zapisz wynik testu' }).click()
   await expect(page.getByText(/LTHR 160 bpm/).first()).toBeVisible()
