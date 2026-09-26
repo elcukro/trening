@@ -18,8 +18,10 @@ export function TestResultForm({ date, protocol, program, previousLthr, onSaved 
   const n = (v: string) => (v.trim() === '' ? null : Number(v.replace(',', '.')))
   const avgHr = n(f.avg_hr)
   const avgPower = n(f.avg_power_w)
-  // TEST_LTHR: średnie tętno z minut 10–30; FTP_TEST: średnie z ostatnich 10 min; Wattbike: 0,97 × średnia z 20 min
-  const lthr = avgHr ? (protocol === 'WATTBIKE_TEST' ? Math.round(avgHr * 0.97) : Math.round(avgHr)) : null
+  // TEST_LTHR: średnie tętno z minut 10–30 (30 min – tętno już stabilne); testy 20-minutowe (FTP_TEST, Wattbike): 0,97 × średnia z 20 min
+  // – ostatnie 10 min zawyża, gdy tętno rośnie do końca (test 26.09.2026: 169 z ostatnich 10 min vs 160 z 0,97 × średnia)
+  const twenty = protocol === 'WATTBIKE_TEST' || protocol === 'FTP_TEST'
+  const lthr = avgHr ? (twenty ? Math.round(avgHr * 0.97) : Math.round(avgHr)) : null
   const ftp = protocol !== 'TEST_LTHR' && avgPower ? Math.round(avgPower * 0.95) : null
   const hasPower = protocol !== 'TEST_LTHR'
   const zones = lthr ? computeZones(program.hr_zones_lthr_fraction, lthr) : null
@@ -40,7 +42,7 @@ export function TestResultForm({ date, protocol, program, previousLthr, onSaved 
   return (
     <div>
       <div className="grid grid-cols-2 gap-3">
-        {input('avg_hr', protocol === 'WATTBIKE_TEST' ? 'Śr. tętno z 20 min' : protocol === 'FTP_TEST' ? 'Śr. tętno z ostatnich 10 min' : 'Śr. tętno z minut 10–30', 'numeric', 'np. 160')}
+        {input('avg_hr', twenty ? 'Śr. tętno z 20 min' : 'Śr. tętno z minut 10–30', 'numeric', 'np. 160')}
         {hasPower && input('avg_power_w', 'Śr. moc z 20 min (W)', 'numeric', 'np. 235')}
         {protocol !== 'WATTBIKE_TEST' && input('avg_speed_kmh', 'Śr. prędkość (km/h)', 'decimal', 'np. 31,5')}
         {protocol === 'TEST_LTHR' && input('distance_km', 'Dystans 30 min (km)', 'decimal')}
@@ -56,7 +58,7 @@ export function TestResultForm({ date, protocol, program, previousLthr, onSaved 
         <Inset tone="info" className="mt-3">
           <p className="tabular-nums">
             <b>LTHR = {lthr} bpm</b>
-            {protocol === 'WATTBIKE_TEST' && <span className="text-xs text-slate-500 dark:text-slate-400"> (0,97 × {avgHr})</span>}
+            {twenty && <span className="text-xs text-slate-500 dark:text-slate-400"> (0,97 × {avgHr})</span>}
             {previousLthr && (
               <span className="ml-2 text-xs">
                 poprzednio {previousLthr} ({lthr - previousLthr >= 0 ? '+' : ''}

@@ -28,7 +28,7 @@ _spec.loader.exec_module(gen)
 sys.stdout = _stdout
 
 PROGRAM_ID = "ftp300"
-PROGRAM_VERSION = "2026.09.25-6"
+PROGRAM_VERSION = "2026.09.26-1"
 
 # dłuższy blok VO2max niż w programie alpejskim (6 powtórzeń) – przy trenażerze ERG da się utrzymać moc
 gen.add(gen.interval_workout("VO2_6x3", "VO2max 6×3 min", "vo2max", 6, 3, 3, "Z5b", [85, 95], gen.VO2_DESC, wu=20))
@@ -233,8 +233,8 @@ RULES = {
             "id": "FTP_TEST",
             "name": "Test FTP (20 min, moc)",
             "when": "tydz. 0 (niedziela 27.09), 11, 21, 27 i 39 (środa)",
-            "protocol": "Rozgrzewka z krótkimi przyspieszeniami, potem 20 min maksymalnie równego wysiłku – najlepiej na trenażerze w trybie wolnym (nie ERG), zawsze w tych samych warunkach. Pierwsze 5 min nie za mocno.",
-            "result": "FTP = 0,95 × średnia moc z 20 min; tętno progowe = średnie tętno z ostatnich 10 min.",
+            "protocol": "Rozgrzewka z krótkimi przyspieszeniami, potem 20 min maksymalnie równego wysiłku – najlepiej na trenażerze w trybie wolnym (nie ERG), zawsze w tych samych warunkach. Pierwsze 5 min nie za mocno. Rozgrzewkowe „5 min mocno” w podanym zakresie watów – za mocno obniża wynik.",
+            "result": "FTP = 0,95 × średnia moc z 20 min; tętno progowe ≈ 0,97 × średnie tętno z 20 min.",
         },
     ],
     # jedyna sesja w tygodniu – nie ma dnia, na który dałoby się ją przenieść bez szkody dla poniedziałkowej długiej

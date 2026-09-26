@@ -17,7 +17,7 @@ import json, datetime as dt, os, copy
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 D = dt.date
-PROGRAM_VERSION = "2026.09.25-3"
+PROGRAM_VERSION = "2026.09.26-1"
 
 DEFAULT_SETTINGS = {
     "program_start": "2026-09-14",          # poniedziałek tygodnia 1
@@ -157,15 +157,15 @@ def build_library():
          "result_fields": ["avg_power_w", "avg_hr", "notes"]})
 
     ftp_steps = [step("Rozgrzewka", 20, "Z2", "wu", CAD_EASY, "Z2; w środku 3×1 min z kadencją 100 rpm."),
-                 step("5 min mocno", 5, "Z4", "lt", CAD_EASY, "Mocno, ale nie do upadku – otwiera nogi przed testem."),
+                 step("5 min mocno", 5, "Z4", "lt", CAD_EASY, "Trzymaj się podanego zakresu watów – to otwarcie nóg, nie próba. Za mocno tutaj = zaniżony wynik testu."),
                  step("Luz", 10, "Z1", "recover", CAD_EASY),
                  step("TEST 20 min – maksymalnie równo", 20, "Z5a", "ftp", CAD_EASY,
-                      f"Płaska, prosta trasa bez świateł, zawsze ta sama.{TEST_NOTE} Najczęstszy błąd: wystrzelić na starcie – pierwsze 5 min świadomie wolniej niż chcesz. FTP = 95% średniej mocy. Tętno progowe = średnie HR z ostatnich 10 min.", [9, 10]),
+                      f"Płaska, prosta trasa bez świateł, zawsze ta sama.{TEST_NOTE} Najczęstszy błąd: wystrzelić na starcie – pierwsze 5 min świadomie wolniej niż chcesz. FTP = 95% średniej mocy. Tętno progowe = 0,97 × średnie HR z całych 20 min.", [9, 10]),
                  CD(10)]
     add({"id": "FTP_TEST", "name": "Test FTP 20 min (moc)", "category": "test", "key": True, "steps": ftp_steps,
          "duration_min": round(total_s(ftp_steps) / 60),
-         "description": "Test progowy z miernikiem mocy: 20 min maksymalnie równo. FTP = 0,95 × średnia moc, tętno progowe = średnie tętno z ostatnich 10 min. Bez miernika: wariant terenowy po tętnie (TEST_LTHR) albo Wattbike na siłowni. Powtarzaj co 6 tygodni – strefy mocy licz z wyniku, nie ze starych ustawień.",
-         "result_fields": ["avg_power_w", "avg_hr_last10", "avg_speed_kmh", "route", "bike", "temp_c", "wind", "notes"],
+         "description": "Test progowy z miernikiem mocy: 20 min maksymalnie równo. FTP = 0,95 × średnia moc, tętno progowe ≈ 0,97 × średnie tętno z 20 min (ostatnie 10 min zawyża, gdy tętno rośnie do końca). Bez miernika: wariant terenowy po tętnie (TEST_LTHR) albo Wattbike na siłowni. Powtarzaj co 6 tygodni – strefy mocy licz z wyniku, nie ze starych ustawień.",
+         "result_fields": ["avg_power_w", "avg_hr", "avg_speed_kmh", "route", "bike", "temp_c", "wind", "notes"],
          "alternative": "WATTBIKE_TEST"})
 
     for reps, m, rec in [(2, 10, 5), (2, 12, 5), (3, 10, 5), (2, 15, 5), (3, 12, 5), (3, 15, 5), (2, 20, 5), (3, 20, 5)]:

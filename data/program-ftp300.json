@@ -1,5 +1,5 @@
 {
- "version": "2026.09.25-6",
+ "version": "2026.09.26-1",
  "meta": {
   "name": "FTP 300 – próg i VO2max",
   "short": "FTP 300",
@@ -180,8 +180,8 @@
     "id": "FTP_TEST",
     "name": "Test FTP (20 min, moc)",
     "when": "tydz. 0 (niedziela 27.09), 11, 21, 27 i 39 (środa)",
-    "protocol": "Rozgrzewka z krótkimi przyspieszeniami, potem 20 min maksymalnie równego wysiłku – najlepiej na trenażerze w trybie wolnym (nie ERG), zawsze w tych samych warunkach. Pierwsze 5 min nie za mocno.",
-    "result": "FTP = 0,95 × średnia moc z 20 min; tętno progowe = średnie tętno z ostatnich 10 min."
+    "protocol": "Rozgrzewka z krótkimi przyspieszeniami, potem 20 min maksymalnie równego wysiłku – najlepiej na trenażerze w trybie wolnym (nie ERG), zawsze w tych samych warunkach. Pierwsze 5 min nie za mocno. Rozgrzewkowe „5 min mocno” w podanym zakresie watów – za mocno obniża wynik.",
+    "result": "FTP = 0,95 × średnia moc z 20 min; tętno progowe ≈ 0,97 × średnie tętno z 20 min."
    }
   ],
   "gym_catchup": {
@@ -1085,7 +1085,7 @@
       85,
       95
      ],
-     "note": "Mocno, ale nie do upadku – otwiera nogi przed testem."
+     "note": "Trzymaj się podanego zakresu watów – to otwarcie nóg, nie próba. Za mocno tutaj = zaniżony wynik testu."
     },
     {
      "name": "Luz",
@@ -1124,7 +1124,7 @@
       85,
       95
      ],
-     "note": "Płaska, prosta trasa bez świateł, zawsze ta sama. Najczęstszy błąd: wystrzelić na starcie – pierwsze 5 min świadomie wolniej niż chcesz. FTP = 95% średniej mocy. Tętno progowe = średnie HR z ostatnich 10 min."
+     "note": "Płaska, prosta trasa bez świateł, zawsze ta sama. Najczęstszy błąd: wystrzelić na starcie – pierwsze 5 min świadomie wolniej niż chcesz. FTP = 95% średniej mocy. Tętno progowe = 0,97 × średnie HR z całych 20 min."
     },
     {
      "name": "Schłodzenie",
@@ -1147,10 +1147,10 @@
     }
    ],
    "duration_min": 65,
-   "description": "Test progowy z miernikiem mocy: 20 min maksymalnie równo. FTP = 0,95 × średnia moc, tętno progowe = średnie tętno z ostatnich 10 min. Bez miernika: wariant terenowy po tętnie (TEST_LTHR) albo Wattbike na siłowni. Powtarzaj co 6 tygodni – strefy mocy licz z wyniku, nie ze starych ustawień.",
+   "description": "Test progowy z miernikiem mocy: 20 min maksymalnie równo. FTP = 0,95 × średnia moc, tętno progowe ≈ 0,97 × średnie tętno z 20 min (ostatnie 10 min zawyża, gdy tętno rośnie do końca). Bez miernika: wariant terenowy po tętnie (TEST_LTHR) albo Wattbike na siłowni. Powtarzaj co 6 tygodni – strefy mocy licz z wyniku, nie ze starych ustawień.",
    "result_fields": [
     "avg_power_w",
-    "avg_hr_last10",
+    "avg_hr",
     "avg_speed_kmh",
     "route",
     "bike",
