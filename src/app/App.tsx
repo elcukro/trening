@@ -1,5 +1,5 @@
-import { Component, Suspense, lazy, useMemo, type ReactNode } from 'react'
-import { BrowserRouter, NavLink, Navigate, Outlet, Route, Routes } from 'react-router'
+import { Component, Suspense, lazy, useEffect, useMemo, type ReactNode } from 'react'
+import { BrowserRouter, NavLink, Navigate, Outlet, Route, Routes, useNavigate } from 'react-router'
 import { TodayPage } from '@/features/today/TodayPage'
 import { DayPage } from '@/features/today/DayPage'
 import { WeekPage } from '@/features/week/WeekPage'
@@ -20,6 +20,7 @@ import { ToastProvider } from '@/components/Toast'
 import { useWahooAutoPush } from '@/sync/useWahoo'
 import { useEmailSnapshots } from '@/sync/emailSnapshots'
 import { MovedBanner } from './MovedBanner'
+import { iosPathFor, isNavigateMessage } from './pushNav'
 import { usePushKeepalive } from '@/sync/usePush'
 import { useEngine } from '@/app/useSettings'
 import { todayISO } from '@/lib/dates'
@@ -189,9 +190,24 @@ function ModeGate({ children }: { children: ReactNode }) {
   } catch {
     /* prywatne okno */
   }
+  const target = typeof window === 'undefined' ? '/i' : iosPathFor(window.location.pathname)
   if (!loaded) return null
-  if (mode === 'ios' && !escaped) return <Navigate to={{ pathname: '/i', search }} replace />
+  if (mode === 'ios' && !escaped && target) return <Navigate to={{ pathname: target, search }} replace />
   return <>{children}</>
+}
+
+/** Cel z powiadomienia push, gdy service worker nie mógł sam przekierować okna (wiadomość `navigate`). */
+function PushNavigator() {
+  const navigate = useNavigate()
+  useEffect(() => {
+    if (typeof navigator === 'undefined' || !('serviceWorker' in navigator)) return
+    const onMessage = (e: MessageEvent) => {
+      if (isNavigateMessage(e.data)) navigate(e.data.url)
+    }
+    navigator.serviceWorker.addEventListener('message', onMessage)
+    return () => navigator.serviceWorker.removeEventListener('message', onMessage)
+  }, [navigate])
+  return null
 }
 
 function Layout() {
@@ -239,15 +255,16 @@ export function App() {
       <ToastProvider>
         <MovedBanner />
         <BrowserRouter>
+          <PushNavigator />
           <Routes>
             <Route element={<Layout />}>
               <Route index element={<ModeGate><TodayPage /></ModeGate>} />
-              <Route path="dzien/:date" element={<DayPage />} />
-              <Route path="tydzien" element={<WeekPage />} />
-              <Route path="tydzien/:date" element={<WeekPage />} />
+              <Route path="dzien/:date" element={<ModeGate><DayPage /></ModeGate>} />
+              <Route path="tydzien" element={<ModeGate><WeekPage /></ModeGate>} />
+              <Route path="tydzien/:date" element={<ModeGate><WeekPage /></ModeGate>} />
               <Route path="kalendarz" element={<CalendarPage />} />
               <Route path="kalendarz/:month" element={<CalendarPage />} />
-              <Route path="postep" element={<Suspense fallback={<p className="py-8 text-center text-sm text-slate-500">Ładowanie…</p>}><ProgressPage /></Suspense>} />
+              <Route path="postep" element={<ModeGate><Suspense fallback={<p className="py-8 text-center text-sm text-slate-500">Ładowanie…</p>}><ProgressPage /></Suspense></ModeGate>} />
               <Route path="postep/tydzien/:monday" element={<Suspense fallback={<p className="py-8 text-center text-sm text-slate-500">Ładowanie…</p>}><ReportPage kind="week" /></Suspense>} />
               <Route path="postep/miesiac/:month" element={<Suspense fallback={<p className="py-8 text-center text-sm text-slate-500">Ładowanie…</p>}><ReportPage kind="month" /></Suspense>} />
               <Route path="biblioteka" element={<LibraryPage />} />

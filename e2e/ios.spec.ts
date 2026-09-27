@@ -159,3 +159,12 @@ test('Żaden panel nie wychodzi za krawędź ekranu', async ({ page }) => {
     await page.getByRole('button', { name: 'Zamknij' }).click()
   }
 })
+
+test('cel powiadomienia: ścieżka pełnej aplikacji na telefonie otwiera ekran w /i, raport zostaje w pełnej', async ({ page }) => {
+  await page.goto('/dzien/2026-09-23?today=2026-09-23')
+  await expect(page).toHaveURL(/\/i\/dzien\/2026-09-23/)
+  await expect(page.getByRole('heading', { name: 'Baza tlenowa Z2' })).toBeVisible()
+  await page.goto('/postep/tydzien/2026-09-21?today=2026-09-27')
+  await expect(page).toHaveURL(/\/postep\/tydzien\/2026-09-21/)
+  await expect(page.getByRole('heading', { name: /Przegląd tygodnia/ })).toBeVisible()
+})

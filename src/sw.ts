@@ -47,11 +47,16 @@ self.addEventListener('notificationclick', (event) => {
     (async () => {
       const all = await self.clients.matchAll({ type: 'window', includeUncontrolled: true })
       for (const client of all) {
-        if ('focus' in client) {
-          await client.focus()
-          if ('navigate' in client) await client.navigate(url)
-          return
+        if (!('focus' in client)) continue
+        await client.focus()
+        // `navigate` działa tylko dla okien kontrolowanych przez ten SW – aplikacja na ekranie początkowym iOS
+        // często nim nie jest i wywołanie rzuca; wtedy prosimy otwarte okno, żeby samo przeszło do celu
+        try {
+          await client.navigate(url)
+        } catch {
+          client.postMessage({ type: 'navigate', url })
         }
+        return
       }
       await self.clients.openWindow(url)
     })(),
