@@ -27,7 +27,7 @@ Deno.serve(async (req) => {
     return page(kind ? `Wyłączone: ${kind === 'morning' ? 'poranna odprawa' : 'podsumowanie po treningu'}. Włączysz z powrotem w Ustawieniach.` : 'Link jest nieprawidłowy albo wygasł.')
   }
   if (req.method !== 'POST') return json({ error: 'method' }, 405)
-  const body = (await req.json().catch(() => ({}))) as { action?: string; secret?: string; kind?: 'morning' | 'workout'; activity_id?: number | string }
+  const body = (await req.json().catch(() => ({}))) as { action?: string; secret?: string; kind?: 'morning' | 'workout'; activity_id?: number | string; subject_prefix?: string }
 
   if (body.action === 'cron') {
     if (!body.secret || body.secret !== env('PUSH_CRON_SECRET')) return json({ error: 'unauthorized' }, 401)
@@ -64,7 +64,8 @@ Deno.serve(async (req) => {
       const snap = (snapRow?.payload as DaySnapshot | undefined) ?? null
       const ride: RideLite = { date: a.date, name: a.name, moving_time_s: Number(a.moving_time_s), distance_m: Number(a.distance_m ?? 0), elevation_m: Number(a.elevation_m ?? 0), avg_hr: a.avg_hr, avg_cadence: a.avg_cadence, avg_watts: a.avg_watts, np_w: a.np_w, device_watts: a.device_watts, decoupling_pct: a.decoupling_pct == null ? null : Number(a.decoupling_pct), hr_histogram: a.hr_histogram }
       const view = buildWorkoutView(ride, snap, { athlete: '', appUrl: APP_URL, rideDateLabel: snap?.dateLabel ?? a.date, note: (a.note as string | null) ?? null })
-      const r = await resend(user.email, workoutEmail(view), null, '[PRÓBA] ')
+      // domyślnie „[PRÓBA]”; w trybie oceny można wysłać jako zwykły mail (np. analiza testu na prośbę zawodnika)
+      const r = await resend(user.email, workoutEmail(view), null, body.subject_prefix ?? '[PRÓBA] ')
       return r.error ? json({ error: 'resend', detail: r.error }, 502) : json({ ok: true, date: a.date, to: user.email })
     }
     return json({ error: 'kind' }, 400)
