@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest'
 import ftpJson from '../../../data/program-ftp300.json'
 import alpsJson from '../../../data/program.json'
 import { parseProgram } from '../schema'
-import { deficitWeeksLeft, personalizeNutrition, weightBasedDeficit } from '../nutrition'
+import { deficitWeeksLeft, personalizeNutrition, weightBasedDeficit, weightTarget } from '../nutrition'
 import { layoutWeeks } from '../layout'
 import { enrichDay } from '../plan'
 import { buildCalendar } from '../calendar'
@@ -51,9 +51,39 @@ describe('deficyt dobierany z masy (weight_based), rozłożony proporcjonalnie',
     const weeks = layoutWeeks(ftp, ftp.default_settings)
     expect(deficitWeeksLeft(weeks, ftp.nutrition, '2026-09-28', '2027-06-28')).toBe(29)
   })
-  it('program alpejski bez weight_based – etykiety bez zmian', () => {
-    expect(alps.nutrition.weight_based).toBeUndefined()
+  it('program bez weight_based – etykiety bez zmian', () => {
+    const plain = { ...alps.nutrition, weight_based: undefined }
     const n = { energy: 'deficit_500' as const, label: 'Dzień lekki: deficyt ok. 500 kcal', protein_g_per_kg: 1.8, on_bike_carbs_g_per_h: [0, 0] as [number, number] }
-    expect(personalizeNutrition(n, alps.nutrition, { currentKg: 107, targetKg: 90, deficitWeeksLeft: 30 })).toBe(n)
+    expect(personalizeNutrition(n, plain, { currentKg: 107, targetKg: 90, deficitWeeksLeft: 30 })).toBe(n)
+  })
+})
+
+describe('punkty kontrolne masy (program alpejski: 91 kg na 1.03.2027, cel 82 kg)', () => {
+  const goal = alps.default_settings.trip_start
+  it('cel to najbliższy punkt, którego data nie minęła i którego masy jeszcze nie ma', () => {
+    expect(weightTarget(alps.nutrition, 105.9, 82, '2026-09-29', goal)).toEqual({ kg: 91, date: '2027-03-01', milestone: true })
+    // punkt osiągnięty przed terminem → od razu cel końcowy
+    expect(weightTarget(alps.nutrition, 90.5, 82, '2027-01-15', goal)).toEqual({ kg: 82, date: goal, milestone: false })
+    // termin minął, masa wyższa → cel końcowy (tempo rośnie)
+    expect(weightTarget(alps.nutrition, 94, 82, '2027-03-02', goal)).toEqual({ kg: 82, date: goal, milestone: false })
+  })
+  it('plan dnia: dzień wolny z deficytem do punktu kontrolnego, akcent i długa bez deficytu, białko od 82 kg', () => {
+    const ctx = { program: alps, settings: alps.default_settings, current_weight_kg: 105.9 }
+    const days = buildCalendar(ctx)
+    const at = (date: string) => enrichDay(days.find((d) => d.date === date)!, ctx)
+    const rest = at('2026-10-01') // czwartek wolny
+    expect(rest.nutrition.label).toMatch(/^Dzień lekki: deficyt ok\. \d+ kcal \(≈ 0,\d+ kg\/tydz\. do 91 kg na 1\.03/)
+    expect(at('2026-09-30').nutrition.energy).toBe('maintenance') // środa akcent
+    expect(at('2026-10-03').nutrition.energy).toBe('maintenance') // sobota długa
+    expect(at('2026-09-29').nutrition.label).toMatch(/^Dzień treningowy: deficyt/) // wtorek Z2 60
+    expect(rest.protein_g).toBe(165) // 2,0 × 82 = 164 → 165
+    // limit dzienny 900 kcal
+    const kcal = Number(rest.nutrition.label.match(/ok\. (\d+) kcal/)![1])
+    expect(kcal).toBeLessThanOrEqual(900)
+  })
+  it('na masie docelowej deficyt znika', () => {
+    const ctx = { program: alps, settings: alps.default_settings, current_weight_kg: 82 }
+    const days = buildCalendar(ctx)
+    expect(enrichDay(days.find((d) => d.date === '2026-10-01')!, ctx).nutrition.energy).toBe('maintenance')
   })
 })

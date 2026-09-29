@@ -54,6 +54,9 @@ test('Tydzień i Postęp: liczby i nawigacja zakładkami', async ({ page }) => {
   await page.goto('/i?today=2026-09-23')
   await page.getByRole('link', { name: 'Tydzień' }).click()
   await expect(page.getByRole('heading', { name: 'Tydzień' })).toBeVisible()
+  // zakładki nie przenoszą `?today=` – treść konkretnego tygodnia sprawdzamy pod adresem z datą,
+  // inaczej test zależy od prawdziwej daty (przestał przechodzić, gdy minął tydzień 2)
+  await page.goto('/i/tydzien?today=2026-09-23')
   await expect(page.getByText('Test FTP 20 min (moc)')).toBeVisible()
   await page.getByRole('link', { name: 'Postęp' }).click()
   await expect(page.getByRole('heading', { name: 'Postęp' })).toBeVisible()
@@ -68,6 +71,8 @@ test('Na telefonie start otwiera prosty widok; da się przejść do pełnej apli
 
   await page.getByRole('link', { name: 'Więcej' }).click()
   await expect(page.getByRole('button', { name: 'Nie otwieraj domyślnie' })).toBeVisible()
+  // z datą w adresie – przejście do pełnej aplikacji zachowuje `?today=`, kliknięcie zakładki nie
+  await page.goto('/i/wiecej?today=2026-09-23')
   await page.getByText('Otwórz pełną aplikację').click()
   await expect(page.getByRole('heading', { name: 'Tydzień 2' })).toBeVisible()
 

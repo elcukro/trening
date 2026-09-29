@@ -76,7 +76,8 @@ export function weightBasedDeficit(inp: {
   const maxKgPerWeek = (inp.currentKg * inp.maxLossPctPerWeek) / 100
   const kgPerWeek = Math.min(needKgPerWeek, maxKgPerWeek)
   const perShare = (kgPerWeek * KCAL_PER_KG) / inp.sharesPerWeek
-  const kcal = Math.round(Math.min(perShare * inp.share, inp.maxKcalPerDay) / 50) * 50
+  // limit dzienny dotyczy pełnego udziału; dzień z mniejszym udziałem dostaje proporcjonalnie mniej także po obcięciu
+  const kcal = Math.round((Math.min(perShare, inp.maxKcalPerDay) * inp.share) / 50) * 50
   // tempo przy limicie dziennym liczone ostrożnie: jakby każdy udział był obcięty tak jak dzień pełny
   const effKgPerWeek = (Math.min(perShare, inp.maxKcalPerDay) * inp.sharesPerWeek) / KCAL_PER_KG
   return { kcal, kg_per_week: Math.round(effKgPerWeek * 100) / 100, capped: needKgPerWeek > maxKgPerWeek || perShare > inp.maxKcalPerDay }
@@ -86,20 +87,33 @@ export function weightBasedDeficit(inp: {
  * Zamienia stałą etykietę dnia z deficytem na deficyt policzony z masy zawodnika (gdy program ma `weight_based`).
  * Dni bez deficytu i programy bez tej polityki zostają bez zmian.
  */
-export function personalizeNutrition(n: Nutrition, policy: NutritionPolicy, inp: { currentKg: number; targetKg: number; deficitWeeksLeft: number }): Nutrition {
+export function personalizeNutrition(n: Nutrition, policy: NutritionPolicy, inp: { currentKg: number; targetKg: number; deficitWeeksLeft: number; targetDate?: ISODate | null }): Nutrition {
   const wb = policy.weight_based
   if (!wb || !n.energy.startsWith('deficit')) return n
   const d = weightBasedDeficit({ ...inp, maxKcalPerDay: wb.max_kcal_per_day, maxLossPctPerWeek: wb.max_loss_pct_per_week, sharesPerWeek: wb.deficit_shares_per_week, share: n.deficit_share ?? 1 })
   const kind = n.label.split(':')[0] ?? 'Dzień'
   if (d.kcal < 100) return { ...n, energy: 'maintenance', label: inp.currentKg <= inp.targetKg ? `${kind}: bilans zerowy – masa docelowa osiągnięta` : `${kind}: bilans zerowy – do celu zostało niewiele` }
   const kg = d.kg_per_week.toLocaleString('pl-PL', { maximumFractionDigits: 2 })
-  const target = inp.targetKg.toLocaleString('pl-PL', { maximumFractionDigits: 1 })
+  const kgLabel = inp.targetKg.toLocaleString('pl-PL', { maximumFractionDigits: 1 })
+  // punkt kontrolny ma datę w etykiecie („do 91 kg na 1.03”), cel końcowy – nie
+  const target = inp.targetDate ? `${kgLabel} kg na ${Number(inp.targetDate.slice(8))}.${inp.targetDate.slice(5, 7)}` : `${kgLabel} kg`
   return {
     ...n,
     energy: d.kcal >= 400 ? 'deficit_500' : 'deficit_300',
     // przy obciętym deficycie mówimy wprost, że cel w terminie wymagałby więcej – bez udawania, że się zdąży
-    label: `${kind}: deficyt ok. ${d.kcal} kcal (≈ ${kg} kg/tydz. do ${target} kg${d.capped ? ', limit – cel później niż w terminie' : ''})`,
+    label: `${kind}: deficyt ok. ${d.kcal} kcal (≈ ${kg} kg/tydz. do ${target}${d.capped ? ', limit – cel później niż w terminie' : ''})`,
   }
+}
+
+/**
+ * Do czego teraz dążymy: najbliższy punkt kontrolny, którego data jeszcze nie minęła i którego masa jest niższa
+ * od obecnej; gdy takich nie ma – masa docelowa na datę celu.
+ */
+export function weightTarget(policy: NutritionPolicy, currentKg: number, finalKg: number, date: ISODate, goalDate: ISODate): { kg: number; date: ISODate; milestone: boolean } {
+  const next = (policy.weight_based?.milestones ?? [])
+    .toSorted((a, b) => (a.date < b.date ? -1 : 1))
+    .find((m) => m.date > date && m.date < goalDate && m.kg < currentKg && m.kg > finalKg)
+  return next ? { kg: next.kg, date: next.date, milestone: true } : { kg: finalKg, date: goalDate, milestone: false }
 }
 
 /** Tygodnie z deficytem od tygodnia z `date` do daty celu – mianownik rozkładu brakujących kilogramów. */

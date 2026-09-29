@@ -5,7 +5,7 @@ import { addDays, diffDays, mondayOf, type ISODate } from './dates'
 import { buildCalendar, getCalendarDay, getCalendarWeek } from './calendar'
 import { layoutWeeks } from './layout'
 import { computeZones, resolveWorkout } from './zones'
-import { deficitWeeksLeft, personalizeNutrition, proteinGrams } from './nutrition'
+import { deficitWeeksLeft, personalizeNutrition, proteinGrams, weightTarget } from './nutrition'
 import { effectiveFtp, effectiveLthr } from './progress'
 
 export interface DayPlan extends CalendarDay {
@@ -51,6 +51,19 @@ function weeksFor(ctx: EngineContext): LayoutWeek[] {
   return w
 }
 
+/** Żywienie dnia z deficytem liczonym z masy: do najbliższego punktu kontrolnego albo do masy docelowej. */
+function personalized(day: CalendarDay, ctx: EngineContext): CalendarDay['nutrition'] {
+  const { program, settings } = ctx
+  const currentKg = ctx.current_weight_kg ?? settings.body_weight_start_kg
+  const t = weightTarget(program.nutrition, currentKg, settings.body_weight_target_kg, day.date, settings.trip_start)
+  return personalizeNutrition(day.nutrition, program.nutrition, {
+    currentKg,
+    targetKg: t.kg,
+    deficitWeeksLeft: deficitWeeksLeft(weeksFor(ctx), program.nutrition, day.date, t.date),
+    targetDate: t.milestone ? t.date : null,
+  })
+}
+
 export function enrichDay(day: CalendarDay, ctx: EngineContext): DayPlan {
   const { program, settings } = ctx
   const eff = effectiveLthr(day.date, settings.lthr_bpm, (ctx.tests ?? []).filter((t): t is { date: string; lthr_bpm: number } => !!t.lthr_bpm))
@@ -74,13 +87,7 @@ export function enrichDay(day: CalendarDay, ctx: EngineContext): DayPlan {
     lthr,
     lthr_source: eff.source,
     ftp,
-    nutrition: program.nutrition.weight_based
-      ? personalizeNutrition(day.nutrition, program.nutrition, {
-          currentKg: ctx.current_weight_kg ?? settings.body_weight_start_kg,
-          targetKg: settings.body_weight_target_kg,
-          deficitWeeksLeft: deficitWeeksLeft(weeksFor(ctx), program.nutrition, day.date, settings.trip_start),
-        })
-      : day.nutrition,
+    nutrition: program.nutrition.weight_based ? personalized(day, ctx) : day.nutrition,
     protein_g: proteinGrams(day.nutrition, settings.body_weight_target_kg),
     warnings,
   }

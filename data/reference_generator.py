@@ -17,14 +17,14 @@ import json, datetime as dt, os, copy
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 D = dt.date
-PROGRAM_VERSION = "2026.09.26-3"
+PROGRAM_VERSION = "2026.09.29-1"
 
 DEFAULT_SETTINGS = {
     "program_start": "2026-09-14",          # poniedziałek tygodnia 1
     "trip_start": "2027-09-11",             # pierwszy dzień wyjazdu w Alpy (sobota)
     "athlete_name": "Luke",
     "body_weight_start_kg": 110,            # zmierzone we wrześniu 2026 (plan z 20.09: 110 → 102 kg do końca lutego)
-    "body_weight_target_kg": 90,
+    "body_weight_target_kg": 82,            # decyzja 29.09.2026 (było 90); punkt kontrolny 91 kg na 1.03.2027
     "bike_and_kit_kg": 12,
     "lthr_bpm": None,                       # z pierwszego testu (tydz. 1)
     "hr_max_bpm": None,
@@ -505,21 +505,29 @@ DAY_PL = {"mon": "Poniedziałek", "tue": "Wtorek", "wed": "Środa", "thu": "Czwa
 # Wszystko, co opisuje TEGO zawodnika, trafia do program.json jako dane – silnik nie ma własnych domyślnych.
 
 NUTRITION = {
-    # schodzenie ze 110 na 90 kg: deficyt w fazach bazy i zimy, od fazy IV tylko powyżej masy docelowej
+    # Cel 82 kg na wyjazd (decyzja 29.09.2026, docs/13): deficyt liczony z masy z check-inu (`weight_based`),
+    # w fazach bazy i zimy; od fazy IV tylko powyżej masy docelowej, w szczycie i taperze bez deficytu.
     "deficit_by_phase": {"PREP": True, "I": True, "II": True, "III": True, "IV": "if_above_target", "V": False, "TAPER": False},
-    "protein_g_per_kg": 1.8,
+    # przy dużej redukcji białko wyżej – chroni mięśnie (liczone od masy docelowej)
+    "protein_g_per_kg": 2.0,
     "heavy_min": 120,
     "medium_min": 60,
     "buckets": {
         "no_deficit": {"energy": "maintenance", "label": "Bilans zerowy – jedz na pełną wydajność"},
         "heavy": {"energy": "maintenance", "label": "Dzień ciężki: bez deficytu, paliwo na trening"},
-        "medium": {"energy": "deficit_300", "label": "Deficyt ok. 300 kcal"},
-        "light": {"energy": "deficit_500", "label": "Dzień lekki: deficyt ok. 500 kcal"},
+        # udziały w tygodniowym deficycie: dzień wolny i siłownia pełny, spokojna jazda 60–119 min trzy czwarte,
+        # akcenty i długie jazdy zero – jakość treningu przed tempem chudnięcia
+        "medium": {"energy": "deficit_300", "label": "Dzień treningowy: deficyt ok. 300 kcal", "deficit_share": 0.75},
+        "light": {"energy": "deficit_500", "label": "Dzień lekki: deficyt ok. 500 kcal", "deficit_share": 1},
     },
     "if_above_target_suffix": " (tylko jeśli waga > celu)",
     "carbs_g_per_h": [[90, [60, 80]], [60, [30, 40]]],
     "post_workout": {"min_ride_min": 60, "text": "30–40 g białka + węglowodany w ciągu 1–2 h"},
     "trip": {"energy": "maintenance_plus", "label": "Wyjazd: jedz do syta, 70–80 g węgli/h na podjazdach", "protein_g_per_kg": 1.6, "carbs_g_per_h": [70, 80]},
+    # limit 900 kcal na dzień i 1 % masy na tydzień (R10); `deficit_shares_per_week` uzupełnia main().
+    # Punkt kontrolny: szybciej zimą (baza, mało intensywności), wolniej od wiosny.
+    "weight_based": {"max_kcal_per_day": 900, "max_loss_pct_per_week": 1.0, "deficit_shares_per_week": 0,
+                     "milestones": [{"date": "2027-03-01", "kg": 91}]},
 }
 
 BIKES = {
@@ -543,7 +551,7 @@ COACH_NOTES = [
     "Naturalna kadencja ok. 80 rpm (spokojne jazdy 80–95) – NIE namawiaj do szybszego kręcenia; wymuszone 90 podnosi mu tętno przy tej samej mocy.",
     "Ogranicznikiem jest wydolność oddechowo-sercowa, nie nogi: 5 dni Innsbruck–Monachium (539 km, 4500 m) nogi wytrzymały.",
     "Wskaźnik postępu numer jeden to stosunek mocy do tętna (Pw:HR) i dryf tętna na jazdach Z2, nie średnia moc.",
-    "Redukcja masy ze ok. 107 do 90 kg przy zachowaniu watów – deficyt tylko w dni lekkie; pod górę masa kosztuje go najwięcej.",
+    "Redukcja masy ze ok. 106 do 82 kg do wyjazdu (punkt kontrolny 91 kg na 1.03.2027) przy zachowaniu watów – deficyt tylko w dni lekkie i spokojne, nigdy w dni akcentów i długich jazd; pod górę masa kosztuje go najwięcej.",
     "Cel: utrzymać 30 km/h przez 2–3 h (wymaga FTP ok. 270 W przy jego oporze powietrza na gravelu); Alpy we wrześniu 2027 to horyzont.",
     "Jeździ na gravelu (Trek Checkpoint) po płaskich okolicach Łodzi – wiatr ma duży wpływ na prędkość i moc.",
     "Jednostronny pomiar mocy SRAM na lewej korbie (wynik podwojony) – różnice kilku procent między jazdami mogą wynikać z asymetrii nóg.",
@@ -793,6 +801,10 @@ def main():
     build_library()
 
     days = build_calendar()
+    # średnia suma udziałów w tygodniach faz z deficytem – mianownik podziału puli tygodniowej
+    dw = [w for w, t in WEEKS.items() if NUTRITION["deficit_by_phase"].get(t["phase"])]
+    per_week = [sum(d["nutrition"].get("deficit_share", 0) for d in days if d["week"] == w) for w in dw]
+    NUTRITION["weight_based"]["deficit_shares_per_week"] = round(sum(per_week) / len(per_week), 2)
     program = {
         "version": PROGRAM_VERSION,
         "meta": META,

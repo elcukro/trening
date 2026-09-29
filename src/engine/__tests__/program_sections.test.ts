@@ -18,7 +18,7 @@ const ftp = parseProgram(ftpJson)
 
 describe('sekcje osobiste programu', () => {
   it('program alpejski: dotychczasowe wartości, teraz jako dane', () => {
-    expect(nutritionFor(alps.nutrition, 'I', 'easy', 45, false)).toMatchObject({ energy: 'deficit_500', protein_g_per_kg: 1.8 })
+    expect(nutritionFor(alps.nutrition, 'I', 'easy', 45, false)).toMatchObject({ energy: 'deficit_500', protein_g_per_kg: 2, deficit_share: 1 })
     expect(nutritionFor(alps.nutrition, 'IV', 'easy', 60, false).energy).toBe('deficit_300_if_above_target')
     expect(nutritionFor(alps.nutrition, 'I', 'trip', 300, false).energy).toBe('maintenance_plus')
     expect(bikeSuggestion(alps.bikes, 'II', 'Z2')).toBe('Checkpoint (zima, błotniki)')

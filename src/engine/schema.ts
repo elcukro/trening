@@ -188,6 +188,11 @@ export const NutritionPolicySchema = z.object({
       max_loss_pct_per_week: z.number(),
       /** suma udziałów dni w typowym tygodniu z deficytem – mianownik podziału (liczy generator) */
       deficit_shares_per_week: z.number(),
+      /**
+       * Punkty kontrolne po drodze do masy docelowej (rosnąco po dacie): tempo liczy się do najbliższego punktu,
+       * którego jeszcze nie osiągnięto – pozwala chudnąć szybciej zimą, a wolniej, gdy rosną akcenty.
+       */
+      milestones: z.array(z.object({ date: z.string().regex(/^\d{4}-\d{2}-\d{2}$/), kg: z.number() })).optional(),
     })
     .optional(),
   /** dni wyjazdu (tylko programy z wyjazdem) */
