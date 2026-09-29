@@ -3,7 +3,7 @@ import { Link, useNavigate, useParams } from 'react-router'
 import { useWeekView } from '@/app/usePlan'
 import { useLiveQuery } from 'dexie-react-hooks'
 import { db, type PlanOverrideRow, type SessionLog } from '@/db'
-import { addOverride, removeOverride } from '@/db/repo'
+import { removeOverride, swapDays } from '@/db/repo'
 import { validateSwap } from '@/engine/rules'
 import { addDays, isValidISODate, mondayOf } from '@/engine/dates'
 import { todayISO, fmtRange } from '@/lib/dates'
@@ -54,8 +54,8 @@ export function WeekPage() {
     }
     const from = swapFrom
     setSwapFrom(null)
-    await toast.run('Zamieniam dni…', () => addOverride(from, 'swap', { swap_with: target }), () => 'Dni zamienione')
-    setMsg('Dni zamienione.')
+    const res = await toast.run('Zamieniam dni…', () => swapDays(from, target), (r) => (r === 'undone' ? 'Zamiana cofnięta' : 'Dni zamienione'))
+    setMsg(res === 'undone' ? 'Zamiana cofnięta – wrócił poprzedni układ.' : 'Dni zamienione.')
   }
 
   return (
@@ -114,7 +114,8 @@ export function WeekPage() {
         {days.map((d) => {
           const bikeLog = logs.find((l) => l.date === d.date && l.kind === 'bike')
           const gymLog = logs.find((l) => l.date === d.date && l.kind === 'gym')
-          const dayOverrides = overrides.filter((o) => o.date === d.date)
+          // zamiana dotyczy dwóch dni – znacznik (i cofnięcie) widać na obu
+          const dayOverrides = overrides.filter((o) => o.date === d.date || (o.kind === 'swap' && o.payload.swap_with === d.date))
           const selectable = swapFrom && swapFrom !== d.date
           const isToday = d.date === today
           const weekend = d.weekday === 'sat' || d.weekday === 'sun'
@@ -163,7 +164,7 @@ export function WeekPage() {
                       )}
                       {dayOverrides.map((o) => (
                         <button key={o.id} onClick={() => toast.run('Cofam zmianę…', () => removeOverride(o.id), () => 'Przywrócono plan')} className="inline-flex max-w-full items-center rounded-full bg-sky-600 px-2 py-0.5 text-xs leading-4 text-white hover:bg-sky-500">
-                          zmienione ✕
+                          {o.kind === 'swap' ? `zamienione z ${(o.date === d.date ? String(o.payload.swap_with) : o.date).slice(8)}.${(o.date === d.date ? String(o.payload.swap_with) : o.date).slice(5, 7)} ✕` : 'zmienione ✕'}
                         </button>
                       ))}
                     </div>

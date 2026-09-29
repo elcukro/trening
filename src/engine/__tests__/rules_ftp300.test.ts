@@ -4,7 +4,7 @@ import alpsJson from '../../../data/program.json'
 import { parseProgram } from '../schema'
 import { buildCalendar } from '../calendar'
 import { addDays } from '../dates'
-import { applyOverrides, warningsFor, type LogLike, type RuleContext } from '../rules'
+import { applyOverrides, swapToUndo, warningsFor, type LogLike, type RuleContext } from '../rules'
 import type { CalendarDay, EngineContext, PlanOverride } from '../types'
 
 /**
@@ -85,5 +85,52 @@ describe('teksty zasad należą do programu', () => {
   })
   it('oba programy mają pełen zestaw R1–R16', () => {
     for (const p of [program, alps]) expect(p.rules.text.map((r) => r.id)).toEqual(Array.from({ length: 16 }, (_, i) => `R${i + 1}`))
+  })
+})
+
+describe('zamiany i przeniesienia w kolejności wykonania (zgłoszenie Ferdynanda, 30.09.2026)', () => {
+  // tydzień 1: pn długa, wt wolne, śr akcent, czw Z2, pt Z2 z wstawkami, sb Z2 + siłownia, nd wolne
+  const w = week('2026-10-01', 3, 3)
+  const bikeOf = (days: CalendarDay[], date: string) => days.find((d) => d.date === date)!.bike?.workout_id ?? null
+  const sw = (id: string, date: string, other: string, at: string): PlanOverride => ({ id, date, kind: 'swap', payload: { swap_with: other }, at })
+
+  it('druga zamiana działa na wyniku pierwszej, także gdy jej dzień jest wcześniej w kalendarzu', () => {
+    // 1) czwartek (Z2) ↔ wtorek (wolne)  2) niedziela (wolne) ↔ wtorek (teraz Z2)
+    const out = applyOverrides(w, [sw('b', '2026-10-04', '2026-09-29', '2026-09-28T21:00:10Z'), sw('a', '2026-10-01', '2026-09-29', '2026-09-28T21:00:00Z')], program)
+    expect(bikeOf(out, '2026-10-01')).toBeNull()
+    expect(bikeOf(out, '2026-09-29')).toBeNull()
+    expect(bikeOf(out, '2026-10-04')).toBe('Z2')
+  })
+
+  it('dwie zamiany z tego samego dnia się składają (rotacja trzech dni)', () => {
+    // wtorek ↔ czwartek, potem wtorek ↔ sobota: Z2 z czwartku ląduje w sobotę, sobotnie Z2 z siłownią we wtorek
+    const out = applyOverrides(w, [sw('a', '2026-09-29', '2026-10-01', '2026-09-28T21:00:00Z'), sw('b', '2026-09-29', '2026-10-03', '2026-09-28T21:00:10Z')], program)
+    expect(out.find((d) => d.date === '2026-09-29')!.gym?.session).toBe('A')
+    expect(out.find((d) => d.date === '2026-10-03')!.gym).toBeNull()
+    expect(bikeOf(out, '2026-10-03')).toBe('Z2')
+    expect(bikeOf(out, '2026-10-01')).toBeNull()
+  })
+
+  it('przeniesienie z dnia, który nie ma już jazdy, nie czyści celu', () => {
+    const mv = (id: string, date: string, to: string, at: string): PlanOverride => ({ id, date, kind: 'move', payload: { to, what: 'bike' }, at })
+    // czwartkowe Z2 → wtorek, a potem (pomyłkowo) jeszcze raz „czwartek → niedziela”: czwartek jest pusty, niedziela zostaje wolna
+    const out = applyOverrides(w, [mv('a', '2026-10-01', '2026-09-29', '2026-09-28T21:00:00Z'), mv('b', '2026-10-01', '2026-10-04', '2026-09-28T21:00:10Z')], program)
+    expect(bikeOf(out, '2026-09-29')).toBe('Z2')
+    expect(bikeOf(out, '2026-10-04')).toBeNull()
+    // przeniesienie łańcuchowe: czwartek → wtorek → niedziela
+    const chain = applyOverrides(w, [mv('b', '2026-09-29', '2026-10-04', '2026-09-28T21:00:10Z'), mv('a', '2026-10-01', '2026-09-29', '2026-09-28T21:00:00Z')], program)
+    expect(bikeOf(chain, '2026-10-04')).toBe('Z2')
+    expect(bikeOf(chain, '2026-09-29')).toBeNull()
+  })
+
+  it('powtórzenie ostatniej zamiany tej samej pary cofa ją; starszej – nie', () => {
+    const a = sw('a', '2026-10-01', '2026-09-29', '2026-09-28T21:00:00Z')
+    const b = sw('b', '2026-10-04', '2026-09-29', '2026-09-28T21:00:10Z')
+    expect(swapToUndo([a], '2026-09-29', '2026-10-01')).toBe('a')
+    expect(swapToUndo([a], '2026-10-01', '2026-09-29')).toBe('a')
+    // po drugiej zamianie dotykającej wtorku pierwsza nie jest już „ostatnia” – dokładamy nową zamiast kasować
+    expect(swapToUndo([a, b], '2026-10-01', '2026-09-29')).toBeNull()
+    expect(swapToUndo([a, b], '2026-09-29', '2026-10-04')).toBe('b')
+    expect(swapToUndo([], '2026-09-29', '2026-10-04')).toBeNull()
   })
 })

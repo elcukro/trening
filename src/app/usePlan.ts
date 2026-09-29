@@ -16,7 +16,7 @@ const BACK = 15
 const FORWARD = 8
 
 function toOverride(r: PlanOverrideRow): PlanOverride {
-  return { id: r.id, date: r.date, kind: r.kind, payload: r.payload }
+  return { id: r.id, date: r.date, kind: r.kind, payload: r.payload, at: r.updated_at }
 }
 
 export interface DayView {

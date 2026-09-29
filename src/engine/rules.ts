@@ -109,6 +109,27 @@ function indoorReplacement(program: Program, day: CalendarDay): CalendarDay['bik
 // ---------------------------------------------------------------- nadpisania
 type ByDate = Map<ISODate, PlanOverride[]>
 
+/** Zamiany i przeniesienia od najstarszego; wpisy bez znacznika czasu (starsze dane, testy) idą pierwsze, po dacie. */
+export function structuralInOrder(overrides: PlanOverride[]): PlanOverride[] {
+  const key = (o: PlanOverride) => `${o.at ?? ''}|${o.date}|${o.id}`
+  return overrides.filter((o) => o.kind === 'swap' || o.kind === 'move').toSorted((a, b) => (key(a) < key(b) ? -1 : key(a) > key(b) ? 1 : 0))
+}
+
+/**
+ * Ponowna zamiana tej samej pary dni cofa poprzednią – ale tylko gdy to ostatnia zmiana dotykająca któregoś z nich
+ * (inaczej usunięcie wcześniejszego wpisu zmieniłoby wynik późniejszych). Zwraca id wpisu do usunięcia albo null.
+ */
+export function swapToUndo(active: PlanOverride[], a: ISODate, b: ISODate): string | null {
+  const touches = (o: PlanOverride) => {
+    const other = String(o.kind === 'swap' ? (o.payload.swap_with ?? '') : (o.payload.to ?? ''))
+    return o.date === a || o.date === b || other === a || other === b
+  }
+  const last = structuralInOrder(active).filter(touches).at(-1)
+  if (!last || last.kind !== 'swap') return null
+  const other = String(last.payload.swap_with ?? '')
+  return (last.date === a && other === b) || (last.date === b && other === a) ? last.id : null
+}
+
 function group(overrides: PlanOverride[]): ByDate {
   const m: ByDate = new Map()
   for (const o of overrides) {
@@ -128,10 +149,11 @@ export function applyOverrides(days: CalendarDay[], overrides: PlanOverride[], p
   const index = new Map(out.map((d, i) => [d.date, i]))
   const by = group(overrides)
 
-  // R15 – zamiana dwóch dni (rower + siłownia)
-  for (const [date, list] of by) {
-    for (const o of list) {
-      if (o.kind !== 'swap') continue
+  // Zamiany (R15) i przeniesienia (R1/R3) w kolejności, w jakiej je zrobiono: druga zamiana działa na tygodniu
+  // już zmienionym przez pierwszą. Nakładane „po dacie” dawały inny układ niż ten, który użytkownik widział przy klikaniu.
+  for (const o of structuralInOrder(overrides)) {
+    const date = o.date
+    if (o.kind === 'swap') {
       const other = String(o.payload.swap_with ?? '')
       const a = index.get(date)
       const b = index.get(other)
@@ -145,13 +167,7 @@ export function applyOverrides(days: CalendarDay[], overrides: PlanOverride[], p
       ;[A.nutrition, B.nutrition] = [B.nutrition, A.nutrition]
       A.flags = withSessionFlags(A, fb)
       B.flags = withSessionFlags(B, fa)
-    }
-  }
-
-  // R1/R3 – przeniesienie jednego elementu dnia
-  for (const [date, list] of by) {
-    for (const o of list) {
-      if (o.kind !== 'move') continue
+    } else {
       const to = String(o.payload.to ?? '')
       const what = (o.payload.what as 'bike' | 'gym') ?? 'bike'
       const from = index.get(date)
@@ -159,6 +175,8 @@ export function applyOverrides(days: CalendarDay[], overrides: PlanOverride[], p
       if (from === undefined || target === undefined) continue
       const F = out[from]!
       const T = out[target]!
+      // nie ma czego przenosić (np. jazda już przeniesiona gdzie indziej) – cel zostaje nietknięty
+      if (what === 'bike' ? !F.bike : !F.gym) continue
       if (what === 'bike') {
         const moved = sessionFlags(F)
         T.bike = F.bike

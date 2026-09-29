@@ -124,7 +124,7 @@ export function removeDatesFrom(from: ISODate, days: number, ctx: EngineContext,
 /** Nadpisania z bazy obejmujące okno wysyłki razem z marginesem (drugi koniec przeniesienia). */
 export async function loadOverridesFor(from: ISODate, days: number): Promise<PlanOverride[]> {
   const rows = await db.plan_overrides.where('date').between(addDays(from, -OVERRIDE_PAD_DAYS), addDays(from, days + OVERRIDE_PAD_DAYS), true, true).toArray()
-  return rows.filter((o) => !o.deleted_at).map((o) => ({ id: o.id, date: o.date, kind: o.kind, payload: o.payload }))
+  return rows.filter((o) => !o.deleted_at).map((o) => ({ id: o.id, date: o.date, kind: o.kind, payload: o.payload, at: o.updated_at }))
 }
 
 /** Gotowa paczka do wysyłki: treningi do wgrania i dni do skasowania, z uwzględnieniem nadpisań. */

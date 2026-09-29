@@ -146,6 +146,31 @@ test('Etap 5: zamiana dni pilnuje reguły 48 godzin (R9)', async ({ page }) => {
   await expect(page.getByText(/48 h przed ciężkim dniem/)).toBeVisible()
 })
 
+test('Zamiany dni składają się w kolejności wykonania i dają się cofnąć', async ({ page }) => {
+  // tydzień 4 (5–11.10.2026): pn wolne, wt Z2, śr akcent, czw wolne, pt Z2, sb długa, nd Z2
+  await page.goto('/tydzien/2026-10-05?today=2026-10-05')
+  const day = (iso: string) => page.locator('li').filter({ has: page.getByRole('button', { name: `Zamień dzień ${iso}` }) })
+  await expect(day('2026-10-08').getByText('Wolne')).toBeVisible()
+  // 1) czwartek (wolne) ↔ wtorek (Z2): Z2 ląduje w czwartek
+  await page.getByRole('button', { name: 'Zamień dzień 2026-10-08' }).click()
+  await page.getByRole('button', { name: 'Tu' }).nth(1).click()
+  await expect(day('2026-10-08').getByText('Baza tlenowa Z2')).toBeVisible()
+  await expect(day('2026-10-06').getByText('Wolne')).toBeVisible()
+  // 2) poniedziałek (wolne) ↔ czwartek (teraz Z2): wcześniejszy dzień, późniejsza zamiana – Z2 ma trafić na poniedziałek
+  await page.getByRole('button', { name: 'Zamień dzień 2026-10-05' }).click()
+  await page.getByRole('button', { name: 'Tu' }).nth(2).click()
+  await expect(day('2026-10-05').getByText('Baza tlenowa Z2')).toBeVisible()
+  await expect(day('2026-10-08').getByText('Wolne')).toBeVisible()
+  await expect(day('2026-10-06').getByText('Wolne')).toBeVisible()
+  // znacznik zamiany jest na obu dniach; powtórzenie ostatniej zamiany ją cofa
+  await expect(day('2026-10-08').getByRole('button', { name: /zamienione z 05\.10/ })).toBeVisible()
+  await page.getByRole('button', { name: 'Zamień dzień 2026-10-08' }).click()
+  await page.getByRole('button', { name: 'Tu' }).first().click()
+  await expect(page.getByText('Zamiana cofnięta').first()).toBeVisible()
+  await expect(day('2026-10-08').getByText('Baza tlenowa Z2')).toBeVisible()
+  await expect(day('2026-10-05').getByText('Wolne')).toBeVisible()
+})
+
 test('Etap 5: sprzęt i wyjazd', async ({ page }) => {
   await page.goto('/wiecej/sprzet')
   await expect(page.getByText('Montaż napędu 40/50')).toBeVisible()

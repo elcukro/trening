@@ -1,4 +1,6 @@
 import { db, newId, nowISO, type BaselineEntry, type BikeRow, type Checkin, type GearTaskState, type PackingState, type PlanOverrideRow, type ServiceLogRow, type SessionLog, type SetLog, type SyncTable, type SyncedRow, type TestResult } from './index'
+import { addDays } from '@/engine/dates'
+import { swapToUndo } from '@/engine/rules'
 
 /** Zapis lokalny + wpis do outboxa (jedna transakcja). */
 export async function putSynced<T extends SyncedRow>(table: SyncTable, row: T): Promise<T> {
@@ -97,10 +99,30 @@ export async function activeRows<T extends SyncedRow>(table: SyncTable): Promise
 
 // ---------------------------------------------------------------- nadpisania planu (R1–R15)
 export async function addOverride(date: string, kind: PlanOverrideRow['kind'], payload: Record<string, unknown> = {}): Promise<PlanOverrideRow> {
-  // jeden aktywny wpis danego rodzaju na dzień – ponowne kliknięcie zastępuje poprzedni
-  const same = (await db.plan_overrides.where('date').equals(date).toArray()).filter((o) => !o.deleted_at && o.kind === kind)
-  for (const o of same) await softDelete('plan_overrides', o.id)
+  // jeden aktywny wpis danego rodzaju na dzień – ponowne kliknięcie zastępuje poprzedni.
+  // Zamiany są wyjątkiem: kolejna zamiana tego samego dnia działa na wyniku poprzedniej, więc jej nie kasuje (`swapDays`).
+  if (kind !== 'swap') {
+    const same = (await db.plan_overrides.where('date').equals(date).toArray()).filter((o) => !o.deleted_at && o.kind === kind)
+    for (const o of same) await softDelete('plan_overrides', o.id)
+  }
   return putSynced('plan_overrides', { id: newId(), date, kind, payload, updated_at: nowISO() })
+}
+
+/**
+ * Zamiana dwóch dni. Kolejne zamiany się składają (A↔B, potem A↔C); powtórzenie ostatniej zamiany tej samej pary
+ * cofa ją zamiast dokładać drugi wpis.
+ */
+export async function swapDays(a: string, b: string): Promise<'swapped' | 'undone'> {
+  const lo = a < b ? a : b
+  const hi = a < b ? b : a
+  const near = (await db.plan_overrides.where('date').between(addDays(lo, -7), addDays(hi, 7), true, true).toArray()).filter((o) => !o.deleted_at)
+  const undo = swapToUndo(near.map((o) => ({ id: o.id, date: o.date, kind: o.kind, payload: o.payload, at: o.updated_at })), a, b)
+  if (undo) {
+    await softDelete('plan_overrides', undo)
+    return 'undone'
+  }
+  await addOverride(a, 'swap', { swap_with: b })
+  return 'swapped'
 }
 
 export async function removeOverride(id: string): Promise<void> {

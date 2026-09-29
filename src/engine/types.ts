@@ -68,6 +68,8 @@ export interface PlanOverride {
   date: ISODate
   kind: OverrideKind
   payload: Record<string, unknown>
+  /** kiedy powstało (ISO) – zamiany i przeniesienia nie są przemienne, więc nakładamy je w kolejności wykonania */
+  at?: string
 }
 
 export interface EngineContext {
