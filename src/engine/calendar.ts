@@ -104,7 +104,7 @@ export function buildDay(ctx: EngineContext, lw: LayoutWeek, weekday: Weekday, d
         ? null
         : { workout_id: wid, name: w.name, duration_min: dur, bike: bikeSuggestion(program.bikes, phase, wid), fallback_workout_id: fallback },
     gym: gym ? { session: gym.session, name: gym.name, est_min: gym.est_min, items: gym.items } : null,
-    nutrition: nutritionFor(program.nutrition, phase, dayType, bikeMin, key),
+    nutrition: nutritionFor(program.nutrition, phase, dayType, bikeMin, key, flags.some((f) => f === 'test' || f === 'mountain_weekend' || f === 'back_to_back')),
     flags,
   }
   if (weekday === 'mon' && wk.notes) day.week_notes = wk.notes

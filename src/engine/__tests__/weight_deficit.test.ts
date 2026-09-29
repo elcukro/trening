@@ -67,14 +67,18 @@ describe('punkty kontrolne masy (program alpejski: 91 kg na 1.03.2027, cel 82 kg
     // termin minął, masa wyższa → cel końcowy (tempo rośnie)
     expect(weightTarget(alps.nutrition, 94, 82, '2027-03-02', goal)).toEqual({ kg: 82, date: goal, milestone: false })
   })
-  it('plan dnia: dzień wolny z deficytem do punktu kontrolnego, akcent i długa bez deficytu, białko od 82 kg', () => {
+  it('plan dnia: deficyt codziennie – pełny w dzień wolny, mały w dzień ciężki zimą, zero w dzień testu i od fazy III', () => {
     const ctx = { program: alps, settings: alps.default_settings, current_weight_kg: 105.9 }
     const days = buildCalendar(ctx)
     const at = (date: string) => enrichDay(days.find((d) => d.date === date)!, ctx)
     const rest = at('2026-10-01') // czwartek wolny
     expect(rest.nutrition.label).toMatch(/^Dzień lekki: deficyt ok\. \d+ kcal \(≈ 0,\d+ kg\/tydz\. do 91 kg na 1\.03/)
-    expect(at('2026-09-30').nutrition.energy).toBe('maintenance') // środa akcent
-    expect(at('2026-10-03').nutrition.energy).toBe('maintenance') // sobota długa
+    // zimą (fazy PREP–II) dzień ciężki ma mały deficyt poza treningiem: 0,4 × limit 900 ≈ 350 kcal
+    expect(at('2026-09-30').nutrition.label).toMatch(/^Dzień ciężki – paliwo na trening bez zmian, reszta dnia lżej: deficyt ok\. 350 kcal/) // środa akcent
+    expect(at('2026-10-03').nutrition.label).toMatch(/^Dzień ciężki – .*deficyt ok\. 350 kcal/) // sobota długa
+    expect(at('2026-12-19').nutrition.energy).toBe('maintenance') // test FTP – zawsze bez deficytu
+    expect(at('2027-03-13').nutrition.energy).toBe('maintenance') // faza III: długa z tempem bez deficytu
+    expect(at('2027-03-10').nutrition.energy).toBe('maintenance') // faza III: akcent progowy bez deficytu
     expect(at('2026-09-29').nutrition.label).toMatch(/^Dzień treningowy: deficyt/) // wtorek Z2 60
     expect(rest.protein_g).toBe(165) // 2,0 × 82 = 164 → 165
     // limit dzienny 900 kcal

@@ -17,7 +17,7 @@ import json, datetime as dt, os, copy
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 D = dt.date
-PROGRAM_VERSION = "2026.09.29-1"
+PROGRAM_VERSION = "2026.09.29-2"
 
 DEFAULT_SETTINGS = {
     "program_start": "2026-09-14",          # poniedziałek tygodnia 1
@@ -519,7 +519,12 @@ NUTRITION = {
         # akcenty i długie jazdy zero – jakość treningu przed tempem chudnięcia
         "medium": {"energy": "deficit_300", "label": "Dzień treningowy: deficyt ok. 300 kcal", "deficit_share": 0.75},
         "light": {"energy": "deficit_500", "label": "Dzień lekki: deficyt ok. 500 kcal", "deficit_share": 1},
+        # decyzja 29.09.2026 („mogę trzymać deficyt każdego dnia”): zimą mały deficyt także w dni akcentu i długiej jazdy –
+        # jedzenie na rowerze i po treningu bez zmian, lżej przez resztę dnia
+        "heavy_deficit": {"energy": "deficit_300", "label": "Dzień ciężki – paliwo na trening bez zmian, reszta dnia lżej: deficyt ok. 300 kcal", "deficit_share": 0.4},
     },
+    # tylko baza i zima; od fazy III (akcenty progowe, góry) dni ciężkie znów bez deficytu
+    "heavy_deficit_phases": ["PREP", "I", "II"],
     "if_above_target_suffix": " (tylko jeśli waga > celu)",
     "carbs_g_per_h": [[90, [60, 80]], [60, [30, 40]]],
     "post_workout": {"min_ride_min": 60, "text": "30–40 g białka + węglowodany w ciągu 1–2 h"},
@@ -551,7 +556,7 @@ COACH_NOTES = [
     "Naturalna kadencja ok. 80 rpm (spokojne jazdy 80–95) – NIE namawiaj do szybszego kręcenia; wymuszone 90 podnosi mu tętno przy tej samej mocy.",
     "Ogranicznikiem jest wydolność oddechowo-sercowa, nie nogi: 5 dni Innsbruck–Monachium (539 km, 4500 m) nogi wytrzymały.",
     "Wskaźnik postępu numer jeden to stosunek mocy do tętna (Pw:HR) i dryf tętna na jazdach Z2, nie średnia moc.",
-    "Redukcja masy ze ok. 106 do 82 kg do wyjazdu (punkt kontrolny 91 kg na 1.03.2027) przy zachowaniu watów – deficyt tylko w dni lekkie i spokojne, nigdy w dni akcentów i długich jazd; pod górę masa kosztuje go najwięcej.",
+    "Redukcja masy ze ok. 106 do 82 kg do wyjazdu (punkt kontrolny 91 kg na 1.03.2027) przy zachowaniu watów – deficyt codziennie, ale w dni akcentów i długich jazd mały i poza treningiem (paliwo na rowerze bez zmian), a w dni testów bez deficytu; pod górę masa kosztuje go najwięcej.",
     "Cel: utrzymać 30 km/h przez 2–3 h (wymaga FTP ok. 270 W przy jego oporze powietrza na gravelu); Alpy we wrześniu 2027 to horyzont.",
     "Jeździ na gravelu (Trek Checkpoint) po płaskich okolicach Łodzi – wiatr ma duży wpływ na prędkość i moc.",
     "Jednostronny pomiar mocy SRAM na lewej korbie (wynik podwojony) – różnice kilku procent między jazdami mogą wynikać z asymetrii nóg.",
@@ -698,7 +703,7 @@ RULES = {
 }
 
 
-def nutrition_for(policy, phase, day_type, bike_min, key):
+def nutrition_for(policy, phase, day_type, bike_min, key, protected_day=False):
     """Port 1:1 `nutritionFor` z src/engine/nutrition.ts – liczy wyłącznie z polityki programu."""
     if day_type == "trip" and policy.get("trip"):
         t = policy["trip"]
@@ -706,7 +711,8 @@ def nutrition_for(policy, phase, day_type, bike_min, key):
     d = policy["deficit_by_phase"].get(phase, False)
     heavy = key or bike_min >= policy["heavy_min"]
     b = policy["buckets"]
-    bucket = b["no_deficit"] if d is False else (b["heavy"] if heavy else (b["medium"] if bike_min >= policy["medium_min"] else b["light"]))
+    heavy_bucket = b["heavy_deficit"] if (b.get("heavy_deficit") and not protected_day and phase in policy.get("heavy_deficit_phases", [])) else b["heavy"]
+    bucket = b["no_deficit"] if d is False else (heavy_bucket if heavy else (b["medium"] if bike_min >= policy["medium_min"] else b["light"]))
     energy, label = bucket["energy"], bucket["label"]
     if d == "if_above_target" and energy.startswith("deficit"):
         label += policy["if_above_target_suffix"]
@@ -766,7 +772,8 @@ def build_calendar(settings=DEFAULT_SETTINGS):
                 "bike": None if wid in ("REST",) else {"workout_id": wid, "name": w["name"], "duration_min": dur,
                                                        "bike": bike_suggestion(BIKES, wk["phase"], wid), "fallback_workout_id": fallback},
                 "gym": None if not gym else {"session": gym["session"], "name": gym["name"], "est_min": gym["est_min"], "items": gym["items"]},
-                "nutrition": nutrition_for(NUTRITION, wk["phase"], day_type, dur if wid not in ("REST", "TRAVEL_REST", "TRIP") else 0, key),
+                "nutrition": nutrition_for(NUTRITION, wk["phase"], day_type, dur if wid not in ("REST", "TRAVEL_REST", "TRIP") else 0, key,
+                                           any(f in flags for f in ("test", "mountain_weekend", "back_to_back"))),
                 "flags": flags,
             }
             if dn == "mon" and wk.get("notes"): day["week_notes"] = wk["notes"]

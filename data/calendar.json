@@ -1,5 +1,5 @@
 {
- "version": "2026.09.29-1",
+ "version": "2026.09.29-2",
  "settings": {
   "program_start": "2026-09-14",
   "trip_start": "2027-09-11",
@@ -67,14 +67,15 @@
    },
    "gym": null,
    "nutrition": {
-    "energy": "maintenance",
-    "label": "Dzień ciężki: bez deficytu, paliwo na trening",
+    "energy": "deficit_300",
+    "label": "Dzień ciężki – paliwo na trening bez zmian, reszta dnia lżej: deficyt ok. 300 kcal",
     "protein_g_per_kg": 2.0,
     "on_bike_carbs_g_per_h": [
      60,
      80
     ],
-    "post_workout": "30–40 g białka + węglowodany w ciągu 1–2 h"
+    "post_workout": "30–40 g białka + węglowodany w ciągu 1–2 h",
+    "deficit_share": 0.4
    },
    "flags": []
   },
@@ -449,14 +450,15 @@
    },
    "gym": null,
    "nutrition": {
-    "energy": "maintenance",
-    "label": "Dzień ciężki: bez deficytu, paliwo na trening",
+    "energy": "deficit_300",
+    "label": "Dzień ciężki – paliwo na trening bez zmian, reszta dnia lżej: deficyt ok. 300 kcal",
     "protein_g_per_kg": 2.0,
     "on_bike_carbs_g_per_h": [
      60,
      80
     ],
-    "post_workout": "30–40 g białka + węglowodany w ciągu 1–2 h"
+    "post_workout": "30–40 g białka + węglowodany w ciągu 1–2 h",
+    "deficit_share": 0.4
    },
    "flags": []
   },
@@ -735,14 +737,15 @@
    },
    "gym": null,
    "nutrition": {
-    "energy": "maintenance",
-    "label": "Dzień ciężki: bez deficytu, paliwo na trening",
+    "energy": "deficit_300",
+    "label": "Dzień ciężki – paliwo na trening bez zmian, reszta dnia lżej: deficyt ok. 300 kcal",
     "protein_g_per_kg": 2.0,
     "on_bike_carbs_g_per_h": [
      0,
      0
     ],
-    "post_workout": "30–40 g białka + węglowodany w ciągu 1–2 h"
+    "post_workout": "30–40 g białka + węglowodany w ciągu 1–2 h",
+    "deficit_share": 0.4
    },
    "flags": []
   },
@@ -812,14 +815,15 @@
    },
    "gym": null,
    "nutrition": {
-    "energy": "maintenance",
-    "label": "Dzień ciężki: bez deficytu, paliwo na trening",
+    "energy": "deficit_300",
+    "label": "Dzień ciężki – paliwo na trening bez zmian, reszta dnia lżej: deficyt ok. 300 kcal",
     "protein_g_per_kg": 2.0,
     "on_bike_carbs_g_per_h": [
      60,
      80
     ],
-    "post_workout": "30–40 g białka + węglowodany w ciągu 1–2 h"
+    "post_workout": "30–40 g białka + węglowodany w ciągu 1–2 h",
+    "deficit_share": 0.4
    },
    "flags": []
   },
@@ -917,14 +921,15 @@
    },
    "gym": null,
    "nutrition": {
-    "energy": "maintenance",
-    "label": "Dzień ciężki: bez deficytu, paliwo na trening",
+    "energy": "deficit_300",
+    "label": "Dzień ciężki – paliwo na trening bez zmian, reszta dnia lżej: deficyt ok. 300 kcal",
     "protein_g_per_kg": 2.0,
     "on_bike_carbs_g_per_h": [
      30,
      40
     ],
-    "post_workout": "30–40 g białka + węglowodany w ciągu 1–2 h"
+    "post_workout": "30–40 g białka + węglowodany w ciągu 1–2 h",
+    "deficit_share": 0.4
    },
    "flags": []
   },
@@ -994,14 +999,15 @@
    },
    "gym": null,
    "nutrition": {
-    "energy": "maintenance",
-    "label": "Dzień ciężki: bez deficytu, paliwo na trening",
+    "energy": "deficit_300",
+    "label": "Dzień ciężki – paliwo na trening bez zmian, reszta dnia lżej: deficyt ok. 300 kcal",
     "protein_g_per_kg": 2.0,
     "on_bike_carbs_g_per_h": [
      60,
      80
     ],
-    "post_workout": "30–40 g białka + węglowodany w ciągu 1–2 h"
+    "post_workout": "30–40 g białka + węglowodany w ciągu 1–2 h",
+    "deficit_share": 0.4
    },
    "flags": []
   },
@@ -1100,14 +1106,15 @@
    },
    "gym": null,
    "nutrition": {
-    "energy": "maintenance",
-    "label": "Dzień ciężki: bez deficytu, paliwo na trening",
+    "energy": "deficit_300",
+    "label": "Dzień ciężki – paliwo na trening bez zmian, reszta dnia lżej: deficyt ok. 300 kcal",
     "protein_g_per_kg": 2.0,
     "on_bike_carbs_g_per_h": [
      30,
      40
     ],
-    "post_workout": "30–40 g białka + węglowodany w ciągu 1–2 h"
+    "post_workout": "30–40 g białka + węglowodany w ciągu 1–2 h",
+    "deficit_share": 0.4
    },
    "flags": []
   },
@@ -1177,14 +1184,15 @@
    },
    "gym": null,
    "nutrition": {
-    "energy": "maintenance",
-    "label": "Dzień ciężki: bez deficytu, paliwo na trening",
+    "energy": "deficit_300",
+    "label": "Dzień ciężki – paliwo na trening bez zmian, reszta dnia lżej: deficyt ok. 300 kcal",
     "protein_g_per_kg": 2.0,
     "on_bike_carbs_g_per_h": [
      60,
      80
     ],
-    "post_workout": "30–40 g białka + węglowodany w ciągu 1–2 h"
+    "post_workout": "30–40 g białka + węglowodany w ciągu 1–2 h",
+    "deficit_share": 0.4
    },
    "flags": []
   },
@@ -1475,14 +1483,15 @@
    },
    "gym": null,
    "nutrition": {
-    "energy": "maintenance",
-    "label": "Dzień ciężki: bez deficytu, paliwo na trening",
+    "energy": "deficit_300",
+    "label": "Dzień ciężki – paliwo na trening bez zmian, reszta dnia lżej: deficyt ok. 300 kcal",
     "protein_g_per_kg": 2.0,
     "on_bike_carbs_g_per_h": [
      30,
      40
     ],
-    "post_workout": "30–40 g białka + węglowodany w ciągu 1–2 h"
+    "post_workout": "30–40 g białka + węglowodany w ciągu 1–2 h",
+    "deficit_share": 0.4
    },
    "flags": []
   },
@@ -1552,14 +1561,15 @@
    },
    "gym": null,
    "nutrition": {
-    "energy": "maintenance",
-    "label": "Dzień ciężki: bez deficytu, paliwo na trening",
+    "energy": "deficit_300",
+    "label": "Dzień ciężki – paliwo na trening bez zmian, reszta dnia lżej: deficyt ok. 300 kcal",
     "protein_g_per_kg": 2.0,
     "on_bike_carbs_g_per_h": [
      60,
      80
     ],
-    "post_workout": "30–40 g białka + węglowodany w ciągu 1–2 h"
+    "post_workout": "30–40 g białka + węglowodany w ciągu 1–2 h",
+    "deficit_share": 0.4
    },
    "flags": []
   },
@@ -1657,14 +1667,15 @@
    },
    "gym": null,
    "nutrition": {
-    "energy": "maintenance",
-    "label": "Dzień ciężki: bez deficytu, paliwo na trening",
+    "energy": "deficit_300",
+    "label": "Dzień ciężki – paliwo na trening bez zmian, reszta dnia lżej: deficyt ok. 300 kcal",
     "protein_g_per_kg": 2.0,
     "on_bike_carbs_g_per_h": [
      30,
      40
     ],
-    "post_workout": "30–40 g białka + węglowodany w ciągu 1–2 h"
+    "post_workout": "30–40 g białka + węglowodany w ciągu 1–2 h",
+    "deficit_share": 0.4
    },
    "flags": []
   },
@@ -1734,14 +1745,15 @@
    },
    "gym": null,
    "nutrition": {
-    "energy": "maintenance",
-    "label": "Dzień ciężki: bez deficytu, paliwo na trening",
+    "energy": "deficit_300",
+    "label": "Dzień ciężki – paliwo na trening bez zmian, reszta dnia lżej: deficyt ok. 300 kcal",
     "protein_g_per_kg": 2.0,
     "on_bike_carbs_g_per_h": [
      60,
      80
     ],
-    "post_workout": "30–40 g białka + węglowodany w ciągu 1–2 h"
+    "post_workout": "30–40 g białka + węglowodany w ciągu 1–2 h",
+    "deficit_share": 0.4
    },
    "flags": []
   },
@@ -1840,14 +1852,15 @@
    },
    "gym": null,
    "nutrition": {
-    "energy": "maintenance",
-    "label": "Dzień ciężki: bez deficytu, paliwo na trening",
+    "energy": "deficit_300",
+    "label": "Dzień ciężki – paliwo na trening bez zmian, reszta dnia lżej: deficyt ok. 300 kcal",
     "protein_g_per_kg": 2.0,
     "on_bike_carbs_g_per_h": [
      30,
      40
     ],
-    "post_workout": "30–40 g białka + węglowodany w ciągu 1–2 h"
+    "post_workout": "30–40 g białka + węglowodany w ciągu 1–2 h",
+    "deficit_share": 0.4
    },
    "flags": []
   },
@@ -1917,14 +1930,15 @@
    },
    "gym": null,
    "nutrition": {
-    "energy": "maintenance",
-    "label": "Dzień ciężki: bez deficytu, paliwo na trening",
+    "energy": "deficit_300",
+    "label": "Dzień ciężki – paliwo na trening bez zmian, reszta dnia lżej: deficyt ok. 300 kcal",
     "protein_g_per_kg": 2.0,
     "on_bike_carbs_g_per_h": [
      60,
      80
     ],
-    "post_workout": "30–40 g białka + węglowodany w ciągu 1–2 h"
+    "post_workout": "30–40 g białka + węglowodany w ciągu 1–2 h",
+    "deficit_share": 0.4
    },
    "flags": []
   },
@@ -2321,14 +2335,15 @@
    },
    "gym": null,
    "nutrition": {
-    "energy": "maintenance",
-    "label": "Dzień ciężki: bez deficytu, paliwo na trening",
+    "energy": "deficit_300",
+    "label": "Dzień ciężki – paliwo na trening bez zmian, reszta dnia lżej: deficyt ok. 300 kcal",
     "protein_g_per_kg": 2.0,
     "on_bike_carbs_g_per_h": [
      60,
      80
     ],
-    "post_workout": "30–40 g białka + węglowodany w ciągu 1–2 h"
+    "post_workout": "30–40 g białka + węglowodany w ciągu 1–2 h",
+    "deficit_share": 0.4
    },
    "flags": [
     "deload"
@@ -2540,14 +2555,15 @@
    },
    "gym": null,
    "nutrition": {
-    "energy": "maintenance",
-    "label": "Dzień ciężki: bez deficytu, paliwo na trening",
+    "energy": "deficit_300",
+    "label": "Dzień ciężki – paliwo na trening bez zmian, reszta dnia lżej: deficyt ok. 300 kcal",
     "protein_g_per_kg": 2.0,
     "on_bike_carbs_g_per_h": [
      30,
      40
     ],
-    "post_workout": "30–40 g białka + węglowodany w ciągu 1–2 h"
+    "post_workout": "30–40 g białka + węglowodany w ciągu 1–2 h",
+    "deficit_share": 0.4
    },
    "flags": []
   },
@@ -2700,14 +2716,15 @@
    },
    "gym": null,
    "nutrition": {
-    "energy": "maintenance",
-    "label": "Dzień ciężki: bez deficytu, paliwo na trening",
+    "energy": "deficit_300",
+    "label": "Dzień ciężki – paliwo na trening bez zmian, reszta dnia lżej: deficyt ok. 300 kcal",
     "protein_g_per_kg": 2.0,
     "on_bike_carbs_g_per_h": [
      60,
      80
     ],
-    "post_workout": "30–40 g białka + węglowodany w ciągu 1–2 h"
+    "post_workout": "30–40 g białka + węglowodany w ciągu 1–2 h",
+    "deficit_share": 0.4
    },
    "flags": []
   },
@@ -2914,14 +2931,15 @@
    },
    "gym": null,
    "nutrition": {
-    "energy": "maintenance",
-    "label": "Dzień ciężki: bez deficytu, paliwo na trening",
+    "energy": "deficit_300",
+    "label": "Dzień ciężki – paliwo na trening bez zmian, reszta dnia lżej: deficyt ok. 300 kcal",
     "protein_g_per_kg": 2.0,
     "on_bike_carbs_g_per_h": [
      30,
      40
     ],
-    "post_workout": "30–40 g białka + węglowodany w ciągu 1–2 h"
+    "post_workout": "30–40 g białka + węglowodany w ciągu 1–2 h",
+    "deficit_share": 0.4
    },
    "flags": []
   },
@@ -3074,14 +3092,15 @@
    },
    "gym": null,
    "nutrition": {
-    "energy": "maintenance",
-    "label": "Dzień ciężki: bez deficytu, paliwo na trening",
+    "energy": "deficit_300",
+    "label": "Dzień ciężki – paliwo na trening bez zmian, reszta dnia lżej: deficyt ok. 300 kcal",
     "protein_g_per_kg": 2.0,
     "on_bike_carbs_g_per_h": [
      60,
      80
     ],
-    "post_workout": "30–40 g białka + węglowodany w ciągu 1–2 h"
+    "post_workout": "30–40 g białka + węglowodany w ciągu 1–2 h",
+    "deficit_share": 0.4
    },
    "flags": []
   },
@@ -3289,14 +3308,15 @@
    },
    "gym": null,
    "nutrition": {
-    "energy": "maintenance",
-    "label": "Dzień ciężki: bez deficytu, paliwo na trening",
+    "energy": "deficit_300",
+    "label": "Dzień ciężki – paliwo na trening bez zmian, reszta dnia lżej: deficyt ok. 300 kcal",
     "protein_g_per_kg": 2.0,
     "on_bike_carbs_g_per_h": [
      60,
      80
     ],
-    "post_workout": "30–40 g białka + węglowodany w ciągu 1–2 h"
+    "post_workout": "30–40 g białka + węglowodany w ciągu 1–2 h",
+    "deficit_share": 0.4
    },
    "flags": []
   },
@@ -3450,14 +3470,15 @@
    },
    "gym": null,
    "nutrition": {
-    "energy": "maintenance",
-    "label": "Dzień ciężki: bez deficytu, paliwo na trening",
+    "energy": "deficit_300",
+    "label": "Dzień ciężki – paliwo na trening bez zmian, reszta dnia lżej: deficyt ok. 300 kcal",
     "protein_g_per_kg": 2.0,
     "on_bike_carbs_g_per_h": [
      60,
      80
     ],
-    "post_workout": "30–40 g białka + węglowodany w ciągu 1–2 h"
+    "post_workout": "30–40 g białka + węglowodany w ciągu 1–2 h",
+    "deficit_share": 0.4
    },
    "flags": []
   },
@@ -4228,14 +4249,15 @@
    },
    "gym": null,
    "nutrition": {
-    "energy": "maintenance",
-    "label": "Dzień ciężki: bez deficytu, paliwo na trening",
+    "energy": "deficit_300",
+    "label": "Dzień ciężki – paliwo na trening bez zmian, reszta dnia lżej: deficyt ok. 300 kcal",
     "protein_g_per_kg": 2.0,
     "on_bike_carbs_g_per_h": [
      60,
      80
     ],
-    "post_workout": "30–40 g białka + węglowodany w ciągu 1–2 h"
+    "post_workout": "30–40 g białka + węglowodany w ciągu 1–2 h",
+    "deficit_share": 0.4
    },
    "flags": [
     "deload"
@@ -4446,14 +4468,15 @@
    },
    "gym": null,
    "nutrition": {
-    "energy": "maintenance",
-    "label": "Dzień ciężki: bez deficytu, paliwo na trening",
+    "energy": "deficit_300",
+    "label": "Dzień ciężki – paliwo na trening bez zmian, reszta dnia lżej: deficyt ok. 300 kcal",
     "protein_g_per_kg": 2.0,
     "on_bike_carbs_g_per_h": [
      30,
      40
     ],
-    "post_workout": "30–40 g białka + węglowodany w ciągu 1–2 h"
+    "post_workout": "30–40 g białka + węglowodany w ciągu 1–2 h",
+    "deficit_share": 0.4
    },
    "flags": []
   },
@@ -4605,14 +4628,15 @@
    },
    "gym": null,
    "nutrition": {
-    "energy": "maintenance",
-    "label": "Dzień ciężki: bez deficytu, paliwo na trening",
+    "energy": "deficit_300",
+    "label": "Dzień ciężki – paliwo na trening bez zmian, reszta dnia lżej: deficyt ok. 300 kcal",
     "protein_g_per_kg": 2.0,
     "on_bike_carbs_g_per_h": [
      60,
      80
     ],
-    "post_workout": "30–40 g białka + węglowodany w ciągu 1–2 h"
+    "post_workout": "30–40 g białka + węglowodany w ciągu 1–2 h",
+    "deficit_share": 0.4
    },
    "flags": []
   },
@@ -4819,14 +4843,15 @@
    },
    "gym": null,
    "nutrition": {
-    "energy": "maintenance",
-    "label": "Dzień ciężki: bez deficytu, paliwo na trening",
+    "energy": "deficit_300",
+    "label": "Dzień ciężki – paliwo na trening bez zmian, reszta dnia lżej: deficyt ok. 300 kcal",
     "protein_g_per_kg": 2.0,
     "on_bike_carbs_g_per_h": [
      30,
      40
     ],
-    "post_workout": "30–40 g białka + węglowodany w ciągu 1–2 h"
+    "post_workout": "30–40 g białka + węglowodany w ciągu 1–2 h",
+    "deficit_share": 0.4
    },
    "flags": []
   },
@@ -4978,14 +5003,15 @@
    },
    "gym": null,
    "nutrition": {
-    "energy": "maintenance",
-    "label": "Dzień ciężki: bez deficytu, paliwo na trening",
+    "energy": "deficit_300",
+    "label": "Dzień ciężki – paliwo na trening bez zmian, reszta dnia lżej: deficyt ok. 300 kcal",
     "protein_g_per_kg": 2.0,
     "on_bike_carbs_g_per_h": [
      60,
      80
     ],
-    "post_workout": "30–40 g białka + węglowodany w ciągu 1–2 h"
+    "post_workout": "30–40 g białka + węglowodany w ciągu 1–2 h",
+    "deficit_share": 0.4
    },
    "flags": []
   },
@@ -5192,14 +5218,15 @@
    },
    "gym": null,
    "nutrition": {
-    "energy": "maintenance",
-    "label": "Dzień ciężki: bez deficytu, paliwo na trening",
+    "energy": "deficit_300",
+    "label": "Dzień ciężki – paliwo na trening bez zmian, reszta dnia lżej: deficyt ok. 300 kcal",
     "protein_g_per_kg": 2.0,
     "on_bike_carbs_g_per_h": [
      30,
      40
     ],
-    "post_workout": "30–40 g białka + węglowodany w ciągu 1–2 h"
+    "post_workout": "30–40 g białka + węglowodany w ciągu 1–2 h",
+    "deficit_share": 0.4
    },
    "flags": []
   },
@@ -5351,14 +5378,15 @@
    },
    "gym": null,
    "nutrition": {
-    "energy": "maintenance",
-    "label": "Dzień ciężki: bez deficytu, paliwo na trening",
+    "energy": "deficit_300",
+    "label": "Dzień ciężki – paliwo na trening bez zmian, reszta dnia lżej: deficyt ok. 300 kcal",
     "protein_g_per_kg": 2.0,
     "on_bike_carbs_g_per_h": [
      60,
      80
     ],
-    "post_workout": "30–40 g białka + węglowodany w ciągu 1–2 h"
+    "post_workout": "30–40 g białka + węglowodany w ciągu 1–2 h",
+    "deficit_share": 0.4
    },
    "flags": []
   },
@@ -5749,14 +5777,15 @@
    },
    "gym": null,
    "nutrition": {
-    "energy": "maintenance",
-    "label": "Dzień ciężki: bez deficytu, paliwo na trening",
+    "energy": "deficit_300",
+    "label": "Dzień ciężki – paliwo na trening bez zmian, reszta dnia lżej: deficyt ok. 300 kcal",
     "protein_g_per_kg": 2.0,
     "on_bike_carbs_g_per_h": [
      60,
      80
     ],
-    "post_workout": "30–40 g białka + węglowodany w ciągu 1–2 h"
+    "post_workout": "30–40 g białka + węglowodany w ciągu 1–2 h",
+    "deficit_share": 0.4
    },
    "flags": [
     "deload"
@@ -5967,14 +5996,15 @@
    },
    "gym": null,
    "nutrition": {
-    "energy": "maintenance",
-    "label": "Dzień ciężki: bez deficytu, paliwo na trening",
+    "energy": "deficit_300",
+    "label": "Dzień ciężki – paliwo na trening bez zmian, reszta dnia lżej: deficyt ok. 300 kcal",
     "protein_g_per_kg": 2.0,
     "on_bike_carbs_g_per_h": [
      30,
      40
     ],
-    "post_workout": "30–40 g białka + węglowodany w ciągu 1–2 h"
+    "post_workout": "30–40 g białka + węglowodany w ciągu 1–2 h",
+    "deficit_share": 0.4
    },
    "flags": []
   },
@@ -6126,14 +6156,15 @@
    },
    "gym": null,
    "nutrition": {
-    "energy": "maintenance",
-    "label": "Dzień ciężki: bez deficytu, paliwo na trening",
+    "energy": "deficit_300",
+    "label": "Dzień ciężki – paliwo na trening bez zmian, reszta dnia lżej: deficyt ok. 300 kcal",
     "protein_g_per_kg": 2.0,
     "on_bike_carbs_g_per_h": [
      60,
      80
     ],
-    "post_workout": "30–40 g białka + węglowodany w ciągu 1–2 h"
+    "post_workout": "30–40 g białka + węglowodany w ciągu 1–2 h",
+    "deficit_share": 0.4
    },
    "flags": []
   },
@@ -6340,14 +6371,15 @@
    },
    "gym": null,
    "nutrition": {
-    "energy": "maintenance",
-    "label": "Dzień ciężki: bez deficytu, paliwo na trening",
+    "energy": "deficit_300",
+    "label": "Dzień ciężki – paliwo na trening bez zmian, reszta dnia lżej: deficyt ok. 300 kcal",
     "protein_g_per_kg": 2.0,
     "on_bike_carbs_g_per_h": [
      30,
      40
     ],
-    "post_workout": "30–40 g białka + węglowodany w ciągu 1–2 h"
+    "post_workout": "30–40 g białka + węglowodany w ciągu 1–2 h",
+    "deficit_share": 0.4
    },
    "flags": []
   },
@@ -6499,14 +6531,15 @@
    },
    "gym": null,
    "nutrition": {
-    "energy": "maintenance",
-    "label": "Dzień ciężki: bez deficytu, paliwo na trening",
+    "energy": "deficit_300",
+    "label": "Dzień ciężki – paliwo na trening bez zmian, reszta dnia lżej: deficyt ok. 300 kcal",
     "protein_g_per_kg": 2.0,
     "on_bike_carbs_g_per_h": [
      60,
      80
     ],
-    "post_workout": "30–40 g białka + węglowodany w ciągu 1–2 h"
+    "post_workout": "30–40 g białka + węglowodany w ciągu 1–2 h",
+    "deficit_share": 0.4
    },
    "flags": []
   },
@@ -6713,14 +6746,15 @@
    },
    "gym": null,
    "nutrition": {
-    "energy": "maintenance",
-    "label": "Dzień ciężki: bez deficytu, paliwo na trening",
+    "energy": "deficit_300",
+    "label": "Dzień ciężki – paliwo na trening bez zmian, reszta dnia lżej: deficyt ok. 300 kcal",
     "protein_g_per_kg": 2.0,
     "on_bike_carbs_g_per_h": [
      60,
      80
     ],
-    "post_workout": "30–40 g białka + węglowodany w ciągu 1–2 h"
+    "post_workout": "30–40 g białka + węglowodany w ciągu 1–2 h",
+    "deficit_share": 0.4
    },
    "flags": []
   },
@@ -6872,14 +6906,15 @@
    },
    "gym": null,
    "nutrition": {
-    "energy": "maintenance",
-    "label": "Dzień ciężki: bez deficytu, paliwo na trening",
+    "energy": "deficit_300",
+    "label": "Dzień ciężki – paliwo na trening bez zmian, reszta dnia lżej: deficyt ok. 300 kcal",
     "protein_g_per_kg": 2.0,
     "on_bike_carbs_g_per_h": [
      60,
      80
     ],
-    "post_workout": "30–40 g białka + węglowodany w ciągu 1–2 h"
+    "post_workout": "30–40 g białka + węglowodany w ciągu 1–2 h",
+    "deficit_share": 0.4
    },
    "flags": []
   },
@@ -7270,14 +7305,15 @@
    },
    "gym": null,
    "nutrition": {
-    "energy": "maintenance",
-    "label": "Dzień ciężki: bez deficytu, paliwo na trening",
+    "energy": "deficit_300",
+    "label": "Dzień ciężki – paliwo na trening bez zmian, reszta dnia lżej: deficyt ok. 300 kcal",
     "protein_g_per_kg": 2.0,
     "on_bike_carbs_g_per_h": [
      60,
      80
     ],
-    "post_workout": "30–40 g białka + węglowodany w ciągu 1–2 h"
+    "post_workout": "30–40 g białka + węglowodany w ciągu 1–2 h",
+    "deficit_share": 0.4
    },
    "flags": [
     "deload"
@@ -7652,14 +7688,15 @@
    },
    "gym": null,
    "nutrition": {
-    "energy": "maintenance",
-    "label": "Dzień ciężki: bez deficytu, paliwo na trening",
+    "energy": "deficit_300",
+    "label": "Dzień ciężki – paliwo na trening bez zmian, reszta dnia lżej: deficyt ok. 300 kcal",
     "protein_g_per_kg": 2.0,
     "on_bike_carbs_g_per_h": [
      60,
      80
     ],
-    "post_workout": "30–40 g białka + węglowodany w ciągu 1–2 h"
+    "post_workout": "30–40 g białka + węglowodany w ciągu 1–2 h",
+    "deficit_share": 0.4
    },
    "flags": []
   },

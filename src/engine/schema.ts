@@ -172,7 +172,16 @@ export const NutritionPolicySchema = z.object({
   heavy_min: z.number(),
   /** od ilu minut jazdy dzień jest średni */
   medium_min: z.number(),
-  buckets: z.object({ no_deficit: NutritionBucketSchema, heavy: NutritionBucketSchema, medium: NutritionBucketSchema, light: NutritionBucketSchema }),
+  buckets: z.object({
+    no_deficit: NutritionBucketSchema,
+    heavy: NutritionBucketSchema,
+    medium: NutritionBucketSchema,
+    light: NutritionBucketSchema,
+    /** dzień ciężki z małym deficytem poza treningiem – tylko w fazach z `heavy_deficit_phases` i nie w dni chronione */
+    heavy_deficit: NutritionBucketSchema.optional(),
+  }),
+  /** fazy, w których dzień ciężki też ma (mały) deficyt; test, góry i back-to-back zawsze bez deficytu */
+  heavy_deficit_phases: z.array(z.string()).optional(),
   if_above_target_suffix: z.string(),
   /** progi minut jazdy → węgle na godzinę, od najwyższego; poniżej ostatniego progu [0, 0] */
   carbs_g_per_h: z.array(z.tuple([z.number(), CarbsRangeSchema])),

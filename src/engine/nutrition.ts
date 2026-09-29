@@ -7,7 +7,7 @@ import type { Nutrition, PhaseId, DayType } from './types'
  * deficyty, białko i węgle to decyzje o konkretnym zawodniku (docs/18, decoupling v1).
  * Port 1:1 `nutrition_for` z generatorów – golden pilnuje zgodności.
  */
-export function nutritionFor(policy: NutritionPolicy, phase: PhaseId, dayType: DayType, bikeMin: number, key: boolean): Nutrition {
+export function nutritionFor(policy: NutritionPolicy, phase: PhaseId, dayType: DayType, bikeMin: number, key: boolean, protectedDay = false): Nutrition {
   if (dayType === 'trip' && policy.trip) {
     return {
       energy: policy.trip.energy,
@@ -19,7 +19,9 @@ export function nutritionFor(policy: NutritionPolicy, phase: PhaseId, dayType: D
   const d = policy.deficit_by_phase[phase] ?? false
   const heavy = key || bikeMin >= policy.heavy_min
   const b = policy.buckets
-  const bucket = d === false ? b.no_deficit : heavy ? b.heavy : bikeMin >= policy.medium_min ? b.medium : b.light
+  // dzień ciężki: zwykle bez deficytu; w wybranych fazach mały deficyt poza treningiem – nigdy w dzień testu, gór i back-to-back
+  const heavyBucket = b.heavy_deficit && !protectedDay && (policy.heavy_deficit_phases ?? []).includes(phase) ? b.heavy_deficit : b.heavy
+  const bucket = d === false ? b.no_deficit : heavy ? heavyBucket : bikeMin >= policy.medium_min ? b.medium : b.light
   let energy: Nutrition['energy'] = bucket.energy
   let label = bucket.label
   if (d === 'if_above_target' && energy.startsWith('deficit')) {

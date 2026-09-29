@@ -1,5 +1,5 @@
 {
- "version": "2026.09.29-1",
+ "version": "2026.09.29-2",
  "meta": {
   "name": "Alpy 2027 – baza i góry",
   "short": "Alpy 2027",
@@ -42,8 +42,18 @@
     "energy": "deficit_500",
     "label": "Dzień lekki: deficyt ok. 500 kcal",
     "deficit_share": 1
+   },
+   "heavy_deficit": {
+    "energy": "deficit_300",
+    "label": "Dzień ciężki – paliwo na trening bez zmian, reszta dnia lżej: deficyt ok. 300 kcal",
+    "deficit_share": 0.4
    }
   },
+  "heavy_deficit_phases": [
+   "PREP",
+   "I",
+   "II"
+  ],
   "if_above_target_suffix": " (tylko jeśli waga > celu)",
   "carbs_g_per_h": [
    [
@@ -77,7 +87,7 @@
   "weight_based": {
    "max_kcal_per_day": 900,
    "max_loss_pct_per_week": 1.0,
-   "deficit_shares_per_week": 4.42,
+   "deficit_shares_per_week": 4.75,
    "milestones": [
     {
      "date": "2027-03-01",
@@ -345,7 +355,7 @@
   "Naturalna kadencja ok. 80 rpm (spokojne jazdy 80–95) – NIE namawiaj do szybszego kręcenia; wymuszone 90 podnosi mu tętno przy tej samej mocy.",
   "Ogranicznikiem jest wydolność oddechowo-sercowa, nie nogi: 5 dni Innsbruck–Monachium (539 km, 4500 m) nogi wytrzymały.",
   "Wskaźnik postępu numer jeden to stosunek mocy do tętna (Pw:HR) i dryf tętna na jazdach Z2, nie średnia moc.",
-  "Redukcja masy ze ok. 106 do 82 kg do wyjazdu (punkt kontrolny 91 kg na 1.03.2027) przy zachowaniu watów – deficyt tylko w dni lekkie i spokojne, nigdy w dni akcentów i długich jazd; pod górę masa kosztuje go najwięcej.",
+  "Redukcja masy ze ok. 106 do 82 kg do wyjazdu (punkt kontrolny 91 kg na 1.03.2027) przy zachowaniu watów – deficyt codziennie, ale w dni akcentów i długich jazd mały i poza treningiem (paliwo na rowerze bez zmian), a w dni testów bez deficytu; pod górę masa kosztuje go najwięcej.",
   "Cel: utrzymać 30 km/h przez 2–3 h (wymaga FTP ok. 270 W przy jego oporze powietrza na gravelu); Alpy we wrześniu 2027 to horyzont.",
   "Jeździ na gravelu (Trek Checkpoint) po płaskich okolicach Łodzi – wiatr ma duży wpływ na prędkość i moc.",
   "Jednostronny pomiar mocy SRAM na lewej korbie (wynik podwojony) – różnice kilku procent między jazdami mogą wynikać z asymetrii nóg."
