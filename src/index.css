@@ -105,3 +105,20 @@ a {
     transform: translateX(300%);
   }
 }
+
+/* krótki zielony błysk na dniach, których dotyczyła zmiana planu */
+@keyframes dropflash {
+  0% {
+    box-shadow: 0 0 0 3px rgb(16 185 129 / 0.95), 0 0 0 8px rgb(16 185 129 / 0.25);
+  }
+  100% {
+    box-shadow: 0 0 0 3px rgb(16 185 129 / 0), 0 0 0 8px rgb(16 185 129 / 0);
+  }
+}
+
+/* element, który można podnieść przytrzymaniem: bez podglądu linku i zaznaczania tekstu w iOS */
+.drag-handle {
+  -webkit-touch-callout: none;
+  -webkit-user-select: none;
+  user-select: none;
+}

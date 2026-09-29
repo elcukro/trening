@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useCallback } from 'react'
 import { Link, useNavigate, useParams } from 'react-router'
 import { useWeekView } from '@/app/usePlan'
 import { useLiveQuery } from 'dexie-react-hooks'
@@ -9,11 +9,17 @@ import { addDays, isValidISODate, mondayOf } from '@/engine/dates'
 import { todayISO, fmtRange } from '@/lib/dates'
 import { hours, minutes } from '@/lib/format'
 import { DAY_TYPE_COLOR, FLAG_COLOR, FLAG_LABEL, PHASE_COLOR, WEEKDAY_SHORT, WEEK_TYPE_LABEL } from '@/lib/labels'
-import { Badge, Button, Card, Empty, Inset } from '@/components/ui'
+import { Badge, Button, Card, Empty } from '@/components/ui'
 import { useToast } from '@/components/Toast'
 import { StatusBadge } from '@/features/today/BikeLogCard'
 import { useDailyLoad } from '@/app/useLoad'
 import { plannedTss } from '@/engine/pmc'
+import type { DayPlan } from '@/engine/plan'
+import { dropState, useDragMove } from '@/features/calendar/useDragMove'
+import { DROP_CLASS, DragBar, FLASH_CLASS, useFlash } from '@/features/calendar/DragUi'
+
+const dm = (iso: string) => `${iso.slice(8)}.${iso.slice(5, 7)}`
+const dayLabel = (d: DayPlan) => `${WEEKDAY_SHORT[d.weekday]} ${dm(d.date)} · ${d.bike?.name ?? d.gym?.name ?? 'Wolne'}`
 
 /*
  * Układ: telefon i 1024–1279 px – lista dni (wiersz: data | treść | zamiana);
@@ -27,8 +33,6 @@ export function WeekPage() {
   const monday = date && isValidISODate(date) ? mondayOf(date) : mondayOf(today)
   const { engine, days, window } = useWeekView(monday)
   const toast = useToast()
-  const [swapFrom, setSwapFrom] = useState<string | null>(null)
-  const [msg, setMsg] = useState<string | null>(null)
 
   const logs = useLiveQuery(async () => (await db.session_logs.where('date').between(monday, addDays(monday, 6), true, true).toArray()).filter((l) => !l.deleted_at), [monday], [] as SessionLog[])
   const overrides = useLiveQuery(async () => (await db.plan_overrides.where('date').between(monday, addDays(monday, 6), true, true).toArray()).filter((o) => !o.deleted_at), [monday], [] as PlanOverrideRow[])
@@ -43,20 +47,38 @@ export function WeekPage() {
   const gymDone = logs.filter((l) => l.kind === 'gym' && (l.status === 'done' || l.status === 'modified')).length
   const isCurrent = mondayOf(today) === monday
 
-  async function trySwap(target: string) {
-    if (!swapFrom) return
-    const check = validateSwap(swapFrom, target, window)
-    if (!check.ok) {
-      setMsg(check.reason ?? 'Nie można zamienić tych dni.')
-      toast.notify('Nie można zamienić tych dni', 'error', check.reason)
-      setSwapFrom(null)
-      return
-    }
-    const from = swapFrom
-    setSwapFrom(null)
-    const res = await toast.run('Zamieniam dni…', () => swapDays(from, target), (r) => (r === 'undone' ? 'Zamiana cofnięta' : 'Dni zamienione'))
-    setMsg(res === 'undone' ? 'Zamiana cofnięta – wrócił poprzedni układ.' : 'Dni zamienione.')
-  }
+  // zamiana dni: przytrzymaj i przeciągnij kartę dnia albo „Zamień” → „Tu”; te same kolory co w Kalendarzu
+  const swapCheck = useCallback(
+    (a: string, b: string): { ok: boolean; reason?: string } => {
+      const A = days.find((d) => d.date === a)
+      const B = days.find((d) => d.date === b)
+      if (A && B && !A.bike && !A.gym && !B.bike && !B.gym) return { ok: false, reason: 'Oba dni są wolne – nie ma czego zamieniać.' }
+      return validateSwap(a, b, window)
+    },
+    [days, window],
+  )
+  const canDrop = useCallback((a: string, b: string) => swapCheck(a, b).ok, [swapCheck])
+  const why = useCallback((a: string, b: string) => swapCheck(a, b).reason ?? 'Nie można zamienić tych dni.', [swapCheck])
+  const { flashing, flash } = useFlash()
+  const onDrop = useCallback(
+    (from: string, to: string) => {
+      void toast
+        .run(
+          'Zamieniam dni…',
+          () => swapDays(from, to),
+          (r) => (r.outcome === 'undone' ? `Zamiana cofnięta: ${dm(from)} ↔ ${dm(to)}` : `Dni zamienione: ${dm(from)} ↔ ${dm(to)}`),
+          (r) =>
+            r.outcome === 'swapped'
+              ? { label: 'Cofnij', onClick: () => void toast.run('Cofam zamianę…', () => removeOverride(r.id), () => 'Przywrócono plan').then(() => flash(from, to)) }
+              : undefined,
+        )
+        .then((r) => {
+          if (r) flash(from, to)
+        })
+    },
+    [toast, flash],
+  )
+  const { drag, arm, onPointerDown, handleClick, cancel } = useDragMove({ canDrop, onDrop, why })
 
   return (
     <div className="space-y-3 lg:space-y-4">
@@ -91,24 +113,7 @@ export function WeekPage() {
           Wróć do dziś
         </Link>
       )}
-      {msg && (
-        <Inset tone="info" className="flex items-center justify-between gap-2">
-          <span>{msg}</span>
-          <button className="min-h-9 shrink-0 px-2 text-xs font-semibold underline" onClick={() => setMsg(null)}>
-            ok
-          </button>
-        </Inset>
-      )}
-      {swapFrom && (
-        <Inset tone="warn" className="flex items-center justify-between gap-2">
-          <span>
-            Wybierz dzień, z którym zamienić {swapFrom.slice(8)}.{swapFrom.slice(5, 7)}.
-          </span>
-          <button className="min-h-9 shrink-0 px-2 text-xs font-semibold underline" onClick={() => setSwapFrom(null)}>
-            Anuluj
-          </button>
-        </Inset>
-      )}
+      <DragBar drag={drag} verb="Zamieniam" tapHint="Dotknij dnia, z którym zamienić" dropHint="Upuść na dniu, z którym zamienić" overHint={(to) => `Puść, żeby zamienić z ${dm(to)}`} onCancel={cancel} />
       {days.length === 0 && <Empty>Ten tydzień jest poza planem.</Empty>}
       <ul className="space-y-2 xl:grid xl:grid-cols-7 xl:gap-3 xl:space-y-0">
         {days.map((d) => {
@@ -116,12 +121,29 @@ export function WeekPage() {
           const gymLog = logs.find((l) => l.date === d.date && l.kind === 'gym')
           // zamiana dotyczy dwóch dni – znacznik (i cofnięcie) widać na obu
           const dayOverrides = overrides.filter((o) => o.date === d.date || (o.kind === 'swap' && o.payload.swap_with === d.date))
-          const selectable = swapFrom && swapFrom !== d.date
+          const drop = dropState(drag, d.date, canDrop)
+          const hasContent = !!d.bike || !!d.gym
           const isToday = d.date === today
           const weekend = d.weekday === 'sat' || d.weekday === 'sun'
           return (
-            <li key={d.date} className="xl:flex">
-              <Card className={`h-full w-full xl:flex xl:flex-col xl:p-3 ${isToday ? 'ring-2 ring-sky-500' : ''} ${selectable ? 'ring-2 ring-amber-400' : ''} ${d.day_type === 'key' ? 'border-l-4 border-l-red-500' : ''}`}>
+            <li
+              key={d.date}
+              data-date={d.date}
+              data-drop={drop ?? undefined}
+              className={`xl:flex ${hasContent ? 'drag-handle' : ''} ${drag && !drag.armed ? 'touch-none select-none' : ''}`}
+              onPointerDown={hasContent ? (e) => !(e.target as HTMLElement).closest('button') && onPointerDown(e, d.date, dayLabel(d)) : undefined}
+              onDragStart={(e) => e.preventDefault()}
+              onClickCapture={(e) => {
+                // w trakcie wyboru celu dotknięcie dowolnego miejsca karty wybiera dzień (zamiast wejść w trening)
+                if (handleClick(d.date)) {
+                  e.preventDefault()
+                  e.stopPropagation()
+                }
+              }}
+            >
+              <Card
+                className={`h-full w-full transition-[background-color,opacity,transform] xl:flex xl:flex-col xl:p-3 ${isToday && !drop ? 'ring-2 ring-sky-500' : ''} ${drop ? DROP_CLASS[drop] : flashing(d.date) ? FLASH_CLASS : ''} ${d.day_type === 'key' ? 'border-l-4 border-l-red-500' : ''}`}
+              >
                 <div className="flex min-w-0 items-start gap-3 xl:flex-1 xl:flex-col xl:gap-2">
                   {/* data: na liście kolumna 2,5 rem, w siatce wiersz z paskiem koloru dnia */}
                   <div className="w-10 shrink-0 text-center xl:flex xl:w-full xl:items-baseline xl:gap-1.5 xl:border-b xl:border-slate-100 xl:pb-2 xl:text-left xl:dark:border-slate-700">
@@ -175,13 +197,22 @@ export function WeekPage() {
                     )}
                   </div>
                   <div className="shrink-0 xl:mt-auto xl:w-full xl:border-t xl:border-slate-100 xl:pt-2 xl:dark:border-slate-700">
-                    {selectable ? (
-                      <Button size="sm" onClick={() => trySwap(d.date)} className="min-h-11 bg-amber-500 hover:bg-amber-400 active:bg-amber-600 xl:min-h-9 xl:w-full">
+                    {/* w trakcie zamiany kliknięcia obsługuje `onClickCapture` karty – przyciski tylko mówią, co się stanie */}
+                    {drop === 'source' ? (
+                      <Button size="sm" variant="ghost" className="min-h-11 xl:min-h-9 xl:w-full">
+                        Anuluj
+                      </Button>
+                    ) : drop === 'slot' || drop === 'over' ? (
+                      <Button size="sm" className={`min-h-11 xl:min-h-9 xl:w-full ${drop === 'over' ? 'bg-emerald-600 hover:bg-emerald-500' : ''}`}>
                         Tu
                       </Button>
+                    ) : drop ? (
+                      <button className="min-h-11 rounded-xl px-2 text-xs text-slate-500 xl:min-h-9 xl:w-full dark:text-slate-400" title="Pokaż, dlaczego nie można">
+                        Nie tu
+                      </button>
                     ) : (
                       <button
-                        onClick={() => setSwapFrom(d.date)}
+                        onClick={() => arm(d.date, dayLabel(d))}
                         className="min-h-11 rounded-xl px-2 text-xs text-slate-400 transition-colors hover:bg-slate-100 hover:text-sky-700 xl:min-h-9 xl:w-full dark:hover:bg-slate-700 dark:hover:text-sky-300"
                         aria-label={`Zamień dzień ${d.date}`}
                         title="Zamień dzień"
@@ -202,7 +233,7 @@ export function WeekPage() {
           <p className="text-sm">{first.week_notes}</p>
         </Card>
       )}
-      <p className="text-xs text-slate-400 dark:text-slate-500">Zamiana dni pilnuje reguł: żadnych dwóch akcentów pod rząd i żadnej sesji z nogami krócej niż 48 h przed testem, górami czy blokiem.</p>
+      <p className="text-xs text-slate-400 dark:text-slate-500">Przytrzymaj dzień i przeciągnij go na inny (albo „Zamień” i „Tu”). Niebieska ramka – można zamienić, zielona – puść. Zamiana pilnuje reguł: żadnych dwóch akcentów pod rząd i żadnej sesji z nogami krócej niż 48 h przed testem, górami czy blokiem.</p>
     </div>
   )
 }

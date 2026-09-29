@@ -7,19 +7,26 @@ import { createContext, useCallback, useContext, useMemo, useRef, useState, type
 
 export type ToastKind = 'pending' | 'success' | 'error' | 'info'
 
+/** Przycisk w komunikacie, np. „Cofnij” po zmianie planu. */
+export interface ToastAction {
+  label: string
+  onClick: () => void
+}
+
 export interface Toast {
   id: number
   kind: ToastKind
   message: string
   /** pełna treść błędu do rozwinięcia */
   detail?: string
+  action?: ToastAction
 }
 
 interface ToastApi {
-  notify: (message: string, kind?: ToastKind, detail?: string) => number
+  notify: (message: string, kind?: ToastKind, detail?: string, action?: ToastAction) => number
   dismiss: (id: number) => void
   /** Wykonuje akcję, pokazując postęp i wynik. Zwraca wartość akcji albo `null` po błędzie. */
-  run: <T>(pendingMessage: string, fn: () => Promise<T>, done?: (result: T) => string) => Promise<T | null>
+  run: <T>(pendingMessage: string, fn: () => Promise<T>, done?: (result: T) => string, action?: (result: T) => ToastAction | undefined) => Promise<T | null>
   /** true, gdy trwa jakakolwiek akcja – tylko do paska postępu, nie do blokowania przycisków */
   busy: boolean
 }
@@ -48,8 +55,9 @@ export function ToastProvider({ children }: { children: ReactNode }) {
   }, [])
 
   const schedule = useCallback(
-    (id: number, kind: ToastKind) => {
-      const ms = TIMEOUT[kind]
+    (id: number, kind: ToastKind, withAction = false) => {
+      // komunikat z przyciskiem zostaje dłużej – trzeba zdążyć go przeczytać i kliknąć
+      const ms = withAction ? Math.max(TIMEOUT[kind], 8000) : TIMEOUT[kind]
       if (!ms) return
       const t = setTimeout(() => dismiss(id), ms)
       timers.current.set(id, t)
@@ -58,25 +66,25 @@ export function ToastProvider({ children }: { children: ReactNode }) {
   )
 
   const notify = useCallback(
-    (message: string, kind: ToastKind = 'info', detail?: string) => {
+    (message: string, kind: ToastKind = 'info', detail?: string, action?: ToastAction) => {
       const id = nextId.current++
-      setToasts((list) => [...list.filter((x) => x.kind !== 'pending' || kind === 'pending'), { id, kind, message, detail }])
-      schedule(id, kind)
+      setToasts((list) => [...list.filter((x) => x.kind !== 'pending' || kind === 'pending'), { id, kind, message, detail, action }])
+      schedule(id, kind, !!action)
       return id
     },
     [schedule],
   )
 
   const replace = useCallback(
-    (id: number, message: string, kind: ToastKind, detail?: string) => {
-      setToasts((list) => list.map((t) => (t.id === id ? { ...t, message, kind, detail } : t)))
-      schedule(id, kind)
+    (id: number, message: string, kind: ToastKind, detail?: string, action?: ToastAction) => {
+      setToasts((list) => list.map((t) => (t.id === id ? { ...t, message, kind, detail, action } : t)))
+      schedule(id, kind, !!action)
     },
     [schedule],
   )
 
   const run = useCallback(
-    async <T,>(pendingMessage: string, fn: () => Promise<T>, done?: (result: T) => string): Promise<T | null> => {
+    async <T,>(pendingMessage: string, fn: () => Promise<T>, done?: (result: T) => string, action?: (result: T) => ToastAction | undefined): Promise<T | null> => {
       const id = notify(pendingMessage, 'pending')
       setBusy((n) => n + 1)
       try {
@@ -84,7 +92,7 @@ export function ToastProvider({ children }: { children: ReactNode }) {
           fn(),
           new Promise<never>((_, reject) => setTimeout(() => reject(new Error('Przekroczono czas oczekiwania (60 s). Sprawdź połączenie i spróbuj ponownie.')), 60_000)),
         ])
-        replace(id, done ? done(result) : 'Gotowe', 'success')
+        replace(id, done ? done(result) : 'Gotowe', 'success', undefined, action?.(result))
         return result
       } catch (e) {
         const msg = e instanceof Error ? e.message : String(e)
@@ -146,6 +154,17 @@ function ToastRow({ toast, onDismiss }: { toast: Toast; onDismiss: () => void })
           )}
           {open && toast.detail && <p className="mt-1 break-words text-xs font-normal opacity-90">{toast.detail}</p>}
         </div>
+        {toast.action && (
+          <button
+            onClick={() => {
+              toast.action?.onClick()
+              onDismiss()
+            }}
+            className="min-h-8 shrink-0 rounded-lg bg-white/20 px-2.5 text-xs font-semibold hover:bg-white/30"
+          >
+            {toast.action.label}
+          </button>
+        )}
         <button onClick={onDismiss} aria-label="Zamknij" className="shrink-0 px-1 text-lg leading-none opacity-80">
           ×
         </button>

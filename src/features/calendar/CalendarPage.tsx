@@ -6,9 +6,10 @@ import { validateMove } from '@/engine/rules'
 import type { PlanOverrideRow, SessionLog, SessionStatus } from '@/db'
 import { addDays, mondayOf, type ISODate } from '@/engine/dates'
 import type { DayPlan } from '@/engine/plan'
-import { Button, Dot, Empty, Inset } from '@/components/ui'
+import { Button, Dot, Empty } from '@/components/ui'
 import { useToast } from '@/components/Toast'
-import { useDragMove, type DragMove } from './useDragMove'
+import { dropState, useDragMove, type DragMove } from './useDragMove'
+import { DROP_CLASS, DragBar, FLASH_CLASS, useFlash } from './DragUi'
 import { addMonths, fmtDayMonth, fmtMonth, monthEnd, monthStart, todayISO } from '@/lib/dates'
 import { hours, minutes } from '@/lib/format'
 import { DAY_TYPE_COLOR, FLAG_COLOR, FLAG_LABEL, PHASE_COLOR, PHASE_SHORT, WEEKDAY_LONG, WEEKDAY_SHORT } from '@/lib/labels'
@@ -65,6 +66,7 @@ interface DragApi {
   onPointerDown: (e: React.PointerEvent, from: ISODate, label: string) => void
   handleClick: (date: ISODate) => boolean
   canDrop: (from: ISODate, to: ISODate) => boolean
+  flashing: (date: ISODate) => boolean
 }
 
 function DayCell({ date, day, inMonth, today, logs, hasOverride, dragApi }: { date: ISODate; day: DayPlan | undefined; inMonth: boolean; today: boolean; logs: SessionLog[]; hasOverride: boolean; dragApi: DragApi }) {
@@ -84,27 +86,21 @@ function DayCell({ date, day, inMonth, today, logs, hasOverride, dragApi }: { da
   const tone = inMonth ? 'bg-white hover:bg-sky-50 dark:bg-slate-800 dark:hover:bg-slate-700' : 'bg-white/60 text-slate-500 hover:bg-sky-50 dark:bg-slate-800/50 dark:hover:bg-slate-700'
   const { drag } = dragApi
   const movable = !!ride
-  const isSource = drag?.from === date
-  const isTarget = !!drag && !isSource && dragApi.canDrop(drag.from, date)
-  const isOver = drag?.over === date
-  const dragCls = isSource
-    ? 'opacity-60 ring-2 ring-sky-500'
-    : isOver
-      ? 'ring-2 ring-emerald-500 bg-emerald-100 dark:bg-emerald-900/50'
-      : isTarget
-        ? 'ring-2 ring-emerald-400/70 bg-emerald-50 dark:bg-emerald-950/40'
-        : ''
+  const drop = dropState(drag, date, dragApi.canDrop)
+  const isTarget = drop === 'slot' || drop === 'over'
+  const dragCls = drop ? DROP_CLASS[drop] : dragApi.flashing(date) ? FLASH_CLASS : ''
   return (
     <Link
       to={`/dzien/${date}`}
       data-date={date}
+      data-drop={drop ?? undefined}
       aria-label={`${WEEKDAY_LONG[day.weekday]} ${date}${isTarget ? ' – wolny, można tu przenieść' : ''}`}
       onPointerDown={movable ? (e) => dragApi.onPointerDown(e, date, ride.name) : undefined}
       onClick={(e) => {
         if (dragApi.handleClick(date)) e.preventDefault()
       }}
       onDragStart={(e) => e.preventDefault()}
-      className={`${base} border shadow-card transition-colors ${today ? 'border-sky-500 ring-2 ring-sky-500/40' : 'border-slate-200 dark:border-slate-700'} ${tone} ${dragCls} ${drag && !drag.armed ? 'touch-none select-none' : ''}`}
+      className={`${base} border shadow-card transition-[background-color,opacity,transform] ${today && !drop ? 'border-sky-500 ring-2 ring-sky-500/40' : 'border-slate-200 dark:border-slate-700'} ${tone} ${dragCls} ${movable ? 'drag-handle' : ''} ${drag && !drag.armed ? 'touch-none select-none' : ''}`}
     >
       <div className="flex items-center justify-between gap-1">
         <span className={`text-xs font-semibold tabular-nums lg:text-sm ${today ? 'rounded-full bg-sky-600 px-1.5 text-white' : ''}`}>{num}</span>
@@ -196,6 +192,8 @@ export function CalendarPage() {
 
   // przenoszenie jazdy: przytrzymaj kafelek z jazdą i upuść na dniu wolnym tego samego miesiąca (R15)
   const canDrop = useCallback((from: ISODate, to: ISODate) => validateMove(from, to, days, { today }).ok, [days, today])
+  const why = useCallback((from: ISODate, to: ISODate) => validateMove(from, to, days, { today }).reason ?? null, [days, today])
+  const { flashing, flash } = useFlash()
   const onDrop = useCallback(
     (from: ISODate, to: ISODate) => {
       const v = validateMove(from, to, days, { today })
@@ -203,17 +201,24 @@ export function CalendarPage() {
         toast.notify(v.reason ?? 'Nie można tu przenieść.', 'error')
         return
       }
-      void toast.run(
-        'Przenoszę trening…',
-        () => addOverride(from, 'move', { to, what: 'bike' }),
-        () => `Przeniesione na ${fmtDayMonth(to)}. Wyślij 7 dni na Bolta, jeśli to najbliższe dni.`,
-      )
-      if (v.warning) toast.notify(v.warning, 'info')
+      const name = days.find((d) => d.date === from)?.bike?.name ?? 'Trening'
+      void toast
+        .run(
+          'Przenoszę trening…',
+          () => addOverride(from, 'move', { to, what: 'bike' }),
+          () => `${name}: ${fmtDayMonth(from)} → ${fmtDayMonth(to)}. Wyślij 7 dni na Bolta, jeśli to najbliższe dni.`,
+          (row) => ({ label: 'Cofnij', onClick: () => void toast.run('Cofam przeniesienie…', () => removeOverride(row.id), () => 'Przywrócono plan') }),
+        )
+        .then((row) => {
+          if (!row) return
+          flash(from, to)
+          if (v.warning) toast.notify(v.warning, 'info')
+        })
     },
-    [days, today, toast],
+    [days, today, toast, flash],
   )
-  const { drag, onPointerDown, handleClick, cancel } = useDragMove({ canDrop, onDrop })
-  const dragApi = useMemo(() => ({ drag, onPointerDown, handleClick, canDrop }), [drag, onPointerDown, handleClick, canDrop])
+  const { drag, onPointerDown, handleClick, cancel } = useDragMove({ canDrop, onDrop, why })
+  const dragApi = useMemo(() => ({ drag, onPointerDown, handleClick, canDrop, flashing }), [drag, onPointerDown, handleClick, canDrop, flashing])
   const moves = useMemo(() => overrides.filter((o: PlanOverrideRow) => o.kind === 'move'), [overrides])
 
   return (
@@ -238,24 +243,7 @@ export function CalendarPage() {
         )}
       </header>
 
-      {/* pasek nie może przesuwać siatki w trakcie przeciągania – dlatego jest przypięty do dołu ekranu */}
-      {drag && (
-        <div className="pb-nav fixed inset-x-0 bottom-2 z-40 px-4 lg:bottom-6">
-          <Inset tone="info" className="mx-auto flex max-w-md flex-wrap items-center justify-between gap-2 shadow-lg" role="status">
-            <span className="min-w-0">
-              Przenoszę: <b>{drag.label}</b> – {drag.armed ? 'dotknij dnia wolnego' : 'upuść na dniu wolnym'} (zielone ramki).
-            </span>
-            <Button size="sm" variant="ghost" onClick={cancel}>
-              Anuluj
-            </Button>
-          </Inset>
-        </div>
-      )}
-      {drag?.point && (
-        <div className="pointer-events-none fixed z-50 max-w-40 truncate rounded-lg bg-sky-600 px-2 py-1 text-xs font-semibold text-white shadow-lg" style={{ left: drag.point.x + 12, top: drag.point.y - 12 }} aria-hidden>
-          {drag.label}
-        </div>
-      )}
+      <DragBar drag={drag} verb="Przenoszę" tapHint="Dotknij dnia wolnego" dropHint="Upuść na dniu wolnym" overHint={(to) => `Puść, żeby przenieść na ${fmtDayMonth(to)}`} onCancel={cancel} />
 
       {days.length === 0 && (
         <Empty>
@@ -316,7 +304,7 @@ export function CalendarPage() {
         </div>
       )}
 
-      <p className="text-xs text-slate-400 dark:text-slate-500">Przytrzymaj kafelek z jazdą i przeciągnij na dzień wolny tego samego miesiąca, żeby ją przenieść (albo puść i dotknij celu).</p>
+      <p className="text-xs text-slate-400 dark:text-slate-500">Przytrzymaj kafelek z jazdą – dni, na które można ją przenieść, dostaną niebieską ramkę. Przeciągnij na jeden z nich (zrobi się zielony) i puść, albo puść od razu i dotknij celu.</p>
 
       <ul className="flex flex-wrap gap-x-4 gap-y-1 text-xs text-slate-500 dark:text-slate-400" aria-label="Legenda">
         <li className="flex items-center gap-1.5">

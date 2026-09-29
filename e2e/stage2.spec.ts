@@ -142,33 +142,74 @@ test('Etap 5: zamiana dni pilnuje reguły 48 godzin (R9)', async ({ page }) => {
   await page.goto('/tydzien/2027-05-12?today=2027-05-12')
   await expect(page.getByRole('heading', { name: 'Tydzień 35' })).toBeVisible()
   await page.getByRole('button', { name: 'Zamień dzień 2027-05-12' }).click()
-  await page.getByRole('button', { name: 'Tu' }).nth(2).click()
-  await expect(page.getByText(/48 h przed ciężkim dniem/)).toBeVisible()
+  // czwartek nie jest celem: przygaszony, a po dotknięciu pasek mówi dlaczego i wybór trwa dalej
+  const thu = page.locator('li[data-date="2027-05-13"]')
+  await expect(thu).toHaveAttribute('data-drop', 'blocked')
+  await thu.getByRole('button', { name: 'Nie tu' }).click()
+  await expect(thu).toHaveAttribute('data-drop', 'denied')
+  await expect(page.getByRole('status').filter({ hasText: /48 h przed ciężkim dniem/ })).toBeVisible()
+  await expect(page.getByText(/Zamieniam:/)).toBeVisible()
+  await page.keyboard.press('Escape')
+  await expect(page.getByText(/Zamieniam:/)).toHaveCount(0)
 })
 
 test('Zamiany dni składają się w kolejności wykonania i dają się cofnąć', async ({ page }) => {
   // tydzień 4 (5–11.10.2026): pn wolne, wt Z2, śr akcent, czw wolne, pt Z2, sb długa, nd Z2
   await page.goto('/tydzien/2026-10-05?today=2026-10-05')
-  const day = (iso: string) => page.locator('li').filter({ has: page.getByRole('button', { name: `Zamień dzień ${iso}` }) })
+  const day = (iso: string) => page.locator(`li[data-date="${iso}"]`)
+  const tu = (iso: string) => day(iso).getByRole('button', { name: 'Tu' })
   await expect(day('2026-10-08').getByText('Wolne')).toBeVisible()
   // 1) czwartek (wolne) ↔ wtorek (Z2): Z2 ląduje w czwartek
   await page.getByRole('button', { name: 'Zamień dzień 2026-10-08' }).click()
-  await page.getByRole('button', { name: 'Tu' }).nth(1).click()
+  // wybór celu: źródło podniesione, możliwe dni w niebieskiej ramce, drugi wolny dzień (poniedziałek) odpada
+  await expect(day('2026-10-08')).toHaveAttribute('data-drop', 'source')
+  await expect(day('2026-10-06')).toHaveAttribute('data-drop', 'slot')
+  await expect(day('2026-10-05')).toHaveAttribute('data-drop', 'blocked')
+  await tu('2026-10-06').click()
+  await expect(page.getByText('Dni zamienione: 08.10 ↔ 06.10')).toBeVisible()
   await expect(day('2026-10-08').getByText('Baza tlenowa Z2')).toBeVisible()
   await expect(day('2026-10-06').getByText('Wolne')).toBeVisible()
   // 2) poniedziałek (wolne) ↔ czwartek (teraz Z2): wcześniejszy dzień, późniejsza zamiana – Z2 ma trafić na poniedziałek
   await page.getByRole('button', { name: 'Zamień dzień 2026-10-05' }).click()
-  await page.getByRole('button', { name: 'Tu' }).nth(2).click()
+  await tu('2026-10-08').click()
   await expect(day('2026-10-05').getByText('Baza tlenowa Z2')).toBeVisible()
   await expect(day('2026-10-08').getByText('Wolne')).toBeVisible()
   await expect(day('2026-10-06').getByText('Wolne')).toBeVisible()
   // znacznik zamiany jest na obu dniach; powtórzenie ostatniej zamiany ją cofa
   await expect(day('2026-10-08').getByRole('button', { name: /zamienione z 05\.10/ })).toBeVisible()
   await page.getByRole('button', { name: 'Zamień dzień 2026-10-08' }).click()
-  await page.getByRole('button', { name: 'Tu' }).first().click()
-  await expect(page.getByText('Zamiana cofnięta').first()).toBeVisible()
+  await tu('2026-10-05').click()
+  await expect(page.getByText(/Zamiana cofnięta/).first()).toBeVisible()
   await expect(day('2026-10-08').getByText('Baza tlenowa Z2')).toBeVisible()
   await expect(day('2026-10-05').getByText('Wolne')).toBeVisible()
+})
+
+test('Tydzień: przeciągnięcie dnia na inny zamienia je, „Cofnij” w komunikacie przywraca plan', async ({ page }) => {
+  await page.goto('/tydzien/2026-10-05?today=2026-10-05')
+  const day = (iso: string) => page.locator(`li[data-date="${iso}"]`)
+  await expect(day('2026-10-06').getByText('Baza tlenowa Z2')).toBeVisible()
+  const a = (await day('2026-10-06').boundingBox())!
+  const b = (await day('2026-10-08').boundingBox())!
+  const c = (await day('2026-10-07').boundingBox())!
+  await page.mouse.move(a.x + a.width / 2, a.y + a.height / 2)
+  await page.mouse.down()
+  await page.waitForTimeout(450)
+  await expect(page.getByText(/Zamieniam:/)).toBeVisible()
+  await expect(day('2026-10-06')).toHaveAttribute('data-drop', 'source')
+  await expect(day('2026-10-08')).toHaveAttribute('data-drop', 'slot')
+  // nad dozwolonym dniem ramka robi się zielona, a pasek mówi, co się stanie po puszczeniu
+  await page.mouse.move(c.x + c.width / 2, c.y + c.height / 2, { steps: 6 })
+  await page.mouse.move(b.x + b.width / 2, b.y + b.height / 2, { steps: 8 })
+  await expect(day('2026-10-08')).toHaveAttribute('data-drop', 'over')
+  await expect(page.getByText('Puść, żeby zamienić z 08.10')).toBeVisible()
+  await page.screenshot({ path: 'test-results/week-drag.png', fullPage: true })
+  await page.mouse.up()
+  await expect(day('2026-10-08').getByText('Baza tlenowa Z2')).toBeVisible()
+  await expect(day('2026-10-06').getByText('Wolne')).toBeVisible()
+  await expect(page.getByText('Dni zamienione: 06.10 ↔ 08.10')).toBeVisible()
+  await page.getByRole('button', { name: 'Cofnij' }).click()
+  await expect(day('2026-10-06').getByText('Baza tlenowa Z2')).toBeVisible()
+  await expect(day('2026-10-08').getByText('Wolne')).toBeVisible()
 })
 
 test('Etap 5: sprzęt i wyjazd', async ({ page }) => {

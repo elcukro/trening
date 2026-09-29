@@ -112,17 +112,17 @@ export async function addOverride(date: string, kind: PlanOverrideRow['kind'], p
  * Zamiana dwóch dni. Kolejne zamiany się składają (A↔B, potem A↔C); powtórzenie ostatniej zamiany tej samej pary
  * cofa ją zamiast dokładać drugi wpis.
  */
-export async function swapDays(a: string, b: string): Promise<'swapped' | 'undone'> {
+export async function swapDays(a: string, b: string): Promise<{ outcome: 'swapped' | 'undone'; id: string }> {
   const lo = a < b ? a : b
   const hi = a < b ? b : a
   const near = (await db.plan_overrides.where('date').between(addDays(lo, -7), addDays(hi, 7), true, true).toArray()).filter((o) => !o.deleted_at)
   const undo = swapToUndo(near.map((o) => ({ id: o.id, date: o.date, kind: o.kind, payload: o.payload, at: o.updated_at })), a, b)
   if (undo) {
     await softDelete('plan_overrides', undo)
-    return 'undone'
+    return { outcome: 'undone', id: undo }
   }
-  await addOverride(a, 'swap', { swap_with: b })
-  return 'swapped'
+  const row = await addOverride(a, 'swap', { swap_with: b })
+  return { outcome: 'swapped', id: row.id }
 }
 
 export async function removeOverride(id: string): Promise<void> {
