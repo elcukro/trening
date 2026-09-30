@@ -38,7 +38,7 @@ export function EmailSection() {
     <Card>
       <CardTitle icon="✉️">E-mail</CardTitle>
       <Checkbox label="Poranna odprawa o 7:00" hint="Tylko w dni z treningiem: kroki z watami i tętnem, jedzenie, uwagi dnia." checked={!!s.email_morning} onChange={(e) => void engine.settingsApi.update({ email_morning: e.target.checked })} />
-      <Checkbox label="Podsumowanie po treningu" hint="Zaraz po wgraniu jazdy ze Stravy: liczby, strefy, dryf tętna, tydzień." checked={!!s.email_workout} onChange={(e) => void engine.settingsApi.update({ email_workout: e.target.checked })} />
+      <Checkbox label="Podsumowanie po treningu" hint="Zaraz po wgraniu jazdy ze Stravy, jeśli wypełnia plan dnia (≥ 80 % czasu; bez planu ≥ 30 min). Krótsze i dodatkowe jazdy – w jednym mailu „Dzień w liczbach” o 21:00." checked={!!s.email_workout} onChange={(e) => void engine.settingsApi.update({ email_workout: e.target.checked })} />
       <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">Na adres {auth.session.user.email}, z trening@felsztukier.pl. Pierwszy mail może trafić do spamu – oznacz „To nie spam”.</p>
       <Actions className="mt-3">
         <Button size="sm" variant="secondary" disabled={busy} onClick={() => void sample('morning')}>

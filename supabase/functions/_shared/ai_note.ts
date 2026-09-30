@@ -5,7 +5,7 @@
  */
 import type { SupabaseClient } from 'npm:@supabase/supabase-js@2'
 import { env } from './env.ts'
-import type { DaySnapshot } from './email_views.ts'
+import { fulfilsPlan, type DaySnapshot } from './email_views.ts'
 import { historyContext, numbersOk, rideFacts, type HistRide, type History, type RideFacts, type RideRowLite, type StoredSamples } from './ride_facts.ts'
 import { COACH_HANDBOOK, promptFacts, ruleNote, userMessage, wordCount } from './ride_note_prompt.ts'
 
@@ -129,7 +129,9 @@ export async function gatherFacts(admin: SupabaseClient, userId: string, activit
     sameWorkoutDates,
     tests: (tests ?? []).map((t) => ({ date: t.date as string, ftp_w: Number(t.ftp_w) })),
   })
-  const facts = rideFacts(ride, samples, snap, {
+  // jazda krótsza niż 80 % zaplanowanego treningu to nie ten trening (dojazd, rozjazd) – bez porównania z planem
+  const snapForFacts = snap?.planned && !fulfilsPlan(Number(a.moving_time_s), snap.planned.minutes) ? { ...snap, planned: null, context: null } : snap
+  const facts = rideFacts(ride, samples, snapForFacts, {
     mmp90,
     previous_same,
     week,

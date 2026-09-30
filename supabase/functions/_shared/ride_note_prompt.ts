@@ -81,7 +81,7 @@ export function promptFacts(f: RideFacts): Record<string, unknown> {
   return (prune({
     ride_kind: kind,
     ride,
-    plan: plan ?? 'brak planu na ten dzień – jazda dodatkowa albo przed startem programu',
+    plan: plan ?? 'brak planu do porównania – jazda dodatkowa (dzień bez treningu albo jazda krótsza niż 80 % zaplanowanej, np. dojazd); nie oceniaj jej jako niewykonanego treningu',
     athlete: { ftp: f.athlete.ftp, lthr: f.athlete.lthr, goal: f.athlete.goal },
     test: kind === 'test' ? f.test : undefined,
     efforts: kind === 'intervals' ? f.efforts : undefined,

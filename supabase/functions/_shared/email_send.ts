@@ -6,7 +6,7 @@ import type { SupabaseClient } from 'npm:@supabase/supabase-js@2'
 import { APP_URL, env } from './env.ts'
 import { sign, verify } from './crypto.ts'
 import { morningEmail, workoutEmail, type EmailOut, type MorningView } from './email_templates.ts'
-import { buildWorkoutView, type DaySnapshot, type RideLite } from './email_views.ts'
+import { buildWorkoutView, fulfilsPlan, type DaySnapshot, type RideLite } from './email_views.ts'
 
 const FROM = 'Trening <trening@felsztukier.pl>'
 export type EmailKind = 'morning' | 'workout'
@@ -98,21 +98,11 @@ export async function sendMorning(admin: SupabaseClient, userId: string, date: s
 }
 
 /** Podsumowanie jazdy zaraz po imporcie – tylko świeże jazdy (bez maili przy imporcie historii). */
-export async function sendWorkout(admin: SupabaseClient, userId: string, activityId: number | string): Promise<string> {
-  const { data: profile } = await admin.from('profiles').select('email_workout, name').eq('user_id', userId).maybeSingle()
-  if (!profile?.email_workout) return 'wyłączone'
-  const { data: a } = await admin.from('strava_activities').select('*').eq('user_id', userId).eq('id', activityId).maybeSingle()
-  if (!a || !a.is_ride || a.deleted_at) return 'nie jazda'
-  const today = warsawNow().date
-  if ((a.date as string) < addDays(today, -2)) return 'stara jazda'
-  if (Number(a.moving_time_s) < 15 * 60) return 'krótka jazda'
-  const ref = String(activityId)
-  if (!(await reserve(admin, userId, 'workout', ref))) return 'już wysłane'
-  const snap = await snapshot(admin, userId, a.date as string)
-  const monday = mondayOf(a.date as string)
-  const { data: week } = await admin.from('strava_activities').select('moving_time_s').eq('user_id', userId).eq('is_ride', true).is('deleted_at', null).gte('date', monday).lte('date', addDays(monday, 6))
-  const weekDoneMin = (week ?? []).reduce((s, r) => s + Number(r.moving_time_s) / 60, 0)
-  const ride: RideLite = {
+// deno-lint-ignore no-explicit-any
+type Row = Record<string, any>
+
+function rideLite(a: Row): RideLite {
+  return {
     date: a.date,
     name: a.name,
     moving_time_s: Number(a.moving_time_s),
@@ -126,13 +116,80 @@ export async function sendWorkout(admin: SupabaseClient, userId: string, activit
     decoupling_pct: a.decoupling_pct == null ? null : Number(a.decoupling_pct),
     hr_histogram: (a.hr_histogram as number[] | null) ?? null,
   }
-  const view = buildWorkoutView(ride, snap, { athlete: (profile.name as string) ?? '', appUrl: APP_URL, weekDoneMin, rideDateLabel: snap?.dateLabel ?? (a.date as string), note: (a.note as string | null) ?? null })
+}
+
+async function weekDoneMin(admin: SupabaseClient, userId: string, date: string): Promise<number> {
+  const monday = mondayOf(date)
+  const { data: week } = await admin.from('strava_activities').select('moving_time_s').eq('user_id', userId).eq('is_ride', true).is('deleted_at', null).gte('date', monday).lte('date', addDays(monday, 6))
+  return (week ?? []).reduce((s, r) => s + Number(r.moving_time_s) / 60, 0)
+}
+
+async function sendWorkoutMail(admin: SupabaseClient, userId: string, kindRef: string, name: string, a: Row, snap: DaySnapshot | null, extras: Row[]): Promise<string> {
+  const view = buildWorkoutView(rideLite(a), snap, {
+    athlete: name,
+    appUrl: APP_URL,
+    weekDoneMin: await weekDoneMin(admin, userId, a.date as string),
+    rideDateLabel: snap?.dateLabel ?? (a.date as string),
+    note: (a.note as string | null) ?? null,
+    extras: extras.map(rideLite),
+  })
   const to = await emailOf(admin, userId)
   if (!to) return 'brak adresu'
   const unsub = await unsubscribeUrl(userId, 'workout')
   const r = await resend(to, workoutEmail(view, { unsubscribeUrl: unsub }), unsub)
-  await finish(admin, userId, 'workout', ref, r)
+  await finish(admin, userId, 'workout', kindRef, r)
   return r.error ?? 'wysłane'
+}
+
+/**
+ * Mail zaraz po imporcie – tylko dla jazdy, która wypełnia zaplanowany trening (≥ 80 % czasu; bez planu ≥ 30 min).
+ * Krótszy dojazd przed treningiem albo druga jazda dnia trafiają do wieczornego „Dzień w liczbach” (`runEvening`).
+ */
+export async function sendWorkout(admin: SupabaseClient, userId: string, activityId: number | string): Promise<string> {
+  const { data: profile } = await admin.from('profiles').select('email_workout, name').eq('user_id', userId).maybeSingle()
+  if (!profile?.email_workout) return 'wyłączone'
+  const { data: a } = await admin.from('strava_activities').select('*').eq('user_id', userId).eq('id', activityId).maybeSingle()
+  if (!a || !a.is_ride || a.deleted_at) return 'nie jazda'
+  const today = warsawNow().date
+  if ((a.date as string) < addDays(today, -2)) return 'stara jazda'
+  if (Number(a.moving_time_s) < 15 * 60) return 'krótka jazda'
+  const snap = await snapshot(admin, userId, a.date as string)
+  if (!fulfilsPlan(Number(a.moving_time_s), snap?.planned?.minutes ?? null)) return 'czeka na wieczorne podsumowanie'
+  const ref = String(activityId)
+  if (!(await reserve(admin, userId, 'workout', ref))) return 'już wysłane'
+  return sendWorkoutMail(admin, userId, ref, (profile.name as string) ?? '', a, snap, [])
+}
+
+/** Godzina (Europe/Warsaw) wieczornego „Dzień w liczbach”. */
+export const EVENING_HOUR = 21
+
+/**
+ * Wieczorne „Dzień w liczbach” (o `EVENING_HOUR`): jeden mail z wszystkimi jazdami dnia, ale tylko gdy jest
+ * jazda ≥ 15 min, o której jeszcze nie było maila. Opis i ocena względem planu dotyczą jazdy, która plan
+ * wypełniła (ta z maila po treningu), a bez takiej – najdłuższej.
+ */
+export async function sendEvening(admin: SupabaseClient, userId: string, date: string): Promise<string> {
+  const { data: profile } = await admin.from('profiles').select('email_workout, name').eq('user_id', userId).maybeSingle()
+  if (!profile?.email_workout) return 'wyłączone'
+  const { data: rows } = await admin.from('strava_activities').select('*').eq('user_id', userId).eq('is_ride', true).is('deleted_at', null).eq('date', date).order('start_at')
+  const rides = (rows ?? []).filter((r) => Number(r.moving_time_s) >= 15 * 60)
+  if (!rides.length) return 'bez jazd'
+  const { data: sent } = await admin.from('email_log').select('ref').eq('user_id', userId).eq('kind', 'workout').in('ref', rides.map((r) => String(r.id)))
+  const sentIds = new Set((sent ?? []).map((s) => String(s.ref)))
+  if (rides.every((r) => sentIds.has(String(r.id)))) return 'wszystko już wysłane'
+  const ref = `day:${date}`
+  if (!(await reserve(admin, userId, 'workout', ref))) return 'już wysłane'
+  const snap = await snapshot(admin, userId, date)
+  const primary = rides.find((r) => sentIds.has(String(r.id))) ?? rides.toSorted((x, y) => Number(y.moving_time_s) - Number(x.moving_time_s))[0]!
+  const extras = rides.filter((r) => r !== primary)
+  return sendWorkoutMail(admin, userId, ref, (profile.name as string) ?? '', primary, snap, extras)
+}
+
+export async function runEvening(admin: SupabaseClient, date: string): Promise<Record<string, string>> {
+  const { data } = await admin.from('profiles').select('user_id').eq('email_workout', true)
+  const out: Record<string, string> = {}
+  for (const p of data ?? []) out[p.user_id as string] = await sendEvening(admin, p.user_id as string, date)
+  return out
 }
 
 /** Harmonogram (co godzinę): poranna odprawa tym, którym w Warszawie wybiła ich godzina. */

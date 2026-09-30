@@ -75,6 +75,8 @@ export interface WorkoutView {
   next?: { dateLabel: string; name: string; minutes: number } | null
   /** notatka trenera (AI albo z reguł) – na samej górze maila */
   note?: string | null
+  /** wieczorne „Dzień w liczbach”: wszystkie jazdy dnia (pierwsza = ta, którą opisuje reszta maila) */
+  day?: { rides: { name: string; minutes: number; km: number; watts: number | null; hr: number | null; tss: number | null }[]; total_min: number; total_tss: number | null } | null
 }
 
 // ---------------------------------------------------------------- styl
@@ -244,7 +246,9 @@ ${v.nutrition.after ? `<tr><td style="padding-right:12px;color:${C.mute};">po tr
 export function workoutEmail(v: WorkoutView, opts: { unsubscribeUrl?: string | null } = {}): EmailOut {
   const tone = v.verdict.tone === 'good' ? C.good : v.verdict.tone === 'warn' ? C.warn : C.accent
   const toneBg = v.verdict.tone === 'good' ? '#ecfdf5' : v.verdict.tone === 'warn' ? '#fffbeb' : '#f0f9ff'
-  const subject = `Zrobione: ${v.name} · ${v.stats[0]?.value ?? ''}${v.stats[0]?.unit ? ` ${v.stats[0].unit}` : ''}`
+  const subject = v.day
+    ? `Dzień w liczbach: ${v.day.rides.length} jazdy · ${hm(v.day.total_min)}${v.day.total_tss != null ? ` · TSS ${v.day.total_tss}` : ''}`
+    : `Zrobione: ${v.name} · ${v.stats[0]?.value ?? ''}${v.stats[0]?.unit ? ` ${v.stats[0].unit}` : ''}`
   const preheader = v.note ?? `${v.verdict.text}${v.insights[0] ? ` · ${v.insights[0]}` : ''}`
 
   const grid = (() => {
@@ -262,12 +266,27 @@ export function workoutEmail(v: WorkoutView, opts: { unsubscribeUrl?: string | n
   })()
 
   const head = card(
-    `${eyebrow(`${v.dateLabel} · trening wykonany`, C.good)}
+    `${eyebrow(`${v.dateLabel} · ${v.day ? 'dzień w liczbach' : 'trening wykonany'}`, C.good)}
 <div style="margin-top:6px;font-size:26px;line-height:32px;font-weight:700;">${esc(v.name)}</div>
 ${v.planned ? `<div style="margin-top:4px;font-size:14px;color:${C.soft};">w planie: ${esc(v.planned.name)}, ${esc(hm(v.planned.minutes))}</div>` : ''}
 <table role="presentation" cellpadding="0" cellspacing="0" style="margin-top:14px;"><tr><td bgcolor="${toneBg}" style="background-color:${toneBg};border-radius:10px;padding:8px 12px;font-size:14px;font-weight:600;color:${tone};">${esc(v.verdict.text)}</td></tr></table>
 ${grid}`,
   )
+
+  const day = v.day
+    ? card(
+        `${eyebrow('Jazdy dnia')}
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="margin-top:10px;font-size:13px;line-height:22px;">
+${v.day.rides
+  .map(
+    (r) =>
+      `<tr><td style="padding:4px 0;border-top:1px solid ${C.line};"><b>${esc(r.name)}</b><br><span style="color:${C.soft};">${esc(hm(r.minutes))} · ${esc(r.km.toFixed(1).replace('.', ','))} km${r.watts != null ? ` · ${r.watts} W` : ''}${r.hr != null ? ` · ${Math.round(r.hr)} bpm` : ''}</span></td><td align="right" valign="top" style="padding:4px 0;border-top:1px solid ${C.line};font-weight:600;white-space:nowrap;">${r.tss != null ? `TSS ${r.tss}` : ''}</td></tr>`,
+  )
+  .join('')}
+<tr><td style="padding:6px 0 0;border-top:2px solid ${C.line};font-weight:700;">Razem ${esc(hm(v.day.total_min))}</td><td align="right" style="padding:6px 0 0;border-top:2px solid ${C.line};font-weight:700;white-space:nowrap;">${v.day.total_tss != null ? `TSS ${v.day.total_tss}` : ''}</td></tr>
+</table>`,
+      )
+    : ''
 
   const note = v.note
     ? card(`${eyebrow('Notatka trenera', C.accent)}<div style="margin-top:8px;font-size:16px;line-height:25px;color:${C.ink};">${esc(v.note)}</div>`, '20px 24px')
@@ -303,8 +322,9 @@ ${button('Zobacz w aplikacji', v.appUrl)}`,
     : card(button('Zobacz w aplikacji', v.appUrl), '8px 24px 24px')
 
   const text = [
-    `${v.dateLabel} – zrobione: ${v.name}`,
+    `${v.dateLabel} – ${v.day ? 'dzień w liczbach' : 'zrobione'}: ${v.name}`,
     v.verdict.text,
+    ...(v.day ? ['', ...v.day.rides.map((r) => `${r.name}: ${hm(r.minutes)}, ${r.km.toFixed(1).replace('.', ',')} km${r.tss != null ? `, TSS ${r.tss}` : ''}`), `Razem: ${hm(v.day.total_min)}${v.day.total_tss != null ? `, TSS ${v.day.total_tss}` : ''}`] : []),
     ...(v.note ? ['', v.note] : []),
     '',
     ...v.stats.map((s) => `${s.label}: ${s.value}${s.unit ? ` ${s.unit}` : ''}`),
@@ -318,5 +338,5 @@ ${button('Zobacz w aplikacji', v.appUrl)}`,
     v.appUrl,
   ].join('\n')
 
-  return { subject, preheader, text, html: shell(preheader, head + note + zones + insights + week, v.appUrl, opts.unsubscribeUrl) }
+  return { subject, preheader, text, html: shell(preheader, head + day + note + zones + insights + week, v.appUrl, opts.unsubscribeUrl) }
 }

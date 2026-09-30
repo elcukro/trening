@@ -122,11 +122,21 @@ export function rideLoadLite(r: RideLite, ftp: number | null, zones: ZoneBpmLite
   return null
 }
 
+/**
+ * Czy jazda „wypełnia” zaplanowany trening: ≥ 80 % planowanego czasu (decyzja 1.10.2026), a bez planu – ≥ 30 min.
+ * Tylko taka jazda dostaje mail zaraz po imporcie i jest porównywana z planem; krótszy dojazd przed treningiem
+ * czeka na wieczorne „Dzień w liczbach”.
+ */
+export const PLAN_FULFIL_RATIO = 0.8
+export function fulfilsPlan(movingS: number, plannedMinutes: number | null | undefined): boolean {
+  return plannedMinutes ? movingS >= PLAN_FULFIL_RATIO * plannedMinutes * 60 : movingS >= 30 * 60
+}
+
 const dec = (x: number, d = 1) => x.toFixed(d).replace('.', ',')
 const if2 = (x: number) => x.toFixed(2).replace('.', ',')
 const hmLabel = (min: number) => `${Math.floor(min / 60)}:${String(Math.round(min % 60)).padStart(2, '0')} h`
 
-export function buildWorkoutView(ride: RideLite, snap: DaySnapshot | null, opts: { athlete: string; appUrl: string; weekDoneMin?: number | null; rideDateLabel: string; note?: string | null }): WorkoutView {
+export function buildWorkoutView(ride: RideLite, snap: DaySnapshot | null, opts: { athlete: string; appUrl: string; weekDoneMin?: number | null; rideDateLabel: string; note?: string | null; extras?: RideLite[] }): WorkoutView {
   const min = ride.moving_time_s / 60
   const zones = snap?.zones ?? []
   const load = rideLoadLite(ride, snap?.ftp ?? null, zones)
@@ -156,9 +166,11 @@ export function buildWorkoutView(ride: RideLite, snap: DaySnapshot | null, opts:
     verdict =
       ratio >= 0.9 && ratio <= 1.2
         ? { tone: 'good', text: 'Zrobione zgodnie z planem' }
-        : ratio < 0.9
-          ? { tone: 'warn', text: `Krócej niż w planie (${Math.round(ratio * 100)} %)` }
-          : { tone: 'ok', text: `Dłużej niż w planie (${Math.round(ratio * 100)} %)` }
+        : ratio < PLAN_FULFIL_RATIO
+          ? { tone: 'warn', text: `Zaplanowany trening niewykonany – ta jazda to ${Math.round(ratio * 100)} % planu` }
+          : ratio < 0.9
+            ? { tone: 'warn', text: `Krócej niż w planie (${Math.round(ratio * 100)} %)` }
+            : { tone: 'ok', text: `Dłużej niż w planie (${Math.round(ratio * 100)} %)` }
   }
 
   const insights: string[] = []
@@ -184,5 +196,19 @@ export function buildWorkoutView(ride: RideLite, snap: DaySnapshot | null, opts:
       ? { label: 'Ten tydzień', done: hmLabel(opts.weekDoneMin), planned: hmLabel(snap.week_planned_min), pct: (opts.weekDoneMin / snap.week_planned_min) * 100 }
       : null
 
-  return { athlete: opts.athlete, appUrl: `${opts.appUrl}/i/dzien/${ride.date}`, dateLabel: opts.rideDateLabel, name: ride.name, planned, verdict, stats, zones: shares, insights, week, next: snap?.next ?? null, note: opts.note ?? null }
+  // wieczorne „Dzień w liczbach”: wszystkie jazdy dnia, pierwsza to ta opisana wyżej
+  const all = opts.extras?.length ? [ride, ...opts.extras] : null
+  const day = all
+    ? (() => {
+        const rows = all.map((r) => {
+          const l = rideLoadLite(r, snap?.ftp ?? null, zones)
+          return { name: r.name, minutes: Math.round(r.moving_time_s / 60), km: r.distance_m / 1000, watts: r.device_watts ? (r.np_w ?? r.avg_watts) : null, hr: r.avg_hr, tss: l?.tss ?? null }
+        })
+        const tssKnown = rows.every((r) => r.tss != null)
+        return { rides: rows, total_min: rows.reduce((s, r) => s + r.minutes, 0), total_tss: tssKnown ? rows.reduce((s, r) => s + (r.tss ?? 0), 0) : null }
+      })()
+    : null
+  if (day && day.rides.length > 1) insights.push(`${day.rides.length} jazdy jednego dnia – druga liczy się do obciążenia; jeśli to był dzień akcentu, reszta dnia miała być lekka.`)
+
+  return { athlete: opts.athlete, appUrl: `${opts.appUrl}/i/dzien/${ride.date}`, dateLabel: opts.rideDateLabel, name: ride.name, planned, verdict, stats, zones: shares, insights, week, next: snap?.next ?? null, note: opts.note ?? null, day }
 }

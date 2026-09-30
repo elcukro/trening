@@ -19,6 +19,13 @@ Dwa maile, każdy włączany osobno per konto (Ustawienia → E-mail, `/i` → W
   nadawca `Trening <trening@felsztukier.pl>`, linki na `APP_URL` = `https://trening.felsztukier.pl`.
   Tylko na adres właściciela konta. `email_log` (unikat user+rodzaj+ref) = jeden mail na dzień / na jazdę;
   błąd Resend zwalnia rezerwację. Stare jazdy (> 2 dni) i krótkie (< 15 min) bez maila.
+- **Która jazda dostaje mail od razu (1.10.2026)** – tylko ta, która *wypełnia plan dnia*: czas w ruchu ≥ 80 %
+  zaplanowanego (`fulfilsPlan`, `PLAN_FULFIL_RATIO`), a w dzień bez planu ≥ 30 min. Krótszy dojazd przed treningiem
+  ani druga jazda tego dnia nie dostają osobnego maila i nie są porównywane z planem (notatka trenera też traktuje
+  je jako jazdę dodatkową). O **21:00** (`EVENING_HOUR`, `runEvening` z tego samego zadania co poranek) idzie jedno
+  „Dzień w liczbach” – ale tylko gdy jest jazda ≥ 15 min, o której maila nie było: tabela wszystkich jazd dnia
+  (czas, km, moc, tętno, TSS), suma, ocena względem planu na jeździe, która plan wypełniła (albo najdłuższej).
+  Rezerwacja w `email_log` z `ref = day:<data>`. Dzień z jedną zwykłą jazdą = jeden mail jak dotąd; dzień bez jazd = nic.
 - **Harmonogram** – `pg_cron` co godzinę → `email-send {action:'cron'}` z sekretem `push_cron_secret`; funkcja sama
   sprawdza godzinę w Warszawie (zmiana czasu bez dwóch zadań jak przy push).
 - **Rezygnacja** – nagłówki `List-Unsubscribe` + `List-Unsubscribe-Post` i link w stopce (podpisany HMAC, bez logowania).

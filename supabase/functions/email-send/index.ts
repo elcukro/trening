@@ -1,6 +1,7 @@
 /**
  * email-send – maile treningowe (docs/19).
- *  POST {action:'cron', secret}               – harmonogram bazy (co godzinę): poranna odprawa o godzinie z profilu
+ *  POST {action:'cron', secret}               – harmonogram bazy (co godzinę): poranna odprawa o godzinie z profilu,
+ *                                                o 21:00 wieczorne „Dzień w liczbach” (jazdy, o których nie było maila)
  *  POST {action:'sample', kind} + JWT          – mail próbny na adres zalogowanego (Ustawienia → „Wyślij próbny”)
  *  GET|POST ?unsub=<podpisany token>           – rezygnacja jednym kliknięciem (nagłówek List-Unsubscribe)
  * Podsumowanie po treningu wysyła strava-webhook zaraz po imporcie jazdy (`sendWorkout` w _shared/email_send.ts).
@@ -11,7 +12,7 @@ import { timingSafeEqual } from '../_shared/crypto.ts'
 import { adminClient, userFromRequest } from '../_shared/supabase.ts'
 import { morningEmail, workoutEmail } from '../_shared/email_templates.ts'
 import { buildWorkoutView, type DaySnapshot, type RideLite } from '../_shared/email_views.ts'
-import { resend, runMorning, unsubscribe, warsawNow } from '../_shared/email_send.ts'
+import { EVENING_HOUR, resend, runEvening, runMorning, unsubscribe, warsawNow } from '../_shared/email_send.ts'
 
 /** Odpowiedź na kliknięcie „wyłącz te maile”. Zwykły tekst – domena functions Supabase podaje HTML jako text/plain. */
 function page(text: string): Response {
@@ -31,7 +32,11 @@ Deno.serve(async (req) => {
 
   if (body.action === 'cron') {
     if (!body.secret || body.secret !== env('PUSH_CRON_SECRET')) return json({ error: 'unauthorized' }, 401)
-    return json({ ok: true, ...warsawNow(), results: await runMorning(adminClient()) })
+    const now = warsawNow()
+    const admin = adminClient()
+    const results = await runMorning(admin)
+    const evening = now.hour === EVENING_HOUR ? await runEvening(admin, now.date) : null
+    return json({ ok: true, ...now, results, evening })
   }
 
   const admin = adminClient()
