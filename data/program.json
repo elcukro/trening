@@ -1,5 +1,5 @@
 {
- "version": "2026.09.30-1",
+ "version": "2026.09.30-3",
  "meta": {
   "name": "Alpy 2027 – baza i góry",
   "short": "Alpy 2027",
@@ -87,7 +87,7 @@
   "weight_based": {
    "max_kcal_per_day": 900,
    "max_loss_pct_per_week": 1.0,
-   "deficit_shares_per_week": 4.75,
+   "deficit_shares_per_week": 4.7,
    "milestones": [
     {
      "date": "2027-03-01",
@@ -215,16 +215,23 @@
   ],
   "tests": [
    {
+    "id": "FTP_TEST",
+    "name": "Test FTP 20 min (moc)",
+    "when": "co 5 tygodni: tydz. 2 (sobota), 7, 27, 32, 37, 42, 47 (środa), 12, 17, 22 (wtorek – przed Sesją A)",
+    "protocol": "15 min rozgrzewki, 5 min luźno, 20 min maksymalnie równo w pojedynkę, 10 min schłodzenia. Zawsze ta sama trasa (Dell), miernik wyzerowany.",
+    "result": "FTP = 0,95 × średnia moc z 20 min; LTHR z drugiej połowy testu. FTP i strefy zmieniają się wyłącznie po teście – pojedyncze jazdy między testami niczego nie zmieniają."
+   },
+   {
     "id": "TEST_LTHR",
     "name": "Test progowy terenowy (30 min)",
-    "when": "tydz. 1, 7, 29, 37, 45 (środa)",
+    "when": "zamiast testu FTP, gdy nie ma miernika mocy",
     "protocol": "15 min rozgrzewki (z 2×20 s przyspieszeniami), 5 min luźno, 30 min maksymalnego równego wysiłku w pojedynkę, 10 min schłodzenia. Zawsze ta sama trasa, bez grupy. Pierwsze 5 min nie za mocno.",
     "result": "LTHR = średnie tętno z minut 10–30. Zapisz prędkość średnią, dystans, rower, temperaturę, wiatr."
    },
    {
     "id": "WATTBIKE_TEST",
     "name": "Test na Wattbike (20 min)",
-    "when": "tydz. 16 (środa) i 24 (wtorek)",
+    "when": "zimą zamiast testu w terenie (tydz. 17 i 22) przy gołoledzi",
     "protocol": "15 min rozgrzewki, 5 min luźno, 20 min all-out, 10 min schłodzenia.",
     "result": "FTP = 0,95 × średnia moc; LTHR ≈ 0,97 × średnie tętno z 20 min."
    }
@@ -387,6 +394,7 @@
    "B": "fri",
    "C": "wed"
   },
+  "gym_enabled": false,
   "timezone": "Europe/Warsaw",
   "volume_scale": 1.0,
   "units": "metric",
@@ -539,7 +547,7 @@
   {
    "id": "I",
    "name": "Faza I – Baza przed Alpami",
-   "goal": "3 jazdy + 2 siłownie: Z2 nudne, jeden akcent sweet spot w czwartek, długa w sobotę. Kadencja ≥ 75 rpm na podjazdach, redukcja 110 → 102 kg.",
+   "goal": "Jesienią 5 jazd, od 16.11 trzy: Z2 nudne, jeden akcent sweet spot, długa w sobotę. Kadencja ≥ 75 rpm na podjazdach, redukcja 110 → 102 kg.",
    "weeks": [
     3,
     14
@@ -548,7 +556,7 @@
   {
    "id": "II",
    "name": "Faza II – Zima: podtrzymanie bazy i siła maksymalna",
-   "goal": "Ta sama struktura w chłodzie, akcent warunkowy (pod dachem poniżej −10 °C), siła maksymalna na siłowni, redukcja masy.",
+   "goal": "Ta sama struktura w chłodzie, akcent warunkowy (pod dachem poniżej −10 °C), redukcja masy.",
    "weeks": [
     15,
     24
@@ -557,7 +565,7 @@
   {
    "id": "III",
    "name": "Faza III – Wiosenna prędkość i próg",
-   "goal": "Interwały progowe pod górę, tempo 30 km/h, 100 km, zamiana siły w moc, siłownia → podtrzymanie.",
+   "goal": "Interwały progowe pod górę, tempo 30 km/h, 100 km.",
    "weeks": [
     25,
     32
@@ -1323,7 +1331,7 @@
     }
    ],
    "duration_min": 65,
-   "description": "Test progowy z miernikiem mocy: 20 min maksymalnie równo. FTP = 0,95 × średnia moc, tętno progowe ≈ 0,97 × średnie tętno z 20 min (ostatnie 10 min zawyża, gdy tętno rośnie do końca). Bez miernika: wariant terenowy po tętnie (TEST_LTHR) albo Wattbike na siłowni. Powtarzaj co 6 tygodni – strefy mocy licz z wyniku, nie ze starych ustawień.",
+   "description": "Test progowy z miernikiem mocy: 20 min maksymalnie równo. FTP = 0,95 × średnia moc, tętno progowe ≈ 0,97 × średnie tętno z 20 min (ostatnie 10 min zawyża, gdy tętno rośnie do końca). Bez miernika: wariant terenowy po tętnie (TEST_LTHR) albo Wattbike na siłowni. Powtarzaj co 5 tygodni – FTP i strefy zmieniają się tylko po teście, nie po pojedynczych jazdach.",
    "result_fields": [
     "avg_power_w",
     "avg_hr",
@@ -3656,7 +3664,7 @@
     90
    ],
    "gym_stage": "intro",
-   "notes": "Wyjście ze zmęczenia po Great Escape. Jedź lekko, siłownia celowo lekko (RIR 4)."
+   "notes": "Wyjście ze zmęczenia po Great Escape. Jedź lekko."
   },
   "2": {
    "phase": "PREP",
@@ -3809,13 +3817,13 @@
   },
   "7": {
    "phase": "I",
-   "type": "build",
+   "type": "test",
    "tue": [
     "Z2",
     60
    ],
    "wed": [
-    "SS_3x12",
+    "FTP_TEST",
     null
    ],
    "thu": [
@@ -3834,7 +3842,8 @@
     "Z2",
     90
    ],
-   "gym_stage": null
+   "gym_stage": null,
+   "notes": "Test FTP 20 min w środę – pięć tygodni po pierwszym. Ta sama trasa i protokół co 26.09; wtorek naprawdę lekko."
   },
   "8": {
    "phase": "I",
@@ -3893,7 +3902,7 @@
     90
    ],
    "gym_stage": null,
-   "notes": "Ostatni tydzień bloku 5 jazd. Od 16.11 wracają dwie sesje siłowni i plan schodzi do 3 jazd – zimą i tak nie wyjedziesz pięć razy w tygodniu."
+   "notes": "Ostatni tydzień bloku 5 jazd. Od 16.11 plan schodzi do 3 jazd (wt Z2, czw akcent, sb długa) – zimą i tak nie wyjedziesz pięć razy w tygodniu."
   },
   "10": {
    "phase": "I",
@@ -3953,21 +3962,21 @@
     0
    ],
    "gym_stage": "I_a",
-   "notes": "Powrót do siły po siedmiu tygodniach przerwy: zacznij o 20 % lżej niż we wrześniu, RIR 4. Ciężary dobiera aplikacja z tego, co wpiszesz."
+   "notes": "Rytm zimowy: trzy jazdy, akcent w czwartek. Środa i piątek wolne."
   },
   "12": {
    "phase": "I",
-   "type": "build",
+   "type": "test",
    "tue": [
-    "Z2_FORCE",
-    75
+    "Z2",
+    60
    ],
    "wed": [
     "REST",
     0
    ],
    "thu": [
-    "SS_2x20",
+    "FTP_TEST",
     null
    ],
    "fri": [
@@ -3982,7 +3991,8 @@
     "REST",
     0
    ],
-   "gym_stage": "I_b"
+   "gym_stage": "I_b",
+   "notes": "Test FTP w czwartek zamiast akcentu (środa wolna – świeże nogi). Wtorek naprawdę lekko."
   },
   "13": {
    "phase": "I",
@@ -4016,7 +4026,7 @@
   },
   "14": {
    "phase": "I",
-   "type": "test",
+   "type": "build",
    "tue": [
     "Z2",
     75
@@ -4026,23 +4036,23 @@
     0
    ],
    "thu": [
-    "Z2",
-    60
+    "SS_3x15",
+    null
    ],
    "fri": [
     "REST",
     0
    ],
    "sat": [
-    "FTP_TEST",
-    null
+    "LONG",
+    180
    ],
    "sun": [
     "REST",
     0
    ],
    "gym_stage": "II_a",
-   "notes": "Test FTP 20 min w sobotę – koniec Fazy 1. Zapisz W/kg (FTP ÷ masa)."
+   "notes": "Koniec Fazy 1. Zapisz W/kg (FTP z testu w tyg. 12 ÷ masa)."
   },
   "15": {
    "phase": "II",
@@ -4105,17 +4115,17 @@
   },
   "17": {
    "phase": "II",
-   "type": "build",
+   "type": "test",
    "tue": [
     "Z2",
-    75
+    60
    ],
    "wed": [
     "REST",
     0
    ],
    "thu": [
-    "SS_3x12",
+    "FTP_TEST",
     null
    ],
    "fri": [
@@ -4130,7 +4140,8 @@
     "REST",
     0
    ],
-   "gym_stage": "II_b"
+   "gym_stage": "II_b",
+   "notes": "Test FTP w czwartek; przy gołoledzi wariant Wattbike (przycisk „pod dachem”)."
   },
   "18": {
    "phase": "II",
@@ -4250,17 +4261,17 @@
   },
   "22": {
    "phase": "II",
-   "type": "build",
+   "type": "test",
    "tue": [
-    "Z2_FORCE",
-    90
+    "Z2",
+    60
    ],
    "wed": [
     "REST",
     0
    ],
    "thu": [
-    "SS_3x20",
+    "FTP_TEST",
     null
    ],
    "fri": [
@@ -4275,7 +4286,8 @@
     "REST",
     0
    ],
-   "gym_stage": "II_c"
+   "gym_stage": "II_c",
+   "notes": "Test FTP w czwartek (przy gołoledzi Wattbike). Ten wynik jest podstawą kryteriów wejścia do fazy III sprawdzanych w tyg. 24."
   },
   "23": {
    "phase": "II",
@@ -4308,18 +4320,18 @@
   },
   "24": {
    "phase": "II",
-   "type": "test",
+   "type": "build",
    "tue": [
-    "FTP_TEST",
-    null
+    "Z2",
+    75
    ],
    "wed": [
     "REST",
     0
    ],
    "thu": [
-    "Z2",
-    60
+    "SS_2x20",
+    null
    ],
    "fri": [
     "REST",
@@ -4334,7 +4346,7 @@
     0
    ],
    "gym_stage": "test",
-   "notes": "Tydzień sprawdzianów: wtorek test FTP (świeże nogi po wolnym poniedziałku; przy gołoledzi Wattbike), środa sprawdzian siłowy (przysiad i trap bar 1×5 RIR 1). Kryteria wejścia do fazy III: ≥ 2,7 dnia jazdy/tydz. (śr. z 12 tyg.), FTP ≥ 200 W, masa ≤ 102 kg, kadencja na podjazdach ≥ 78 rpm, 3,5 h Z2 pod Łodzią zimą. Przy 2–3 spełnionych przesuń fazę III o 3–4 tygodnie i skróć IV."
+   "notes": "Koniec zimy. FTP – z testu w tyg. 22. Kryteria wejścia do fazy III: ≥ 2,7 dnia jazdy/tydz. (śr. z 12 tyg.), FTP ≥ 200 W, masa ≤ 102 kg, kadencja na podjazdach ≥ 78 rpm, 3,5 h Z2 pod Łodzią zimą. Przy 2–3 spełnionych przesuń fazę III o 3–4 tygodnie i skróć IV."
   },
   "25": {
    "phase": "III",
@@ -4388,13 +4400,13 @@
   },
   "27": {
    "phase": "III",
-   "type": "build",
+   "type": "test",
    "tue": [
     "Z2",
     90
    ],
    "wed": [
-    "THR_3x12",
+    "FTP_TEST",
     null
    ],
    "thu": [
@@ -4410,7 +4422,7 @@
     135
    ],
    "gym_stage": "III",
-   "notes": "Pierwsze 100 km z blokiem tempa 30–32 km/h."
+   "notes": "Test FTP w środę. Pierwsze 100 km z blokiem tempa 30–32 km/h."
   },
   "28": {
    "phase": "III",
@@ -4439,13 +4451,13 @@
   },
   "29": {
    "phase": "III",
-   "type": "test",
+   "type": "build",
    "tue": [
     "Z2",
     90
    ],
    "wed": [
-    "TEST_LTHR",
+    "THR_3x12",
     null
    ],
    "thu": [
@@ -4465,7 +4477,7 @@
     150
    ],
    "gym_stage": "C",
-   "notes": "Od teraz siłownia 1×/tydz. (Sesja C). Piątek wolny lub luźna jazda."
+   "notes": "Piątek wolny lub luźna jazda."
   },
   "30": {
    "phase": "III",
@@ -4534,8 +4546,8 @@
     60
    ],
    "wed": [
-    "DELOAD_WED",
-    60
+    "FTP_TEST",
+    null
    ],
    "thu": [
     "REST",
@@ -4553,7 +4565,8 @@
     "Z2",
     90
    ],
-   "gym_stage": "C_deload"
+   "gym_stage": "C_deload",
+   "notes": "Tydzień lżejszy z testem FTP w środę – jedyny mocny wysiłek tygodnia, na wypoczętych nogach."
   },
   "33": {
    "phase": "IV",
@@ -4681,7 +4694,7 @@
     90
    ],
    "wed": [
-    "TEST_LTHR",
+    "FTP_TEST",
     null
    ],
    "thu": [
@@ -4799,7 +4812,7 @@
     90
    ],
    "wed": [
-    "THR_2x20",
+    "CLIMB_REPEATS",
     null
    ],
    "thu": [
@@ -4822,13 +4835,13 @@
   },
   "42": {
    "phase": "IV",
-   "type": "build",
+   "type": "test",
    "tue": [
     "Z2_HEAT",
     90
    ],
    "wed": [
-    "CLIMB_REPEATS",
+    "FTP_TEST",
     null
    ],
    "thu": [
@@ -4911,13 +4924,13 @@
   },
   "45": {
    "phase": "V",
-   "type": "test",
+   "type": "build",
    "tue": [
     "Z2_HEAT",
     90
    ],
    "wed": [
-    "TEST_LTHR",
+    "VO2_5x3",
     null
    ],
    "thu": [
@@ -4937,7 +4950,7 @@
     180
    ],
    "gym_stage": "C_nobox",
-   "notes": "Szlif alpejski. Ostatni test przed wyjazdem – ustaw pacing na przełęcze (LTHR − 10–15 uderzeń na start)."
+   "notes": "Szlif alpejski."
   },
   "46": {
    "phase": "V",
@@ -4971,13 +4984,13 @@
   },
   "47": {
    "phase": "V",
-   "type": "build",
+   "type": "test",
    "tue": [
     "Z2_HEAT",
     90
    ],
    "wed": [
-    "VO2_5x3",
+    "FTP_TEST",
     null
    ],
    "thu": [
@@ -4997,6 +5010,7 @@
     240
    ],
    "gym_stage": "C_nobox",
+   "notes": "Ostatni test FTP przed wyjazdem (środa) – ustaw pacing na przełęcze (LTHR − 10–15 uderzeń na start).",
    "event": "Weekend w górach #4 – generalka: pełny sprzęt wyjazdowy, pacing i jedzenie jak w Alpach."
   },
   "48": {
@@ -5087,7 +5101,7 @@
     120
    ],
    "gym_stage": "C_last",
-   "notes": "Ostatnia sesja siłowa z nogami (≥10 dni przed wyjazdem)."
+   "notes": "Ostatni pełny tydzień przed taperem."
   },
   "51": {
    "phase": "TAPER",
@@ -5117,7 +5131,7 @@
     90
    ],
    "gym_stage": "CORE",
-   "notes": "Taper: objętość −40%, intensywność tylko w krótkich pobudzeniach. Siłownia: tylko core i mobilność."
+   "notes": "Taper: objętość −40%, intensywność tylko w krótkich pobudzeniach."
   },
   "52": {
    "phase": "TAPER",
@@ -11341,16 +11355,13 @@
    "type": "prep",
    "start": "2026-09-14",
    "bike_min": 315,
-   "gym": [
-    "A(wed)",
-    "B(fri)"
-   ],
+   "gym": [],
    "key": [],
    "sat": "LONG 120′",
    "sun": "Z2 90′",
    "end": "2026-09-20",
    "event": null,
-   "notes": "Wyjście ze zmęczenia po Great Escape. Jedź lekko, siłownia celowo lekko (RIR 4)."
+   "notes": "Wyjście ze zmęczenia po Great Escape. Jedź lekko."
   },
   {
    "week": 2,
@@ -11431,18 +11442,18 @@
   {
    "week": 7,
    "phase": "I",
-   "type": "build",
+   "type": "test",
    "start": "2026-10-26",
-   "bike_min": 436,
+   "bike_min": 425,
    "gym": [],
    "key": [
-    "SS_3x12"
+    "FTP_TEST"
    ],
    "sat": "LONG 150′",
    "sun": "Z2 90′",
    "end": "2026-11-01",
    "event": null,
-   "notes": null
+   "notes": "Test FTP 20 min w środę – pięć tygodni po pierwszym. Ta sama trasa i protokół co 26.09; wtorek naprawdę lekko."
   },
   {
    "week": 8,
@@ -11474,7 +11485,7 @@
    "sun": "Z2 90′",
    "end": "2026-11-15",
    "event": null,
-   "notes": "Ostatni tydzień bloku 5 jazd. Od 16.11 wracają dwie sesje siłowni i plan schodzi do 3 jazd – zimą i tak nie wyjedziesz pięć razy w tygodniu."
+   "notes": "Ostatni tydzień bloku 5 jazd. Od 16.11 plan schodzi do 3 jazd (wt Z2, czw akcent, sb długa) – zimą i tak nie wyjedziesz pięć razy w tygodniu."
   },
   {
    "week": 10,
@@ -11482,10 +11493,7 @@
    "type": "deload",
    "start": "2026-11-16",
    "bike_min": 240,
-   "gym": [
-    "A(wed)",
-    "B(fri)"
-   ],
+   "gym": [],
    "key": [],
    "sat": "LONG 120′",
    "sun": null,
@@ -11499,10 +11507,7 @@
    "type": "build",
    "start": "2026-11-23",
    "bike_min": 340,
-   "gym": [
-    "A(wed)",
-    "B(fri)"
-   ],
+   "gym": [],
    "key": [
     "SS_3x15"
    ],
@@ -11510,26 +11515,23 @@
    "sun": null,
    "end": "2026-11-29",
    "event": null,
-   "notes": "Powrót do siły po siedmiu tygodniach przerwy: zacznij o 20 % lżej niż we wrześniu, RIR 4. Ciężary dobiera aplikacja z tego, co wpiszesz."
+   "notes": "Rytm zimowy: trzy jazdy, akcent w czwartek. Środa i piątek wolne."
   },
   {
    "week": 12,
    "phase": "I",
-   "type": "build",
+   "type": "test",
    "start": "2026-11-30",
-   "bike_min": 330,
-   "gym": [
-    "A(wed)",
-    "B(fri)"
-   ],
+   "bike_min": 305,
+   "gym": [],
    "key": [
-    "SS_2x20"
+    "FTP_TEST"
    ],
    "sat": "LONG 180′",
    "sun": null,
    "end": "2026-12-06",
    "event": null,
-   "notes": null
+   "notes": "Test FTP w czwartek zamiast akcentu (środa wolna – świeże nogi). Wtorek naprawdę lekko."
   },
   {
    "week": 13,
@@ -11537,10 +11539,7 @@
    "type": "build",
    "start": "2026-12-07",
    "bike_min": 400,
-   "gym": [
-    "A(wed)",
-    "B(fri)"
-   ],
+   "gym": [],
    "key": [
     "SS_3x20"
    ],
@@ -11553,19 +11552,18 @@
   {
    "week": 14,
    "phase": "I",
-   "type": "test",
+   "type": "build",
    "start": "2026-12-14",
-   "bike_min": 200,
-   "gym": [
-    "A(wed)",
-    "B(fri)"
+   "bike_min": 340,
+   "gym": [],
+   "key": [
+    "SS_3x15"
    ],
-   "key": [],
-   "sat": "FTP_TEST 65′",
+   "sat": "LONG 180′",
    "sun": null,
    "end": "2026-12-20",
    "event": null,
-   "notes": "Test FTP 20 min w sobotę – koniec Fazy 1. Zapisz W/kg (FTP ÷ masa)."
+   "notes": "Koniec Fazy 1. Zapisz W/kg (FTP z testu w tyg. 12 ÷ masa)."
   },
   {
    "week": 15,
@@ -11573,10 +11571,7 @@
    "type": "deload",
    "start": "2026-12-21",
    "bike_min": 240,
-   "gym": [
-    "A(wed)",
-    "B(fri)"
-   ],
+   "gym": [],
    "key": [],
    "sat": "LONG 120′",
    "sun": null,
@@ -11590,10 +11585,7 @@
    "type": "build",
    "start": "2026-12-28",
    "bike_min": 275,
-   "gym": [
-    "A(wed)",
-    "B(fri)"
-   ],
+   "gym": [],
    "key": [
     "SS_2x15"
    ],
@@ -11606,21 +11598,18 @@
   {
    "week": 17,
    "phase": "II",
-   "type": "build",
+   "type": "test",
    "start": "2027-01-04",
-   "bike_min": 301,
-   "gym": [
-    "A(wed)",
-    "B(fri)"
-   ],
+   "bike_min": 275,
+   "gym": [],
    "key": [
-    "SS_3x12"
+    "FTP_TEST"
    ],
    "sat": "LONG 150′",
    "sun": null,
    "end": "2027-01-10",
    "event": null,
-   "notes": null
+   "notes": "Test FTP w czwartek; przy gołoledzi wariant Wattbike (przycisk „pod dachem”)."
   },
   {
    "week": 18,
@@ -11628,10 +11617,7 @@
    "type": "build",
    "start": "2027-01-11",
    "bike_min": 300,
-   "gym": [
-    "A(wed)",
-    "B(fri)"
-   ],
+   "gym": [],
    "key": [
     "SS_2x20"
    ],
@@ -11647,10 +11633,7 @@
    "type": "deload",
    "start": "2027-01-18",
    "bike_min": 240,
-   "gym": [
-    "A(wed)",
-    "B(fri)"
-   ],
+   "gym": [],
    "key": [],
    "sat": "LONG 120′",
    "sun": null,
@@ -11664,10 +11647,7 @@
    "type": "build",
    "start": "2027-01-25",
    "bike_min": 310,
-   "gym": [
-    "A(wed)",
-    "B(fri)"
-   ],
+   "gym": [],
    "key": [
     "SS_3x15"
    ],
@@ -11683,10 +11663,7 @@
    "type": "build",
    "start": "2027-02-01",
    "bike_min": 315,
-   "gym": [
-    "A(wed)",
-    "B(fri)"
-   ],
+   "gym": [],
    "key": [
     "SS_2x20"
    ],
@@ -11699,21 +11676,18 @@
   {
    "week": 22,
    "phase": "II",
-   "type": "build",
+   "type": "test",
    "start": "2027-02-08",
-   "bike_min": 340,
-   "gym": [
-    "A(wed)",
-    "B(fri)"
-   ],
+   "bike_min": 275,
+   "gym": [],
    "key": [
-    "SS_3x20"
+    "FTP_TEST"
    ],
    "sat": "LONG 150′",
    "sun": null,
    "end": "2027-02-14",
    "event": null,
-   "notes": null
+   "notes": "Test FTP w czwartek (przy gołoledzi Wattbike). Ten wynik jest podstawą kryteriów wejścia do fazy III sprawdzanych w tyg. 24."
   },
   {
    "week": 23,
@@ -11721,10 +11695,7 @@
    "type": "deload",
    "start": "2027-02-15",
    "bike_min": 240,
-   "gym": [
-    "A(wed)",
-    "B(fri)"
-   ],
+   "gym": [],
    "key": [],
    "sat": "LONG 120′",
    "sun": null,
@@ -11735,19 +11706,18 @@
   {
    "week": 24,
    "phase": "II",
-   "type": "test",
+   "type": "build",
    "start": "2027-02-22",
-   "bike_min": 275,
-   "gym": [
-    "A(wed)",
-    "B(fri)"
+   "bike_min": 300,
+   "gym": [],
+   "key": [
+    "SS_2x20"
    ],
-   "key": [],
    "sat": "LONG 150′",
    "sun": null,
    "end": "2027-02-28",
    "event": null,
-   "notes": "Tydzień sprawdzianów: wtorek test FTP (świeże nogi po wolnym poniedziałku; przy gołoledzi Wattbike), środa sprawdzian siłowy (przysiad i trap bar 1×5 RIR 1). Kryteria wejścia do fazy III: ≥ 2,7 dnia jazdy/tydz. (śr. z 12 tyg.), FTP ≥ 200 W, masa ≤ 102 kg, kadencja na podjazdach ≥ 78 rpm, 3,5 h Z2 pod Łodzią zimą. Przy 2–3 spełnionych przesuń fazę III o 3–4 tygodnie i skróć IV."
+   "notes": "Koniec zimy. FTP – z testu w tyg. 22. Kryteria wejścia do fazy III: ≥ 2,7 dnia jazdy/tydz. (śr. z 12 tyg.), FTP ≥ 200 W, masa ≤ 102 kg, kadencja na podjazdach ≥ 78 rpm, 3,5 h Z2 pod Łodzią zimą. Przy 2–3 spełnionych przesuń fazę III o 3–4 tygodnie i skróć IV."
   },
   {
    "week": 25,
@@ -11755,10 +11725,7 @@
    "type": "build",
    "start": "2027-03-01",
    "bike_min": 500,
-   "gym": [
-    "A(wed)",
-    "B(fri)"
-   ],
+   "gym": [],
    "key": [
     "THR_4x6"
    ],
@@ -11774,10 +11741,7 @@
    "type": "build",
    "start": "2027-03-08",
    "bike_min": 553,
-   "gym": [
-    "A(wed)",
-    "B(fri)"
-   ],
+   "gym": [],
    "key": [
     "THR_4x8"
    ],
@@ -11790,21 +11754,18 @@
   {
    "week": 27,
    "phase": "III",
-   "type": "build",
+   "type": "test",
    "start": "2027-03-15",
-   "bike_min": 571,
-   "gym": [
-    "A(wed)",
-    "B(fri)"
-   ],
+   "bike_min": 560,
+   "gym": [],
    "key": [
-    "THR_3x12"
+    "FTP_TEST"
    ],
    "sat": "LONG_TEMPO 210′",
    "sun": "HILLS 135′",
    "end": "2027-03-21",
    "event": null,
-   "notes": "Pierwsze 100 km z blokiem tempa 30–32 km/h."
+   "notes": "Test FTP w środę. Pierwsze 100 km z blokiem tempa 30–32 km/h."
   },
   {
    "week": 28,
@@ -11812,10 +11773,7 @@
    "type": "deload",
    "start": "2027-03-22",
    "bike_min": 345,
-   "gym": [
-    "A(wed)",
-    "B(fri)"
-   ],
+   "gym": [],
    "key": [],
    "sat": "LONG 135′",
    "sun": "Z2 90′",
@@ -11826,20 +11784,18 @@
   {
    "week": 29,
    "phase": "III",
-   "type": "test",
+   "type": "build",
    "start": "2027-03-29",
-   "bike_min": 615,
-   "gym": [
-    "C(wed)"
-   ],
+   "bike_min": 631,
+   "gym": [],
    "key": [
-    "TEST_LTHR"
+    "THR_3x12"
    ],
    "sat": "LONG_TEMPO 210′",
    "sun": "HILLS 150′",
    "end": "2027-04-04",
    "event": null,
-   "notes": "Od teraz siłownia 1×/tydz. (Sesja C). Piątek wolny lub luźna jazda."
+   "notes": "Piątek wolny lub luźna jazda."
   },
   {
    "week": 30,
@@ -11847,9 +11803,7 @@
    "type": "build",
    "start": "2027-04-05",
    "bike_min": 632,
-   "gym": [
-    "C(wed)"
-   ],
+   "gym": [],
    "key": [
     "THR_2x20"
    ],
@@ -11865,9 +11819,7 @@
    "type": "build",
    "start": "2027-04-12",
    "bike_min": 630,
-   "gym": [
-    "C(wed)"
-   ],
+   "gym": [],
    "key": [
     "VO2_5x3"
    ],
@@ -11882,16 +11834,16 @@
    "phase": "III",
    "type": "deload",
    "start": "2027-04-19",
-   "bike_min": 345,
-   "gym": [
-    "C(wed)"
+   "bike_min": 350,
+   "gym": [],
+   "key": [
+    "FTP_TEST"
    ],
-   "key": [],
    "sat": "LONG 135′",
    "sun": "Z2 90′",
    "end": "2027-04-25",
    "event": null,
-   "notes": null
+   "notes": "Tydzień lżejszy z testem FTP w środę – jedyny mocny wysiłek tygodnia, na wypoczętych nogach."
   },
   {
    "week": 33,
@@ -11899,9 +11851,7 @@
    "type": "build",
    "start": "2027-04-26",
    "bike_min": 616,
-   "gym": [
-    "C(wed)"
-   ],
+   "gym": [],
    "key": [
     "THR_3x12"
    ],
@@ -11917,9 +11867,7 @@
    "type": "build",
    "start": "2027-05-03",
    "bike_min": 630,
-   "gym": [
-    "C(wed)"
-   ],
+   "gym": [],
    "key": [
     "VO2_5x3"
    ],
@@ -11935,9 +11883,7 @@
    "type": "build",
    "start": "2027-05-10",
    "bike_min": 661,
-   "gym": [
-    "C(wed)"
-   ],
+   "gym": [],
    "key": [
     "THR_3x12"
    ],
@@ -11953,9 +11899,7 @@
    "type": "deload",
    "start": "2027-05-17",
    "bike_min": 360,
-   "gym": [
-    "C(wed)"
-   ],
+   "gym": [],
    "key": [],
    "sat": "LONG 150′",
    "sun": "Z2 90′",
@@ -11968,12 +11912,10 @@
    "phase": "IV",
    "type": "test",
    "start": "2027-05-24",
-   "bike_min": 660,
-   "gym": [
-    "C(wed)"
-   ],
+   "bike_min": 665,
+   "gym": [],
    "key": [
-    "TEST_LTHR"
+    "FTP_TEST"
    ],
    "sat": "LONG 270′",
    "sun": "HILLS 180′",
@@ -11987,9 +11929,7 @@
    "type": "build",
    "start": "2027-05-31",
    "bike_min": 810,
-   "gym": [
-    "C(wed)"
-   ],
+   "gym": [],
    "key": [
     "VO2_5x3"
    ],
@@ -12005,9 +11945,7 @@
    "type": "build",
    "start": "2027-06-07",
    "bike_min": 692,
-   "gym": [
-    "C(wed)"
-   ],
+   "gym": [],
    "key": [
     "THR_2x20"
    ],
@@ -12023,9 +11961,7 @@
    "type": "deload",
    "start": "2027-06-14",
    "bike_min": 360,
-   "gym": [
-    "C(wed)"
-   ],
+   "gym": [],
    "key": [],
    "sat": "LONG 150′",
    "sun": "Z2 90′",
@@ -12038,12 +11974,10 @@
    "phase": "IV",
    "type": "build",
    "start": "2027-06-21",
-   "bike_min": 677,
-   "gym": [
-    "C(wed)"
-   ],
+   "bike_min": 707,
+   "gym": [],
    "key": [
-    "THR_2x20"
+    "CLIMB_REPEATS"
    ],
    "sat": "LONG 270′",
    "sun": "HILLS 180′",
@@ -12054,14 +11988,12 @@
   {
    "week": 42,
    "phase": "IV",
-   "type": "build",
+   "type": "test",
    "start": "2027-06-28",
-   "bike_min": 857,
-   "gym": [
-    "C(wed)"
-   ],
+   "bike_min": 815,
+   "gym": [],
    "key": [
-    "CLIMB_REPEATS"
+    "FTP_TEST"
    ],
    "sat": "B2B_DAY 300′",
    "sun": "B2B_DAY 300′",
@@ -12075,9 +12007,7 @@
    "type": "build",
    "start": "2027-07-05",
    "bike_min": 705,
-   "gym": [
-    "C(wed)"
-   ],
+   "gym": [],
    "key": [
     "VO2_5x3"
    ],
@@ -12093,9 +12023,7 @@
    "type": "deload",
    "start": "2027-07-12",
    "bike_min": 360,
-   "gym": [
-    "C(wed)"
-   ],
+   "gym": [],
    "key": [],
    "sat": "LONG 150′",
    "sun": "Z2 90′",
@@ -12106,20 +12034,18 @@
   {
    "week": 45,
    "phase": "V",
-   "type": "test",
+   "type": "build",
    "start": "2027-07-19",
    "bike_min": 690,
-   "gym": [
-    "C(wed)"
-   ],
+   "gym": [],
    "key": [
-    "TEST_LTHR"
+    "VO2_5x3"
    ],
    "sat": "LONG 300′",
    "sun": "HILLS 180′",
    "end": "2027-07-25",
    "event": null,
-   "notes": "Szlif alpejski. Ostatni test przed wyjazdem – ustaw pacing na przełęcze (LTHR − 10–15 uderzeń na start)."
+   "notes": "Szlif alpejski."
   },
   {
    "week": 46,
@@ -12127,9 +12053,7 @@
    "type": "build",
    "start": "2027-07-26",
    "bike_min": 827,
-   "gym": [
-    "C(wed)"
-   ],
+   "gym": [],
    "key": [
     "THR_2x20"
    ],
@@ -12142,20 +12066,18 @@
   {
    "week": 47,
    "phase": "V",
-   "type": "build",
+   "type": "test",
    "start": "2027-08-02",
-   "bike_min": 735,
-   "gym": [
-    "C(wed)"
-   ],
+   "bike_min": 740,
+   "gym": [],
    "key": [
-    "VO2_5x3"
+    "FTP_TEST"
    ],
    "sat": "MOUNTAIN_DAY 300′",
    "sun": "MOUNTAIN_DAY 240′",
    "end": "2027-08-08",
    "event": "Weekend w górach #4 – generalka: pełny sprzęt wyjazdowy, pacing i jedzenie jak w Alpach.",
-   "notes": null
+   "notes": "Ostatni test FTP przed wyjazdem (środa) – ustaw pacing na przełęcze (LTHR − 10–15 uderzeń na start)."
   },
   {
    "week": 48,
@@ -12163,9 +12085,7 @@
    "type": "deload",
    "start": "2027-08-09",
    "bike_min": 360,
-   "gym": [
-    "C(wed)"
-   ],
+   "gym": [],
    "key": [],
    "sat": "LONG 150′",
    "sun": "Z2 90′",
@@ -12179,9 +12099,7 @@
    "type": "build",
    "start": "2027-08-16",
    "bike_min": 895,
-   "gym": [
-    "C(wed)"
-   ],
+   "gym": [],
    "key": [
     "THR_3x15",
     "BLOCK_DAY1(pt)"
@@ -12198,9 +12116,7 @@
    "type": "build",
    "start": "2027-08-23",
    "bike_min": 519,
-   "gym": [
-    "C(wed)"
-   ],
+   "gym": [],
    "key": [
     "VO2_4x3"
    ],
@@ -12208,7 +12124,7 @@
    "sun": "Z2 120′",
    "end": "2027-08-29",
    "event": null,
-   "notes": "Ostatnia sesja siłowa z nogami (≥10 dni przed wyjazdem)."
+   "notes": "Ostatni pełny tydzień przed taperem."
   },
   {
    "week": 51,
@@ -12216,15 +12132,13 @@
    "type": "taper",
    "start": "2027-08-30",
    "bike_min": 405,
-   "gym": [
-    "CORE(wed)"
-   ],
+   "gym": [],
    "key": [],
    "sat": "Z2 150′",
    "sun": "Z2 90′",
    "end": "2027-09-05",
    "event": null,
-   "notes": "Taper: objętość −40%, intensywność tylko w krótkich pobudzeniach. Siłownia: tylko core i mobilność."
+   "notes": "Taper: objętość −40%, intensywność tylko w krótkich pobudzeniach."
   },
   {
    "week": 52,

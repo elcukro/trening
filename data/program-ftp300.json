@@ -192,7 +192,9 @@
   "long_catchup_onto": [],
   "deload_note": "Tydzień lżejszy: bez interwałów, piątek wolny, długa krótsza. Na siłowni ciężar −10%, serie −40%, RIR +1. Nogi mają wyjść świeższe."
  },
- "features": [],
+ "features": [
+  "ftp_suggestions"
+ ],
  "coach_notes": [
   "Na spokojnych jazdach ma skłonność do jazdy w tempie (typowo IF 0,70–0,87 przy FTP ok. 235 W) – chwal prawdziwe Z2, a jazdę za mocno w dzień spokojny nazywaj wprost.",
   "Naturalna kadencja 85–92 rpm – nie wymaga poprawiania.",
@@ -218,6 +220,7 @@
    "B": "fri",
    "C": "sat"
   },
+  "gym_enabled": true,
   "timezone": "Europe/Warsaw",
   "volume_scale": 1.0,
   "units": "metric",
@@ -1155,7 +1158,7 @@
     }
    ],
    "duration_min": 65,
-   "description": "Test progowy z miernikiem mocy: 20 min maksymalnie równo. FTP = 0,95 × średnia moc, tętno progowe ≈ 0,97 × średnie tętno z 20 min (ostatnie 10 min zawyża, gdy tętno rośnie do końca). Bez miernika: wariant terenowy po tętnie (TEST_LTHR) albo Wattbike na siłowni. Powtarzaj co 6 tygodni – strefy mocy licz z wyniku, nie ze starych ustawień.",
+   "description": "Test progowy z miernikiem mocy: 20 min maksymalnie równo. FTP = 0,95 × średnia moc, tętno progowe ≈ 0,97 × średnie tętno z 20 min (ostatnie 10 min zawyża, gdy tętno rośnie do końca). Bez miernika: wariant terenowy po tętnie (TEST_LTHR) albo Wattbike na siłowni. Powtarzaj co 5 tygodni – FTP i strefy zmieniają się tylko po teście, nie po pojedynczych jazdach.",
    "result_fields": [
     "avg_power_w",
     "avg_hr",
@@ -8690,7 +8693,7 @@
    "sun": null,
    "end": "2026-10-04",
    "event": null,
-   "notes": "Wyjście ze zmęczenia po Great Escape. Jedź lekko, siłownia celowo lekko (RIR 4)."
+   "notes": "Wyjście ze zmęczenia po Great Escape. Jedź lekko."
   },
   {
    "week": 2,
@@ -8796,7 +8799,7 @@
    "sun": null,
    "end": "2026-11-15",
    "event": null,
-   "notes": null
+   "notes": "Test FTP 20 min w środę – pięć tygodni po pierwszym. Ta sama trasa i protokół co 26.09; wtorek naprawdę lekko."
   },
   {
    "week": 8,
@@ -8830,7 +8833,7 @@
    "sun": null,
    "end": "2026-11-29",
    "event": null,
-   "notes": "Ostatni tydzień bloku 5 jazd. Od 16.11 wracają dwie sesje siłowni i plan schodzi do 3 jazd – zimą i tak nie wyjedziesz pięć razy w tygodniu."
+   "notes": "Ostatni tydzień bloku 5 jazd. Od 16.11 plan schodzi do 3 jazd (wt Z2, czw akcent, sb długa) – zimą i tak nie wyjedziesz pięć razy w tygodniu."
   },
   {
    "week": 10,
@@ -8866,7 +8869,7 @@
    "sun": null,
    "end": "2026-12-13",
    "event": null,
-   "notes": "Powrót do siły po siedmiu tygodniach przerwy: zacznij o 20 % lżej niż we wrześniu, RIR 4. Ciężary dobiera aplikacja z tego, co wpiszesz."
+   "notes": "Rytm zimowy: trzy jazdy, akcent w czwartek. Środa i piątek wolne."
   },
   {
    "week": 12,
@@ -8884,7 +8887,7 @@
    "sun": null,
    "end": "2026-12-20",
    "event": null,
-   "notes": null
+   "notes": "Test FTP w czwartek zamiast akcentu (środa wolna – świeże nogi). Wtorek naprawdę lekko."
   },
   {
    "week": 13,
@@ -8920,7 +8923,7 @@
    "sun": null,
    "end": "2027-01-03",
    "event": null,
-   "notes": "Test FTP 20 min w sobotę – koniec Fazy 1. Zapisz W/kg (FTP ÷ masa)."
+   "notes": "Koniec Fazy 1. Zapisz W/kg (FTP z testu w tyg. 12 ÷ masa)."
   },
   {
    "week": 15,
@@ -8972,7 +8975,7 @@
    "sun": null,
    "end": "2027-01-24",
    "event": null,
-   "notes": null
+   "notes": "Test FTP w czwartek; przy gołoledzi wariant Wattbike (przycisk „pod dachem”)."
   },
   {
    "week": 18,
@@ -9060,7 +9063,7 @@
    "sun": null,
    "end": "2027-02-28",
    "event": null,
-   "notes": null
+   "notes": "Test FTP w czwartek (przy gołoledzi Wattbike). Ten wynik jest podstawą kryteriów wejścia do fazy III sprawdzanych w tyg. 24."
   },
   {
    "week": 23,
@@ -9096,7 +9099,7 @@
    "sun": null,
    "end": "2027-03-14",
    "event": null,
-   "notes": "Tydzień sprawdzianów: wtorek test FTP (świeże nogi po wolnym poniedziałku; przy gołoledzi Wattbike), środa sprawdzian siłowy (przysiad i trap bar 1×5 RIR 1). Kryteria wejścia do fazy III: ≥ 2,7 dnia jazdy/tydz. (śr. z 12 tyg.), FTP ≥ 200 W, masa ≤ 102 kg, kadencja na podjazdach ≥ 78 rpm, 3,5 h Z2 pod Łodzią zimą. Przy 2–3 spełnionych przesuń fazę III o 3–4 tygodnie i skróć IV."
+   "notes": "Koniec zimy. FTP – z testu w tyg. 22. Kryteria wejścia do fazy III: ≥ 2,7 dnia jazdy/tydz. (śr. z 12 tyg.), FTP ≥ 200 W, masa ≤ 102 kg, kadencja na podjazdach ≥ 78 rpm, 3,5 h Z2 pod Łodzią zimą. Przy 2–3 spełnionych przesuń fazę III o 3–4 tygodnie i skróć IV."
   },
   {
    "week": 25,
@@ -9148,7 +9151,7 @@
    "sun": null,
    "end": "2027-04-04",
    "event": null,
-   "notes": "Pierwsze 100 km z blokiem tempa 30–32 km/h."
+   "notes": "Test FTP w środę. Pierwsze 100 km z blokiem tempa 30–32 km/h."
   },
   {
    "week": 28,
@@ -9184,7 +9187,7 @@
    "sun": null,
    "end": "2027-04-18",
    "event": null,
-   "notes": "Od teraz siłownia 1×/tydz. (Sesja C). Piątek wolny lub luźna jazda."
+   "notes": "Piątek wolny lub luźna jazda."
   },
   {
    "week": 30,
@@ -9236,7 +9239,7 @@
    "sun": null,
    "end": "2027-05-09",
    "event": null,
-   "notes": null
+   "notes": "Tydzień lżejszy z testem FTP w środę – jedyny mocny wysiłek tygodnia, na wypoczętych nogach."
   },
   {
    "week": 33,

@@ -16,7 +16,6 @@ const PHASE_IV_TEMPLATES = [33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44]
 const PHASE_V_TEMPLATES = [45, 46, 47, 48, 49, 50]
 const TAPER_TEMPLATES = [51, 52]
 const PHASE_III_TEMPLATES = [25, 26, 27, 28, 29, 30, 31, 32]
-const PHASE_III_TEST_WEEK = 29
 const PHASE_IV_CLONE_TEMPLATE = 41
 const PHASE_IV_DELOAD_TEMPLATE = 44
 const PHASE_IV_MIN_WEEKS = 6
@@ -42,7 +41,7 @@ function phaseIVRemovalOrder(program: Program): number[] {
   const rev = PHASE_IV_TEMPLATES.toReversed()
   const isBuildNoEvent = (n: number) => tpl(program, n).type === 'build' && !tpl(program, n).event
   const isEvent = (n: number) => tpl(program, n).type === 'build' && !!tpl(program, n).event
-  const isDeload = (n: number) => tpl(program, n).type === 'deload'
+  const isDeload = (n: number) => tpl(program, n).type === 'deload' && !hasTest(program, n)
   return [...rev.filter(isBuildNoEvent), ...rev.filter(isEvent), ...rev.filter(isDeload)]
 }
 
@@ -70,9 +69,20 @@ function phaseIVTemplates(program: Program, count: number): number[] {
   return [...head, ...inserted, PHASE_IV_DELOAD_TEMPLATE]
 }
 
-function phaseIIITemplates(count: number): number[] {
+/** Tydzień z testem: typ `test` albo dzień z treningiem kategorii `test` (np. test FTP w tygodniu lżejszym). */
+function hasTest(program: Program, n: number): boolean {
+  const t = tpl(program, n)
+  if (t.type === 'test') return true
+  return (['mon', 'tue', 'wed', 'thu', 'fri', 'sat', 'sun'] as const).some((d) => {
+    const id = t[d]?.[0]
+    return !!id && program.bike_workouts[id]?.category === 'test'
+  })
+}
+
+/** Skracanie fazy III od końca; tygodnie z testem zostają zawsze. */
+function phaseIIITemplates(program: Program, count: number): number[] {
   if (count >= PHASE_III_TEMPLATES.length) return [...PHASE_III_TEMPLATES]
-  const order = PHASE_III_TEMPLATES.toReversed().filter((n) => n !== PHASE_III_TEST_WEEK)
+  const order = PHASE_III_TEMPLATES.toReversed().filter((n) => !hasTest(program, n))
   const remove = new Set(order.slice(0, PHASE_III_TEMPLATES.length - count))
   return PHASE_III_TEMPLATES.filter((n) => !remove.has(n))
 }
@@ -119,7 +129,7 @@ export function layoutWeeks(program: Program, settings: Pick<Settings, 'program_
 
   const templates: number[] = []
   for (let n = 0; n < PHASE_III_TEMPLATES[0]!; n++) templates.push(n)
-  templates.push(...phaseIIITemplates(phaseIIIWeeks))
+  templates.push(...phaseIIITemplates(program, phaseIIIWeeks))
   templates.push(...phaseIVTemplates(program, phaseIVWeeks))
   templates.push(...PHASE_V_TEMPLATES, ...TAPER_TEMPLATES)
 

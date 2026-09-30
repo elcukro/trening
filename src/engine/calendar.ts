@@ -74,7 +74,7 @@ export function buildDay(ctx: EngineContext, lw: LayoutWeek, weekday: Weekday, d
   if (!w) throw new Error(`Nieznany trening ${wid} (tydzień ${lw.template}, ${weekday})`)
   let dur = durRaw ?? w.duration_min
   dur = scaleDuration(wid, dur, settings.volume_scale)
-  const gym = gymFor(program, lw.template, weekday, settings.gym_days)
+  const gym = settings.gym_enabled ? gymFor(program, lw.template, weekday, settings.gym_days) : null
   const key = isKeyWorkout(wid, w.key)
   let fallback: string | null = phase === 'II' && /^(SS_|THR_)/.test(wid) ? 'INDOOR_4x4' : null
   if (wid === 'FTP_TEST' && phase === 'II') fallback = 'WATTBIKE_TEST'

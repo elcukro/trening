@@ -56,6 +56,7 @@ DEFAULT_SETTINGS = {
     "ftp_w_goal": 300,
     "power_meter": True,                    # ma miernik – cele mocy w planach na Wahoo
     "gym_days": {"A": "sat", "B": "fri", "C": "sat"},   # jedna sesja w tygodniu, w sobotę po spokojnej jazdzie
+    "gym_enabled": True,
     "timezone": "Europe/Warsaw",
     "volume_scale": 1.0,
     "units": "metric",
@@ -197,7 +198,7 @@ META = {
     # data końcowa to poniedziałek po tygodniu z testem końcowym – nie wyjazd
     "target": {"label": "Koniec programu", "short": "koniec", "until": "do końca programu", "today": "Koniec programu – czas na nowy cel", "after": "Program zakończony"},
 }
-FEATURES = []   # bez wyjazdu; Sprzęt ma każdy – z własnymi rowerami
+FEATURES = ["ftp_suggestions"]   # bez wyjazdu (Sprzęt ma każdy – z własnymi rowerami); propozycje FTP z jazd włączone
 # Ustalenia o zawodniku dla notatek po treningu (docs/20) – z jego jazd ze Stravy (sierpień–wrzesień 2026)
 COACH_NOTES = [
     "Na spokojnych jazdach ma skłonność do jazdy w tempie (typowo IF 0,70–0,87 przy FTP ok. 235 W) – chwal prawdziwe Z2, a jazdę za mocno w dzień spokojny nazywaj wprost.",

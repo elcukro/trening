@@ -10,7 +10,7 @@ import { zoneDistribution } from '@/engine/zones'
 import { rideLoad } from '@/engine/analysis'
 
 const program = parseProgram(programJson)
-const settings = { ...program.default_settings, lthr_bpm: 150, ftp_w_estimate: 200, power_meter: true }
+const settings = { ...program.default_settings, lthr_bpm: 150, ftp_w_estimate: 200, power_meter: true, gym_enabled: true }
 const ctx = { program, settings }
 const days = buildCalendar(ctx)
 const plan = (d: string) => enrichDay(days.find((x) => x.date === d)!, ctx)

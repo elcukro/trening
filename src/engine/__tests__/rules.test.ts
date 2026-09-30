@@ -7,7 +7,8 @@ import { applyOverrides, coreOnlySession, lighterSession, restingHrAlarm, valida
 import type { CalendarDay, EngineContext, PlanOverride } from '../types'
 
 const program = parseProgram(programJson)
-const ctxEngine: EngineContext = { program, settings: program.default_settings }
+// scenariusze zasad dotyczą także sesji siłowych – włączamy je jawnie (domyślnie od 30.09.2026 wyłączone)
+const ctxEngine: EngineContext = { program, settings: { ...program.default_settings, gym_enabled: true } }
 const ALL = buildCalendar(ctxEngine)
 
 function week(around: string, before = 3, after = 4): CalendarDay[] {

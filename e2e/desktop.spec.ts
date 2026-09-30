@@ -1,10 +1,12 @@
 import { expect, test } from '@playwright/test'
+import { enableGym } from './helpers'
 
 test.describe('wersja na komputer (≥ 1024 px)', () => {
   test.use({ viewport: { width: 1440, height: 900 }, isMobile: false, hasTouch: false })
 
   test('boczna nawigacja zamiast dolnego paska, Dziś w dwóch kolumnach', async ({ page }) => {
     // faza III: dzień z jazdą i siłownią naraz (w fazach I–II akcent i siłownia są w różne dni)
+    await enableGym(page, '2027-03-03')
     await page.goto('/?today=2027-03-03')
     const side = page.getByRole('navigation', { name: 'Nawigacja główna' }).filter({ has: page.getByText('Alpy 2027') })
     await expect(side).toBeVisible()

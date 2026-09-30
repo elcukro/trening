@@ -131,7 +131,7 @@ export function ruleNote(f: RideFacts): string {
   } else {
     s.push(`${f.ride.minutes} min jazdy, ${pl(f.ride.km)} km.`)
   }
-  if (s.length < 3 && f.ride.decoupling_pct != null && !f.test) {
+  if (s.length < 3 && f.ride.decoupling_pct != null && !f.test && easy && !f.efforts?.detected.length) {
     const dcp = f.ride.decoupling_pct
     s.push(dcp < 5 ? `Dryf tętna ${pl(dcp)} % – baza tlenowa trzyma.` : `Dryf tętna ${pl(dcp)} % – w drugiej połowie tętno uciekało, zjedz i napij się wcześniej.`)
   }

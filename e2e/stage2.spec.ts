@@ -1,4 +1,5 @@
 import { expect, test, type Page } from '@playwright/test'
+import { enableGym } from './helpers'
 
 // Testy pełnej aplikacji startują z `/`, a na telefonie start przekierowuje do uproszczonego widoku (`/i`).
 // Znacznik w sessionStorage to ta sama ucieczka, której używa przycisk „Otwórz pełną aplikację”.
@@ -60,6 +61,7 @@ test('wynik testu FTP: strefy od następnego dnia (R11)', async ({ page }) => {
 })
 
 test('tryb siłowni: serie, timer przerwy, podsumowanie, status', async ({ page }) => {
+  await enableGym(page, '2026-09-16')
   await page.goto('/?today=2026-09-16')
   await page.getByRole('link', { name: 'Start sesji' }).click()
   await expect(page.getByRole('heading', { name: 'Sesja A – Siła nóg (ciężka)' })).toBeVisible()
@@ -139,6 +141,7 @@ test('Etap 5: gołoledź podmienia trening, cofnięcie wraca do planu', async ({
 })
 
 test('Etap 5: zamiana dni pilnuje reguły 48 godzin (R9)', async ({ page }) => {
+  await enableGym(page, '2027-05-12')
   await page.goto('/tydzien/2027-05-12?today=2027-05-12')
   await expect(page.getByRole('heading', { name: 'Tydzień 35' })).toBeVisible()
   await page.getByRole('button', { name: 'Zamień dzień 2027-05-12' }).click()

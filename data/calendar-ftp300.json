@@ -17,6 +17,7 @@
    "B": "fri",
    "C": "sat"
   },
+  "gym_enabled": true,
   "timezone": "Europe/Warsaw",
   "volume_scale": 1.0,
   "units": "metric",

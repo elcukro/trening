@@ -125,6 +125,8 @@ export const SettingsSchema = z.object({
   /** miernik mocy: cele mocy w planach Wahoo i waty na ekranie */
   power_meter: z.boolean().default(false),
   gym_days: GymDaysSchema,
+  /** false = sesje siłowe z programu nie trafiają do kalendarza (zostają w bibliotece); zawodnik włącza je, gdy ma czas */
+  gym_enabled: z.boolean().default(true),
   timezone: z.string(),
   volume_scale: z.number().min(0.7).max(1),
   /** Który program treningowy obowiązuje tego użytkownika (klucz z `src/data/program.ts`). */
@@ -248,7 +250,7 @@ export const ProgramTargetSchema = z.object({
 export const ProgramMetaSchema = z.object({ name: z.string(), short: z.string(), target: ProgramTargetSchema })
 
 /** Ekrany, które mają sens tylko w niektórych programach (docs/18, krok 3). Sprzęt jest dla każdego (krok 4). */
-export const FEATURES = ['trip'] as const
+export const FEATURES = ['trip', 'ftp_suggestions'] as const
 
 /** Zadanie sprzętowe należące do planu sezonu (terminy z tygodni programu); serwis cykliczny to szablon per rower. */
 export const ProgramGearTaskSchema = z.object({

@@ -104,7 +104,8 @@ export function WeekPage() {
           <Badge color={PHASE_COLOR[first.phase]}>{first.phase_name.replace(/ – .*/, '')}</Badge>
           <span className="text-slate-600 dark:text-slate-300">{WEEK_TYPE_LABEL[first.week_type]}</span>
           <span className="ml-auto text-slate-600 tabular-nums dark:text-slate-300">
-            {hours(doneMin)} z {hours(planMin)} · TSS {doneTss}/{planTss} · siłownia {gymDone}/{gymCount}
+            {hours(doneMin)} z {hours(planMin)} · TSS {doneTss}/{planTss}
+            {gymCount > 0 && ` · siłownia ${gymDone}/${gymCount}`}
           </span>
         </div>
       )}

@@ -76,7 +76,7 @@ describe('punkty kontrolne masy (program alpejski: 91 kg na 1.03.2027, cel 82 kg
     // zimą (fazy PREP–II) dzień ciężki ma mały deficyt poza treningiem: 0,4 × limit 900 ≈ 350 kcal
     expect(at('2026-09-30').nutrition.label).toMatch(/^Dzień ciężki – paliwo na trening bez zmian, reszta dnia lżej: deficyt ok\. 350 kcal/) // środa akcent
     expect(at('2026-10-03').nutrition.label).toMatch(/^Dzień ciężki – .*deficyt ok\. 350 kcal/) // sobota długa
-    expect(at('2026-12-19').nutrition.energy).toBe('maintenance') // test FTP – zawsze bez deficytu
+    expect(at('2026-12-03').nutrition.energy).toBe('maintenance') // test FTP (tydz. 12, czwartek) – zawsze bez deficytu
     expect(at('2027-03-13').nutrition.energy).toBe('maintenance') // faza III: długa z tempem bez deficytu
     expect(at('2027-03-10').nutrition.energy).toBe('maintenance') // faza III: akcent progowy bez deficytu
     expect(at('2026-09-29').nutrition.label).toMatch(/^Dzień treningowy: deficyt/) // wtorek Z2 60

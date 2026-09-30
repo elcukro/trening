@@ -1,4 +1,5 @@
 import { expect, test } from '@playwright/test'
+import { enableGym } from './helpers'
 
 // Testy pełnej aplikacji startują z `/`, a na telefonie start przekierowuje do uproszczonego widoku (`/i`).
 // Znacznik w sessionStorage to ta sama ucieczka, której używa przycisk „Otwórz pełną aplikację”.
@@ -7,7 +8,7 @@ test.beforeEach(async ({ page }) => {
 })
 
 
-test('Dziś 30.09.2026: tydzień 3, akcent sweet spot w środę; 25.11 Sesja A po powrocie siłowni', async ({ page }) => {
+test('Dziś 30.09.2026: tydzień 3, akcent sweet spot w środę; 25.11 bez siłowni, Sesja A dopiero po włączeniu w Ustawieniach', async ({ page }) => {
   await page.goto('/?today=2026-09-30')
   await expect(page.getByRole('heading', { name: 'Tydzień 3' })).toBeVisible()
   await expect(page.getByText('Sweet spot 2×12 min')).toBeVisible()
@@ -16,7 +17,10 @@ test('Dziś 30.09.2026: tydzień 3, akcent sweet spot w środę; 25.11 Sesja A p
   await expect(page.getByText('346 dni do wyjazdu')).toBeVisible()
   await expect(page.getByText(/Zrób test i wpisz LTHR/)).toBeVisible()
   await page.screenshot({ path: 'test-results/today-2026-09-30.png', fullPage: true })
-  // w bloku 5 jazd nie ma siłowni – wraca 16.11
+  // siłownia domyślnie wyłączona (30.09.2026): środa 25.11 to dzień wolny; po włączeniu przełącznika wraca Sesja A
+  await page.goto('/?today=2026-11-25')
+  await expect(page.getByText('Sesja A – Siła nóg (ciężka)')).toHaveCount(0)
+  await enableGym(page, '2026-11-25')
   await page.goto('/?today=2026-11-25')
   await expect(page.getByText('Sesja A – Siła nóg (ciężka)')).toBeVisible()
   await expect(page.getByText('Przysiad ze sztangą na plecach')).toBeVisible()
@@ -36,7 +40,9 @@ test('Tydzień: nawigacja i suma godzin', async ({ page }) => {
   await page.goto('/tydzien/2026-09-16?today=2026-09-16')
   await expect(page.getByRole('heading', { name: 'Tydzień 1' })).toBeVisible()
   await expect(page.getByText(/5,3\s*h/)).toBeVisible()
-  await expect(page.getByText(/TSS 0\/\d+ · siłownia 0\/2/)).toBeVisible()
+  // siłownia wyłączona – nagłówek nie pokazuje pustego licznika „siłownia 0/0”
+  await expect(page.getByText(/TSS 0\/\d+$/)).toBeVisible()
+  await expect(page.getByText(/siłownia \d+\/\d+/)).toHaveCount(0)
   await page.getByRole('button', { name: '›' }).click()
   await expect(page.getByRole('heading', { name: 'Tydzień 2' })).toBeVisible()
   await page.screenshot({ path: 'test-results/week.png', fullPage: true })

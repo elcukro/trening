@@ -16,7 +16,7 @@ import { useEngine } from '@/app/useSettings'
 const RATING_ICON = { ok: '✅', warn: '⚠️', miss: '❌' } as const
 
 /** Obciążenie jazdy (TSS/IF) – z mocy, tętna albo RPE; jedna linijka pod jazdą. */
-export function RideLoadLine({ a, ftp, lthr, zones, rpe }: { a: StravaActivity; ftp: number | null; lthr: number | null; zones: HrZone[]; rpe?: number | null }) {
+export function RideLoadLine({ a, ftp, lthr, zones, rpe, steady = true }: { a: StravaActivity; ftp: number | null; lthr: number | null; zones: HrZone[]; rpe?: number | null; steady?: boolean }) {
   const load = rideLoad({ moving_s: a.moving_time_s, device_watts: a.device_watts, np_w: a.np_w, avg_watts: a.avg_watts, ftp, hr_histogram: a.hr_histogram, zones, lthr, rpe })
   if (!load) return null
   const method = load.method === 'power' ? 'z mocy' : load.method === 'hr' ? 'z tętna' : 'z RPE'
@@ -27,7 +27,8 @@ export function RideLoadLine({ a, ftp, lthr, zones, rpe }: { a: StravaActivity; 
       </span>
       <span>IF {load.if.toFixed(2)}</span>
       {a.np_w && a.device_watts && <span>NP {a.np_w} W</span>}
-      {a.decoupling_pct != null && <span title="Rozprzężenie moc:tętno – < 5 % to dobra baza tlenowa">Pw:HR {a.decoupling_pct} %</span>}
+      {/* Pw:HR tylko na równej jeździe – na interwałach/teście połówki jazdy różnią się strukturą */}
+      {a.decoupling_pct != null && steady && <span title="Rozprzężenie moc:tętno – < 5 % to dobra baza tlenowa">Pw:HR {a.decoupling_pct} %</span>}
       <span className="text-slate-400 dark:text-slate-500">({method})</span>
     </div>
   )

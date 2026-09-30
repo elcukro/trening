@@ -29,6 +29,7 @@ type Form = {
   program_start: string
   trip_start: string
   gym_a: Settings['gym_days']['A']
+  gym_enabled: boolean
   volume_scale: string
 }
 
@@ -48,6 +49,7 @@ function toForm(s: Settings): Form {
     program_start: s.program_start,
     trip_start: s.trip_start,
     gym_a: s.gym_days.A,
+    gym_enabled: s.gym_enabled,
     volume_scale: String(s.volume_scale),
   }
 }
@@ -89,6 +91,7 @@ function fromForm(f: Form, base: Settings): { settings: Settings; errors: FieldE
     program_start: f.program_start,
     trip_start: f.trip_start,
     gym_days: { ...base.gym_days, A: f.gym_a, C: f.gym_a },
+    gym_enabled: f.gym_enabled,
     volume_scale: Math.round(req('volume_scale', f.volume_scale, 0.7, 1) * 100) / 100,
   }
   return { settings, errors }
@@ -237,7 +240,18 @@ function SettingsForm({ engine, saved, setSaved }: { engine: ReturnType<typeof u
           <Card>
             <CardTitle icon="🏋️">Siłownia i objętość</CardTitle>
             <div className="space-y-3">
-              {engine.ctx.program.gym_day_options && (
+              {Object.values(engine.ctx.program.gym_prescriptions).some((w) => Object.keys(w).length > 0) && (
+                <Checkbox
+                  label="Siłownia w planie"
+                  hint="Wyłączona: sesje zostają w Bibliotece, w kalendarzu tylko rower. Włącz, gdy znajdzie się czas – wrócą w dniach z ustawienia poniżej."
+                  checked={form.gym_enabled}
+                  onChange={(e) => {
+                    setSaved(false)
+                    setForm((f) => ({ ...f, gym_enabled: e.target.checked }))
+                  }}
+                />
+              )}
+              {engine.ctx.program.gym_day_options && form.gym_enabled && (
                 <Field label="Dni siłowni">
                   <Select value={form.gym_a} onChange={set('gym_a')}>
                     {engine.ctx.program.gym_day_options.map((o) => (

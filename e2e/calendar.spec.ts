@@ -58,7 +58,6 @@ test.describe('kalendarz na komputerze', () => {
     await expect(page.getByText('poniedziałek', { exact: true })).toBeVisible()
     // weekend w górach: nazwa jazdy i znacznik tekstem
     await expect(page.getByText('Góry', { exact: true }).first()).toBeVisible()
-    await expect(page.getByText('Sesja C', { exact: true }).first()).toBeVisible()
     // pasek tygodnia prowadzi do widoku tygodnia
     const rail = page.getByRole('link', { name: /^Tydzień 35 · / })
     await expect(rail).toBeVisible()

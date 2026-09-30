@@ -67,7 +67,7 @@ export function StravaActivities({ date, zones, lthr, extra, workout, ftp }: { d
         {a.avg_watts != null && <span>{a.avg_watts} W</span>}
       </div>
       {a.note && <p className="mt-1.5 rounded-xl bg-sky-50 px-3 py-2 text-sm leading-6 text-slate-800 dark:bg-sky-950/40 dark:text-slate-100">{a.note}</p>}
-      <RideLoadLine a={a} ftp={ftp ?? null} lthr={lthr} zones={zones} />
+      <RideLoadLine a={a} ftp={ftp ?? null} lthr={lthr} zones={zones} steady={!workout || workout.category === 'endurance'} />
       {a.hr_histogram && lthr ? <div className="mt-1"><ZoneBar histogram={a.hr_histogram} zones={zones} lthr={lthr} /></div> : a.hr_histogram ? <p className="text-xs text-slate-400 dark:text-slate-500">Strefy po wpisaniu LTHR.</p> : null}
       {workout && <RideAnalysis a={a} workout={workout} ftp={ftp ?? null} date={date} lthr={lthr} />}
       {moving === a.id ? (

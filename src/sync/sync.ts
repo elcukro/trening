@@ -113,6 +113,7 @@ const PROFILE_MAP: [keyof Settings, string][] = [
   ['program_start', 'program_start'],
   ['trip_start', 'trip_start'],
   ['gym_days', 'gym_days'],
+  ['gym_enabled', 'gym_enabled'],
   ['volume_scale', 'volume_scale'],
   ['program_id', 'program_id'],
   ['email_morning', 'email_morning'],

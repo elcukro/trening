@@ -12,8 +12,10 @@ import { proteinGrams } from '../nutrition'
 import { addDays, mondayOf, weekdayOf, isValidISODate } from '../dates'
 
 const program = parseProgram(programJson)
-const base: EngineContext = { program, settings: program.default_settings }
-const withLthr = (lthr: number): EngineContext => ({ program, settings: { ...program.default_settings, lthr_bpm: lthr } })
+// scenariusze specyfikacji zakładają siłownię w planie; od 30.09.2026 domyślnie jest wyłączona (`gym_enabled`), więc włączamy ją tu jawnie
+const settings = { ...program.default_settings, gym_enabled: true }
+const base: EngineContext = { program, settings }
+const withLthr = (lthr: number): EngineContext => ({ program, settings: { ...settings, lthr_bpm: lthr } })
 
 function rx(items: { exercise: string; rx: Record<string, unknown> }[], id: string) {
   return items.find((i) => i.exercise === id)?.rx
@@ -86,18 +88,22 @@ describe('scenariusze ze specyfikacji §10', () => {
     expect(rx(g.gym!.items, 'trap_bar_deadlift')).toMatchObject({ sets: 5, reps: 3, rir: 2 })
   })
 
-  it('5. 23.02.2027 test FTP (zimą fallback Wattbike); 24.02 sprawdzian siłowy przysiad 1×5 RIR 1', () => {
-    const t = getDayPlan('2027-02-23', base)!
+  it('5. testy FTP co 5 tygodni: 11.02.2027 (czw, zimą fallback Wattbike), 17.03 i 21.04 (środy); 24.02 sprawdzian siłowy przysiad 1×5 RIR 1', () => {
+    const t = getDayPlan('2027-02-11', base)!
     expect(t.bike?.workout_id).toBe('FTP_TEST')
     expect(t.bike?.fallback_workout_id).toBe('WATTBIKE_TEST')
+    expect(t.flags).toContain('test')
+    expect(getDayPlan('2027-02-09', base)!.bike?.workout_id).toBe('Z2') // wtorek tygodnia testu lekko
+    for (const date of ['2026-10-28', '2026-12-03', '2027-01-07', '2027-03-17', '2027-04-21', '2027-05-26', '2027-06-30', '2027-08-04']) expect(getDayPlan(date, base)!.bike?.workout_id, date).toBe('FTP_TEST')
+    expect(getDayPlan('2027-02-23', base)!.bike?.workout_id).toBe('Z2')
     const d = getDayPlan('2027-02-24', base)!
     expect(d.bike).toBeNull()
     expect(rx(d.gym!.items, 'back_squat')).toMatchObject({ sets: 1, reps: 5, rir: 1 })
   })
 
-  it('6. 31.03.2027: TEST_LTHR + Sesja C (przysiad 3×3 RIR 2–3, wskoki 3×3)', () => {
+  it('6. 31.03.2027: próg 3×12 + Sesja C (przysiad 3×3 RIR 2–3, wskoki 3×3)', () => {
     const d = getDayPlan('2027-03-31', base)!
-    expect(d.bike?.workout_id).toBe('TEST_LTHR')
+    expect(d.bike?.workout_id).toBe('THR_3x12')
     expect(d.gym?.session).toBe('C')
     expect(rx(d.gym!.items, 'back_squat')).toMatchObject({ sets: 3, reps: 3, rir: '2–3' })
     expect(rx(d.gym!.items, 'box_jump')).toMatchObject({ sets: 3, reps: 3 })
@@ -144,7 +150,7 @@ describe('scenariusze ze specyfikacji §10', () => {
   })
 
   it('11. Zmiana wyjazdu na 25.09.2027: taper 13–26.09, faza V 6 tyg., faza IV dłuższa, I–III bez zmian', () => {
-    const ctx: EngineContext = { program, settings: { ...program.default_settings, trip_start: '2027-09-25' } }
+    const ctx: EngineContext = { program, settings: { ...settings, trip_start: '2027-09-25' } }
     const weeks = layoutWeeks(program, ctx.settings)
     expect(weeks).toHaveLength(55)
     const taper = weeks.filter((w) => w.phase === 'TAPER')
@@ -172,12 +178,13 @@ describe('scenariusze ze specyfikacji §10', () => {
   it('11b. Wcześniejszy wyjazd skraca fazę IV, potem III (tydzień testowy zostaje)', () => {
     const w = layoutWeeks(program, { ...program.default_settings, trip_start: '2027-08-28' })
     expect(w.filter((x) => x.phase === 'IV')).toHaveLength(10)
-    expect(w.filter((x) => x.phase === 'IV' && x.type === 'test')).toHaveLength(1)
+    expect(w.filter((x) => x.phase === 'IV' && x.type === 'test')).toHaveLength(2)
     const w2 = layoutWeeks(program, { ...program.default_settings, trip_start: '2027-07-10' })
     expect(w2.filter((x) => x.phase === 'IV')).toHaveLength(6)
-    expect(w2.filter((x) => x.phase === 'III').map((x) => x.template)).toContain(29)
+    expect(w2.filter((x) => x.phase === 'IV' && x.type === 'test')).toHaveLength(2)
     expect(w2.filter((x) => x.phase === 'III')).toHaveLength(5)
-    expect(w2.filter((x) => x.phase === 'III').map((x) => x.template)).toEqual([25, 26, 27, 28, 29])
+    // skracanie od końca, ale tygodnie testowe (27, 32) zostają
+    expect(w2.filter((x) => x.phase === 'III').map((x) => x.template)).toEqual([25, 26, 27, 28, 32])
     expect(() => layoutWeeks(program, { ...program.default_settings, trip_start: '2027-05-01' })).toThrow(TripDateError)
     expect(() => layoutWeeks(program, { ...program.default_settings, trip_start: earliestTripStart('2026-09-14') })).not.toThrow()
   })
@@ -252,7 +259,7 @@ describe('R16 – volume_scale', () => {
     expect(scaleDuration('Z2', 45, 0.7)).toBe(45)
   })
   it('kalendarz z volume_scale 0,8 zmienia tylko dozwolone treningi', () => {
-    const ctx: EngineContext = { program, settings: { ...program.default_settings, volume_scale: 0.8 } }
+    const ctx: EngineContext = { program, settings: { ...settings, volume_scale: 0.8 } }
     const days = buildCalendar(ctx)
     const ref = buildCalendar(base)
     days.forEach((d, i) => {
@@ -297,7 +304,7 @@ describe('resolveWorkout', () => {
 
 describe('gym_days: Sesja A we wtorek', () => {
   it('przenosi A/C na wtorek, B zostaje w piątek, treść bez zmian', () => {
-    const ctx: EngineContext = { program, settings: { ...program.default_settings, gym_days: { A: 'tue', B: 'fri', C: 'tue' } } }
+    const ctx: EngineContext = { program, settings: { ...settings, gym_days: { A: 'tue', B: 'fri', C: 'tue' } } }
     const tue = getDayPlan('2026-09-15', ctx)!
     const wed = getDayPlan('2026-09-16', ctx)!
     expect(tue.gym?.session).toBe('A')

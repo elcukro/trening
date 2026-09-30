@@ -315,7 +315,7 @@ export function DayScreen() {
               speedKmh={a.avg_speed_ms != null ? a.avg_speed_ms * 3.6 : null}
               cadence={a.avg_cadence ?? null}
               ascentM={a.elevation_m ?? null}
-              decoupling={i === 0 ? (a.decoupling_pct ?? null) : null}
+              decoupling={i === 0 && (!day.bike || day.day_type === 'easy' || day.day_type === 'long') ? (a.decoupling_pct ?? null) : null}
               score={i === 0 ? score : null}
               note={a.note ?? null}
             />
