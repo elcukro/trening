@@ -111,6 +111,24 @@ test.describe('kalendarz na komputerze', () => {
     await expect(dst).not.toContainText('Sweet spot')
   })
 
+  test('myszą: chwyć i ciągnij bez przytrzymania', async ({ page }) => {
+    await page.goto('/kalendarz/2026-10?today=2026-10-05')
+    const src = page.getByRole('link', { name: /środa 2026-10-07/ })
+    const dst = page.getByRole('link', { name: /poniedziałek 2026-10-12/ })
+    const a = (await src.boundingBox())!
+    const b = (await dst.boundingBox())!
+    await page.mouse.move(a.x + a.width / 2, a.y + a.height / 2)
+    await page.mouse.down()
+    await page.mouse.move(b.x + b.width / 2, b.y + b.height / 2, { steps: 10 })
+    await expect(page.getByText(/Przenoszę:/)).toBeVisible()
+    await expect(dst).toHaveAttribute('data-drop', 'over')
+    await page.mouse.up()
+    await expect(dst).toContainText('Sweet spot')
+    await expect(src).not.toContainText('Sweet spot')
+    // nie weszliśmy w dzień
+    await expect(page).toHaveURL(/\/kalendarz\/2026-10/)
+  })
+
   test('sobota (zajęta) nie jest celem przeniesienia', async ({ page }) => {
     await page.goto('/kalendarz/2026-10?today=2026-10-05')
     const src = page.getByRole('link', { name: /środa 2026-10-07/ })

@@ -7,7 +7,8 @@ import type { ISODate } from '@/engine/dates'
  * Sekwencja: przytrzymanie (320 ms) „podnosi” jazdę, potem można ją przeciągnąć i upuścić na dzień wolny
  * albo puścić w miejscu i dotknąć celu (tryb `armed`) – to samo działa, gdy iOS przechwyci przeciąganie na scroll.
  * Krótkie dotknięcie zostaje zwykłym kliknięciem (wejście w dzień), a ruch palcem przed upływem 320 ms
- * traktujemy jako przewijanie i anulujemy.
+ * traktujemy jako przewijanie i anulujemy. Mysz nie przewija strony przeciąganiem, więc dla niej
+ * podniesienie następuje od razu przy ruchu (chwyć i ciągnij) – przytrzymanie też działa.
  *
  * Na dotyku samo `preventDefault` w `pointermove` nie zatrzymuje przewijania – robi to niepasywny `touchmove`,
  * ale dopiero gdy trening jest już podniesiony (wcześniej strona przewija się normalnie). Menu kontekstowe
@@ -37,6 +38,7 @@ interface Origin {
   y: number
   from: ISODate
   label: string
+  mouse: boolean
 }
 
 export type DropState = 'source' | 'slot' | 'over' | 'denied' | 'blocked'
@@ -98,16 +100,25 @@ export function useDragMove(opts: DragOptions): {
       if (!o) return
       const moved = Math.abs(ev.clientX - o.x) > MOVE_TOLERANCE_PX || Math.abs(ev.clientY - o.y) > MOVE_TOLERANCE_PX
       if (!dragRef.current) {
-        if (moved) cancel() // przewijanie, nie przeciąganie
-        return
+        if (!moved) return
+        if (!o.mouse) {
+          cancel() // palec: przewijanie, nie przeciąganie
+          return
+        }
+        // mysz: chwyć i ciągnij bez czekania na przytrzymanie
+        if (timer.current) clearTimeout(timer.current)
+        timer.current = null
+        set({ from: o.from, label: o.label, point: { x: ev.clientX, y: ev.clientY }, over: null, hover: null, reason: null, armed: false })
       }
       if (ev.cancelable) ev.preventDefault()
       const target = (document.elementFromPoint(ev.clientX, ev.clientY) as HTMLElement | null)?.closest('[data-date]') as HTMLElement | null
       const date = target?.dataset.date ?? null
-      const from = dragRef.current.from
+      const d = dragRef.current
+      if (!d) return
+      const from = d.from
       const other = date && date !== from ? date : null
       const ok = !!other && optsRef.current.canDrop(from, other)
-      set({ ...dragRef.current, point: { x: ev.clientX, y: ev.clientY }, over: ok ? other : null, hover: other, reason: other && !ok ? (optsRef.current.why?.(from, other) ?? null) : null })
+      set({ ...d, point: { x: ev.clientX, y: ev.clientY }, over: ok ? other : null, hover: other, reason: other && !ok ? (optsRef.current.why?.(from, other) ?? null) : null })
     }
     const onUp = () => {
       const o = origin.current
@@ -162,7 +173,7 @@ export function useDragMove(opts: DragOptions): {
       if (dragRef.current?.armed) return // trwa wybór celu – dotknięcie obsłuży handleClick
       const x = e.clientX
       const y = e.clientY
-      origin.current = { x, y, from, label }
+      origin.current = { x, y, from, label, mouse: e.pointerType === 'mouse' }
       if (timer.current) clearTimeout(timer.current)
       timer.current = setTimeout(() => {
         navigator.vibrate?.(25)

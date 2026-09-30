@@ -54,6 +54,8 @@ export interface WeightDeficit {
   kg_per_week: number
   /** czy limit dzienny albo limit tempa obciął to, czego wymagałby cel w terminie */
   capped: boolean
+  /** tempo, którego wymagałby cel w terminie (bez limitów) */
+  need_kg_per_week: number
 }
 
 /**
@@ -73,8 +75,8 @@ export function weightBasedDeficit(inp: {
   share: number
 }): WeightDeficit {
   const gap = inp.currentKg - inp.targetKg
-  if (gap <= 0 || inp.sharesPerWeek <= 0 || inp.share <= 0) return { kcal: 0, kg_per_week: 0, capped: false }
-  const needKgPerWeek = gap / Math.max(1, inp.deficitWeeksLeft)
+  const needKgPerWeek = gap > 0 ? gap / Math.max(1, inp.deficitWeeksLeft) : 0
+  if (gap <= 0 || inp.sharesPerWeek <= 0 || inp.share <= 0) return { kcal: 0, kg_per_week: 0, capped: false, need_kg_per_week: needKgPerWeek }
   const maxKgPerWeek = (inp.currentKg * inp.maxLossPctPerWeek) / 100
   const kgPerWeek = Math.min(needKgPerWeek, maxKgPerWeek)
   const perShare = (kgPerWeek * KCAL_PER_KG) / inp.sharesPerWeek
@@ -82,7 +84,7 @@ export function weightBasedDeficit(inp: {
   const kcal = Math.round((Math.min(perShare, inp.maxKcalPerDay) * inp.share) / 50) * 50
   // tempo przy limicie dziennym liczone ostrożnie: jakby każdy udział był obcięty tak jak dzień pełny
   const effKgPerWeek = (Math.min(perShare, inp.maxKcalPerDay) * inp.sharesPerWeek) / KCAL_PER_KG
-  return { kcal, kg_per_week: Math.round(effKgPerWeek * 100) / 100, capped: needKgPerWeek > maxKgPerWeek || perShare > inp.maxKcalPerDay }
+  return { kcal, kg_per_week: Math.round(effKgPerWeek * 100) / 100, capped: needKgPerWeek > maxKgPerWeek || perShare > inp.maxKcalPerDay, need_kg_per_week: Math.round(needKgPerWeek * 100) / 100 }
 }
 
 /**
@@ -95,15 +97,19 @@ export function personalizeNutrition(n: Nutrition, policy: NutritionPolicy, inp:
   const d = weightBasedDeficit({ ...inp, maxKcalPerDay: wb.max_kcal_per_day, maxLossPctPerWeek: wb.max_loss_pct_per_week, sharesPerWeek: wb.deficit_shares_per_week, share: n.deficit_share ?? 1 })
   const kind = n.label.split(':')[0] ?? 'Dzień'
   if (d.kcal < 100) return { ...n, energy: 'maintenance', label: inp.currentKg <= inp.targetKg ? `${kind}: bilans zerowy – masa docelowa osiągnięta` : `${kind}: bilans zerowy – do celu zostało niewiele` }
-  const kg = d.kg_per_week.toLocaleString('pl-PL', { maximumFractionDigits: 2 })
+  const fmt = (x: number) => x.toLocaleString('pl-PL', { maximumFractionDigits: 2 })
   const kgLabel = inp.targetKg.toLocaleString('pl-PL', { maximumFractionDigits: 1 })
   // punkt kontrolny ma datę w etykiecie („do 91 kg na 1.03”), cel końcowy – nie
   const target = inp.targetDate ? `${kgLabel} kg na ${Number(inp.targetDate.slice(8))}.${inp.targetDate.slice(5, 7)}` : `${kgLabel} kg`
+  // tempo dotyczy całego tygodnia (dni lekkie mają większy deficyt niż ten dzień) – mówimy to wprost;
+  // przy obciętym deficycie podajemy, ile wymagałby cel w terminie, bez udawania, że się zdąży
+  const week = d.capped
+    ? `cały tydzień ≈ ${fmt(d.kg_per_week)} kg – tyle pozwala limit bezpieczeństwa; ${target} wymagałoby ${fmt(d.need_kg_per_week)} kg/tydz., więc wypadnie później`
+    : `cały tydzień ≈ ${fmt(d.kg_per_week)} kg, do ${target}`
   return {
     ...n,
     energy: d.kcal >= 400 ? 'deficit_500' : 'deficit_300',
-    // przy obciętym deficycie mówimy wprost, że cel w terminie wymagałby więcej – bez udawania, że się zdąży
-    label: `${kind}: deficyt ok. ${d.kcal} kcal (≈ ${kg} kg/tydz. do ${target}${d.capped ? ', limit – cel później niż w terminie' : ''})`,
+    label: `${kind}: deficyt ok. ${d.kcal} kcal (${week})`,
   }
 }
 

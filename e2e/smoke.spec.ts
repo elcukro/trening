@@ -22,7 +22,7 @@ test('Dziś 30.09.2026: tydzień 3, akcent sweet spot w środę; 25.11 Sesja A p
   await expect(page.getByText('Przysiad ze sztangą na plecach')).toBeVisible()
   await expect(page.getByText('4×8 · RIR 3 · 120 s').first()).toBeVisible()
   // deficyt liczony z masy (start 110 kg → punkt kontrolny 91 kg na 1.03), nie stała etykieta
-  await expect(page.getByText(/Dzień lekki: deficyt ok\. \d+ kcal \(≈ 0,\d+ kg\/tydz\. do 91 kg na 1\.03/)).toBeVisible()
+  await expect(page.getByText(/Dzień lekki: deficyt ok\. \d+ kcal \(cały tydzień ≈ 0,\d+ kg.*91 kg na 1\.03/)).toBeVisible()
 })
 
 test('Dziś 15.05.2027: weekend w górach', async ({ page }) => {

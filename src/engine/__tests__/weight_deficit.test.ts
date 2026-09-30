@@ -72,7 +72,7 @@ describe('punkty kontrolne masy (program alpejski: 91 kg na 1.03.2027, cel 82 kg
     const days = buildCalendar(ctx)
     const at = (date: string) => enrichDay(days.find((d) => d.date === date)!, ctx)
     const rest = at('2026-10-01') // czwartek wolny
-    expect(rest.nutrition.label).toMatch(/^Dzień lekki: deficyt ok\. \d+ kcal \(≈ 0,\d+ kg\/tydz\. do 91 kg na 1\.03/)
+    expect(rest.nutrition.label).toMatch(/^Dzień lekki: deficyt ok\. \d+ kcal \(cały tydzień ≈ 0,\d+ kg – tyle pozwala limit bezpieczeństwa; 91 kg na 1\.03 wymagałoby 0,\d+ kg\/tydz\., więc wypadnie później\)$/)
     // zimą (fazy PREP–II) dzień ciężki ma mały deficyt poza treningiem: 0,4 × limit 900 ≈ 350 kcal
     expect(at('2026-09-30').nutrition.label).toMatch(/^Dzień ciężki – paliwo na trening bez zmian, reszta dnia lżej: deficyt ok\. 350 kcal/) // środa akcent
     expect(at('2026-10-03').nutrition.label).toMatch(/^Dzień ciężki – .*deficyt ok\. 350 kcal/) // sobota długa
