@@ -1,5 +1,5 @@
 {
- "version": "2026.09.29-2",
+ "version": "2026.09.30-1",
  "meta": {
   "name": "Alpy 2027 – baza i góry",
   "short": "Alpy 2027",
@@ -21,7 +21,7 @@
    "V": false,
    "TAPER": false
   },
-  "protein_g_per_kg": 2.0,
+  "protein_g_per_kg": 2.2,
   "heavy_min": 120,
   "medium_min": 60,
   "buckets": {

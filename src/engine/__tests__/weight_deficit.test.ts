@@ -80,7 +80,7 @@ describe('punkty kontrolne masy (program alpejski: 91 kg na 1.03.2027, cel 82 kg
     expect(at('2027-03-13').nutrition.energy).toBe('maintenance') // faza III: długa z tempem bez deficytu
     expect(at('2027-03-10').nutrition.energy).toBe('maintenance') // faza III: akcent progowy bez deficytu
     expect(at('2026-09-29').nutrition.label).toMatch(/^Dzień treningowy: deficyt/) // wtorek Z2 60
-    expect(rest.protein_g).toBe(165) // 2,0 × 82 = 164 → 165
+    expect(rest.protein_g).toBe(180) // 2,2 × 82 = 180,4 → 180
     // limit dzienny 900 kcal
     const kcal = Number(rest.nutrition.label.match(/ok\. (\d+) kcal/)![1])
     expect(kcal).toBeLessThanOrEqual(900)

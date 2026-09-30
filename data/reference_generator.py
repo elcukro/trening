@@ -17,7 +17,7 @@ import json, datetime as dt, os, copy
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 D = dt.date
-PROGRAM_VERSION = "2026.09.29-2"
+PROGRAM_VERSION = "2026.09.30-1"
 
 DEFAULT_SETTINGS = {
     "program_start": "2026-09-14",          # poniedziałek tygodnia 1
@@ -509,7 +509,7 @@ NUTRITION = {
     # w fazach bazy i zimy; od fazy IV tylko powyżej masy docelowej, w szczycie i taperze bez deficytu.
     "deficit_by_phase": {"PREP": True, "I": True, "II": True, "III": True, "IV": "if_above_target", "V": False, "TAPER": False},
     # przy dużej redukcji białko wyżej – chroni mięśnie (liczone od masy docelowej)
-    "protein_g_per_kg": 2.0,
+    "protein_g_per_kg": 2.2,
     "heavy_min": 120,
     "medium_min": 60,
     "buckets": {
