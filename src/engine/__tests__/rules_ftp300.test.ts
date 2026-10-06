@@ -134,3 +134,25 @@ describe('zamiany i przeniesienia w kolejności wykonania (zgłoszenie Ferdynand
     expect(swapToUndo([], '2026-09-29', '2026-10-04')).toBeNull()
   })
 })
+
+describe('żywienie po nadpisaniach (zgłoszenie 6.10.2026: dzień wolny po przeniesieniu pokazywał „Dzień treningowy”)', () => {
+  const w = week('2026-10-01', 3, 3)
+  const mv = (id: string, date: string, to: string): PlanOverride => ({ id, date, kind: 'move', payload: { to, what: 'bike' }, at: '2026-09-28T21:00:00Z' })
+  it('przeniesienie jazdy przenosi też etykietę żywienia; dzień, który ją stracił, dostaje etykietę dnia wolnego', () => {
+    const before = Object.fromEntries(w.map((d) => [d.date, d.nutrition.label]))
+    const out = applyOverrides(w, [mv('a', '2026-10-01', '2026-09-29')], program)
+    const at = (date: string) => out.find((d) => d.date === date)!
+    expect(at('2026-10-01').bike).toBeNull()
+    expect(at('2026-10-01').nutrition.label).toBe(before['2026-10-04']) // jak inny dzień wolny tego tygodnia (niedziela)
+    expect(at('2026-09-29').nutrition.label).toBe(before['2026-10-01']) // etykieta Z2 wędruje z jazdą
+    expect(at('2026-10-02').nutrition.label).toBe(before['2026-10-02']) // reszta bez zmian
+  })
+  it('zamiana przelicza żywienie obu dni, pominięcie – dnia pominiętego', () => {
+    const sw: PlanOverride = { id: 's', date: '2026-10-01', kind: 'swap', payload: { swap_with: '2026-09-29' }, at: '2026-09-28T21:00:00Z' }
+    const out = applyOverrides(w, [sw], program)
+    expect(out.find((d) => d.date === '2026-09-29')!.nutrition.label).toBe(w.find((d) => d.date === '2026-10-01')!.nutrition.label)
+    const sk: PlanOverride = { id: 'k', date: '2026-10-01', kind: 'skip', payload: { what: 'bike' } }
+    const skipped = applyOverrides(w, [sk], program).find((d) => d.date === '2026-10-01')!
+    expect(skipped.nutrition.label).toBe(w.find((d) => d.date === '2026-10-04')!.nutrition.label)
+  })
+})

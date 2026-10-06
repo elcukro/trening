@@ -7,6 +7,18 @@ import type { Nutrition, PhaseId, DayType } from './types'
  * deficyty, białko i węgle to decyzje o konkretnym zawodniku (docs/18, decoupling v1).
  * Port 1:1 `nutrition_for` z generatorów – golden pilnuje zgodności.
  */
+/** Treningi, które nie liczą się jako czas jazdy (podróż, wyjazd). */
+export const NO_RIDE_WORKOUTS = new Set(['REST', 'TRAVEL_REST', 'TRIP'])
+
+/**
+ * Żywienie policzone z gotowego dnia – te same reguły co przy budowie kalendarza. Używane po nadpisaniach
+ * (przeniesienie, zamiana, choroba…), żeby dzień, który stracił jazdę, nie trzymał etykiety „Dzień treningowy”.
+ */
+export function nutritionForDay(policy: NutritionPolicy, day: { phase: PhaseId; day_type: DayType; bike: { workout_id: string; duration_min: number } | null; flags: string[] }): Nutrition {
+  const bikeMin = day.bike && !NO_RIDE_WORKOUTS.has(day.bike.workout_id) ? day.bike.duration_min : 0
+  return nutritionFor(policy, day.phase, day.day_type, bikeMin, day.day_type === 'key', day.flags.some((f) => f === 'test' || f === 'mountain_weekend' || f === 'back_to_back'))
+}
+
 export function nutritionFor(policy: NutritionPolicy, phase: PhaseId, dayType: DayType, bikeMin: number, key: boolean, protectedDay = false): Nutrition {
   if (dayType === 'trip' && policy.trip) {
     return {

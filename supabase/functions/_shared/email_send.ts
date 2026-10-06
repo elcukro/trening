@@ -88,6 +88,9 @@ export async function sendMorning(admin: SupabaseClient, userId: string, date: s
   const snap = await snapshot(admin, userId, date)
   const view: MorningView | null = snap?.morning ?? null
   if (!view) return 'brak treningu albo migawki'
+  // jazda oznaczona z góry jako pominięta (np. góry, wyjazd) – odprawa nie ma sensu
+  const { data: skipped } = await admin.from('session_logs').select('id').eq('user_id', userId).eq('date', date).eq('kind', 'bike').eq('status', 'skipped').is('deleted_at', null).limit(1)
+  if (skipped?.length && snap?.planned) return 'pominięte z wyprzedzeniem'
   if (!(await reserve(admin, userId, 'morning', date))) return 'już wysłane'
   const to = await emailOf(admin, userId)
   if (!to) return 'brak adresu'

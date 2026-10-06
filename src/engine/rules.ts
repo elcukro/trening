@@ -1,6 +1,7 @@
 import type { GymSession, Program } from './schema'
 import type { CalendarDay, DayFlag, PlanOverride } from './types'
 import { addDays, compareISO, diffDays, type ISODate, type Weekday } from './dates'
+import { nutritionForDay } from './nutrition'
 
 /**
  * Reguły adaptacji R1–R16 działające na gotowym kalendarzu.
@@ -148,6 +149,8 @@ export function applyOverrides(days: CalendarDay[], overrides: PlanOverride[], p
   const out = days.map((d) => ({ ...d }))
   const index = new Map(out.map((d, i) => [d.date, i]))
   const by = group(overrides)
+  // dni zmienione przez nadpisania dostają żywienie policzone na nowo (dzień bez jazdy ≠ „Dzień treningowy”)
+  const touched = new Set<ISODate>()
 
   // Zamiany (R15) i przeniesienia (R1/R3) w kolejności, w jakiej je zrobiono: druga zamiana działa na tygodniu
   // już zmienionym przez pierwszą. Nakładane „po dacie” dawały inny układ niż ten, który użytkownik widział przy klikaniu.
@@ -164,9 +167,9 @@ export function applyOverrides(days: CalendarDay[], overrides: PlanOverride[], p
       ;[A.bike, B.bike] = [B.bike, A.bike]
       ;[A.gym, B.gym] = [B.gym, A.gym]
       ;[A.day_type, B.day_type] = [B.day_type, A.day_type]
-      ;[A.nutrition, B.nutrition] = [B.nutrition, A.nutrition]
       A.flags = withSessionFlags(A, fb)
       B.flags = withSessionFlags(B, fa)
+      touched.add(A.date).add(B.date)
     } else {
       const to = String(o.payload.to ?? '')
       const what = (o.payload.what as 'bike' | 'gym') ?? 'bike'
@@ -177,6 +180,7 @@ export function applyOverrides(days: CalendarDay[], overrides: PlanOverride[], p
       const T = out[target]!
       // nie ma czego przenosić (np. jazda już przeniesiona gdzie indziej) – cel zostaje nietknięty
       if (what === 'bike' ? !F.bike : !F.gym) continue
+      touched.add(F.date).add(T.date)
       if (what === 'bike') {
         const moved = sessionFlags(F)
         T.bike = F.bike
@@ -196,6 +200,7 @@ export function applyOverrides(days: CalendarDay[], overrides: PlanOverride[], p
   // pozostałe nadpisania – per dzień
   for (const d of out) {
     for (const o of by.get(d.date) ?? []) {
+      if (o.kind !== 'swap' && o.kind !== 'move') touched.add(d.date)
       switch (o.kind) {
         case 'indoor':
           d.bike = indoorReplacement(program, d)
@@ -234,6 +239,7 @@ export function applyOverrides(days: CalendarDay[], overrides: PlanOverride[], p
       }
     }
   }
+  for (const d of out) if (touched.has(d.date)) d.nutrition = nutritionForDay(program.nutrition, d)
   return out
 }
 
