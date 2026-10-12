@@ -177,7 +177,8 @@ export function buildWorkoutView(ride: RideLite, snap: DaySnapshot | null, opts:
   const easy = !snap?.planned || snap.planned.day_type === 'easy' || snap.planned.day_type === 'long'
   if (load && easy) insights.push(load.if <= 0.75 ? `IF ${if2(load.if)} – spokojnie, tak jak ma być na jeździe tlenowej.` : `IF ${if2(load.if)} – jak na spokojną jazdę za mocno; Z2 kończy się ok. 0,75.`)
   // dryf Pw:HR ma sens tylko na równej jeździe – na interwałach i teście połówki jazdy różnią się strukturą, nie zmęczeniem
-  if (ride.decoupling_pct != null && easy) {
+  const steady = !ride.device_watts || !ride.np_w || !ride.avg_watts || ride.np_w / ride.avg_watts <= 1.08
+  if (ride.decoupling_pct != null && easy && steady) {
     const d = ride.decoupling_pct
     insights.push(
       d < 5

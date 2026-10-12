@@ -14,6 +14,7 @@ ZASADY TRENINGU, NA KTÓRYCH OPIERA SIĘ PLAN
 - Strefy mocy względem FTP: Z1 < 55 %, Z2 56–75 %, Z3 76–90 %, sweet spot (SS) 88–94 %, próg (THR) 95–100 %, VO2max 106–120 %. Tętno progowe (LTHR) daje strefy tętna.
 - Model piramidalny/spolaryzowany: większość czasu naprawdę spokojnie (Z2), mało, ale porządnie w akcentach. Najczęstszy błąd amatorów to „szara strefa”: dni spokojne jechane w Z3, przez co akcenty wychodzą słabo.
 - Z2 buduje bazę tlenową (mitochondria, kapilary, spalanie tłuszczu). Dobrze wykonane Z2: IF ok. 0,60–0,75, mało czasu powyżej 0,75 FTP, równo (wskaźnik zmienności VI ≤ 1,05 na płaskim).
+- Objętość miesiąca: „hours_this_month” i „hours_last_month” to RÓWNE okna (poprzedni miesiąc liczony do tego samego dnia) – nie wnioskuj o „spadku aktywności” z częściowego miesiąca ani z początku tygodnia.
 - Dryf tętna względem mocy (Pw:HR, decoupling) na równej jeździe Z2: < 5 % – baza trzyma; 5–10 % – typowe przy dłuższej jeździe, upale, niedojedzeniu; > 10 % – ta intensywność jest jeszcze za wysoka na taki czas. Najlepszy wskaźnik postępu bazy: ta sama moc przy niższym tętnie albo mniejszy dryf.
 - Sweet spot i próg: równe interwały w zakresie celu, ostatni podobny do pierwszego. Spadek mocy w kolejnych interwałach > 5 % albo interwały poniżej zakresu = za mocny start, zmęczenie albo za wysoki cel. Przekraczanie zakresu o > 3 % zamienia trening w inny (i kradnie świeżość na kolejne dni).
 - VO2max: 3–5 min mocno, ale równo (RPE 9); ważniejsze, żeby wszystkie powtórzenia były podobne, niż żeby pierwsze było rekordowe.
@@ -71,7 +72,11 @@ export function promptFacts(f: RideFacts): Record<string, unknown> {
   const kind = rideKind(f)
   const r = f.ride
   const ride: Record<string, unknown> = { name: r.name, minutes: r.minutes, km: r.km, elevation_m: r.elevation_m, np_w: r.np_w, if: r.if, tss: r.tss, avg_hr: r.avg_hr, cadence: r.cadence }
-  if (kind === 'endurance') Object.assign(ride, { avg_w: r.avg_w, variability: r.variability, decoupling_pct: r.decoupling_pct, above_z2_pct: f.above_z2_pct, hr_zones_pct: f.hr_zones_pct, halves: f.halves })
+  if (kind === 'endurance') {
+    // dryf i połówki tylko na równej jeździe (VI ≤ 1,08) – z blokami siły / zrywami połówki różnią się strukturą, nie zmęczeniem
+    const steady = r.variability == null || r.variability <= 1.08
+    Object.assign(ride, { avg_w: r.avg_w, variability: r.variability, above_z2_pct: f.above_z2_pct, hr_zones_pct: f.hr_zones_pct, ...(steady ? { decoupling_pct: r.decoupling_pct, halves: f.halves } : { structured_ride: 'jazda z blokami/zrywami – dryf tętna i połówki nie są miarodajne, nie komentuj ich' }) })
+  }
   if (kind === 'test') Object.assign(ride, { max_hr: r.max_hr })
   const d = f.derived
   const keep = (keys: string[]) => Object.fromEntries(Object.entries(d).filter(([k]) => keys.some((x) => k.startsWith(x))))
@@ -131,7 +136,7 @@ export function ruleNote(f: RideFacts): string {
   } else {
     s.push(`${f.ride.minutes} min jazdy, ${pl(f.ride.km)} km.`)
   }
-  if (s.length < 3 && f.ride.decoupling_pct != null && !f.test && easy && !f.efforts?.detected.length) {
+  if (s.length < 3 && f.ride.decoupling_pct != null && !f.test && easy && !f.efforts?.detected.length && (f.ride.variability == null || f.ride.variability <= 1.08)) {
     const dcp = f.ride.decoupling_pct
     s.push(dcp < 5 ? `Dryf tętna ${pl(dcp)} % – baza tlenowa trzyma.` : `Dryf tętna ${pl(dcp)} % – w drugiej połowie tętno uciekało, zjedz i napij się wcześniej.`)
   }

@@ -84,6 +84,7 @@ export interface HistoryContext {
   /** ile tygodni z rzędu (łącznie z poprzednim, bez bieżącego) zrobiono ≥ 80 % planu */
   weeks_on_plan_streak: number | null
   rides_this_month: number
+  /** poprzedni miesiąc liczony do tego samego dnia miesiąca co bieżący (równe okna) */
   rides_last_month: number
   hours_this_month: number
   hours_last_month: number
@@ -180,8 +181,11 @@ export function historyContext(inp: {
 
   const ym = date.slice(0, 7)
   const lastYm = plusDays(`${ym}-01`, -1).slice(0, 7)
+  // miesiąc bieżący vs poprzedni DO TEGO SAMEGO DNIA – pełny poprzedni miesiąc obok 12 dni bieżącego dawał
+  // „aktywność mocno spadła” (12.10.2026); porównujemy równe okna
+  const dayOfMonth = date.slice(8)
   const thisMonth = all.filter((r) => r.date.startsWith(ym))
-  const lastMonth = all.filter((r) => r.date.startsWith(lastYm))
+  const lastMonth = all.filter((r) => r.date.startsWith(lastYm) && r.date.slice(8) <= dayOfMonth)
 
   const sameDates = new Set(inp.sameWorkoutDates)
   const sameRides = before.filter((r) => sameDates.has(r.date) && r.work_avg_w != null)
