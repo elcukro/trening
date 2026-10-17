@@ -14,6 +14,7 @@ import { morningEmail, workoutEmail } from '../_shared/email_templates.ts'
 import { buildWorkoutView, type DaySnapshot, type RideLite } from '../_shared/email_views.ts'
 import { applyLegs, applyRpe, EVENING_HOUR, gatherWeek, resend, runEvening, runMorning, runWeekly, sendWeekly, unsubscribe, warsawNow, WEEKLY_HOUR, writeLetter } from '../_shared/email_send.ts'
 import { mondayOf } from '../_shared/week_facts.ts'
+import { underUserDailyLimit } from '../_shared/ai_note.ts'
 
 /** Odpowiedź na kliknięcie „wyłącz te maile”. Zwykły tekst – domena functions Supabase podaje HTML jako text/plain. */
 function page(text: string): Response {
@@ -103,6 +104,8 @@ Deno.serve(async (req) => {
       return r.error ? json({ error: 'resend', detail: r.error }, 502) : json({ ok: true, date: a.date, to: user.email })
     }
     if (body.kind === 'weekly') {
+      // próby ręczne wywołują model – limit na konto i dobę, żeby jedno konto nie zużyło wspólnej puli
+      if (!(await underUserDailyLimit(admin, user.id, 6))) return json({ error: 'limit dzienny prób listu' }, 429)
       const monday = mondayOf(today)
       // tryb oceny: sam list i powód odrzucenia szkicu, bez maila (strojenie promptu)
       if (body.dry) {
