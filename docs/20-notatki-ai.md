@@ -62,6 +62,12 @@ bez podpisu w tekście modelu. Dwie próby, potem tytuł z reguł (`ruleDraft`: 
 „Notatki: Kolarski Trener AI” dopisuje zawsze kod (`withSignature`) jako ostatnia linia opisu. Zapis: `PUT /activities/{id}`
 (`updateActivity` w `strava.ts`), nowy tytuł trafia też do `strava_activities.name`. Wywołania liczą się do limitu w `ai_calls`.
 
+## Modele Claude 5 i myślenie (17.10.2026)
+Od przełączenia na `claude-opus-5-5` model „myśli” przed odpowiedzią, a tokeny myślenia liczą się do `max_tokens`: przy 500
+odpowiedź wracała bez bloku tekstu (`stop_reason: max_tokens`, tylko blok `thinking`) i notatki spadały na reguły.
+Wyłączyć myślenia nie można (`thinking.type.disabled` odrzucane), więc `callClaude` wysyła `thinking: adaptive`,
+`output_config.effort: low` i `max_tokens` 4000 (list tygodnia 6000). Powód zatrzymania jest w `detail`, gdy tekst pusty.
+
 ## Dalej
 Łapka w górę / w dół pod notatką (dostrajanie podręcznika), podsumowanie tygodnia tym samym mechanizmem,
 pogoda z godziny jazdy (Open-Meteo) jako fakt.

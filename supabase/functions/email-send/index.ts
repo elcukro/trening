@@ -12,7 +12,7 @@ import { timingSafeEqual } from '../_shared/crypto.ts'
 import { adminClient, userFromRequest } from '../_shared/supabase.ts'
 import { morningEmail, workoutEmail } from '../_shared/email_templates.ts'
 import { buildWorkoutView, type DaySnapshot, type RideLite } from '../_shared/email_views.ts'
-import { applyLegs, applyRpe, EVENING_HOUR, resend, runEvening, runMorning, runWeekly, sendWeekly, unsubscribe, warsawNow, WEEKLY_HOUR } from '../_shared/email_send.ts'
+import { applyLegs, applyRpe, EVENING_HOUR, gatherWeek, resend, runEvening, runMorning, runWeekly, sendWeekly, unsubscribe, warsawNow, WEEKLY_HOUR, writeLetter } from '../_shared/email_send.ts'
 import { mondayOf } from '../_shared/week_facts.ts'
 
 /** Odpowiedź na kliknięcie „wyłącz te maile”. Zwykły tekst – domena functions Supabase podaje HTML jako text/plain. */
@@ -55,7 +55,7 @@ Deno.serve(async (req) => {
     return htmlPage(`Zapisano: nogi ${r.legs}/5`, `Check-in z ${r.date} ma ocenę nóg. Wagę, tętno spoczynkowe i sen dopisz w aplikacji.`, `${APP_URL}/i`)
   }
   if (req.method !== 'POST') return json({ error: 'method' }, 405)
-  const body = (await req.json().catch(() => ({}))) as { action?: string; secret?: string; kind?: 'morning' | 'workout' | 'weekly'; activity_id?: number | string; subject_prefix?: string }
+  const body = (await req.json().catch(() => ({}))) as { action?: string; secret?: string; kind?: 'morning' | 'workout' | 'weekly'; activity_id?: number | string; subject_prefix?: string; dry?: boolean }
 
   if (body.action === 'cron') {
     if (!body.secret || body.secret !== env('PUSH_CRON_SECRET')) return json({ error: 'unauthorized' }, 401)
@@ -103,8 +103,14 @@ Deno.serve(async (req) => {
       return r.error ? json({ error: 'resend', detail: r.error }, 502) : json({ ok: true, date: a.date, to: user.email })
     }
     if (body.kind === 'weekly') {
-      // list za bieżący tydzień (albo poprzedni, gdy bieżący jeszcze pusty) – próba idzie bez wpisu w email_log
       const monday = mondayOf(today)
+      // tryb oceny: sam list i powód odrzucenia szkicu, bez maila (strojenie promptu)
+      if (body.dry) {
+        const facts = await gatherWeek(admin, user.id, monday)
+        const r = await writeLetter(admin, user.id, facts)
+        return json({ monday, ...r, flags: facts.flags })
+      }
+      // list za bieżący tydzień (albo poprzedni, gdy bieżący jeszcze pusty) – próba idzie bez wpisu w email_log
       const r = await sendWeekly(admin, user.id, monday, { force: true, subjectPrefix: '[PRÓBA] ' })
       const r2 = r === 'pusty tydzień' ? await sendWeekly(admin, user.id, mondayOf(today) < monday ? monday : new Date(new Date(`${monday}T00:00:00Z`).getTime() - 7 * 86_400_000).toISOString().slice(0, 10), { force: true, subjectPrefix: '[PRÓBA] ' }) : r
       return r2.startsWith('wysłane') ? json({ ok: true, to: user.email, detail: r2 }) : json({ error: 'weekly', detail: r2 }, 502)

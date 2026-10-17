@@ -333,13 +333,13 @@ export async function writeLetter(admin: SupabaseClient, userId: string, facts: 
     const system = `${WEEK_SYSTEM}\n\nUSTALENIA O TYM ZAWODNIKU\n${facts.athlete.coach_notes.map((n) => `- ${n}`).join('\n') || '- brak'}`
     let user = weekPrompt(facts)
     for (let attempt = 0; attempt < 2; attempt++) {
-      const r = await callClaude(system, user)
+      const r = await callClaude(system, user, undefined, 6000)
       await admin.from('ai_calls').insert({ user_id: userId, activity_id: null, input_tokens: r.usage.input_tokens ?? 0, output_tokens: r.usage.output_tokens ?? 0, cache_read_tokens: r.usage.cache_read_input_tokens ?? 0, cache_write_tokens: r.usage.cache_creation_input_tokens ?? 0 })
       const check = numbersOk(r.text, facts)
       const words = wordCount(r.text)
       if (r.text && check.ok && words >= 90 && words <= 240) return { letter: r.text.trim(), source: 'ai', detail: attempt ? 'po poprawce' : 'ok' }
       const problems = [check.ok ? null : `liczby spoza faktów: ${check.unknown.join(', ')}`, words > 240 ? `za długi: ${words} słów` : words < 90 ? `za krótki: ${words} słów` : null].filter(Boolean).join('; ')
-      detail = `${problems} | szkic: ${r.text.slice(0, 400)}`
+      detail = `${problems} | stop: ${r.stop} | szkic: ${r.text.slice(0, 400)}`
       user = `${weekPrompt(facts)}\n\nPoprzednia wersja była odrzucona (${problems}). Napisz jeszcze raz: 3 akapity, 8–12 zdań, 120–200 słów, wyłącznie liczby z faktów (porównania tylko z „derived”).`
     }
   } catch (e) {

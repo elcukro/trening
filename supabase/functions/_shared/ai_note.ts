@@ -158,21 +158,27 @@ export async function underLimit(admin: SupabaseClient): Promise<boolean> {
   return (count ?? 0) < MONTHLY_LIMIT
 }
 
-export async function callClaude(system: string, user: string, model = MODEL): Promise<{ text: string; usage: Record<string, number> }> {
+export async function callClaude(system: string, user: string, model = MODEL, maxTokens = 4000): Promise<{ text: string; usage: Record<string, number>; stop: string }> {
   const res = await fetch('https://api.anthropic.com/v1/messages', {
     method: 'POST',
     headers: { 'x-api-key': env('ANTHROPIC_API_KEY'), 'anthropic-version': '2023-06-01', 'content-type': 'application/json' },
     body: JSON.stringify({
       model,
-      max_tokens: 500,
+      max_tokens: maxTokens,
+      // modele Claude 5 „myślą” przed odpowiedzią i to myślenie liczy się do max_tokens – przy max_tokens 500 zjadało cały
+      // limit (odpowiedź bez bloku tekstu, stop_reason max_tokens). Wyłączyć się nie da („thinking.type.disabled” odrzucane),
+      // więc: niski wysiłek i zapas tokenów na myślenie.
+      thinking: { type: 'adaptive' },
+      output_config: { effort: 'low' },
       // stały podręcznik w pamięci podręcznej – przy kolejnych jazdach płacimy za niego ułamek
       system: [{ type: 'text', text: system, cache_control: { type: 'ephemeral' } }],
       messages: [{ role: 'user', content: user }],
     }),
   })
-  const out = (await res.json()) as { content?: { type: string; text?: string }[]; usage?: Record<string, number>; error?: { message?: string } }
+  const out = (await res.json()) as { content?: { type: string; text?: string }[]; usage?: Record<string, number>; stop_reason?: string; error?: { message?: string } }
   if (!res.ok) throw new Error(`anthropic ${res.status}: ${out.error?.message ?? ''}`)
-  return { text: (out.content ?? []).filter((c) => c.type === 'text').map((c) => c.text ?? '').join('').trim(), usage: out.usage ?? {} }
+  const text = (out.content ?? []).filter((c) => c.type === 'text').map((c) => c.text ?? '').join('').trim()
+  return { text, usage: out.usage ?? {}, stop: `${out.stop_reason ?? '?'}${text ? '' : ` (bloki: ${(out.content ?? []).map((c) => c.type).join(',') || 'brak'})`}` }
 }
 
 export interface NoteResult {

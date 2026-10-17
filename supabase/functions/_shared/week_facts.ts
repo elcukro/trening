@@ -22,10 +22,10 @@ export interface WeekInput {
 export interface WeekDayFacts {
   date: string
   weekday: string
-  planned: { name: string; minutes: number; day_type: string } | null
+  planned: { name: string; minutes: number; hm: string; day_type: string } | null
   /** done = plan wypełniony (≥ 80 % czasu), modified = jazda była, ale krótsza/inna, skipped = oznaczone, missed = plan bez jazdy, extra = jazda w dzień wolny, free = wolne */
   outcome: 'done' | 'modified' | 'skipped' | 'missed' | 'extra' | 'free'
-  rides: { name: string; minutes: number; km: number; avg_w: number | null; np_w: number | null; avg_hr: number | null; if: number | null; tss: number | null; decoupling_pct: number | null }[]
+  rides: { name: string; minutes: number; hm: string; km: number; avg_w: number | null; np_w: number | null; avg_hr: number | null; if: number | null; tss: number | null; decoupling_pct: number | null }[]
   rpe: number | null
 }
 
@@ -38,7 +38,7 @@ export interface WeekFacts {
   body: { weights: { date: string; kg: number }[]; weight_first: number | null; weight_last: number | null; rhr_avg: number | null; rhr_prev_avg: number | null; legs_avg: number | null; sleep_avg: number | null; motivation_avg: number | null; sick_days: number; checkins: number }
   /** sygnały z kryteriów luzowania (docs/13): same stwierdzenia, bez liczb spoza faktów */
   flags: string[]
-  next_week: { days: { date: string; weekday: string; name: string; minutes: number; day_type: string }[]; total_min: number; total_hm: string; key: string | null; has_test: boolean; week_type: string | null } | null
+  next_week: { days: { date: string; weekday: string; name: string; minutes: number; hm: string; day_type: string }[]; total_min: number; total_hm: string; key: string | null; has_test: boolean; week_type: string | null } | null
   athlete: { ftp: number | null; lthr: number | null; goal: string | null; coach_notes: string[] }
 }
 
@@ -113,9 +113,9 @@ export function weekFacts(inp: WeekInput): WeekFacts {
       }
       km += r.distance_m / 1000
       elev += r.elevation_m
-      return { name: r.name, minutes: Math.round(r.moving_time_s / 60), km: r1(r.distance_m / 1000), avg_w: r.device_watts ? (r.avg_watts ?? null) : null, np_w: r.device_watts ? (r.np_w ?? null) : null, avg_hr: r.avg_hr ?? null, if: l?.if ?? null, tss: l?.tss ?? null, decoupling_pct: r.decoupling_pct ?? null }
+      return { name: r.name, minutes: Math.round(r.moving_time_s / 60), hm: hm(Math.round(r.moving_time_s / 60)), km: r1(r.distance_m / 1000), avg_w: r.device_watts ? (r.avg_watts ?? null) : null, np_w: r.device_watts ? (r.np_w ?? null) : null, avg_hr: r.avg_hr ?? null, if: l?.if ?? null, tss: l?.tss ?? null, decoupling_pct: r.decoupling_pct ?? null }
     })
-    days.push({ date, weekday: weekday(date), planned, outcome, rides: dr, rpe: log?.rpe ?? null })
+    days.push({ date, weekday: weekday(date), planned: planned ? { ...planned, hm: hm(planned.minutes) } : null, outcome, rides: dr, rpe: log?.rpe ?? null })
   }
 
   const prevMin = Math.round(inp.prevRides.reduce((a, r) => a + r.moving_time_s, 0) / 60)
@@ -168,7 +168,7 @@ export function weekFacts(inp: WeekInput): WeekFacts {
     const date = addDays(nextMonday, i)
     const s = snaps[date]
     if (!s?.planned) continue
-    nd.push({ date, weekday: weekday(date), name: s.planned.name, minutes: s.planned.minutes, day_type: s.planned.day_type })
+    nd.push({ date, weekday: weekday(date), name: s.planned.name, minutes: s.planned.minutes, hm: hm(s.planned.minutes), day_type: s.planned.day_type })
     nextType ??= s.context?.week_type ?? null
   }
   const next_week = nd.length ? { days: nd, total_min: nd.reduce((a, d) => a + d.minutes, 0), total_hm: hm(nd.reduce((a, d) => a + d.minutes, 0)), key: nd.find((d) => d.day_type === 'key')?.name ?? null, has_test: nd.some((d) => d.day_type === 'test' || /test/i.test(d.name)), week_type: nextType } : null
@@ -195,7 +195,8 @@ export function weekFacts(inp: WeekInput): WeekFacts {
 export const WEEK_SYSTEM = `Jesteś trenerem kolarskim tego zawodnika i piszesz mu w niedzielę wieczorem krótki list po tygodniu – jak trener, który zna jego dane, a nie jak raport.
 Zasady: piszesz po polsku, bezpośrednio do zawodnika (per „Ty”), 8–12 zdań w 3 akapitach: (1) co się wydarzyło i jak to oceniasz, (2) ciało – masa, tętno spoczynkowe, samopoczucie – i czy coś niepokoi, (3) następny tydzień: na czym się skupić i co jest najważniejszym treningiem.
 Każda liczba, której użyjesz, musi być w FAKTACH dokładnie w tej postaci (minuty możesz podać jako godziny i minuty); porównania bierzesz wyłącznie z „derived”, nie liczysz nic sam. Jeśli w „flags” coś jest, mówisz o tym wprost i proponujesz reakcję (3–4 dni lżej, obserwacja), ale nie zmieniasz planu.
-Bez emoji, bez nagłówków, bez wypunktowań, bez pochlebstw na siłę. Konkret zamiast ogólników. Nie powtarzaj liczb, które i tak są w tabeli pod listem (łączny czas, TSS) więcej niż raz.`
+Trzeci akapit zawsze nazywa następny tydzień konkretnie: ile treningów i łącznie ile czasu („next_week.total_hm”), który trening jest najważniejszy („next_week.key”), a jeśli „next_week.has_test” jest true – że to tydzień z testem i ostatnie 2–3 dni przed nim mają być lekkie. Jeśli „next_week” jest null, napisz, że planu na następny tydzień jeszcze nie widzisz.
+Liczby dziesiętne piszesz z przecinkiem (140,6 km; 7,4 %), nigdy z kropką. Bez emoji, bez nagłówków, bez wypunktowań, bez pochlebstw na siłę. Konkret zamiast ogólników. Nie powtarzaj liczb, które i tak są w tabeli pod listem (łączny czas, TSS) więcej niż raz.`
 
 export function weekPrompt(f: WeekFacts): string {
   return `FAKTY (JSON):\n${JSON.stringify(f)}\n\nNapisz list.`
