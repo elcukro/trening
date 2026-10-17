@@ -3,7 +3,7 @@ import programJson from '../../../data/program.json'
 import { parseProgram } from '@/engine/schema'
 import { buildCalendar } from '@/engine/calendar'
 import { enrichDay } from '@/engine/plan'
-import { morningEmail, workoutEmail } from '../../../supabase/functions/_shared/email_templates'
+import { morningEmail, weeklyEmail, workoutEmail } from '../../../supabase/functions/_shared/email_templates'
 import { morningView, snapshotFor, workoutView, zonesFor } from '../emailViews'
 import { buildWorkoutView, fulfilsPlan, hrZoneSeconds, rideLoadLite } from '../../../supabase/functions/_shared/email_views'
 import { zoneDistribution } from '@/engine/zones'
@@ -111,5 +111,28 @@ describe('migawka dnia i zgodność z silnikiem', () => {
     expect(wed.morning?.workout?.name).toBe('Próg pod górę 4×6 min')
     const rest = window.find((d) => !d.bike && !d.gym)!
     expect(snapshotFor(rest, window, program, { athlete: 'Luke', appUrl: 'https://x.test' }).morning).toBeNull()
+  })
+
+  it('list tygodnia: temat z sumą, akapity listu, tabela dni i zapowiedź', () => {
+    const e = weeklyEmail({
+      athlete: 'Luke',
+      appUrl: 'https://x.test/i',
+      reportUrl: 'https://x.test/postep/tydzien/2026-10-12',
+      weekLabel: '12–18.10',
+      letter: ['Dobry tydzień.', 'Masa 104,8 kg.', 'Następny tydzień lżej.'],
+      days: [
+        { weekday: 'poniedziałek', planned: null, outcome: 'free', summary: null },
+        { weekday: 'wtorek', planned: 'Baza tlenowa Z2 · 1 h 30 min', outcome: 'done', summary: '1 h 32 min, 41,4 km, 170 W' },
+        { weekday: 'czwartek', planned: 'Baza tlenowa Z2 · 1 h 30 min', outcome: 'missed', summary: null },
+      ],
+      totals: { done: '8 h 51 min', planned: '8 h 15 min', pct: 107, rides: 4, km: 239, tss: 420 },
+      body: [{ weight: '104,8 kg (+0,2)', rhr: '53 bpm (-2)', legs: '3,5/5' }],
+      next: { label: 'Następny tydzień · 2 h 40 min · rozładowanie', days: [{ weekday: 'sobota', name: 'Test FTP 20 min', minutes: 70, key: true }] },
+    })
+    expect(e.subject).toBe('Tydzień 12–18.10: 8 h 51 min z 8 h 15 min · 107 % · TSS 420')
+    expect(e.html).toContain('tak minął tydzień')
+    expect(e.html).toContain('bez jazdy')
+    expect(e.html).toContain('★ Test FTP 20 min')
+    expect(e.text).toContain('czwartek: Baza tlenowa Z2 · 1 h 30 min – bez jazdy')
   })
 })

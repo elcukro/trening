@@ -145,6 +145,13 @@ export async function gatherFacts(admin: SupabaseClient, userId: string, activit
   return { facts, ride: a }
 }
 
+/** Limit na użytkownika i dobę (ręczne wywołania: check-in zdaniem) – jedno konto nie wyczerpie wspólnej puli. */
+export async function underUserDailyLimit(admin: SupabaseClient, userId: string, max = 40): Promise<boolean> {
+  const since = new Date(Date.now() - 86_400_000).toISOString()
+  const { count } = await admin.from('ai_calls').select('id', { count: 'exact', head: true }).eq('user_id', userId).gte('created_at', since)
+  return (count ?? 0) < max
+}
+
 export async function underLimit(admin: SupabaseClient): Promise<boolean> {
   const month = new Date().toISOString().slice(0, 7)
   const { count } = await admin.from('ai_calls').select('id', { count: 'exact', head: true }).gte('created_at', `${month}-01`)

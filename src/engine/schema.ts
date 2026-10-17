@@ -134,6 +134,8 @@ export const SettingsSchema = z.object({
   /** maile (docs/19): poranna odprawa w dni z treningiem i podsumowanie zaraz po wgraniu jazdy */
   email_morning: z.boolean().optional(),
   email_workout: z.boolean().optional(),
+  /** niedzielny list trenera o 19:00 (docs/19 § List tygodnia) */
+  email_weekly: z.boolean().optional(),
   /** Strava: tytuł i opis jazdy po imporcie (docs/20); wymaga zgody `activity:write` */
   strava_write: z.boolean().optional(),
   units: z.string(),

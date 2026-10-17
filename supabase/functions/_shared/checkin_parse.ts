@@ -21,11 +21,19 @@ Słowa na skalę 1–5: fatalnie/tragicznie=1, słabo/kiepsko=2, średnio/ok/nor
 „Nogi ciężkie”=2, „nogi lekkie”=4, „nogi jak z waty”=1. Liczba bez jednostki od 40 do 200 z dziesiątkami to waga; liczba 30–120 przy słowach tętno/puls/HR to tętno.
 Pole, o którym zdanie nie mówi, ma wartość null. Nie zgaduj. Żadnego tekstu poza JSON-em.`
 
-export function userPrompt(text: string, hint: { last_weight_kg?: number | null; last_resting_hr?: number | null }): string {
+const inRange = (v: unknown, lo: number, hi: number): number | null => {
+  const n = typeof v === 'number' ? v : typeof v === 'string' ? Number(v.replace(',', '.')) : NaN
+  return Number.isFinite(n) && n >= lo && n <= hi ? Math.round(n * 10) / 10 : null
+}
+
+/** Podpowiedź do promptu tylko jako liczby w sensownym zakresie – nic innego z klienta nie trafia do modelu. */
+export function userPrompt(text: string, hint: { last_weight_kg?: unknown; last_resting_hr?: unknown }): string {
   const h: string[] = []
-  if (hint.last_weight_kg != null) h.push(`ostatnia waga ${hint.last_weight_kg} kg`)
-  if (hint.last_resting_hr != null) h.push(`ostatnie tętno spoczynkowe ${hint.last_resting_hr} bpm`)
-  return `${h.length ? `Kontekst (do rozstrzygania, która liczba jest czym): ${h.join(', ')}.\n` : ''}Zdanie: ${text.trim()}`
+  const w = inRange(hint.last_weight_kg, 30, 300)
+  const hr = inRange(hint.last_resting_hr, 20, 200)
+  if (w != null) h.push(`ostatnia waga ${w} kg`)
+  if (hr != null) h.push(`ostatnie tętno spoczynkowe ${Math.round(hr)} bpm`)
+  return `${h.length ? `Kontekst (do rozstrzygania, która liczba jest czym): ${h.join(', ')}.\n` : ''}Zdanie: ${text.trim().slice(0, 500)}`
 }
 
 const int15 = (v: unknown): number | null => (typeof v === 'number' && Number.isFinite(v) && v >= 1 && v <= 5 ? Math.round(v) : null)

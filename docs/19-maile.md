@@ -46,3 +46,14 @@ tworząc check-in, gdy go nie ma) z `updated_at = now()`, więc aplikacja pobier
 Odpowiedź to mała strona HTML z potwierdzeniem i przyciskiem do aplikacji. Limity: RPE do 45 dni wstecz, nogi do 7 dni;
 brak jazdy tego dnia = „nie zapisano”. Ponowne kliknięcie nadpisuje wartość. Zapisana ocena jest w mailu wypełniona kolorem,
 gdy mail idzie po wpisie (np. „Dzień w liczbach” po RPE z pierwszego maila).
+
+## List tygodnia (17.10.2026)
+Niedziela 19:00 (`WEEKLY_HOUR`, cron `email-send` sprawdza dzień tygodnia i godzinę), dla profili z `email_weekly`
+(przełącznik „List trenera w niedzielę” w Ustawieniach → E-mail i w `/i` → Więcej). Jeden mail na tydzień (`email_log` kind `weekly`,
+ref = poniedziałek). Fakty liczy `_shared/week_facts.ts` (`weekFacts`: wynik każdego dnia done/modified/skipped/missed/extra/free
+z migawek `email_days`, jazd i `session_logs`; sumy i porównanie z poprzednim tygodniem w `derived`; masa, tętno spoczynkowe,
+nogi i sen z check-inów; `flags` z kryteriów luzowania; zapowiedź następnego tygodnia z migawek – aplikacja wgrywa je 14 dni
+w przód). List pisze model (`writeLetter` w `email_send.ts`, `WEEK_SYSTEM`, ustalenia o zawodniku z `coach_notes` migawki),
+weryfikacja `numbersOk` + 90–240 słów, jedna poprawka, potem `ruleLetter`. Czasy są w faktach także jako „8 h 51 min”,
+żeby model mógł pisać godzinami. Szablon `weeklyEmail` (list, tabela dni z pigułką wyniku, ciało, następny tydzień, przycisk
+do raportu `/postep/tydzien/<poniedziałek>`). Próba: Ustawienia → E-mail → „Próbny list tygodnia” (bieżący tydzień, bez wpisu w logu).

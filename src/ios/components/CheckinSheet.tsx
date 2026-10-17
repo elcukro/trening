@@ -75,7 +75,7 @@ export function CheckinSheet({ checkin, weighDue, lastWeight, onClose, onSave }:
       if (fields.resting_hr != null) setRhr(String(fields.resting_hr))
       setScale((x) => ({ sleep: fields.sleep ?? x.sleep, legs: fields.legs ?? x.legs, motivation: fields.motivation ?? x.motivation }))
       setParsed({ sick: fields.sick, notes: fields.notes })
-      const got = [fields.weight_kg != null && 'waga', fields.resting_hr != null && 'tętno', fields.sleep != null && 'sen', fields.legs != null && 'nogi', fields.motivation != null && 'motywacja', fields.sick && 'choroba', fields.notes && 'uwagi'].filter(Boolean)
+      const got = [fields.weight_kg != null && 'waga', fields.resting_hr != null && 'tętno', fields.sleep != null && 'sen', fields.legs != null && 'nogi', fields.motivation != null && 'motywacja', fields.sick && 'choroba: tak', fields.notes && `uwagi: „${fields.notes}”`].filter(Boolean)
       setParseMsg(`Rozpoznane: ${got.join(', ')}. Sprawdź i zapisz.`)
     } catch (e) {
       setParseMsg(e instanceof Error ? e.message : 'Nie udało się rozpoznać')

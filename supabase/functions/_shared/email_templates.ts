@@ -362,3 +362,78 @@ ${button('Zobacz w aplikacji', v.appUrl)}`,
 
   return { subject, preheader, text, html: shell(preheader, head + day + note + rpe + zones + insights + week, v.appUrl, opts.unsubscribeUrl) }
 }
+
+// ---------------------------------------------------------------- list tygodnia
+
+export interface WeeklyView {
+  athlete: string
+  appUrl: string
+  /** link do raportu tygodnia w aplikacji */
+  reportUrl: string
+  weekLabel: string
+  /** akapity listu (model albo reguły) */
+  letter: string[]
+  days: { weekday: string; planned: string | null; outcome: 'done' | 'modified' | 'skipped' | 'missed' | 'extra' | 'free'; summary: string | null }[]
+  totals: { done: string; planned: string | null; pct: number | null; rides: number; km: number; tss: number | null }
+  body: { weight: string | null; rhr: string | null; legs: string | null }[]
+  next: { label: string; days: { weekday: string; name: string; minutes: number; key: boolean }[] } | null
+}
+
+const OUTCOME: Record<WeeklyView['days'][number]['outcome'], { label: string; color: string }> = {
+  done: { label: 'zrobione', color: C.good },
+  modified: { label: 'inaczej', color: C.warn },
+  skipped: { label: 'odpuszczone', color: C.mute },
+  missed: { label: 'bez jazdy', color: '#dc2626' },
+  extra: { label: 'poza planem', color: C.accent },
+  free: { label: 'wolne', color: C.mute },
+}
+
+export function weeklyEmail(v: WeeklyView, opts: { unsubscribeUrl?: string | null } = {}): EmailOut {
+  const subject = `Tydzień ${v.weekLabel}: ${v.totals.done}${v.totals.planned ? ` z ${v.totals.planned}` : ''}${v.totals.pct != null ? ` · ${v.totals.pct} %` : ''}${v.totals.tss != null ? ` · TSS ${v.totals.tss}` : ''}`
+  const preheader = v.letter[0]?.slice(0, 140) ?? subject
+  const head = card(
+    `${eyebrow(`List trenera · tydzień ${v.weekLabel}`)}
+<div style="margin-top:6px;font-size:22px;line-height:28px;font-weight:700;">${esc(v.athlete ? `${v.athlete}, ` : '')}tak minął tydzień</div>
+${v.letter.map((p) => `<p style="margin:14px 0 0;font-size:15px;line-height:23px;color:${C.ink};">${esc(p)}</p>`).join('')}`,
+  )
+  const days = card(
+    `${eyebrow('Dzień po dniu')}
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="margin-top:10px;font-size:14px;line-height:20px;">
+${v.days
+  .map((d) => {
+    const o = OUTCOME[d.outcome]
+    return `<tr><td style="padding:6px 0;border-bottom:1px solid ${C.line};color:${C.soft};width:64px;text-transform:capitalize;">${esc(d.weekday.slice(0, 3))}</td><td style="padding:6px 0;border-bottom:1px solid ${C.line};"><div style="font-weight:${d.planned ? 600 : 400};color:${d.planned ? C.ink : C.mute};">${esc(d.planned ?? '—')}</div>${d.summary ? `<div style="color:${C.soft};">${esc(d.summary)}</div>` : ''}</td><td align="right" style="padding:6px 0;border-bottom:1px solid ${C.line};white-space:nowrap;"><span style="display:inline-block;padding:2px 8px;border-radius:999px;font-size:12px;font-weight:600;color:#ffffff;background-color:${o.color};" bgcolor="${o.color}">${o.label}</span></td></tr>`
+  })
+  .join('')}
+</table>
+<div style="margin-top:12px;font-size:14px;color:${C.soft};">Razem <b style="color:${C.ink};">${esc(v.totals.done)}</b>${v.totals.planned ? ` z ${esc(v.totals.planned)}` : ''} · ${v.totals.rides} ${v.totals.rides === 1 ? 'jazda' : v.totals.rides < 5 ? 'jazdy' : 'jazd'} · ${v.totals.km} km${v.totals.tss != null ? ` · TSS ${v.totals.tss}` : ''}</div>`,
+  )
+  const body = v.body.length
+    ? card(
+        `${eyebrow('Ciało')}
+<table role="presentation" cellpadding="0" cellspacing="0" style="margin-top:10px;font-size:14px;line-height:22px;color:${C.soft};">
+${v.body.map((b) => `<tr>${b.weight ? `<td style="padding-right:12px;color:${C.mute};">masa</td><td>${esc(b.weight)}</td>` : ''}${b.rhr ? `<td style="padding-right:12px;color:${C.mute};">tętno spoczynkowe</td><td>${esc(b.rhr)}</td>` : ''}${b.legs ? `<td style="padding-right:12px;color:${C.mute};">nogi</td><td>${esc(b.legs)}</td>` : ''}</tr>`).join('')}
+</table>`,
+      )
+    : ''
+  const next = v.next
+    ? card(
+        `${eyebrow(v.next.label)}
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="margin-top:10px;font-size:14px;line-height:20px;">
+${v.next.days.map((d) => `<tr><td style="padding:4px 0;color:${C.soft};width:64px;text-transform:capitalize;">${esc(d.weekday.slice(0, 3))}</td><td style="padding:4px 0;font-weight:${d.key ? 700 : 500};">${d.key ? '★ ' : ''}${esc(d.name)}</td><td align="right" style="padding:4px 0;color:${C.soft};">${esc(hm(d.minutes))}</td></tr>`).join('')}
+</table>
+${button('Zobacz raport tygodnia', v.reportUrl)}`,
+      )
+    : card(button('Zobacz raport tygodnia', v.reportUrl), '8px 24px 24px')
+  const text = [
+    `Tydzień ${v.weekLabel}`,
+    '',
+    ...v.letter.flatMap((p) => [p, '']),
+    ...v.days.map((d) => `${d.weekday}: ${d.planned ?? '—'} – ${OUTCOME[d.outcome].label}${d.summary ? ` (${d.summary})` : ''}`),
+    `Razem: ${v.totals.done}${v.totals.planned ? ` z ${v.totals.planned}` : ''}, ${v.totals.rides} jazd, ${v.totals.km} km${v.totals.tss != null ? `, TSS ${v.totals.tss}` : ''}`,
+    ...(v.next ? ['', v.next.label, ...v.next.days.map((d) => `- ${d.weekday}: ${d.name} (${hm(d.minutes)})`)] : []),
+    '',
+    v.reportUrl,
+  ].join('\n')
+  return { subject, preheader, text, html: shell(preheader, head + days + body + next, v.appUrl, opts.unsubscribeUrl) }
+}

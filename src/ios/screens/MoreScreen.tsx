@@ -271,6 +271,7 @@ export function MoreScreen() {
           <List>
             <Row title="Poranna odprawa" accessory={<Switch on={!!s.email_morning} label="Poranna odprawa mailem" onChange={(v) => void engine.settingsApi.update({ email_morning: v })} />} />
             <Row title="Podsumowanie po treningu" accessory={<Switch on={!!s.email_workout} label="Podsumowanie po treningu mailem" onChange={(v) => void engine.settingsApi.update({ email_workout: v })} />} />
+            <Row title="List trenera w niedzielę" accessory={<Switch on={!!s.email_weekly} label="List trenera w niedzielę mailem" onChange={(v) => void engine.settingsApi.update({ email_weekly: v })} />} />
           </List>
         </Section>
       )}
