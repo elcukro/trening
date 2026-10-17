@@ -46,6 +46,22 @@ niż 90 dni, 80 na wywołanie, tylko brakujące. Wykonane 26.09: Łukasz 26 jazd
 - Wnioski wdrożone w kodzie: fakty według rodzaju jazdy, etykiety skal check-inu, zakaz zgadywania przyczyn,
   weryfikacja liczb dziesiętnych, interwały z nazwy jazdy, limit słów.
 
+## Tytuł na Stravie (17.10.2026)
+Po notatce `strava-webhook` może nadać jeździe tytuł i opis na Stravie (`writeStravaTitle` w `ai_note.ts`, czysta część
+w `_shared/strava_title.ts`, testy `src/engine/__tests__/strava_title.test.ts`). Warunki, wszystkie naraz:
+- profil ma `strava_write` (Ustawienia → Integracje → „Tytuł i opis jazdy na Stravie”, domyślnie wyłączone, per konto),
+- zgoda Stravy obejmuje `activity:write` – zakres w `strava-oauth` to od 17.10 `read,activity:read_all,activity:write`;
+  konto połączone wcześniej musi kliknąć „Połącz ponownie” (karta pokazuje to, gdy przełącznik jest włączony, a zakresu brak),
+- tytuł jest domyślny: nazwa Stravy („Morning Ride”, „Poranna jazda”, „Indoor Cycling”…) albo nazwa treningu wysłanego na
+  Bolta tego dnia (`wahoo_pushes.name`, także z „(pod dachem)”) albo nazwa z planu; **własny tytuł zawodnika nigdy nie jest ruszany**,
+- jazda nie ma jeszcze `strava_activities.title_set_at` (jeden zapis na jazdę; `backfill` i ręczny `sync` nie piszą).
+
+Model dostaje te same fakty co notatka plus gotową notatkę i odpowiada dwiema liniami `Tytuł:` / `Opis:` (bez JSON).
+Przyjęcie szkicu (`checkDraft`): tytuł 6–60 znaków, opis 1–3 zdania do 320 znaków, liczby wyłącznie z faktów (`numbersOk`),
+bez podpisu w tekście modelu. Dwie próby, potem tytuł z reguł (`ruleDraft`: „<plan> · <km> km · <W> W”). Podpis
+„Notatki: Kolarski Trener AI” dopisuje zawsze kod (`withSignature`) jako ostatnia linia opisu. Zapis: `PUT /activities/{id}`
+(`updateActivity` w `strava.ts`), nowy tytuł trafia też do `strava_activities.name`. Wywołania liczą się do limitu w `ai_calls`.
+
 ## Dalej
-Łapka w górę / w dół pod notatką (dostrajanie podręcznika), opis aktywności na Stravie (wymaga `activity:write`),
-podsumowanie tygodnia tym samym mechanizmem, pogoda z godziny jazdy (Open-Meteo) jako fakt.
+Łapka w górę / w dół pod notatką (dostrajanie podręcznika), podsumowanie tygodnia tym samym mechanizmem,
+pogoda z godziny jazdy (Open-Meteo) jako fakt.

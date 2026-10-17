@@ -61,6 +61,22 @@ export async function accessTokenFor(admin: SupabaseClient, userId: string): Pro
   return fresh.access_token
 }
 
+/** Tytuł i opis aktywności (wymaga zakresu `activity:write`). */
+export async function updateActivity(token: string, id: number | string, fields: { name?: string; description?: string }): Promise<void> {
+  const res = await fetch(`${STRAVA_API}/activities/${id}`, {
+    method: 'PUT',
+    headers: { authorization: `Bearer ${token}`, 'content-type': 'application/json' },
+    body: JSON.stringify(fields),
+  })
+  if (!res.ok) throw new Error(`Strava PUT /activities/${id} ${res.status}: ${await res.text()}`)
+}
+
+/** Zakres zgody zapisany przy łączeniu (np. `read,activity:read_all,activity:write`). */
+export async function stravaScope(admin: SupabaseClient, userId: string): Promise<string> {
+  const { data } = await admin.from('integration_tokens').select('scope').eq('user_id', userId).eq('provider', 'strava').maybeSingle()
+  return (data?.scope as string | null) ?? ''
+}
+
 export async function userIdForAthlete(admin: SupabaseClient, athleteId: number | string): Promise<string | null> {
   const { data } = await admin.from('integration_tokens').select('user_id').eq('provider', 'strava').eq('athlete_id', String(athleteId)).maybeSingle()
   return data?.user_id ?? null

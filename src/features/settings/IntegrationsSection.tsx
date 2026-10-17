@@ -68,6 +68,8 @@ function StravaCard() {
   const initial = useOAuthResult('strava')
   const { busy, msg, setMsg, run } = useRunner()
   const [status, setStatus] = useState<StravaStatus | null>(null)
+  const engine = useEngine()
+  const canWrite = !!status?.scope?.includes('activity:write')
   useEffect(() => {
     if (initial) setMsg(initial)
   }, [initial, setMsg])
@@ -136,6 +138,34 @@ function StravaCard() {
       </Actions>
       {msg && <p className="mt-2 text-sm">{msg}</p>}
       <p className="mt-3 text-xs text-slate-500 dark:text-slate-400">Nowe jazdy pojawiają się automatycznie w ciągu kilku minut od wgrania na Stravę.</p>
+      {status?.connected && (
+        <div className="mt-3">
+          <Checkbox
+            label="Tytuł i opis jazdy na Stravie"
+            hint="Po imporcie trener pisze tytuł i 1–3 zdania opisu z podpisem „Notatki: Kolarski Trener AI”. Tylko dla domyślnych tytułów (np. „Morning Ride” albo nazwa treningu z Bolta) – własny tytuł zostaje."
+            checked={!!engine.ctx.settings.strava_write}
+            onChange={(e) => void engine.settingsApi.update({ strava_write: e.target.checked })}
+          />
+          {engine.ctx.settings.strava_write && !canWrite && (
+            <Inset className="mt-2">
+              <p className="text-sm">Strava nie dała jeszcze zgody na pisanie. Połącz ponownie – Strava zapyta o nowy zakres.</p>
+              <Button
+                className="mt-2"
+                variant="secondary"
+                disabled={busy}
+                onClick={() =>
+                  run('Łączę ze Stravą', async () => {
+                    window.location.assign((await strava.startUrl()).url)
+                    return 'Przekierowuję do Stravy'
+                  })
+                }
+              >
+                Połącz ponownie
+              </Button>
+            </Inset>
+          )}
+        </div>
+      )}
     </Card>
   )
 }

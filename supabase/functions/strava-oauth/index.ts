@@ -8,7 +8,8 @@ import { sign, verify, webhookPathSecret, webhookVerifyToken } from '../_shared/
 import { adminClient, userFromRequest } from '../_shared/supabase.ts'
 import { accessTokenFor, deauthorize, exchangeCode, fetchActivity, listActivities, RIDE_TYPES, saveTokens, upsertActivity } from '../_shared/strava.ts'
 
-const SCOPE = 'read,activity:read_all'
+// activity:write – tytuł i opis jazdy po imporcie (docs/20); przy ponownym łączeniu Strava pyta o nową zgodę
+const SCOPE = 'read,activity:read_all,activity:write'
 
 function functionsBase(): string {
   return `${env('SUPABASE_URL')}/functions/v1`

@@ -8,7 +8,7 @@ import { timingSafeEqual, webhookPathSecret, webhookVerifyToken } from '../_shar
 import { adminClient } from '../_shared/supabase.ts'
 import { accessTokenFor, activityExists, athleteAuthorized, importActivity, markDeleted, userIdForAthlete } from '../_shared/strava.ts'
 import { sendWorkout } from '../_shared/email_send.ts'
-import { writeNote } from '../_shared/ai_note.ts'
+import { writeNote, writeStravaTitle } from '../_shared/ai_note.ts'
 
 interface StravaEvent {
   object_type: 'activity' | 'athlete'
@@ -59,6 +59,9 @@ async function handle(ev: StravaEvent): Promise<void> {
     // najpierw notatka trenera (docs/20) – mail po treningu ją zawiera
     const n = await writeNote(admin, userId, ev.object_id).catch((e) => ({ detail: `błąd: ${e instanceof Error ? e.message : e}` }))
     console.log('webhook: notatka', ev.object_id, n && 'detail' in n ? n.detail : 'pominięta')
+    // tytuł i opis na Stravie (docs/20) – tylko domyślne tytuły, tylko z przełącznikiem w profilu
+    const t = await writeStravaTitle(admin, userId, ev.object_id).catch((e) => ({ detail: `błąd: ${e instanceof Error ? e.message : e}` }))
+    console.log('webhook: tytuł na Stravie', ev.object_id, t && 'detail' in t ? `${'title' in t && t.title ? t.title + ' | ' : ''}${t.detail}` : 'pominięty')
     const res = await sendWorkout(admin, userId, ev.object_id).catch((e) => `błąd: ${e instanceof Error ? e.message : e}`)
     console.log('webhook: mail po treningu', ev.object_id, res)
   }
