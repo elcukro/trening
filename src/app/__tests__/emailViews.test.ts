@@ -26,6 +26,13 @@ describe('maile', () => {
     expect(m.subject).toMatch(/^Dziś: Próg pod górę 4×6 min · 1 h \d+ min \+ siłownia$/)
     expect(m.html).toContain('https://x.test/i/dzien/2027-03-03')
     expect(m.text).toContain('Siłownia:')
+    expect(m.html).not.toContain('Jak nogi dziś?')
+    v.legs = { links: [1, 2, 3, 4, 5].map((n) => ({ value: n, href: `https://f.test/email-send?legs=t${n}` })), current: null }
+    const withLegs = morningEmail(v)
+    expect(withLegs.html).toContain('Jak nogi dziś?')
+    expect(withLegs.html.match(/email-send\?legs=t/g)?.length).toBe(5)
+    v.legs.current = 4
+    expect(morningEmail(v).html).toContain('Nogi dziś: 4/5')
   })
   it('po treningu: werdykt względem planu, strefy bez fałszywej Z5c, tekst escapowany', () => {
     const hist: number[] = []
@@ -39,6 +46,15 @@ describe('maile', () => {
     const e = workoutEmail(v)
     expect(e.html).toContain('Z2 &lt;wieczór&gt;')
     expect(e.html).not.toContain('<wieczór>')
+    // bez linków RPE – bez karty
+    expect(e.html).not.toContain('Jak ciężko było?')
+    v.rpe = { links: Array.from({ length: 10 }, (_, i) => ({ value: i + 1, href: `https://f.test/email-send?rpe=t${i + 1}` })), current: null }
+    const withRpe = workoutEmail(v)
+    expect(withRpe.html).toContain('Jak ciężko było? (RPE)')
+    expect(withRpe.html.match(/email-send\?rpe=t/g)?.length).toBe(10)
+    expect(withRpe.text).toContain('7: https://f.test/email-send?rpe=t7')
+    v.rpe.current = 7
+    expect(workoutEmail(v).html).toContain('Twoja ocena: RPE 7')
   })
 
   it('reguła 80 %: mail od razu tylko dla jazdy wypełniającej plan; krótszy dojazd nie jest oceniany jako niewykonany trening', () => {

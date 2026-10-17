@@ -12,11 +12,23 @@ import { timingSafeEqual } from '../_shared/crypto.ts'
 import { adminClient, userFromRequest } from '../_shared/supabase.ts'
 import { morningEmail, workoutEmail } from '../_shared/email_templates.ts'
 import { buildWorkoutView, type DaySnapshot, type RideLite } from '../_shared/email_views.ts'
-import { EVENING_HOUR, resend, runEvening, runMorning, unsubscribe, warsawNow } from '../_shared/email_send.ts'
+import { applyLegs, applyRpe, EVENING_HOUR, resend, runEvening, runMorning, unsubscribe, warsawNow } from '../_shared/email_send.ts'
 
 /** Odpowiedź na kliknięcie „wyłącz te maile”. Zwykły tekst – domena functions Supabase podaje HTML jako text/plain. */
 function page(text: string): Response {
   return new Response(`Trening\n\n${text}\n\nUstawienia maili: ${APP_URL}/wiecej/ustawienia\n`, { headers: { 'content-type': 'text/plain; charset=utf-8' } })
+}
+
+const escapeHtml = (t: string) => t.replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' })[c] ?? c)
+
+/** Mała strona po kliknięciu w link z maila (otwiera się w przeglądarce telefonu). */
+function htmlPage(title: string, text: string, link: string): Response {
+  const html = `<!DOCTYPE html><html lang="pl"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Trening</title>
+<style>body{margin:0;font-family:-apple-system,system-ui,sans-serif;background:#f1f5f9;color:#0f172a;display:grid;place-items:center;min-height:100vh;padding:24px;box-sizing:border-box}
+main{background:#fff;border-radius:16px;padding:28px 24px;max-width:360px;text-align:center;box-shadow:0 1px 3px rgba(15,23,42,.08)}h1{font-size:22px;margin:0 0 8px}p{margin:0 0 20px;color:#475569;line-height:1.5}
+a{display:inline-block;background:#0284c7;color:#fff;text-decoration:none;padding:12px 22px;border-radius:12px;font-weight:600}</style></head>
+<body><main><h1>${escapeHtml(title)}</h1><p>${escapeHtml(text)}</p><a href="${escapeHtml(link)}">Otwórz aplikację</a></main></body></html>`
+  return new Response(html, { headers: { 'content-type': 'text/html; charset=utf-8' } })
 }
 
 Deno.serve(async (req) => {
@@ -26,6 +38,20 @@ Deno.serve(async (req) => {
   if (unsub) {
     const kind = await unsubscribe(adminClient(), unsub)
     return page(kind ? `Wyłączone: ${kind === 'morning' ? 'poranna odprawa' : 'podsumowanie po treningu'}. Włączysz z powrotem w Ustawieniach.` : 'Link jest nieprawidłowy albo wygasł.')
+  }
+  const rpeToken = url.searchParams.get('rpe')
+  if (rpeToken) {
+    const r = await applyRpe(adminClient(), rpeToken)
+    if (!r) return htmlPage('Link nieprawidłowy', 'Ten link jest uszkodzony albo pochodzi z innego konta.', APP_URL)
+    if (!r.ok) return htmlPage('Nie zapisano', `RPE ${r.rpe} dla ${r.date}: ${r.reason}.`, `${APP_URL}/dzien/${r.date}`)
+    return htmlPage(`Zapisano RPE ${r.rpe}`, `Ocena jazdy z ${r.date} trafiła do dziennika. Możesz kliknąć inną liczbę, żeby ją poprawić.`, `${APP_URL}/dzien/${r.date}`)
+  }
+  const legsToken = url.searchParams.get('legs')
+  if (legsToken) {
+    const r = await applyLegs(adminClient(), legsToken)
+    if (!r) return htmlPage('Link nieprawidłowy', 'Ten link jest uszkodzony albo pochodzi z innego konta.', APP_URL)
+    if (!r.ok) return htmlPage('Nie zapisano', `Nogi ${r.legs}/5 dla ${r.date}: ${r.reason}.`, `${APP_URL}/i`)
+    return htmlPage(`Zapisano: nogi ${r.legs}/5`, `Check-in z ${r.date} ma ocenę nóg. Wagę, tętno spoczynkowe i sen dopisz w aplikacji.`, `${APP_URL}/i`)
   }
   if (req.method !== 'POST') return json({ error: 'method' }, 405)
   const body = (await req.json().catch(() => ({}))) as { action?: string; secret?: string; kind?: 'morning' | 'workout'; activity_id?: number | string; subject_prefix?: string }

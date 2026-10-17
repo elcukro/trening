@@ -36,3 +36,13 @@ SPF/DKIM/DMARC dla felsztukier.pl przechodzą (sprawdzone w „Pokaż oryginał�
 bez historii i linki do `*.vercel.app`. Stąd własna domena aplikacji `trening.felsztukier.pl` (CNAME → Vercel) i „To nie spam”
 + kontakt po stronie odbiorcy. Logowanie kodem działa na każdej domenie; przekierowań auth dla nowej domeny nie dodano
 (push konfiguracji auth ryzykowałby ustawienia SMTP hostowane w panelu).
+
+## RPE i „nogi” z maila (17.10.2026)
+Mail po treningu (także „Dzień w liczbach”) ma kartę „Jak ciężko było? (RPE)” z dziesięcioma linkami, a poranna odprawa
+kartę „Jak nogi dziś?” z pięcioma. Każdy link to podpisany token HMAC (`sign` z `crypto.ts`, jak przy „wyłącz te maile”):
+`rpe:<user_id>:<data>:<1–10>` albo `legs:<user_id>:<data>:<1–5>`; kliknięcie trafia na `GET email-send?rpe=…` / `?legs=…`
+(`applyRpe`, `applyLegs` w `email_send.ts`), funkcja zapisuje wartość (`session_logs.rpe` istniejącej jazdy dnia; `checkins.legs`,
+tworząc check-in, gdy go nie ma) z `updated_at = now()`, więc aplikacja pobiera zmianę przy następnej synchronizacji.
+Odpowiedź to mała strona HTML z potwierdzeniem i przyciskiem do aplikacji. Limity: RPE do 45 dni wstecz, nogi do 7 dni;
+brak jazdy tego dnia = „nie zapisano”. Ponowne kliknięcie nadpisuje wartość. Zapisana ocena jest w mailu wypełniona kolorem,
+gdy mail idzie po wpisie (np. „Dzień w liczbach” po RPE z pierwszego maila).

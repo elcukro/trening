@@ -37,6 +37,54 @@ export async function unsubscribeUrl(userId: string, kind: EmailKind): Promise<s
   return `${env('SUPABASE_URL')}/functions/v1/email-send?unsub=${encodeURIComponent(token)}`
 }
 
+/** Linki RPE 1–10 do maila po treningu – podpisane, bez logowania; kliknięcie zapisuje ocenę w `session_logs` (docs/19 § RPE z maila). */
+export async function rpeLinks(userId: string, date: string): Promise<{ value: number; href: string }[]> {
+  const base = `${env('SUPABASE_URL')}/functions/v1/email-send?rpe=`
+  const out: { value: number; href: string }[] = []
+  for (let v = 1; v <= 10; v++) out.push({ value: v, href: base + encodeURIComponent(await sign(`rpe:${userId}:${date}:${v}`)) })
+  return out
+}
+
+/** Linki „nogi 1–5” do porannej odprawy – zapis do check-inu dnia. */
+export async function legsLinks(userId: string, date: string): Promise<{ value: number; href: string }[]> {
+  const base = `${env('SUPABASE_URL')}/functions/v1/email-send?legs=`
+  const out: { value: number; href: string }[] = []
+  for (let v = 1; v <= 5; v++) out.push({ value: v, href: base + encodeURIComponent(await sign(`legs:${userId}:${date}:${v}`)) })
+  return out
+}
+
+/** Zapis „nogi” z linku: check-in dnia powstaje, jeśli go nie ma (reszta pól zostaje pusta do uzupełnienia w aplikacji). */
+export async function applyLegs(admin: SupabaseClient, token: string): Promise<{ date: string; legs: number; ok: boolean; reason?: string } | null> {
+  const payload = await verify(token).catch(() => null)
+  const m = payload?.match(/^legs:([0-9a-f-]{36}):(\d{4}-\d{2}-\d{2}):([1-5])$/)
+  if (!m) return null
+  const [, userId, date, v] = m
+  const legs = Number(v)
+  const ageDays = (Date.now() - new Date(`${date}T00:00:00Z`).getTime()) / 86_400_000
+  if (ageDays > 7 || ageDays < -1) return { date: date!, legs, ok: false, reason: 'za stary link' }
+  const { data: row } = await admin.from('checkins').select('id').eq('user_id', userId).eq('date', date).is('deleted_at', null).order('updated_at', { ascending: false }).limit(1).maybeSingle()
+  const now = new Date().toISOString()
+  const { error } = row ? await admin.from('checkins').update({ legs, updated_at: now }).eq('id', row.id) : await admin.from('checkins').insert({ user_id: userId, date, legs, updated_at: now })
+  if (error) return { date: date!, legs, ok: false, reason: error.message }
+  return { date: date!, legs, ok: true }
+}
+
+/** Zapis RPE z linku: tylko dla istniejącej jazdy dnia (log z importu) i tylko do 45 dni wstecz. */
+export async function applyRpe(admin: SupabaseClient, token: string): Promise<{ date: string; rpe: number; ok: boolean; reason?: string } | null> {
+  const payload = await verify(token).catch(() => null)
+  const m = payload?.match(/^rpe:([0-9a-f-]{36}):(\d{4}-\d{2}-\d{2}):(10|[1-9])$/)
+  if (!m) return null
+  const [, userId, date, rpeStr] = m
+  const rpe = Number(rpeStr)
+  const ageDays = (Date.now() - new Date(`${date}T00:00:00Z`).getTime()) / 86_400_000
+  if (ageDays > 45 || ageDays < -1) return { date: date!, rpe, ok: false, reason: 'za stary link' }
+  const { data: log } = await admin.from('session_logs').select('id').eq('user_id', userId).eq('date', date).eq('kind', 'bike').is('deleted_at', null).order('updated_at', { ascending: false }).limit(1).maybeSingle()
+  if (!log) return { date: date!, rpe, ok: false, reason: 'brak jazdy tego dnia' }
+  const { error } = await admin.from('session_logs').update({ rpe, updated_at: new Date().toISOString() }).eq('id', log.id)
+  if (error) return { date: date!, rpe, ok: false, reason: error.message }
+  return { date: date!, rpe, ok: true }
+}
+
 export async function unsubscribe(admin: SupabaseClient, token: string): Promise<EmailKind | null> {
   // uszkodzony token (np. obcięty w kliencie poczty) = nieprawidłowy link, nie błąd serwera
   const payload = await verify(token).catch(() => null)
@@ -95,6 +143,8 @@ export async function sendMorning(admin: SupabaseClient, userId: string, date: s
   const to = await emailOf(admin, userId)
   if (!to) return 'brak adresu'
   const unsub = await unsubscribeUrl(userId, 'morning')
+  const { data: ci } = await admin.from('checkins').select('legs').eq('user_id', userId).eq('date', date).is('deleted_at', null).order('updated_at', { ascending: false }).limit(1).maybeSingle()
+  view.legs = { links: await legsLinks(userId, date), current: (ci?.legs as number | null) ?? null }
   const r = await resend(to, morningEmail(view, { unsubscribeUrl: unsub }), unsub)
   await finish(admin, userId, 'morning', date, r)
   return r.error ?? 'wysłane'
@@ -127,6 +177,11 @@ async function weekDoneMin(admin: SupabaseClient, userId: string, date: string):
   return (week ?? []).reduce((s, r) => s + Number(r.moving_time_s) / 60, 0)
 }
 
+async function currentRpe(admin: SupabaseClient, userId: string, date: string): Promise<number | null> {
+  const { data } = await admin.from('session_logs').select('rpe').eq('user_id', userId).eq('date', date).eq('kind', 'bike').is('deleted_at', null).order('updated_at', { ascending: false }).limit(1).maybeSingle()
+  return (data?.rpe as number | null) ?? null
+}
+
 async function sendWorkoutMail(admin: SupabaseClient, userId: string, kindRef: string, name: string, a: Row, snap: DaySnapshot | null, extras: Row[]): Promise<string> {
   const view = buildWorkoutView(rideLite(a), snap, {
     athlete: name,
@@ -136,6 +191,7 @@ async function sendWorkoutMail(admin: SupabaseClient, userId: string, kindRef: s
     note: (a.note as string | null) ?? null,
     extras: extras.map(rideLite),
   })
+  view.rpe = { links: await rpeLinks(userId, a.date as string), current: await currentRpe(admin, userId, a.date as string) }
   const to = await emailOf(admin, userId)
   if (!to) return 'brak adresu'
   const unsub = await unsubscribeUrl(userId, 'workout')

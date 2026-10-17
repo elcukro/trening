@@ -51,6 +51,8 @@ export interface MorningView {
   nutrition: { label: string; carbs?: string | null; protein?: string | null; after?: string | null }
   /** krótkie przypomnienia dnia (reguły, test, pogoda) */
   notes?: string[]
+  /** „Jak nogi dziś?” – pięć podpisanych linków do check-inu (docs/19 § RPE z maila); `current` = już wpisana ocena */
+  legs?: { links: { value: number; href: string }[]; current: number | null } | null
 }
 
 export interface ZoneShare {
@@ -77,6 +79,8 @@ export interface WorkoutView {
   note?: string | null
   /** wieczorne „Dzień w liczbach”: wszystkie jazdy dnia (pierwsza = ta, którą opisuje reszta maila) */
   day?: { rides: { name: string; minutes: number; km: number; watts: number | null; hr: number | null; tss: number | null }[]; total_min: number; total_tss: number | null } | null
+  /** ocena RPE jednym kliknięciem: podpisane linki 1–10 (docs/19 § RPE z maila); `current` = już zapisana ocena */
+  rpe?: { links: { value: number; href: string }[]; current: number | null } | null
 }
 
 // ---------------------------------------------------------------- styl
@@ -143,6 +147,18 @@ function eyebrow(text: string, color = C.soft): string {
 
 function button(label: string, href: string): string {
   return `<table role="presentation" cellpadding="0" cellspacing="0" style="margin-top:20px;"><tr><td bgcolor="${C.accent}" style="background-color:${C.accent};border-radius:12px;"><a href="${esc(href)}" style="display:inline-block;padding:13px 22px;font-size:15px;font-weight:600;color:#ffffff;text-decoration:none;background-color:${C.accent};border:1px solid ${C.accent};border-radius:12px;">${esc(label)}</a></td></tr></table>`
+}
+
+/** Dziesięć przycisków RPE w tabeli (klient poczty nie zna flexa); zapisana ocena jest wypełniona kolorem. */
+function rpeRow(r: NonNullable<WorkoutView['rpe']>, legend = '1–3 lekko · 4–6 średnio · 7–8 ciężko · 9–10 na granicy. Jedno kliknięcie zapisuje ocenę w dzienniku.'): string {
+  const cells = r.links
+    .map((l) => {
+      const on = r.current === l.value
+      return `<td align="center" style="padding:2px;"><a href="${esc(l.href)}" style="display:block;min-width:24px;padding:9px 0;font-size:14px;font-weight:600;text-align:center;text-decoration:none;border-radius:8px;border:1px solid ${on ? C.accent : C.line};color:${on ? '#ffffff' : C.ink};background-color:${on ? C.accent : C.card};">${l.value}</a></td>`
+    })
+    .join('')
+  return `<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="margin-top:10px;table-layout:fixed;"><tr>${cells}</tr></table>
+<div style="margin-top:8px;font-size:12px;line-height:18px;color:${C.mute};">${esc(legend)}</div>`
 }
 
 /** Pasek osi czasu: segmenty szerokości proporcjonalnej do czasu, w kolorach stref. */
@@ -222,6 +238,8 @@ ${v.nutrition.after ? `<tr><td style="padding-right:12px;color:${C.mute};">po tr
 </table>`,
   )
 
+  const legs = v.legs && v.legs.links.length ? card(`${eyebrow(v.legs.current != null ? `Nogi dziś: ${v.legs.current}/5` : 'Jak nogi dziś?')}${rpeRow(v.legs, '1 ciężkie · 3 zwyczajne · 5 lekkie. Jedno kliknięcie zapisuje w porannym check-inie; wagę i tętno dopisz w aplikacji.')}`) : ''
+
   const notes = v.notes?.length
     ? card(`${eyebrow('Pamiętaj', C.warn)}<ul style="margin:8px 0 0;padding-left:18px;font-size:14px;line-height:22px;">${v.notes.map((n) => `<li>${esc(n)}</li>`).join('')}</ul>`, '18px 24px')
     : ''
@@ -234,11 +252,12 @@ ${v.nutrition.after ? `<tr><td style="padding-right:12px;color:${C.mute};">po tr
     ...(v.gym ? [`Siłownia: ${v.gym.name}`, ...v.gym.items.map((i) => `- ${i}`), ''] : []),
     `Jedzenie: ${v.nutrition.label}`,
     ...(v.notes ?? []).map((n) => `! ${n}`),
+    ...(v.legs && v.legs.links.length ? ['', v.legs.current != null ? `Nogi dziś: ${v.legs.current}/5` : 'Jak nogi dziś? Kliknij 1–5:', ...v.legs.links.map((l) => `${l.value}: ${l.href}`)] : []),
     '',
     v.appUrl,
   ].join('\n')
 
-  return { subject, preheader, text, html: shell(preheader, head + notes + steps + gym + food, v.appUrl, opts.unsubscribeUrl) }
+  return { subject, preheader, text, html: shell(preheader, head + notes + legs + steps + gym + food, v.appUrl, opts.unsubscribeUrl) }
 }
 
 // ---------------------------------------------------------------- po treningu
@@ -305,6 +324,8 @@ ${v.zones
       )
     : ''
 
+  const rpe = v.rpe && v.rpe.links.length ? card(`${eyebrow(v.rpe.current != null ? `Twoja ocena: RPE ${v.rpe.current}` : 'Jak ciężko było? (RPE)')}${rpeRow(v.rpe)}`) : ''
+
   const insights = v.insights.length
     ? card(`${eyebrow('Co widać w danych')}<ul style="margin:8px 0 0;padding-left:18px;font-size:14px;line-height:22px;color:${C.ink};">${v.insights.map((n) => `<li style="margin-bottom:4px;">${esc(n)}</li>`).join('')}</ul>`)
     : ''
@@ -332,11 +353,12 @@ ${button('Zobacz w aplikacji', v.appUrl)}`,
     ...v.zones.filter((z) => z.pct >= 1).map((z) => `${z.label}: ${Math.round(z.pct)} %`),
     '',
     ...v.insights.map((i) => `- ${i}`),
+    ...(v.rpe && v.rpe.links.length ? ['', v.rpe.current != null ? `Twoja ocena: RPE ${v.rpe.current}` : 'Jak ciężko było? Kliknij RPE:', ...v.rpe.links.map((l) => `${l.value}: ${l.href}`)] : []),
     ...(v.week ? ['', `${v.week.label}: ${v.week.done} z ${v.week.planned}`] : []),
     ...(v.next ? [`Następny: ${v.next.name} (${v.next.dateLabel}, ${hm(v.next.minutes)})`] : []),
     '',
     v.appUrl,
   ].join('\n')
 
-  return { subject, preheader, text, html: shell(preheader, head + day + note + zones + insights + week, v.appUrl, opts.unsubscribeUrl) }
+  return { subject, preheader, text, html: shell(preheader, head + day + note + rpe + zones + insights + week, v.appUrl, opts.unsubscribeUrl) }
 }
