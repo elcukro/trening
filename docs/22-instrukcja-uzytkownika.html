@@ -32,6 +32,7 @@ li{margin:4px 0}
 .steps{counter-reset:s;list-style:none;padding:0;display:grid;gap:10px}
 .steps li{counter-increment:s;display:grid;grid-template-columns:34px minmax(0,1fr);gap:12px;align-items:start;background:var(--card);border:1px solid var(--line);border-radius:10px;padding:12px 14px}
 .steps li::before{content:counter(s);font-family:var(--mono);font-weight:500;color:var(--accent-ink);background:var(--accent);width:28px;height:28px;border-radius:8px;display:grid;place-items:center}
+.steps li>div{min-width:0}
 .steps b{display:block;margin-bottom:2px}
 table{border-collapse:collapse;width:100%;font-size:15px;margin:8px 0 14px}
 .tbl{overflow-x:auto}
@@ -68,20 +69,20 @@ a{color:var(--accent)}
 
 <h2 id="start">Pierwsze uruchomienie</h2>
 <ol class="steps">
-  <li><b>Otwórz adres aplikacji w Safari</b>Adres dostaniesz od osoby, która założyła Ci konto. Na telefonie otwiera się uproszczony widok z czterema zakładkami: Dziś, Tydzień, Postęp, Więcej.</li>
-  <li><b>Dodaj do ekranu początkowego</b>Safari → przycisk Udostępnij → „Do ekranu początkowego”. Aplikacja działa wtedy jak natywna, na pełnym ekranie i bez sieci.</li>
-  <li><b>Zaloguj się kodem z maila</b>Wpisz adres e-mail, na który założono konto. Przyjdzie mail z 8-cyfrowym kodem, wpisz go w aplikacji. Nie ma hasła. Sesja trwa długo, ale gdy wygaśnie, aplikacja pokaże żółty pasek na ekranie Dziś z prośbą o ponowne zalogowanie.</li>
-  <li><b>Uzupełnij profil</b>Więcej → Ustawienia: imię, waga teraz i docelowa, FTP i tętno progowe, czy masz miernik mocy. Od tych liczb zależą strefy w każdym treningu.</li>
-  <li><b>Połącz Stravę i Bolta</b>Opisane niżej w sekcjach Strava i Wahoo. Bez nich aplikacja działa, ale jazdy trzeba wpisywać ręcznie.</li>
+  <li><div><b>Otwórz adres aplikacji w Safari</b>Adres dostaniesz od osoby, która założyła Ci konto. Na telefonie otwiera się uproszczony widok z czterema zakładkami: Dziś, Tydzień, Postęp, Więcej.</div></li>
+  <li><div><b>Dodaj do ekranu początkowego</b>Safari → przycisk Udostępnij → „Do ekranu początkowego”. Aplikacja działa wtedy jak natywna, na pełnym ekranie i bez sieci.</div></li>
+  <li><div><b>Zaloguj się kodem z maila</b>Wpisz adres e-mail, na który założono konto. Przyjdzie mail z 8-cyfrowym kodem, wpisz go w aplikacji. Nie ma hasła. Sesja trwa długo, ale gdy wygaśnie, aplikacja pokaże żółty pasek na ekranie Dziś z prośbą o ponowne zalogowanie.</div></li>
+  <li><div><b>Uzupełnij profil</b>Więcej → Ustawienia: imię, waga teraz i docelowa, FTP i tętno progowe, czy masz miernik mocy. Od tych liczb zależą strefy w każdym treningu.</div></li>
+  <li><div><b>Połącz Stravę i Bolta</b>Opisane niżej w sekcjach Strava i Wahoo. Bez nich aplikacja działa, ale jazdy trzeba wpisywać ręcznie.</div></li>
 </ol>
 
 <h2 id="dzien">Dzień po dniu</h2>
 <p>Ekran Dziś prowadzi przez cztery kroki. Zawsze jeden z nich jest wyróżniony jako następny do zrobienia.</p>
 <ol class="steps">
-  <li><b>Poranny check-in</b>Waga, tętno spoczynkowe (zmierz, zanim wstaniesz), sen, nogi i motywacja w skali 1–5, pole „choroba”. Zajmuje 20 sekund. Z tych liczb aplikacja liczy deficyt kaloryczny dnia, trend masy i ostrzega, gdy forma spada. Bez check-inu trener widzi tylko dane z jazd.</li>
-  <li><b>Plan na Bolcie</b>Potwierdzenie, że trening dnia jest na liczniku. Zwykle dzieje się to samo rano (patrz sekcja Wahoo), a tu widać stan: wysłany, czeka, błąd.</li>
-  <li><b>Trening</b>Karta z nazwą, czasem, krokami i strefami (waty i tętno). Pod nią odprawa: pogoda na godzinę jazdy, ubiór, ile jeść w trakcie. Gdy jest zimno lub leje, aplikacja proponuje wersję „pod dachem”.</li>
-  <li><b>Podsumowanie</b>Po imporcie jazdy ze Stravy: plan a wykonanie, czas w strefach, moc i tętno, notatka trenera. Tu też oceniasz jazdę w skali RPE 1–10 i dopisujesz uwagi. RPE jest ważne w dni bez miernika mocy, bo wtedy z niego liczy się obciążenie.</li>
+  <li><div><b>Poranny check-in</b>Waga, tętno spoczynkowe (zmierz, zanim wstaniesz), sen, nogi i motywacja w skali 1–5, pole „choroba”. Zajmuje 20 sekund. Z tych liczb aplikacja liczy deficyt kaloryczny dnia, trend masy i ostrzega, gdy forma spada. Bez check-inu trener widzi tylko dane z jazd.</div></li>
+  <li><div><b>Plan na Bolcie</b>Potwierdzenie, że trening dnia jest na liczniku. Zwykle dzieje się to samo rano (patrz sekcja Wahoo), a tu widać stan: wysłany, czeka, błąd.</div></li>
+  <li><div><b>Trening</b>Karta z nazwą, czasem, krokami i strefami (waty i tętno). Pod nią odprawa: pogoda na godzinę jazdy, ubiór, ile jeść w trakcie. Gdy jest zimno lub leje, aplikacja proponuje wersję „pod dachem”.</div></li>
+  <li><div><b>Podsumowanie</b>Po imporcie jazdy ze Stravy: plan a wykonanie, czas w strefach, moc i tętno, notatka trenera. Tu też oceniasz jazdę w skali RPE 1–10 i dopisujesz uwagi. RPE jest ważne w dni bez miernika mocy, bo wtedy z niego liczy się obciążenie.</div></li>
 </ol>
 <div class="note"><p><b>Dzień bez jazdy</b> pokazuje tylko check-in i żywienie na dzień wolny. Jeśli jednak pojedziesz, jazda i tak wejdzie ze Stravy jako „poza planem”.</p></div>
 
@@ -91,19 +92,19 @@ a{color:var(--accent)}
 <p>Gdy życie nie pasuje do planu, zamień dwa dni miejscami: przytrzymaj kartę dnia i przeciągnij na inną, albo dotknij „Zamień”, potem „Tu” na dniu docelowym. Aplikacja pilnuje zasad: nie dopuści dwóch mocnych dni pod rząd ani sesji nóg tuż przed ciężką jazdą, a gdy zamiana jest ryzykowna, powie dlaczego. Po zamianie pojawia się komunikat z przyciskiem „Cofnij”.</p>
 <h3>Inne zmiany</h3>
 <ul>
-  <li><b>Pod dachem</b>: ten sam trening w wersji na trenażer (krótszy, bez rozgrzewki na drodze).</li>
-  <li><b>Odpuszczone</b>: oznaczasz dzień jako pominięty. Nie przyjdzie poranna odprawa, a raport tygodnia nie liczy go jako zaległości.</li>
-  <li><b>Choroba</b>: pole w check-inie. Aplikacja zdejmuje intensywność na kilka dni i podpowiada, jak wracać.</li>
-  <li><b>Inaczej</b>: jazda była, ale inna niż plan. Zostaje w historii z adnotacją.</li>
+  <li><div><b>Pod dachem</b>: ten sam trening w wersji na trenażer (krótszy, bez rozgrzewki na drodze).</div></li>
+  <li><div><b>Odpuszczone</b>: oznaczasz dzień jako pominięty. Nie przyjdzie poranna odprawa, a raport tygodnia nie liczy go jako zaległości.</div></li>
+  <li><div><b>Choroba</b>: pole w check-inie. Aplikacja zdejmuje intensywność na kilka dni i podpowiada, jak wracać.</div></li>
+  <li><div><b>Inaczej</b>: jazda była, ale inna niż plan. Zostaje w historii z adnotacją.</div></li>
 </ul>
 <p>Każda zmiana zapisuje się w chmurze i wraca na wszystkie urządzenia. Po zamianie dni wyślij plan na Bolta ponownie, jeśli automat już dziś poszedł.</p>
 
 <h2 id="trening">Trening i strefy</h2>
 <p>Każdy trening składa się z kroków: rozgrzewka, część główna (np. 2 × 15 min sweet spot), przerwy, schłodzenie. Przy każdym kroku widzisz zakres mocy (gdy masz miernik), zakres tętna i zalecaną kadencję. Strefy liczą się z Twojego FTP i tętna progowego z Ustawień.</p>
 <ul>
-  <li><b>Biblioteka</b> (w pełnej aplikacji) opisuje każdy trening: po co jest, jak go jechać, typowe błędy. Tam też tabela stref z watami i bpm.</li>
-  <li><b>Test FTP</b> co kilka tygodni zastępuje mocny trening. Protokół: rozgrzewka, 20 min na maksa równym tempem, FTP = 95 % średniej mocy. Wynik wpisujesz w podsumowaniu dnia testu, a aplikacja przelicza strefy.</li>
-  <li><b>Propozycje FTP</b> <span class="tag">program FTP 300</span>: gdy jazda pokazuje moc wyraźnie wyższą niż obecne FTP, na ekranie Dziś pojawia się karta z propozycją nowej wartości. Możesz przyjąć albo odrzucić.</li>
+  <li><div><b>Biblioteka</b> (w pełnej aplikacji) opisuje każdy trening: po co jest, jak go jechać, typowe błędy. Tam też tabela stref z watami i bpm.</div></li>
+  <li><div><b>Test FTP</b> co kilka tygodni zastępuje mocny trening. Protokół: rozgrzewka, 20 min na maksa równym tempem, FTP = 95 % średniej mocy. Wynik wpisujesz w podsumowaniu dnia testu, a aplikacja przelicza strefy.</div></li>
+  <li><div><b>Propozycje FTP</b> <span class="tag">program FTP 300</span>: gdy jazda pokazuje moc wyraźnie wyższą niż obecne FTP, na ekranie Dziś pojawia się karta z propozycją nowej wartości. Możesz przyjąć albo odrzucić.</div></li>
 </ul>
 
 <h2 id="strava">Strava</h2>
@@ -117,8 +118,8 @@ a{color:var(--accent)}
 <h2 id="bolt">Wahoo ELEMNT Bolt</h2>
 <p>Połączenie jak ze Stravą: Integracje → „Połącz z Wahoo”. Potem:</p>
 <ul>
-  <li><b>Automat</b> raz dziennie wysyła plan na dziś i 6 kolejnych dni. Na Bolcie treningi są w zakładce Planned Workouts, pod datą.</li>
-  <li><b>„Wyślij na Wahoo”</b> na ekranie Dziś wysyła od ręki, np. po zamianie dni.</li>
+  <li><div><b>Automat</b> raz dziennie wysyła plan na dziś i 6 kolejnych dni. Na Bolcie treningi są w zakładce Planned Workouts, pod datą.</div></li>
+  <li><div><b>„Wyślij na Wahoo”</b> na ekranie Dziś wysyła od ręki, np. po zamianie dni.</div></li>
   <li>Bolt nie obsługuje celów tętna w planach, dlatego zakres bpm jest w nazwie każdego interwału, a cel mocy (gdy masz miernik) jako zwykły zakres watów.</li>
   <li>Wykonane treningi z Bolta też wracają do aplikacji, ale gdy ta sama jazda jest na Stravie, Strava ma pierwszeństwo.</li>
 </ul>
@@ -137,11 +138,11 @@ a{color:var(--accent)}
 <h2 id="postep">Postęp</h2>
 <p>Zakładka Postęp na telefonie pokazuje najważniejsze liczby: wagę i trend, FTP i jego historię, formę. Pełna aplikacja na komputerze ma więcej:</p>
 <ul>
-  <li><b>Forma (PMC)</b>: CTL to kondycja budowana tygodniami, ATL zmęczenie z ostatnich dni, TSB świeżość. Przed testem TSB powinno być dodatnie.</li>
-  <li><b>Pw:HR</b> (moc do tętna) na spokojnych jazdach to wskaźnik postępu numer jeden: więcej watów przy tym samym tętnie znaczy, że baza rośnie.</li>
-  <li><b>Krzywa mocy</b> i rekordy 5 s – 20 min, W/kg.</li>
-  <li><b>Kadencja</b>: histogram z jazd i ostrzeżenie, gdy przez dwa tygodnie spada poniżej progu.</li>
-  <li><b>Raport tygodnia i miesiąca</b>: lista dni z wynikiem (zrobione, inaczej, pominięte, poza planem), godziny i TSS.</li>
+  <li><div><b>Forma (PMC)</b>: CTL to kondycja budowana tygodniami, ATL zmęczenie z ostatnich dni, TSB świeżość. Przed testem TSB powinno być dodatnie.</div></li>
+  <li><div><b>Pw:HR</b> (moc do tętna) na spokojnych jazdach to wskaźnik postępu numer jeden: więcej watów przy tym samym tętnie znaczy, że baza rośnie.</div></li>
+  <li><div><b>Krzywa mocy</b> i rekordy 5 s – 20 min, W/kg.</div></li>
+  <li><div><b>Kadencja</b>: histogram z jazd i ostrzeżenie, gdy przez dwa tygodnie spada poniżej progu.</div></li>
+  <li><div><b>Raport tygodnia i miesiąca</b>: lista dni z wynikiem (zrobione, inaczej, pominięte, poza planem), godziny i TSS.</div></li>
 </ul>
 
 <h2 id="zywienie">Żywienie</h2>
@@ -170,20 +171,20 @@ a{color:var(--accent)}
 <h2 id="komputer">Pełna aplikacja na komputerze</h2>
 <p>Ten sam adres na komputerze otwiera pełny widok z boczną nawigacją. Na telefonie przełączysz się do niego przez Więcej → „Otwórz pełną aplikację”. Dodatkowe ekrany:</p>
 <ul>
-  <li><b>Kalendarz</b>: miesiąc z jazdami, statusami i znacznikami (test, rozładowanie, weekend w górach). Przytrzymanie kafelka podnosi trening, przeciągnięcie na wolny dzień go przenosi.</li>
-  <li><b>Sezon</b>: tabela wszystkich tygodni programu z fazami i objętością.</li>
-  <li><b>Biblioteka</b>: wszystkie treningi, ćwiczenia siłowe ze zdjęciami, strefy, zasady programu.</li>
-  <li><b>Sprzęt</b>: rowery, serwis cykliczny (łańcuch, klocki, przegląd) z terminami.</li>
-  <li><b>Wyjazd</b> <span class="tag">program alpejski</span>: lista pakowania i zadania przed wyjazdem.</li>
+  <li><div><b>Kalendarz</b>: miesiąc z jazdami, statusami i znacznikami (test, rozładowanie, weekend w górach). Przytrzymanie kafelka podnosi trening, przeciągnięcie na wolny dzień go przenosi.</div></li>
+  <li><div><b>Sezon</b>: tabela wszystkich tygodni programu z fazami i objętością.</div></li>
+  <li><div><b>Biblioteka</b>: wszystkie treningi, ćwiczenia siłowe ze zdjęciami, strefy, zasady programu.</div></li>
+  <li><div><b>Sprzęt</b>: rowery, serwis cykliczny (łańcuch, klocki, przegląd) z terminami.</div></li>
+  <li><div><b>Wyjazd</b> <span class="tag">program alpejski</span>: lista pakowania i zadania przed wyjazdem.</div></li>
 </ul>
 
 <h2 id="problemy">Gdy coś nie działa</h2>
 <ul>
-  <li><b>Żółty pasek „sesja wygasła”</b>: Więcej → Wyloguj, zaloguj kodem ponownie. Dane lokalne zostają.</li>
-  <li><b>Jazda nie pojawia się ze Stravy</b>: odczekaj 10 minut; potem Integracje → „Sprawdź webhook” i „Pobierz ostatnie 30 dni”.</li>
-  <li><b>Treningu nie ma na Bolcie</b>: Dziś → „Wyślij na Wahoo”; na Bolcie odśwież listę Planned Workouts (synchronizacja z aplikacją ELEMNT w telefonie).</li>
-  <li><b>Brak powiadomień na iPhonie</b>: aplikacja musi być na ekranie początkowym, a zgoda udzielona w Ustawieniach → Powiadomienia.</li>
-  <li><b>Liczby w strefach wyglądają źle</b>: sprawdź FTP i tętno progowe w Profilu; po teście wpisz nowe wartości.</li>
+  <li><div><b>Żółty pasek „sesja wygasła”</b>: Więcej → Wyloguj, zaloguj kodem ponownie. Dane lokalne zostają.</div></li>
+  <li><div><b>Jazda nie pojawia się ze Stravy</b>: odczekaj 10 minut; potem Integracje → „Sprawdź webhook” i „Pobierz ostatnie 30 dni”.</div></li>
+  <li><div><b>Treningu nie ma na Bolcie</b>: Dziś → „Wyślij na Wahoo”; na Bolcie odśwież listę Planned Workouts (synchronizacja z aplikacją ELEMNT w telefonie).</div></li>
+  <li><div><b>Brak powiadomień na iPhonie</b>: aplikacja musi być na ekranie początkowym, a zgoda udzielona w Ustawieniach → Powiadomienia.</div></li>
+  <li><div><b>Liczby w strefach wyglądają źle</b>: sprawdź FTP i tętno progowe w Profilu; po teście wpisz nowe wartości.</div></li>
   <li>Aplikacja działa bez sieci: plan, tydzień, biblioteka i tryb siłowni są dostępne offline, wpisy wysyłają się, gdy wróci zasięg.</li>
 </ul>
 </main>
