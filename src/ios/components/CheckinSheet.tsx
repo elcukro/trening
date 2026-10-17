@@ -2,7 +2,8 @@ import { useState } from 'react'
 import type { Checkin } from '@/db'
 import { fmtDayMonth } from '@/lib/dates'
 import { num } from '@/lib/format'
-import { List, Row, Section, Sheet } from './Chrome'
+import { canParseCheckin, parseCheckinText } from '@/sync/checkinParse'
+import { Btn, List, Row, Section, Sheet } from './Chrome'
 
 const SCALES = [
   { key: 'sleep', label: 'Sen', low: 'fatalny', high: 'świetny' },
@@ -55,6 +56,33 @@ export function CheckinSheet({ checkin, weighDue, lastWeight, onClose, onSave }:
     motivation: checkin?.motivation ?? null,
   })
   const [busy, setBusy] = useState(false)
+  // check-in jednym zdaniem: tekst (także dyktowany) → pola do przejrzenia; uwagi i choroba idą z zapisem, gdy model je wyłowił
+  const [sentence, setSentence] = useState('')
+  const [parsing, setParsing] = useState(false)
+  const [parsed, setParsed] = useState<{ sick: boolean | null; notes: string | null } | null>(null)
+  const [parseMsg, setParseMsg] = useState<string | null>(null)
+
+  async function recognise() {
+    setParsing(true)
+    setParseMsg(null)
+    try {
+      const { fields, empty } = await parseCheckinText(sentence, { last_weight_kg: lastWeight?.kg ?? null, last_resting_hr: checkin?.resting_hr ?? null })
+      if (empty) {
+        setParseMsg('Nie rozpoznałem żadnej wartości – wpisz np. „104,8, tętno 52, spałem słabo, nogi 3”.')
+        return
+      }
+      if (fields.weight_kg != null) setWeight(String(fields.weight_kg).replace('.', ','))
+      if (fields.resting_hr != null) setRhr(String(fields.resting_hr))
+      setScale((x) => ({ sleep: fields.sleep ?? x.sleep, legs: fields.legs ?? x.legs, motivation: fields.motivation ?? x.motivation }))
+      setParsed({ sick: fields.sick, notes: fields.notes })
+      const got = [fields.weight_kg != null && 'waga', fields.resting_hr != null && 'tętno', fields.sleep != null && 'sen', fields.legs != null && 'nogi', fields.motivation != null && 'motywacja', fields.sick && 'choroba', fields.notes && 'uwagi'].filter(Boolean)
+      setParseMsg(`Rozpoznane: ${got.join(', ')}. Sprawdź i zapisz.`)
+    } catch (e) {
+      setParseMsg(e instanceof Error ? e.message : 'Nie udało się rozpoznać')
+    } finally {
+      setParsing(false)
+    }
+  }
 
   async function save() {
     setBusy(true)
@@ -65,6 +93,8 @@ export function CheckinSheet({ checkin, weighDue, lastWeight, onClose, onSave }:
         sleep: scale.sleep,
         legs: scale.legs,
         motivation: scale.motivation,
+        ...(parsed?.sick != null ? { sick: parsed.sick } : {}),
+        ...(parsed?.notes ? { notes: [checkin?.notes, parsed.notes].filter(Boolean).join(' · ') } : {}),
       })
       onClose()
     } finally {
@@ -76,6 +106,25 @@ export function CheckinSheet({ checkin, weighDue, lastWeight, onClose, onSave }:
 
   return (
     <Sheet title="Check-in" onClose={onClose} done={{ label: 'Zapisz', onClick: save, disabled: busy || nothing }}>
+      {canParseCheckin && (
+        <Section header="Jednym zdaniem" footer={parseMsg ?? 'Wpisz albo podyktuj (mikrofon na klawiaturze): waga, tętno, sen, nogi, motywacja, ewentualnie co boli. Pola poniżej wypełnią się do sprawdzenia.'}>
+          <div className="px-4 py-3">
+            <textarea
+              id="checkin-sentence"
+              className="ios-input ios-input-block w-full"
+              style={{ padding: '10px 12px', resize: 'none' }}
+              rows={2}
+              placeholder="np. 104,8, tętno 52, spałem słabo, nogi 3, motywacja 5"
+              value={sentence}
+              onChange={(e) => setSentence(e.target.value)}
+              aria-label="Check-in jednym zdaniem"
+            />
+            <Btn kind="gray" className="mt-2 w-full" disabled={parsing || sentence.trim().length < 2} onClick={() => void recognise()}>
+              {parsing ? 'Rozpoznaję…' : 'Rozpoznaj'}
+            </Btn>
+          </div>
+        </Section>
+      )}
       <Section
         header={weighDue ? 'Pomiary · dziś wypada ważenie' : 'Pomiary'}
         footer={

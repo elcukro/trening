@@ -145,13 +145,13 @@ export async function gatherFacts(admin: SupabaseClient, userId: string, activit
   return { facts, ride: a }
 }
 
-async function underLimit(admin: SupabaseClient): Promise<boolean> {
+export async function underLimit(admin: SupabaseClient): Promise<boolean> {
   const month = new Date().toISOString().slice(0, 7)
   const { count } = await admin.from('ai_calls').select('id', { count: 'exact', head: true }).gte('created_at', `${month}-01`)
   return (count ?? 0) < MONTHLY_LIMIT
 }
 
-async function callClaude(system: string, user: string, model = MODEL): Promise<{ text: string; usage: Record<string, number> }> {
+export async function callClaude(system: string, user: string, model = MODEL): Promise<{ text: string; usage: Record<string, number> }> {
   const res = await fetch('https://api.anthropic.com/v1/messages', {
     method: 'POST',
     headers: { 'x-api-key': env('ANTHROPIC_API_KEY'), 'anthropic-version': '2023-06-01', 'content-type': 'application/json' },
