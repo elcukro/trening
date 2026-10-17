@@ -13,7 +13,7 @@ import { resetSyncCursors, runSync } from '@/sync/sync'
 import { fmtDayMonth } from '@/lib/dates'
 import { useOpenFull, useSyncStatus, useUiMode } from '../useIos'
 import { Btn, List, Row, RowIcon, Screen, Section, Seg, Sheet } from '../components/Chrome'
-import { IconBolt, IconCheck, IconChevron, IconGear, IconHeart, IconSun, IconWatch } from '../components/Icons'
+import { IconBolt, IconCheck, IconChevron, IconFlag, IconGear, IconHeart, IconSun, IconWatch } from '../components/Icons'
 
 /** Moje liczby: FTP i LTHR – jedyne ustawienia, które zmienia się często (po każdym teście). */
 function NumbersSheet({ onClose }: { onClose: () => void }) {
@@ -334,6 +334,12 @@ export function MoreScreen() {
               />
             </span>
           </div>
+        </List>
+      </Section>
+
+      <Section header="Pomoc" footer="Instrukcja: pierwsze uruchomienie, dzień po dniu, Strava i Bolt, maile, ustawienia. Działa też bez sieci.">
+        <List>
+          <Row icon={<RowIcon color="var(--teal, #30b0c7)"><IconFlag size={18} /></RowIcon>} title="Jak korzystać z aplikacji" onClick={() => window.location.assign('/pomoc.html')} accessory={<span className="ios-dim-3"><IconChevron size={18} /></span>} />
         </List>
       </Section>
 

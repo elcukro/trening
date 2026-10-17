@@ -12,7 +12,7 @@ declare const self: ServiceWorkerGlobalScope & { __WB_MANIFEST: { url: string; r
 
 precacheAndRoute(self.__WB_MANIFEST)
 cleanupOutdatedCaches()
-registerRoute(new NavigationRoute(createHandlerBoundToURL('index.html'), { denylist: [/^\/functions\//] }))
+registerRoute(new NavigationRoute(createHandlerBoundToURL('index.html'), { denylist: [/^\/functions\//, /^\/pomoc\.html$/] }))
 
 interface PushPayload {
   title?: string
