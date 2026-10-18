@@ -1,18 +1,23 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { liveQuery } from 'dexie'
 import { db } from '@/db'
-import { loadProgram } from '@/data/program'
 import { onSyncStatus, runSync, type SyncStatus } from './sync'
 import { supabase } from './supabase'
 
-/** Uruchamia synchronizację: przy starcie, po zalogowaniu, po powrocie sieci, po każdej zmianie outboxa (z opóźnieniem). */
-export function useSyncRunner(): SyncStatus {
+/**
+ * Uruchamia synchronizację: przy starcie, po zalogowaniu, po powrocie sieci, po każdej zmianie outboxa (z opóźnieniem).
+ * Jedna instancja na aplikację – w `SettingsProvider`. `programVersion` to wersja programu tego konta (do `profiles.program_version`).
+ */
+export function useSyncRunner(programVersion: string): SyncStatus {
   const [status, setStatus] = useState<SyncStatus>({ state: supabase ? 'idle' : 'disabled', last_sync: null, pending: 0 })
+  const versionRef = useRef(programVersion)
+  useEffect(() => {
+    versionRef.current = programVersion
+  }, [programVersion])
   useEffect(() => onSyncStatus(setStatus), [])
   useEffect(() => {
     if (!supabase) return
-    const version = loadProgram().version
-    const trigger = () => void runSync({ programVersion: version })
+    const trigger = () => void runSync({ programVersion: versionRef.current })
     trigger()
     const onOnline = () => trigger()
     const onVisible = () => {

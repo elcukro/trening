@@ -5,7 +5,6 @@ import { useEngine } from '@/app/useSettings'
 import { strava, type StravaStatus } from '@/sync/strava'
 import { autoPushEnabled, lastAttempt, lastAutoPush, pushPayloadFor, setAutoPush, wahoo, type PushAttempt, type WahooStatus } from '@/sync/wahoo'
 import { runSync } from '@/sync/sync'
-import { loadProgram } from '@/data/program'
 import { todayISO, fmtDayMonth } from '@/lib/dates'
 import { Actions, Button, Card, CardTitle, Checkbox, Inset, Row } from '@/components/ui'
 import { useToast } from '@/components/Toast'
@@ -111,7 +110,7 @@ function StravaCard() {
               onClick={() =>
                 run('Pobieram jazdy ze Stravy', async () => {
                   const r = await strava.sync(30)
-                  await runSync({ programVersion: loadProgram().version })
+                  await runSync({ programVersion: engine.ctx.program.version })
                   return `Pobrano ${r.imported} jazd z ${r.scanned} aktywności (30 dni).`
                 })
               }
@@ -279,7 +278,7 @@ function WahooCard() {
               onClick={() =>
                 run('Pobieram wykonane treningi z Bolta', async () => {
                   const r = await wahoo.completed(14)
-                  await runSync({ programVersion: loadProgram().version })
+                  await runSync({ programVersion: engine.ctx.program.version })
                   return r.completed ? `Z Bolta: ${r.completed} wykonanych (${r.dates.join(', ')})` : `Bolt nie ma wykonanych treningów z 14 dni (przejrzano ${r.scanned}).`
                 })
               }

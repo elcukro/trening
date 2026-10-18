@@ -15,14 +15,13 @@ import { MorePage } from '@/features/more/MorePage'
 import { GearPage } from '@/features/gear/GearPage'
 import { TripPage } from '@/features/trip/TripPage'
 import { GymModePage } from '@/features/gym/GymModePage'
-import { useSyncRunner } from '@/sync/useSync'
 import { ToastProvider } from '@/components/Toast'
 import { useWahooAutoPush } from '@/sync/useWahoo'
 import { useEmailSnapshots } from '@/sync/emailSnapshots'
 import { MovedBanner } from './MovedBanner'
 import { iosPathFor, isNavigateMessage, mobilePathFor } from './pushNav'
 import { usePushKeepalive } from '@/sync/usePush'
-import { useEngine } from '@/app/useSettings'
+import { SettingsGate, SettingsProvider, useEngine } from '@/app/useSettings'
 import { todayISO } from '@/lib/dates'
 import { addDays, diffDays } from '@/engine/dates'
 import { days as daysLabel } from '@/lib/format'
@@ -213,7 +212,6 @@ function PushNavigator() {
 }
 
 function Layout() {
-  useSyncRunner()
   useWahooAutoPush()
   useEmailSnapshots()
   usePushKeepalive()
@@ -251,13 +249,29 @@ class ErrorBoundary extends Component<{ children: ReactNode }, { error: Error | 
   }
 }
 
+/** Ekran oczekiwania bez danych programu: nie wiadomo jeszcze, czyje ustawienia pokazać. */
+function WaitingScreen({ waiting, sync }: { waiting: 'settings' | 'session' | 'profile'; sync: { state: string; error?: string } }) {
+  const text = waiting === 'profile' ? (sync.state === 'syncing' ? 'Pobieram ustawienia konta…' : 'Czekam na ustawienia konta…') : waiting === 'session' ? 'Sprawdzam logowanie…' : 'Wczytuję…'
+  return (
+    <div className="flex min-h-dvh w-full items-center justify-center bg-slate-50 px-6 text-center dark:bg-slate-900" role="status" aria-live="polite">
+      <div>
+        <div className="text-lg font-semibold text-slate-800 dark:text-slate-100">Trening</div>
+        <div className="mt-2 text-sm text-slate-500 dark:text-slate-400">{text}</div>
+        {sync.error && <div className="mt-2 text-xs text-amber-600 dark:text-amber-400">{sync.error}</div>}
+      </div>
+    </div>
+  )
+}
+
 export function App() {
   return (
     <ErrorBoundary>
       <ToastProvider>
+        <SettingsProvider>
         <MovedBanner />
         <BrowserRouter>
           <PushNavigator />
+          <SettingsGate fallback={(waiting, sync) => <WaitingScreen waiting={waiting} sync={sync} />}>
           <Routes>
             <Route element={<Layout />}>
               <Route index element={<ModeGate><TodayPage /></ModeGate>} />
@@ -285,7 +299,9 @@ export function App() {
             <Route path="i/*" element={<Suspense fallback={null}><IosApp /></Suspense>} />
             <Route path="m/*" element={<Suspense fallback={null}><MobileApp /></Suspense>} />
           </Routes>
+          </SettingsGate>
         </BrowserRouter>
+        </SettingsProvider>
       </ToastProvider>
     </ErrorBoundary>
   )

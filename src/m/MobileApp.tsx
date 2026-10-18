@@ -1,7 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { Navigate, Route, Routes, useLocation } from 'react-router'
 import { useAuth } from '@/sync/auth'
-import { useSyncRunner } from '@/sync/useSync'
 import { useWahooAutoPush } from '@/sync/useWahoo'
 import { useEmailSnapshots } from '@/sync/emailSnapshots'
 import { usePushKeepalive } from '@/sync/usePush'
@@ -26,7 +25,6 @@ import { CoachContext } from './coach'
  * synchronizacji i automatów co `/i` i pełna aplikacja – różni się tylko warstwa ekranów.
  */
 export function MobileApp() {
-  useSyncRunner()
   useWahooAutoPush()
   useEmailSnapshots()
   usePushKeepalive()

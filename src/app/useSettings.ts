@@ -1,7 +1,11 @@
-import { useCallback, useMemo } from 'react'
+import React, { createContext, createElement, useCallback, useContext, useMemo, type ReactNode } from 'react'
 import { useLiveQuery } from 'dexie-react-hooks'
 import { db, type Checkin, type TestResult } from '@/db'
 import { DEFAULT_PROGRAM_ID, loadProgram } from '@/data/program'
+import type { Program } from '@/engine/schema'
+import { useAuth } from '@/sync/auth'
+import { useSyncRunner } from '@/sync/useSync'
+import type { SyncStatus } from '@/sync/sync'
 import { changedKeys, withFieldStamps } from '@/sync/profileMerge'
 import type { Settings } from '@/engine/schema'
 import type { EngineContext } from '@/engine/types'
@@ -10,12 +14,49 @@ import type { LayoutWeek } from '@/engine/types'
 
 export interface SettingsApi {
   settings: Settings
+  /** program obowiązujący to konto (z `settings.program_id`) */
+  program: Program
+  /** Dexie odpowiedziała (wiersz albo jego brak) */
   loaded: boolean
+  /**
+   * Ekrany mogą pokazywać dane: ustawienia wczytane, a na zalogowanym koncie bez lokalnego zapisu – po pierwszym pobraniu
+   * profilu z serwera. Bez tego świeże urządzenie przez chwilę pokazywałoby program domyślny (cudze progi, cudzy plan).
+   */
+  ready: boolean
+  /** dlaczego jeszcze nie `ready` – do ekranu oczekiwania */
+  waiting: 'settings' | 'session' | 'profile' | null
+  sync: SyncStatus
   update: (patch: Partial<Settings>) => Promise<void>
   reset: () => Promise<void>
 }
 
+const SettingsContext = createContext<SettingsApi | null>(null)
+
+/**
+ * Jedno źródło ustawień dla całej aplikacji (18.10.2026). Wcześniej każde wywołanie `useSettings()` miało własne zapytanie
+ * do Dexie i przy pierwszym renderze zwracało domyślne ustawienia programu domyślnego – arkusz progów drugiego konta
+ * zapamiętywał 220 W / brak LTHR / bez miernika i nadpisywał nimi prawdziwe wartości. Tu zapytanie jest jedno, a `SettingsGate`
+ * nie pokazuje ekranów, dopóki ustawienia (i na zalogowanym koncie profil z serwera) nie są wczytane.
+ */
+export function SettingsProvider({ children }: { children: ReactNode }) {
+  const api = useSettingsSource()
+  return createElement(SettingsContext.Provider, { value: api }, children)
+}
+
 export function useSettings(): SettingsApi {
+  const api = useContext(SettingsContext)
+  if (!api) throw new Error('useSettings poza SettingsProvider')
+  return api
+}
+
+/** Ekran oczekiwania bez danych programu – zanim wiadomo, czyje ustawienia pokazać. */
+export function SettingsGate({ children, fallback }: { children: ReactNode; fallback: (waiting: NonNullable<SettingsApi['waiting']>, sync: SyncStatus) => ReactNode }) {
+  const api = useSettings()
+  if (!api.ready) return createElement(React.Fragment, null, fallback(api.waiting ?? 'settings', api.sync))
+  return createElement(React.Fragment, null, children)
+}
+
+function useSettingsSource(): SettingsApi {
   const row = useLiveQuery(async () => (await db.settings.get('user')) ?? null, [], undefined)
   // identyfikator programu czytamy z zapisu użytkownika, a nie z domyślnych ustawień programu –
   // inaczej nie dałoby się wyjść z programu domyślnego
@@ -45,7 +86,15 @@ export function useSettings(): SettingsApi {
   const reset = useCallback(async () => {
     await db.settings.delete('user')
   }, [])
-  return { settings, loaded: row !== undefined, update, reset }
+  const loaded = row !== undefined
+  const auth = useAuth()
+  const sync = useSyncRunner(program.version)
+  // zalogowane konto bez lokalnego zapisu ustawień = świeże urządzenie: czekamy na pierwsze pobranie profilu
+  // (albo na błąd – wtedy ekran oczekiwania pokazuje przyczynę zamiast cudzych wartości domyślnych)
+  const freshAccount = loaded && row === null && !!auth.session
+  const firstPullPending = freshAccount && sync.last_sync === null && sync.state !== 'error' && sync.state !== 'disabled' && sync.state !== 'offline'
+  const waiting: SettingsApi['waiting'] = !loaded ? 'settings' : auth.loading ? 'session' : firstPullPending ? 'profile' : null
+  return { settings, program, loaded, ready: waiting === null, waiting, sync, update, reset }
 }
 
 export interface Engine {

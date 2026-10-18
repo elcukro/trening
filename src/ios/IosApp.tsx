@@ -1,7 +1,6 @@
 import { useState } from 'react'
 import { NavLink, Navigate, Route, Routes } from 'react-router'
 import { useAuth } from '@/sync/auth'
-import { useSyncRunner } from '@/sync/useSync'
 import { useWahooAutoPush } from '@/sync/useWahoo'
 import { useEmailSnapshots } from '@/sync/emailSnapshots'
 import { usePushKeepalive } from '@/sync/usePush'
@@ -40,7 +39,6 @@ function TabBar() {
  * krok na dziś, reszta ukryta w pełnej aplikacji (`/`). Pełny zestaw funkcji zostaje bez zmian.
  */
 export function IosApp() {
-  useSyncRunner()
   useWahooAutoPush()
   useEmailSnapshots()
   usePushKeepalive()

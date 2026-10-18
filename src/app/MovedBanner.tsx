@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { db } from '@/db'
 import { runSync } from '@/sync/sync'
-import { loadProgram } from '@/data/program'
+import { useSettings } from '@/app/useSettings'
 
 /** Stary adres aplikacji – od 25.09.2026 serwer przekierowuje go na własną domenę (vercel.json). */
 const OLD_HOST = 'trening-inky.vercel.app'
@@ -14,12 +14,13 @@ export const NEW_ORIGIN = 'https://trening.felsztukier.pl'
 export function MovedBanner() {
   const [busy, setBusy] = useState(false)
   const [msg, setMsg] = useState<string | null>(null)
+  const { program } = useSettings()
   if (typeof location === 'undefined' || location.host !== OLD_HOST) return null
 
   async function go() {
     setBusy(true)
     try {
-      await runSync({ programVersion: loadProgram().version })
+      await runSync({ programVersion: program.version })
       const pending = await db.outbox.count()
       if (pending > 0) {
         setMsg(`${pending} zmian czeka na wysłanie – połącz się z siecią i zaloguj, inaczej zostaną na tym adresie.`)

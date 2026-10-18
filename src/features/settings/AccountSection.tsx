@@ -1,9 +1,8 @@
 import { useRef, useState } from 'react'
 import { useAuth } from '@/sync/auth'
-import { useSyncRunner } from '@/sync/useSync'
+import { useSettings } from '@/app/useSettings'
 import { resetSyncCursors, runSync } from '@/sync/sync'
 import { db, SYNC_TABLES } from '@/db'
-import { loadProgram } from '@/data/program'
 import { Actions, Button, Card, CardTitle, Field, Input, Inset, Row, Textarea } from '@/components/ui'
 import { useToast } from '@/components/Toast'
 
@@ -11,7 +10,7 @@ const STATE_LABEL: Record<string, string> = { idle: 'Zsynchronizowano', syncing:
 
 export function AccountSection() {
   const auth = useAuth()
-  const sync = useSyncRunner()
+  const { sync, program } = useSettings()
   const toast = useToast()
   const [email, setEmail] = useState('')
   const [link, setLink] = useState('')
@@ -65,7 +64,7 @@ export function AccountSection() {
           </div>
           {sync.error && <p className="mt-1 text-xs text-red-600 dark:text-red-400">{sync.error}</p>}
           <Actions className="mt-3">
-            <Button variant="secondary" disabled={toast.busy} onClick={() => toast.run('Synchronizuję…', () => runSync({ programVersion: loadProgram().version }), () => 'Zsynchronizowano')}>
+            <Button variant="secondary" disabled={toast.busy} onClick={() => toast.run('Synchronizuję…', () => runSync({ programVersion: program.version }), () => 'Zsynchronizowano')}>
               Synchronizuj teraz
             </Button>
             <Button
@@ -127,11 +126,12 @@ interface Backup {
 
 export function BackupSection() {
   const fileRef = useRef<HTMLInputElement>(null)
+  const { program } = useSettings()
   const toast = useToast()
   const [msg, setMsg] = useState<string | null>(null)
 
   async function exportJson() {
-    const backup: Backup = { app: 'trening', program_version: loadProgram().version, exported_at: new Date().toISOString(), settings: (await db.settings.get('user'))?.value ?? {}, tables: {} }
+    const backup: Backup = { app: 'trening', program_version: program.version, exported_at: new Date().toISOString(), settings: (await db.settings.get('user'))?.value ?? {}, tables: {} }
     for (const t of SYNC_TABLES) backup.tables[t] = await db.table(t).toArray()
     const blob = new Blob([JSON.stringify(backup, null, 1)], { type: 'application/json' })
     const name = `trening-kopia-${backup.exported_at.slice(0, 10)}.json`
