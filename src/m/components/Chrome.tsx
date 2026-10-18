@@ -16,7 +16,8 @@ export function Screen({ title, subtitle, back, action, day, children }: { title
   useEffect(() => {
     const el = sentinel.current
     if (!el) return
-    const io = new IntersectionObserver(([e]) => setScrolled(!e?.isIntersecting), { rootMargin: '-1px 0px 0px 0px', threshold: 1 })
+    // przewija wewnętrzny kontener `.m-scroll`, więc obserwujemy względem niego (root), nie względem okna
+    const io = new IntersectionObserver(([e]) => setScrolled(!e?.isIntersecting), { root: el.closest('.m-scroll'), rootMargin: '-1px 0px 0px 0px', threshold: 1 })
     io.observe(el)
     return () => io.disconnect()
   }, [])

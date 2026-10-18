@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { Navigate, Route, Routes, useLocation } from 'react-router'
 import { useAuth } from '@/sync/auth'
 import { useSyncRunner } from '@/sync/useSync'
@@ -30,6 +30,11 @@ export function MobileApp() {
   // arkusz Trener otwierany z paska i z kart (CoachContext); `prefill` to początek wiadomości, np. „Waga ”
   const [coach, setCoach] = useState<false | { prefill?: string }>(false)
   const coachApi = useMemo(() => ({ open: (prefill?: string) => setCoach({ prefill }) }), [])
+  // przewijanie w kontenerze, nie w oknie – nowy ekran zaczyna od góry
+  const scroller = useRef<HTMLElement>(null)
+  useEffect(() => {
+    scroller.current?.scrollTo({ top: 0 })
+  }, [location.pathname])
   const [skipped, setSkipped] = useState(() => {
     try {
       return sessionStorage.getItem(NO_ACCOUNT) === '1'
@@ -61,15 +66,17 @@ export function MobileApp() {
 
   return (
     <CoachContext.Provider value={coachApi}>
-      <div className="m flex min-h-dvh flex-col">
-        <Routes>
-          <Route index element={<TodayScreen />} />
-          <Route path="dzien/:date" element={<TodayScreen />} />
-          <Route path="plan" element={<PlanScreen />} />
-          <Route path="plan/:date" element={<PlanScreen />} />
-          <Route path="ja" element={<MeScreen />} />
-          <Route path="*" element={<Navigate to={mobilePathFor(location.pathname) ?? '/m'} replace />} />
-        </Routes>
+      <div className="m">
+        <main ref={scroller} className="m-scroll">
+          <Routes>
+            <Route index element={<TodayScreen />} />
+            <Route path="dzien/:date" element={<TodayScreen />} />
+            <Route path="plan" element={<PlanScreen />} />
+            <Route path="plan/:date" element={<PlanScreen />} />
+            <Route path="ja" element={<MeScreen />} />
+            <Route path="*" element={<Navigate to={mobilePathFor(location.pathname) ?? '/m'} replace />} />
+          </Routes>
+        </main>
         <TabBar onCoach={() => setCoach({})} />
         {coach && <CoachSheet prefill={coach.prefill} onClose={() => setCoach(false)} />}
       </div>

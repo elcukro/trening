@@ -39,15 +39,33 @@
   font-size: 17px;
   line-height: 22px;
   letter-spacing: -0.3px;
-  min-height: 100dvh;
+  /*
+   * Aplikacja, nie strona: korzeń ma dokładnie wysokość ekranu, a przewija się wewnętrzny `.m-scroll`.
+   * Dzięki temu dolny pasek jest pozycjonowany względem korzenia, a nie okna – iOS w trybie PWA po wznowieniu
+   * potrafi przez chwilę liczyć `position: fixed` względem nieaktualnego viewportu (pasek „pływał” o kilkanaście pt).
+   */
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  height: 100dvh;
+  overflow: hidden;
   overflow-wrap: break-word;
-  overscroll-behavior-y: none;
   color-scheme: light;
 }
 html:has(.m),
 html:has(.m) body {
+  height: 100%;
+  overflow: hidden;
+  overscroll-behavior: none;
   background: #f2f2f7;
   color-scheme: light;
+}
+.m-scroll {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior-y: contain;
 }
 
 
@@ -220,7 +238,7 @@ button.m-row:active {
 
 /* ---------------------------------------------------------------- dolny pasek: pływająca pigułka + Trener */
 .m-tabbar {
-  position: fixed;
+  position: absolute;
   left: 16px;
   right: 16px;
   bottom: calc(env(safe-area-inset-bottom, 0px) + 12px);

@@ -128,6 +128,11 @@ API nie działa w PWA na iOS – nie udajemy własnego nagrywania).
 
 ## 5. Wygląd
 
+- **Układ jak aplikacja, nie strona** (18.10.2026): korzeń `.m` ma `height: 100dvh; overflow: hidden`, przewija się wewnętrzny
+  `<main class="m-scroll">`, a dolny pasek jest `position: absolute` względem korzenia. Powód: iOS w trybie PWA po wznowieniu
+  aplikacji przez chwilę liczył `position: fixed` względem nieaktualnego viewportu i pasek „pływał” o kilkanaście pt, aż do
+  pierwszego przewinięcia. Zmiana ekranu przewija kontener na górę (`MobileApp`), zwijany tytuł obserwuje sentinel względem
+  `.m-scroll` (`Screen` w `Chrome.tsx`).
 - **Tylko jasny motyw** (decyzja 18.10.2026 po pierwszym teście na iPhonie – ciemny nie pasował do renderów 3D): `m.css` nie ma
   bloku `html.dark`, a `html:has(.m)` wymusza jasne tło i `color-scheme: light` także przy ciemnym motywie telefonu.
 - **Dolny pasek** (18.10.2026): pływająca pigułka z trzema zakładkami (ikony 3D `tab-today`, `tab-plan`, `tab-me`; nieaktywne
