@@ -32,7 +32,7 @@ const COACH =
   'light blue cycling jersey, holding a small tablet, warm confident smile, slightly turned three-quarter view.'
 
 /** Ikony: bez faktury i ozdób – jedna bryła, 2–3 kolory, czytelna w 40–80 px. */
-const ICON_STYLE = 'Minimal icon: very simple shapes, smooth plastic-like surfaces, flat solid colors with one soft highlight, no texture, no strands, no ornaments, no small details, no swirls. ' + STYLE
+const ICON_STYLE = 'Minimal icon: very simple shapes, smooth plastic-like surfaces, flat solid colors with one soft highlight, no texture, no strands, no ornaments, no small details, no swirls. The object floats in mid-air with generous empty margin on every side, absolutely no contact shadow and no shadow below it. ' + STYLE
 
 /** id → prompt. Pogoda i typy dnia mają być równie prostymi bryłami, żeby działały w 40–80 px. */
 const ASSETS = {
@@ -57,8 +57,8 @@ const ASSETS = {
   scale: { prompt: 'A simple bathroom scale in white with a small blue display.' },
   // ikony dolnego paska (docs/24 § 3) – ta sama rodzina co pogoda i typy dnia
   'tab-today': { prompt: 'A calendar page icon in sky blue with a white top bar and a single bold white check mark in the middle.' },
-  'tab-plan': { prompt: 'A weekly planner icon: a rounded sky blue panel with three horizontal white bars of different lengths, each with a small round orange dot on the left.' },
-  'tab-me': { prompt: 'A progress icon: a rounded sky blue panel with a bold white rising zigzag arrow pointing up-right.' },
+  'tab-plan': { prompt: 'A weekly planner icon: a sky blue rounded square (same proportions as a calendar app icon, seen straight on, not tilted, no perspective) with three horizontal white bars of different lengths, each with a small round orange dot on the left.' },
+  'tab-me': { prompt: 'A progress icon: a sky blue rounded square (same proportions as a calendar app icon, seen straight on, not tilted, no perspective) with a bold white rising zigzag arrow pointing up-right.' },
   heart: { prompt: 'A glossy red heart with a thin white heartbeat line across it.' },
 }
 
