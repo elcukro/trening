@@ -1,13 +1,10 @@
-import { chromium } from '@playwright/test'
-import { readFileSync, writeFileSync } from 'node:fs'
-const svg = readFileSync('public/icon.svg', 'utf8')
-const browser = await chromium.launch()
+/**
+ * Ikony PWA z jednego obrazu źródłowego `public/icon-src.png` (1024 px, pełne tło – iOS sam zaokrągla rogi).
+ * Źródło powstaje w `scripts/fal-art.mjs` (`icon-bike` / `icon-coach`, styl 3D jak reszta /m) i jest wybierane ręcznie.
+ * Skalowanie przez `sips` (macOS) – bez zależności.
+ */
+import { execFileSync } from 'node:child_process'
 for (const [name, size] of [['pwa-192.png', 192], ['pwa-512.png', 512], ['apple-touch-icon.png', 180]]) {
-  const page = await browser.newPage({ viewport: { width: size, height: size }, deviceScaleFactor: 1 })
-  await page.setContent(`<html><body style="margin:0;background:#0f172a">${svg.replace('<svg ', `<svg width="${size}" height="${size}" `)}</body></html>`)
-  const buf = await page.screenshot({ clip: { x: 0, y: 0, width: size, height: size }, omitBackground: false })
-  writeFileSync(`public/${name}`, buf)
-  await page.close()
+  execFileSync('sips', ['-Z', String(size), 'public/icon-src.png', '--out', `public/${name}`], { stdio: 'ignore' })
 }
-await browser.close()
 console.log('icons ok')

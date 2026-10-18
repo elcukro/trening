@@ -18,7 +18,7 @@ export default defineConfig({
       srcDir: 'src',
       filename: 'sw.ts',
       registerType: 'autoUpdate',
-      includeAssets: ['apple-touch-icon.png', 'icon.svg'],
+      includeAssets: ['apple-touch-icon.png', 'icon.svg', 'icon-src.png'],
       manifest: {
         name: 'Trening',
         short_name: 'Trening',
@@ -28,7 +28,7 @@ export default defineConfig({
         scope: '/',
         display: 'standalone',
         orientation: 'portrait',
-        background_color: '#0f172a',
+        background_color: '#f2f2f7',
         theme_color: '#0f172a',
         icons: [
           { src: 'pwa-192.png', sizes: '192x192', type: 'image/png' },

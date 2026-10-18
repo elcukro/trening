@@ -20,7 +20,7 @@ Osobisty asystent treningowy (PWA na iPhone) dla jednego użytkownika przygotowu
 - `npm run build` – build produkcyjny PWA (`dist/`, własny service worker z `src/sw.ts`)
 - `npm run e2e` – Playwright, Chromium z viewportem iPhone 14 (buduje i uruchamia `vite preview` na porcie 4173); zrzuty w `test-results/`
 - `npm run data:generate` – `python3 data/reference_generator.py`
-- `node scripts/icons.mjs` – regeneracja ikon PNG z `public/icon.svg`
+- `node scripts/icons.mjs` – ikony PWA (192/512/apple) z `public/icon-src.png` (rower 3D z fal.ai, 18.10.2026; alternatywa `icon-coach` w `scripts/fal-art.mjs`); `icon.svg` to stare logo, zostaje tylko jako zapas
 - `FAL_KEY=… node scripts/fal-art.mjs [id…|--all]` – grafiki 3D dla `/m` (`public/m/art/`, docs/24 § 5); klucz fal.ai poza repo (użytkownik ma go w innym projekcie)
 - Projekt w chmurze: ref `kgllegvlnmchdvkkbitt` (podlinkowany), produkcja `https://trening-inky.vercel.app`. Ustawienia auth (site_url, redirecty) wypychane przez `supabase config push` z **minimalnego** config.toml zawierającego tylko `[auth]` (pełny plik z szablonu `init` nadpisałby ustawienia hostowane) – zawsze najpierw `supabase config diff`.
 - `supabase db push` – wgranie migracji do podlinkowanego projektu (`supabase link --project-ref …`); `supabase migration new` może zawisnąć w tej sesji – twórz plik ręcznie z tym samym formatem nazwy

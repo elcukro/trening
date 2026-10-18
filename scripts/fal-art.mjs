@@ -56,6 +56,9 @@ const ASSETS = {
   bolt: { prompt: 'A small bike computer device with a rounded screen showing a simple green route line, mounted on a short handlebar stub.' },
   scale: { prompt: 'A simple bathroom scale in white with a small blue display.' },
   // ikony dolnego paska (docs/24 § 3) – ta sama rodzina co pogoda i typy dnia
+  // ikona aplikacji: pełne tło (iOS sam zaokrągla rogi), bez wycinania tła (`raw`), zapis do scratch/icons – wybór ręczny
+  'icon-coach': { raw: true, prompt: 'iOS app icon artwork, square, edge-to-edge smooth gradient background from sky blue (#5fb4ff) at top to deep blue (#0a7aff) at bottom, no border, no rounded corners. Centered: the head and shoulders of a friendly 3D clay-style cycling coach mascot (short beard, cycling cap with sunglasses on it, light blue jersey), big and filling about 70% of the icon, soft studio lighting, subtle glossy highlights, no text.' },
+  'icon-bike': { raw: true, prompt: 'iOS app icon artwork, square, edge-to-edge smooth gradient background from sky blue (#5fb4ff) at top to deep blue (#0a7aff) at bottom, no border, no rounded corners. Centered: a 3D clay-style green and white gravel bicycle seen from a three-quarter front angle, big and filling about 72% of the icon, soft studio lighting, subtle glossy highlights, no text.' },
   'tab-today': { prompt: 'A calendar page icon in sky blue with a white top bar and a single bold white check mark in the middle.' },
   'tab-plan': { prompt: 'A weekly planner icon: a sky blue rounded square (same proportions as a calendar app icon, seen straight on, not tilted, no perspective) with three horizontal white bars of different lengths, each with a small round orange dot on the left.' },
   'tab-me': { prompt: 'A progress icon: a sky blue rounded square (same proportions as a calendar app icon, seen straight on, not tilted, no perspective) with a bold white rising zigzag arrow pointing up-right.' },
@@ -91,10 +94,14 @@ async function make(id) {
   const a = ASSETS[id]
   const t0 = Date.now()
   // 1) generacja (Gemini 3 Pro Image przez fal – dobrze trzyma styl zestawu)
-  const gen = await fal('fal-ai/nano-banana-pro', { prompt: `${a.prompt} ${a.ratio ? STYLE : ICON_STYLE}`, aspect_ratio: a.ratio ?? '1:1', resolution: '1K', output_format: 'png', num_images: 1 })
+  const gen = await fal('fal-ai/nano-banana-pro', { prompt: a.raw ? a.prompt : `${a.prompt} ${a.ratio ? STYLE : ICON_STYLE}`, aspect_ratio: a.ratio ?? '1:1', resolution: '1K', output_format: 'png', num_images: 1 })
   const src = gen.images?.[0]?.url
   if (!src) throw new Error(`brak obrazu: ${JSON.stringify(gen).slice(0, 200)}`)
   writeFileSync(`${RAW}/${id}.png`, await download(src))
+  if (a.raw) {
+    console.log(`✓ ${id} → ${RAW}/${id}.png (bez wycinania tła)`)
+    return
+  }
   // 2) wycięcie tła
   const cut = await fal('fal-ai/birefnet/v2', { image_url: src, model: 'General Use (Heavy)', operating_resolution: '1024x1024', output_format: 'png', refine_foreground: true })
   const png = await download(cut.image.url)
