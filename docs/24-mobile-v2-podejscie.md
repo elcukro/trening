@@ -129,8 +129,9 @@ API nie działa w PWA na iOS – nie udajemy własnego nagrywania).
 ## 5. Wygląd
 
 - **Układ jak aplikacja, nie strona** (18.10.2026): korzeń `.m` ma `height: var(--m-h)` (pomiar `innerHeight` w JS –
-  `src/m/useViewport.ts`, bo po wznowieniu PWA iOS podaje nieaktualne `100dvh`; pomiar powtarzany po `visibilitychange`,
-  `pageshow`, `focus`, obrocie i zmianach `visualViewport`) i `overflow: hidden`, przewija się wewnętrzny
+  `src/m/useViewport.ts`, bo po wznowieniu PWA iOS podaje nieaktualne `100dvh` i `innerHeight`; w trybie standalone
+  w pionie bierzemy `max(innerHeight, screen.height)`, a `visualViewport` tylko gdy pole ma fokus (klawiatura); pomiar
+  powtarzany po `visibilitychange`, `pageshow`, `focus`, `focusin/out`, obrocie i zmianach `visualViewport`) i `overflow: hidden`, przewija się wewnętrzny
   `<main class="m-scroll">`, a dolny pasek jest `position: absolute` względem korzenia. Powód: iOS w trybie PWA po wznowieniu
   aplikacji przez chwilę liczył `position: fixed` względem nieaktualnego viewportu i pasek „pływał” o kilkanaście pt, aż do
   pierwszego przewinięcia. Zmiana ekranu przewija kontener na górę (`MobileApp`), zwijany tytuł obserwuje sentinel względem
@@ -205,7 +206,7 @@ na Dziś wersja zwarta, w Planie pełna z liczbą treningów i treningiem kluczo
 przewijane wiadomości, stopka z podpowiedziami zawijanymi w wiersze i polem; wysokość i przesunięcie z `visualViewport`,
 więc pole zostaje nad klawiaturą), jeden ciągły wątek (`coach_thread` w kv, 7 dni,
 `loadThread`/`saveThread` w `src/sync/coachChat.ts`; wiadomości mają `at`, separatory dni w rozmowie), podpowiedzi
-nad klawiaturą z `src/day/coachChips.ts` (czysty TS wg `DayPhase`: rano waga z ostatnią wartością jako początek wiadomości,
+nad klawiaturą z `src/day/coachChips.ts` (czysty TS wg `DayPhase`, zawsze 5 na stan: rano waga z ostatnią wartością jako początek wiadomości,
 po jeździe „RPE…”, wieczorem „Co jutro?”, „Jutro nie dam rady”; testy `coachChips.test.ts`), `prefill` z karty dnia
 (`CoachContext.open('Waga 107, tętno ')`), dymki z twarzą trenera, wyniki narzędzi jako zielone/czerwone linie, błędy
 funkcji po ludzku (`describeError`: 401 = sesja wygasła, treść `error` z serwera). Stan dnia liczy wspólny hook

@@ -10,13 +10,12 @@ describe('coachChips', () => {
   it('po jeździe: RPE do dokończenia; wieczorem pytanie o jutro z nazwą jazdy', () => {
     expect(coachChips({ phase: 'after', lastWeightKg: null, rideName: null, tomorrowRide: null })[0]).toEqual({ label: 'RPE…', prefill: 'RPE ' })
     expect(coachChips({ phase: 'evening', lastWeightKg: null, rideName: null, tomorrowRide: 'Długa jazda' })[0]!.send).toMatch(/Długa jazda/)
-    expect(coachChips({ phase: 'evening', lastWeightKg: null, rideName: null, tomorrowRide: null })[0]!.label).toBe('Co w tym tygodniu?')
+    expect(coachChips({ phase: 'evening', lastWeightKg: null, rideName: null, tomorrowRide: null })[0]!.send).toBe('Co mnie czeka jutro?')
   })
-  it('każdy stan ma 3–4 podpowiedzi, każda z prefill albo send', () => {
+  it('każdy stan ma 5 podpowiedzi, każda z prefill albo send', () => {
     for (const phase of ['morning', 'brief', 'riding', 'after', 'evening', 'rest', 'skipped', 'missed', 'future'] as const) {
       const c = coachChips({ phase, lastWeightKg: 100, rideName: 'X', tomorrowRide: 'Y' })
-      expect(c.length).toBeGreaterThanOrEqual(3)
-      expect(c.length).toBeLessThanOrEqual(4)
+      expect(c.length).toBe(5)
       for (const x of c) expect(!!x.prefill || !!x.send).toBe(true)
     }
   })
