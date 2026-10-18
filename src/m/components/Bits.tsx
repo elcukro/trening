@@ -3,6 +3,9 @@ import type { ResolvedWorkout } from '@/engine/types'
 import { mainTarget } from '@/day/summary'
 import { zoneColor } from '@/lib/zones'
 
+/** Kolor oceny jazdy (rideVerdict.tone): dobrze zielony, tak sobie pomarańczowy, źle czerwony. */
+export const TONE_COLOR: Record<'good' | 'ok' | 'warn', string> = { good: 'var(--green)', ok: 'var(--orange)', warn: 'var(--red)' }
+
 /** Mała liczba z podpisem – trzy obok siebie na karcie. */
 export function Stat({ value, label }: { value: string; label: string }) {
   return (

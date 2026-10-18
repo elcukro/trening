@@ -13,7 +13,7 @@ import { minutes, num } from '@/lib/format'
 import { DAY_TYPE_LABEL } from '@/lib/labels'
 import { Btn, Card, Group, Row, Screen } from '../components/Chrome'
 import { CheckinSheet } from '../components/CheckinSheet'
-import { RpeRow, Stat, Targets } from '../components/Bits'
+import { RpeRow, Stat, Targets, TONE_COLOR } from '../components/Bits'
 import { dayColor } from '../dayColor'
 import { useLastRide, useWeekState } from '../useWeek'
 import { useDayPhase } from '../useDayPhase'
@@ -228,13 +228,13 @@ function StateCard(p: CardProps) {
       const note = a?.note ?? null
       return (
         <Card day>
-          <p className="m-eyebrow" style={{ color: 'var(--day)' }}>
-            {phase === 'evening' ? 'Po treningu' : 'Jak poszło'}
+          <p className="m-eyebrow" style={{ color: verdict ? TONE_COLOR[verdict.tone] : 'var(--day)' }}>
+            {verdict?.text ?? (phase === 'evening' ? 'Po treningu' : 'Jak poszło')}
           </p>
           <p className="m-title mt-1">{a?.name ?? name}</p>
           {a && (
             <div className="mt-3 grid grid-cols-3 gap-2">
-              <Stat value={p.score != null ? `${p.score} %` : '—'} label={verdict?.text ?? 'zgodność'} />
+              <Stat value={p.score != null ? `${p.score} %` : '—'} label="zgodność" />
               <Stat value={load ? String(Math.round(load.tss)) : '—'} label="TSS" />
               <Stat value={a.decoupling_pct != null ? `${num(a.decoupling_pct)} %` : a.avg_hr ? `${Math.round(a.avg_hr)}` : '—'} label={a.decoupling_pct != null ? 'dryf tętna' : 'śr. tętno'} />
             </div>

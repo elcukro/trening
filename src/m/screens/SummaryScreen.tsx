@@ -9,7 +9,7 @@ import { fmtLong, todayISO } from '@/lib/dates'
 import { minutes, num } from '@/lib/format'
 import { zoneColor } from '@/lib/zones'
 import { Btn, Card, Group, Screen } from '../components/Chrome'
-import { RpeRow, Stat } from '../components/Bits'
+import { RpeRow, Stat, TONE_COLOR } from '../components/Bits'
 import { dayColor } from '../dayColor'
 import { ART } from '../art'
 import { useOpenCoach } from '../coach'
@@ -78,7 +78,7 @@ export function SummaryScreen() {
       )}
 
       <Card day>
-        <p className="m-eyebrow" style={{ color: 'var(--day)' }}>
+        <p className="m-eyebrow" style={{ color: verdict ? TONE_COLOR[verdict.tone] : 'var(--day)' }}>
           {verdict?.text ?? 'Jazda'}
         </p>
         <p className="m-title mt-1">{a.name ?? 'Jazda'}</p>
@@ -87,7 +87,7 @@ export function SummaryScreen() {
           <Stat value={load ? String(Math.round(load.tss)) : '—'} label="TSS" />
           <Stat value={continuous && a.decoupling_pct != null ? `${num(a.decoupling_pct)} %` : a.avg_hr ? `${Math.round(a.avg_hr)}` : '—'} label={continuous && a.decoupling_pct != null ? 'dryf tętna' : 'śr. tętno'} />
         </div>
-        {continuous && a.decoupling_pct != null && <p className="m-foot m-dim mt-2">Pw:HR {num(a.decoupling_pct)} % · {decouplingNote(a.decoupling_pct)}</p>}
+        {continuous && a.decoupling_pct != null && <p className="m-foot m-dim mt-2">Dryf tętna (Pw:HR): {decouplingNote(a.decoupling_pct)}.</p>}
         <div className="mt-4">
           <RpeRow value={rpe} onPick={(v) => void saveRpe(v)} />
         </div>
