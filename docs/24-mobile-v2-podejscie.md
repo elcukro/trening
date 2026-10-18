@@ -188,6 +188,12 @@ zapisywane jednym dotknięciem, „Cofnij” dla pominiętego, „Oznacz jako po
 (`useOpenCoach`) do otwierania Trenera z kart. Podgląd stanów: `/m?today=2026-10-21&hour=8` (rano), `&hour=19` (w trakcie),
 `/m/dzien/<przeszła data>` (bez jazdy / pominięte), `/m/dzien/<przyszła>` (zapowiedź).
 
+**Warstwa „życia” (18.10.2026, po drugim teście – „trochę smutno na tych ekranach”):** `src/day/weekState.ts` (czysty TS,
+wynik dni tygodnia i bilans minut; test `weekState.test.ts`) → `WeekStrip` (siedem słupków: wysokość = plan, kolor = wynik;
+na Dziś wersja zwarta, w Planie pełna z liczbą treningów i treningiem kluczowym), wiersz „Ostatnia jazda” na Dziś
+(`useLastRide`), ilustracja na karcie pominiętego dnia, w Planie ikona typu dnia przy każdym wierszu i znak wyniku
+(✓ / ✕ / –), na Ja trzy kafelki (FTP i brakujące waty do celu, masa z trendem, forma z CTL/TSB) z `useSnapshot`.
+
 **Stan: kroki 0 i 1 zrobione 18.10.2026** (`src/day/`, `src/m/` ze szkieletem trzech ekranów, `ui_mode 'm'`, przełączniki, `mobilePathFor`).
 
 Razem ok. 7 dni pracy; po kroku 3 v2 nadaje się do codziennego użycia równolegle z `/i`.

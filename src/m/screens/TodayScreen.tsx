@@ -18,6 +18,9 @@ import { Btn, Card, Group, Row, Screen } from '../components/Chrome'
 import { CheckinSheet } from '../components/CheckinSheet'
 import { StepsSheet } from '../components/StepsSheet'
 import { dayColor } from '../dayColor'
+import { useLastRide, useWeekState } from '../useWeek'
+import { WeekStrip } from '../components/WeekStrip'
+import { fmtShort } from '@/lib/dates'
 import { ART, dayArt, weatherArt } from '../art'
 import { useOpenCoach } from '../coach'
 
@@ -65,6 +68,8 @@ export function TodayScreen() {
   )
   const color = dayColor(day?.day_type, day?.flags.includes('test'))
   const tomorrow = d.view.window.find((x) => x.date === addDays(date, 1)) ?? null
+  const week = useWeekState(date, d.view.window, today)
+  const lastRide = useLastRide(date)
   const warn = d.view.warnings.filter((w) => w.severity === 'warn')
 
   async function saveRpe(rpe: number) {
@@ -116,9 +121,20 @@ export function TodayScreen() {
         </div>
       )}
 
+      {day && isToday && <WeekStrip week={week} today={today} compact />}
+
       {day && (
         <Group>
           <Row title="Żywienie" sub={day.nutrition.label} value={`${day.protein_g} g białka`} icon={<img src={ART.scale} alt="" width={28} height={28} className="h-7 w-7 object-contain" />} />
+          {lastRide && lastRide.date !== date && (
+            <Row
+              title="Ostatnia jazda"
+              sub={`${fmtShort(lastRide.date)} · ${lastRide.name ?? 'Jazda'}`}
+              value={`${num((lastRide.distance_m ?? 0) / 1000, 0)} km${lastRide.device_watts && lastRide.np_w ? ` · ${Math.round(lastRide.np_w)} W` : lastRide.avg_hr ? ` · ${Math.round(lastRide.avg_hr)} bpm` : ''}`}
+              to={`/m/dzien/${lastRide.date}`}
+              icon={<img src={ART.heart} alt="" width={28} height={28} className="h-7 w-7 object-contain" />}
+            />
+          )}
           {isToday && tomorrow && <Row title="Jutro" sub={tomorrow.bike ? `${tomorrow.bike.name} · ${minutes(tomorrow.bike.duration_min)}` : tomorrow.gym ? tomorrow.gym.name : 'Wolne'} to={`/m/dzien/${tomorrow.date}`} icon={<img src={dayArt(tomorrow.day_type, tomorrow.flags.includes('test'))} alt="" width={28} height={28} className="h-7 w-7 object-contain" />} />}
         </Group>
       )}
@@ -282,11 +298,16 @@ function StateCard(p: CardProps) {
     case 'skipped':
       return (
         <Card>
-          <p className="m-eyebrow" style={{ color: 'var(--red)' }}>
-            Odpuszczone
-          </p>
-          <p className="m-title mt-1">{name}</p>
-          {(day.bike ? d.rideLog?.notes : d.gymLog?.notes) && <p className="m-sub m-dim mt-2">{day.bike ? d.rideLog?.notes : d.gymLog?.notes}</p>}
+          <div className="flex items-start gap-3">
+            <div className="min-w-0 flex-1">
+              <p className="m-eyebrow" style={{ color: 'var(--red)' }}>
+                Odpuszczone
+              </p>
+              <p className="m-title mt-1">{name}</p>
+              {(day.bike ? d.rideLog?.notes : d.gymLog?.notes) && <p className="m-sub m-dim mt-2">{day.bike ? d.rideLog?.notes : d.gymLog?.notes}</p>}
+            </div>
+            <img src={ART.rest} alt="" width={96} height={96} className="-mt-1 -mr-1 h-24 w-24 shrink-0 object-contain" />
+          </div>
           <Btn soft onClick={() => void p.onUnskip()} className="mt-4 w-full">
             Cofnij
           </Btn>
