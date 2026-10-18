@@ -22,7 +22,7 @@ export function useViewport(): void {
       // byłby obcięty. Stan okna zapisujemy też do diagnostyki (ekran Ja).
       const h = window.innerHeight
       root.style.setProperty('--m-h', `${h}px`)
-      root.dataset.mViewport = `${window.innerWidth}×${h} · ekran ${window.screen.width}×${window.screen.height} · scrollY ${Math.round(window.scrollY)} · vv ${vv ? `${Math.round(vv.height)} +${Math.round(vv.offsetTop)}` : '–'}${standalone ? ' · PWA' : ''}`
+      root.dataset.mViewport = `${window.innerWidth}×${h} · ekran ${window.screen.width}×${window.screen.height} · scrollY ${Math.round(window.scrollY)} · vv ${vv ? `${Math.round(vv.height)} +${Math.round(vv.offsetTop)}` : '–'}${standalone ? ' · PWA' : ''}${pokes ? ` · bodziec ×${pokes}` : ''}`
       if (vv && keyboardOpen()) {
         root.style.setProperty('--m-vvh', `${Math.round(vv.height)}px`)
         root.style.setProperty('--m-vv-top', `${Math.round(vv.offsetTop)}px`)
@@ -31,8 +31,27 @@ export function useViewport(): void {
         root.style.setProperty('--m-vv-top', '0px')
       }
     }
+    /**
+     * iOS po wznowieniu PWA potrafi skrócić sam WebView o wysokość paska statusu (okno 894 przy ekranie 956 na
+     * iPhone 16 Pro Max) i nie przywraca go bez bodźca. Zmiana meta `viewport` każe WebKitowi przeliczyć ramkę
+     * i wstawki bezpieczeństwa – przełączamy `viewport-fit` na chwilę i z powrotem. Liczbę prób pokazuje diagnostyka.
+     */
+    const meta = document.querySelector<HTMLMetaElement>('meta[name="viewport"]')
+    let pokes = 0
+    const shrunk = () => standalone && window.innerWidth <= window.innerHeight && window.innerHeight < window.screen.height - 40
+    const poke = () => {
+      if (!meta || !shrunk() || pokes >= 6) return
+      pokes++
+      const content = meta.content
+      meta.content = content.replace('viewport-fit=cover', 'viewport-fit=auto')
+      window.requestAnimationFrame(() => {
+        meta.content = content
+        window.setTimeout(measure, 50)
+      })
+    }
     /** Po wznowieniu: dokument na górę (iOS potrafi „przewinąć” go o pasek statusu) i wymuszone przeliczenie układu. */
     const relayout = () => {
+      poke()
       window.scrollTo(0, 0)
       if (document.scrollingElement) document.scrollingElement.scrollTop = 0
       const m = document.querySelector<HTMLElement>('.m')
