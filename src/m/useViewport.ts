@@ -1,28 +1,34 @@
 import { useEffect } from 'react'
 
 /**
- * Wysokość okna i widocznego obszaru mierzona w JS, nie w CSS (docs/24 § 6).
- * iOS w trybie PWA po wznowieniu aplikacji podaje przez chwilę (czasem do następnej nawigacji) nieaktualne `100dvh`
- * i `innerHeight` – za małe o kilkadziesiąt pt – przez co korzeń `/m` był za krótki, a pasek wisiał za wysoko.
- * W trybie standalone (zawsze pełny ekran, orientacja pionowa w manifeście) prawdziwą wysokością jest `screen.height`,
- * więc bierzemy większą z obu. Zmienne CSS: `--m-h` (okno), `--m-vvh` i `--m-vv-top` (obszar bez klawiatury – dla czatu;
- * `visualViewport` liczy się tylko, gdy pole tekstowe ma fokus, inaczej jego wysokość też bywa nieaktualna).
+ * Wysokość okna mierzona w JS i „leczenie” viewportu (docs/24 § 6).
+ *
+ * Błąd iOS w PWA ze startu z ekranu początkowego: po pierwszym otwarciu klawiatury (albo po wznowieniu) okno
+ * WebView kurczy się o wysokość paska statusu – `innerHeight`, `visualViewport.height` i `100dvh` pokazują
+ * np. 894 zamiast 956 i tak zostają aż do ubicia aplikacji. Jedyne, co przywraca pełną wysokość, to przełączenie
+ * `display` na elemencie o PEŁNEJ wysokości ekranu (tak działa nawigacja w SPA, która „sama” naprawiała pasek).
+ * Robimy to po zamknięciu klawiatury (blur) i po wznowieniu, gdy okno jest niższe od największego widzianego.
+ * Zmienne CSS: `--m-h` (okno), `--m-vvh` i `--m-vv-top` (obszar bez klawiatury – dla czatu).
+ * Źródła: dev.to/cederhook (keyboard bug), zarda/home-account#493 (podłoga 100lvh).
  */
 export function useViewport(): void {
   useEffect(() => {
     const root = document.documentElement
     const vv = window.visualViewport
     const standalone = (navigator as { standalone?: boolean }).standalone === true || window.matchMedia('(display-mode: standalone)').matches
+    const portrait = () => window.innerWidth <= window.innerHeight
+    // największa wysokość, jaką okno miało – w PWA w pionie punktem wyjścia jest pełny ekran
+    let maxSeen = standalone && portrait() ? Math.max(window.innerHeight, window.screen.height) : window.innerHeight
+    let heals = 0
     const keyboardOpen = () => {
       const el = document.activeElement
       return !!el && (el.tagName === 'TEXTAREA' || el.tagName === 'INPUT')
     }
     const measure = () => {
-      // `innerHeight`, nie `screen.height`: po wznowieniu iOS potrafi naprawdę rysować w niższym oknie – wyższy korzeń
-      // byłby obcięty. Stan okna zapisujemy też do diagnostyki (ekran Ja).
       const h = window.innerHeight
+      if (h > maxSeen) maxSeen = h
       root.style.setProperty('--m-h', `${h}px`)
-      root.dataset.mViewport = `${window.innerWidth}×${h} · ekran ${window.screen.width}×${window.screen.height} · scrollY ${Math.round(window.scrollY)} · vv ${vv ? `${Math.round(vv.height)} +${Math.round(vv.offsetTop)}` : '–'}${standalone ? ' · PWA' : ''}${pokes ? ` · bodziec ×${pokes}` : ''}`
+      root.dataset.mViewport = `${window.innerWidth}×${h} · ekran ${window.screen.width}×${window.screen.height} · max ${maxSeen} · vv ${vv ? Math.round(vv.height) : '–'}${standalone ? ' · PWA' : ''}${heals ? ` · leczenie ×${heals}` : ''}`
       if (vv && keyboardOpen()) {
         root.style.setProperty('--m-vvh', `${Math.round(vv.height)}px`)
         root.style.setProperty('--m-vv-top', `${Math.round(vv.offsetTop)}px`)
@@ -31,71 +37,58 @@ export function useViewport(): void {
         root.style.setProperty('--m-vv-top', '0px')
       }
     }
-    /**
-     * iOS po wznowieniu PWA potrafi skrócić sam WebView o wysokość paska statusu (okno 894 przy ekranie 956 na
-     * iPhone 16 Pro Max) i nie przywraca go bez bodźca. Zmiana meta `viewport` każe WebKitowi przeliczyć ramkę
-     * i wstawki bezpieczeństwa – przełączamy `viewport-fit` na chwilę i z powrotem. Liczbę prób pokazuje diagnostyka.
-     */
-    const meta = document.querySelector<HTMLMetaElement>('meta[name="viewport"]')
-    let pokes = 0
-    const shrunk = () => standalone && window.innerWidth <= window.innerHeight && window.innerHeight < window.screen.height - 40
-    const poke = () => {
-      if (!meta || !shrunk() || pokes >= 6) return
-      pokes++
-      const content = meta.content
-      meta.content = content.replace('viewport-fit=cover', 'viewport-fit=auto')
+    /** Okno niższe niż bywało → element pełnej wysokości znika i wraca, WebKit liczy okno od nowa. */
+    const heal = () => {
+      if (keyboardOpen() || maxSeen - window.innerHeight <= 4) {
+        measure()
+        return
+      }
+      const m = document.querySelector<HTMLElement>('.m')
+      if (!m) return
+      heals++
+      const scroller = m.querySelector<HTMLElement>('.m-scroll')
+      const top = scroller?.scrollTop ?? 0
+      m.style.height = `${maxSeen}px`
+      m.style.display = 'none'
+      void m.offsetHeight
+      m.style.display = ''
       window.requestAnimationFrame(() => {
-        meta.content = content
-        window.setTimeout(measure, 50)
+        m.style.height = ''
+        if (scroller) scroller.scrollTop = top
+        measure()
       })
     }
-    /** Po wznowieniu: dokument na górę (iOS potrafi „przewinąć” go o pasek statusu) i wymuszone przeliczenie układu. */
-    const relayout = () => {
-      poke()
-      window.scrollTo(0, 0)
-      if (document.scrollingElement) document.scrollingElement.scrollTop = 0
-      const m = document.querySelector<HTMLElement>('.m')
-      // nie chowamy korzenia, gdy pole ma fokus – zdjęłoby to klawiaturę
-      if (m && !keyboardOpen()) {
-        m.style.display = 'none'
-        void m.offsetHeight
-        m.style.display = ''
-      }
-      measure()
-    }
-    const later = () => {
-      relayout()
-      window.setTimeout(relayout, 150)
-      window.setTimeout(relayout, 600)
-      window.setTimeout(relayout, 1500)
-    }
-    /** Zmiana fokusu (klawiatura): tylko pomiar, z opóźnieniem na animację klawiatury. */
-    const measureSoon = () => {
-      measure()
-      window.setTimeout(measure, 150)
-      window.setTimeout(measure, 600)
+    const healSoon = () => {
+      window.setTimeout(heal, 140)
+      window.setTimeout(heal, 500)
+      window.setTimeout(heal, 1200)
     }
     const onVisible = () => {
-      if (document.visibilityState === 'visible') later()
+      if (document.visibilityState === 'visible') healSoon()
     }
-    later()
+    const onFocusOut = () => {
+      measure()
+      healSoon()
+    }
+    measure()
+    healSoon()
     window.addEventListener('resize', measure)
-    window.addEventListener('orientationchange', later)
-    window.addEventListener('pageshow', later)
-    window.addEventListener('focus', later)
+    window.addEventListener('orientationchange', healSoon)
+    window.addEventListener('pageshow', healSoon)
+    window.addEventListener('focus', healSoon)
     document.addEventListener('visibilitychange', onVisible)
-    document.addEventListener('focusin', measureSoon)
-    document.addEventListener('focusout', measureSoon)
+    document.addEventListener('focusin', measure)
+    document.addEventListener('focusout', onFocusOut)
     vv?.addEventListener('resize', measure)
     vv?.addEventListener('scroll', measure)
     return () => {
       window.removeEventListener('resize', measure)
-      window.removeEventListener('orientationchange', later)
-      window.removeEventListener('pageshow', later)
-      window.removeEventListener('focus', later)
+      window.removeEventListener('orientationchange', healSoon)
+      window.removeEventListener('pageshow', healSoon)
+      window.removeEventListener('focus', healSoon)
       document.removeEventListener('visibilitychange', onVisible)
-      document.removeEventListener('focusin', measureSoon)
-      document.removeEventListener('focusout', measureSoon)
+      document.removeEventListener('focusin', measure)
+      document.removeEventListener('focusout', onFocusOut)
       vv?.removeEventListener('resize', measure)
       vv?.removeEventListener('scroll', measure)
       root.style.removeProperty('--m-h')
