@@ -128,8 +128,12 @@ API nie działa w PWA na iOS – nie udajemy własnego nagrywania).
 
 ## 5. Wygląd
 
-- Własny arkusz `src/m/m.css` z tokenami (`--bg`, `--card`, `--label`, `--accent`, `--zone-*`, skala 34/28/22/17/15/13),
-  jasny i ciemny z `prefers-color-scheme` i klasą `dark` (jak dziś). Czcionka systemowa (`-apple-system`), liczby
+- **Tylko jasny motyw** (decyzja 18.10.2026 po pierwszym teście na iPhonie – ciemny nie pasował do renderów 3D): `m.css` nie ma
+  bloku `html.dark`, a `html:has(.m)` wymusza jasne tło i `color-scheme: light` także przy ciemnym motywie telefonu.
+- **Dolny pasek** (18.10.2026): pływająca pigułka z trzema zakładkami (ikony 3D `tab-today`, `tab-plan`, `tab-me`; nieaktywne
+  wyszarzone filtrem, aktywna z tłem akcentu) i okrągły przycisk Trenera z twarzą (`coach-face.png` – kadr z `coach.png`
+  przez `sips -c`). Pasek nie dotyka krawędzi, treść przewija się pod nim (`.m-pb-tab`).
+- Własny arkusz `src/m/m.css` z tokenami (`--bg`, `--card`, `--label`, `--accent`, `--zone-*`, skala 34/28/22/17/15/13). Czcionka systemowa (`-apple-system`), liczby
   `font-variant-numeric: tabular-nums`.
 - Jedna karta na ekran w akcencie dnia (kolor strefy głównego kroku: Z2 zielony, akcent pomarańczowy, test czerwony,
   wolne szary) – ekran mówi kolorem, jaki to dzień, zanim przeczytasz.

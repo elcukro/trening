@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState, type ReactNode } from 'react'
 import { NavLink, useNavigate } from 'react-router'
-import { IconChevronLeft, IconClose, IconHeart, IconProgress, IconToday, IconWeek } from '@/ios/components/Icons'
+import { IconChevronLeft, IconClose } from '@/ios/components/Icons'
 
 /* ------------------------------------------------------------------ ekran z dużym tytułem */
 
@@ -135,26 +135,28 @@ export function Sheet({ title, onClose, children, action }: { title: string; onC
 /* ------------------------------------------------------------------ dolny pasek */
 
 const TABS = [
-  { to: '/m', label: 'Dziś', Icon: IconToday, end: true, col: 1 },
-  { to: '/m/plan', label: 'Plan', Icon: IconWeek, end: false, col: 2 },
-  { to: '/m/ja', label: 'Ja', Icon: IconProgress, end: false, col: 4 },
+  { to: '/m', label: 'Dziś', icon: '/m/art/tab-today.png', end: true },
+  { to: '/m/plan', label: 'Plan', icon: '/m/art/tab-plan.png', end: false },
+  { to: '/m/ja', label: 'Ja', icon: '/m/art/tab-me.png', end: false },
 ] as const
 
-/** Trzy zakładki i wyróżniony przycisk Trener pośrodku (docs/24 § 3). */
+/**
+ * Pływająca pigułka z trzema zakładkami (ikony 3D z `public/m/art`, nieaktywne wyszarzone) i okrągły przycisk
+ * Trenera z jego twarzą (docs/24 § 3). Pasek nie dotyka krawędzi ekranu – treść przewija się pod nim.
+ */
 export function TabBar({ onCoach }: { onCoach: () => void }) {
   return (
     <nav className="m-tabbar" aria-label="Nawigacja główna">
-      {TABS.map((t) => (
-        <NavLink key={t.to} to={t.to} end={t.end} className="m-tab" style={{ gridColumn: t.col === 4 ? 5 : t.col }}>
-          <t.Icon size={26} />
-          {t.label}
-        </NavLink>
-      ))}
-      <button className="m-tab-coach" onClick={onCoach} aria-label="Trener">
-        <span className="m-tab-coach-btn">
-          <IconHeart size={26} />
-        </span>
-        Trener
+      <div className="m-tabs">
+        {TABS.map((t) => (
+          <NavLink key={t.to} to={t.to} end={t.end} className="m-tab">
+            <img src={t.icon} alt="" width={26} height={26} />
+            {t.label}
+          </NavLink>
+        ))}
+      </div>
+      <button className="m-fab" onClick={onCoach} aria-label="Trener">
+        <img src="/m/art/coach-face.png" alt="" width={64} height={64} />
       </button>
     </nav>
   )

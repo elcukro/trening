@@ -55,6 +55,10 @@ const ASSETS = {
   gym: { prompt: 'A chunky blue dumbbell, slightly angled.' },
   bolt: { prompt: 'A small bike computer device with a rounded screen showing a simple green route line, mounted on a short handlebar stub.' },
   scale: { prompt: 'A simple bathroom scale in white with a small blue display.' },
+  // ikony dolnego paska (docs/24 § 3) – ta sama rodzina co pogoda i typy dnia
+  'tab-today': { prompt: 'A calendar page icon in sky blue with a white top bar and a single bold white check mark in the middle.' },
+  'tab-plan': { prompt: 'A weekly planner icon: a rounded sky blue panel with three horizontal white bars of different lengths, each with a small round orange dot on the left.' },
+  'tab-me': { prompt: 'A progress icon: a rounded sky blue panel with a bold white rising zigzag arrow pointing up-right.' },
   heart: { prompt: 'A glossy red heart with a thin white heartbeat line across it.' },
 }
 
