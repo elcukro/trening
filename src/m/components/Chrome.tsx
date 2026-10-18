@@ -108,26 +108,32 @@ export function Sheet({ title, onClose, children, action }: { title: string; onC
     document.addEventListener('keydown', onKey)
     const prev = document.body.style.overflow
     document.body.style.overflow = 'hidden'
+    // pasek zakładek znika na czas arkusza – przy otwartej klawiaturze wjeżdżał na pola (18.10.2026)
+    document.body.classList.add('m-sheet-open')
     panel.current?.focus()
     return () => {
       document.removeEventListener('keydown', onKey)
       document.body.style.overflow = prev
+      document.body.classList.remove('m-sheet-open')
     }
   }, [onClose])
 
   return (
     <>
       <div className="m-backdrop" onClick={onClose} />
-      <div ref={panel} tabIndex={-1} className="m-sheet focus:outline-none" role="dialog" aria-modal="true" aria-label={title}>
-        <div className="m-grabber" />
-        <div className="relative flex items-center justify-between px-2 py-1">
-          <button className="m-nav-btn" onClick={onClose} aria-label="Zamknij">
-            <IconClose size={20} />
-          </button>
-          <span className="m-headline absolute left-1/2 -translate-x-1/2">{title}</span>
-          <span className="min-w-11">{action}</span>
+      {/* gospodarz dopasowany do visualViewport (jak .m-chat): z klawiaturą arkusz siedzi nad nią, nie pod nią */}
+      <div className="m-sheet-host">
+        <div ref={panel} tabIndex={-1} className="m-sheet focus:outline-none" role="dialog" aria-modal="true" aria-label={title}>
+          <div className="m-grabber" />
+          <div className="relative flex items-center justify-between px-2 py-1">
+            <button className="m-nav-btn" onClick={onClose} aria-label="Zamknij">
+              <IconClose size={20} />
+            </button>
+            <span className="m-headline absolute left-1/2 -translate-x-1/2">{title}</span>
+            <span className="min-w-11">{action}</span>
+          </div>
+          <div className="min-h-0 flex-1 overflow-y-auto px-4 pt-2 pb-6">{children}</div>
         </div>
-        <div className="min-h-0 flex-1 overflow-y-auto px-4 pt-2 pb-6">{children}</div>
       </div>
     </>
   )

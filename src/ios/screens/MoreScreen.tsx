@@ -19,6 +19,13 @@ import { IconBolt, IconCheck, IconChevron, IconFlag, IconGear, IconHeart, IconSu
 /** Moje liczby: FTP i LTHR – jedyne ustawienia, które zmienia się często (po każdym teście). */
 function NumbersSheet({ onClose }: { onClose: () => void }) {
   const engine = useEngine()
+  // ten sam błąd co w /m (18.10.2026): przed odpowiedzią Dexie `useSettings` daje domyślne ustawienia programu
+  if (!engine.settingsApi.loaded) return null
+  return <NumbersSheetLoaded onClose={onClose} />
+}
+
+function NumbersSheetLoaded({ onClose }: { onClose: () => void }) {
+  const engine = useEngine()
   const settings = engine.ctx.settings
   const settingsApi = engine.settingsApi
   const [ftp, setFtp] = useState(String(settings.ftp_w_estimate))

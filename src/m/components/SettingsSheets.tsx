@@ -13,8 +13,19 @@ export function Switch({ on, label, onChange, disabled }: { on: boolean; label: 
   )
 }
 
-/** Progi i miernik – jedyne ustawienia zmieniane często (po każdym teście). */
+/**
+ * Progi i miernik – jedyne ustawienia zmieniane często (po każdym teście).
+ * `useSettings` przy pierwszym renderze zwraca domyślne ustawienia programu (Dexie jeszcze nie odpowiedziała) – arkusz
+ * montujemy dopiero po wczytaniu, inaczej pola startują z cudzych wartości domyślnych (220 W, brak LTHR, bez miernika),
+ * a „Zapisz” nadpisuje nimi prawdziwe progi zawodnika (18.10.2026, drugie konto).
+ */
 export function NumbersSheet({ onClose }: { onClose: () => void }) {
+  const engine = useEngine()
+  if (!engine.settingsApi.loaded) return null
+  return <NumbersSheetLoaded onClose={onClose} />
+}
+
+function NumbersSheetLoaded({ onClose }: { onClose: () => void }) {
   const engine = useEngine()
   const settings = engine.ctx.settings
   const [ftp, setFtp] = useState(String(settings.ftp_w_estimate))
