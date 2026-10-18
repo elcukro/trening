@@ -1,3 +1,4 @@
+import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router'
 import { useAuth } from '@/sync/auth'
 import { useEngine } from '@/app/useSettings'
@@ -18,6 +19,14 @@ export function MeScreen() {
   const snap = useSnapshot()
   const form = formLabel(snap.form?.tsb ?? null)
   const toGoal = snap.goal.ftp - snap.ftp.w
+  // diagnostyka układu (docs/24 § 6): co iOS mówi o oknie – do zdjęcia po doszlifowaniu v2
+  const [diag, setDiag] = useState('')
+  useEffect(() => {
+    const read = () => setDiag(document.documentElement.dataset.mViewport ?? '')
+    read()
+    const id = window.setInterval(read, 1000)
+    return () => window.clearInterval(id)
+  }, [])
 
   return (
     <Screen title="Ja" subtitle={auth.session?.user.email ?? 'bez konta'}>
@@ -34,6 +43,7 @@ export function MeScreen() {
         <Row title="Otwórz pełną aplikację" sub="Kalendarz, wykresy, biblioteka, ustawienia" onClick={() => openFull('/')} />
       </Group>
       <p className="m-foot m-dim px-1">Ostatnie jazdy, testy i ustawienia (progi, miernik, powiadomienia, konto) – krok 6 w docs/24.</p>
+      {diag && <p className="m-foot m-dim-3 m-num px-1">Okno: {diag}</p>}
     </Screen>
   )
 }
