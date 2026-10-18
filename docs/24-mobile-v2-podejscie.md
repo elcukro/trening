@@ -128,14 +128,21 @@ API nie działa w PWA na iOS – nie udajemy własnego nagrywania).
 
 ## 5. Wygląd
 
-- **Układ jak aplikacja, nie strona** (18.10.2026): korzeń `.m` ma `height: var(--m-h)` (pomiar `innerHeight` w JS –
-  `src/m/useViewport.ts`, bo po wznowieniu PWA iOS podaje nieaktualne `100dvh` i `innerHeight`; w trybie standalone
-  w pionie bierzemy `max(innerHeight, screen.height)`, a `visualViewport` tylko gdy pole ma fokus (klawiatura); pomiar
-  powtarzany po `visibilitychange`, `pageshow`, `focus`, `focusin/out`, obrocie i zmianach `visualViewport`) i `overflow: hidden`, przewija się wewnętrzny
-  `<main class="m-scroll">`, a dolny pasek jest `position: absolute` względem korzenia. Powód: iOS w trybie PWA po wznowieniu
-  aplikacji przez chwilę liczył `position: fixed` względem nieaktualnego viewportu i pasek „pływał” o kilkanaście pt, aż do
-  pierwszego przewinięcia. Zmiana ekranu przewija kontener na górę (`MobileApp`), zwijany tytuł obserwuje sentinel względem
-  `.m-scroll` (`Screen` w `Chrome.tsx`).
+- **Układ jak aplikacja, nie strona** (18.10.2026): korzeń `.m` ma `height: var(--m-h)` i `overflow: hidden`, przewija się
+  wewnętrzny `<main class="m-scroll">`, a dolny pasek jest `position: absolute` względem korzenia. Zmiana ekranu przewija
+  kontener na górę (`MobileApp`), zwijany tytuł obserwuje sentinel względem `.m-scroll` (`Screen` w `Chrome.tsx`).
+- **Błąd iOS: PWA kurczy okno o pasek statusu** (rozwiązane 18.10.2026 po czterech podejściach, `src/m/useViewport.ts`).
+  W aplikacji z ekranu początkowego pierwsze otwarcie klawiatury (a czasem powrót z tła) skraca okno WebView o wysokość
+  paska statusu (iPhone 16 Pro Max: 894 zamiast 956 pt) i tak zostaje aż do ubicia aplikacji – `innerHeight`,
+  `visualViewport.height` i `100dvh` zgodnie kłamią, `env(safe-area-inset-*)` też. Nie pomagają: `scrollTo`, nasłuchiwanie
+  `visualViewport`, zmiana meta `viewport`, `screen.height` (korzeń wyższy od okna jest po prostu obcięty). **Działa tylko
+  zniknięcie i powrót (`display: none` → `''`) elementu o pełnej wysokości ekranu** – wtedy WebKit liczy okno od nowa; tak
+  „naprawiała” pasek zwykła nawigacja między ekranami. `useViewport` mierzy `innerHeight`, pamięta największą widzianą
+  wysokość (w PWA w pionie start od `screen.height`) i po `focusout`, `visibilitychange`, `pageshow`, `focus` i obrocie
+  leczy okno trzema próbami (140/500/1200 ms), z zachowaniem pozycji przewijania i nigdy przy otwartej klawiaturze.
+  Do tego `@media (display-mode: standalone) { html, body { min-height: 100lvh } }`. Czat (`.m-chat`) używa `--m-vvh` /
+  `--m-vv-top` z `visualViewport` tylko, gdy pole ma fokus. Diagnostyka: linia „Okno: …” na ekranie Ja (do zdjęcia po
+  doszlifowaniu v2). Źródła: dev.to/cederhook „Fixing the iOS standalone-PWA keyboard bug”, zarda/home-account#493.
 - **Tylko jasny motyw** (decyzja 18.10.2026 po pierwszym teście na iPhonie – ciemny nie pasował do renderów 3D): `m.css` nie ma
   bloku `html.dark`, a `html:has(.m)` wymusza jasne tło i `color-scheme: light` także przy ciemnym motywie telefonu.
 - **Dolny pasek** (18.10.2026): pływająca pigułka z trzema zakładkami (ikony 3D `tab-today`, `tab-plan`, `tab-me`; nieaktywne
