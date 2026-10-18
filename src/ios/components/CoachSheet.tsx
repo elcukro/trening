@@ -18,6 +18,9 @@ interface Line {
   ok?: boolean
 }
 
+/** Model mimo instrukcji potrafi pogrubić markdownem – w dymku ma być czysty tekst. */
+const plain = (t: string) => t.replace(/\*\*(.+?)\*\*/g, '$1').replace(/(^|\s)_(.+?)_(?=\s|$|[.,])/g, '$1$2')
+
 /** Historia (bloki) → linie do wyświetlenia: tekst zawodnika, tekst trenera, wyniki narzędzi. */
 function toLines(messages: ChatMessage[]): Line[] {
   const out: Line[] = []
@@ -27,7 +30,7 @@ function toLines(messages: ChatMessage[]): Line[] {
       continue
     }
     for (const b of m.content) {
-      if (b.type === 'text' && b.text.trim()) out.push({ role: m.role, text: b.text })
+      if (b.type === 'text' && b.text.trim()) out.push({ role: m.role, text: plain(b.text) })
       else if (b.type === 'tool_result') out.push({ role: 'tool', text: b.content, ok: !b.is_error })
     }
   }
