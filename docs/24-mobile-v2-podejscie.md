@@ -135,6 +135,12 @@ API nie działa w PWA na iOS – nie udajemy własnego nagrywania).
   wolne szary) – ekran mówi kolorem, jaki to dzień, zanim przeczytasz.
 - Ikony kreskowe z `Icons.tsx` (reużycie), bez emoji. Animacje tylko CSS (`view-transition`, `transform`), bez bibliotek.
 - Dostępność: `role`, `aria-label`, kontrast ≥ 4,5, Dynamic Type przez `rem` od 17 px.
+- **Grafiki (18.10.2026)**: miękkie rendery 3D z przezroczystym tłem w `public/m/art/` – trener (`coach`, `coach-wave`,
+  512 px), ikony pogody (`sun`, `partly-cloudy`, `cloud`, `rain`, `storm`, `snow`, `fog`, `wind`, `night`) i typów dnia
+  (`ride-easy`, `ride-key`, `ride-long`, `test`, `rest`, `gym`) oraz `bolt`, `scale`, `heart` (256 px). Generuje je
+  `node scripts/fal-art.mjs` (fal.ai: `nano-banana-pro` → `birefnet/v2`; klucz w `FAL_KEY`, poza repo; prompty i wspólny
+  styl w skrypcie, surowe obrazy do `scratch/`). Mapowania na stany: `src/m/art.ts` (`dayArt`, `weatherArt` z kodu WMO).
+  Nową ikonę dodaje się wpisem w `ASSETS` i uruchomieniem skryptu z jej id; `_sheet` do przeglądu zestawu robi się ad hoc.
 
 ## 6. Technika
 

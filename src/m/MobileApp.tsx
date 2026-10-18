@@ -13,6 +13,7 @@ import { TabBar, Sheet } from './components/Chrome'
 import { TodayScreen } from './screens/TodayScreen'
 import { PlanScreen } from './screens/PlanScreen'
 import { MeScreen } from './screens/MeScreen'
+import { ART } from './art'
 
 /**
  * Mobilny interfejs v2 (docs/24): trzy zakładki (Dziś, Plan, Ja) i przycisk Trener. Te same hooki konta,
@@ -68,7 +69,10 @@ export function MobileApp() {
       <TabBar onCoach={() => setCoach(true)} />
       {coach && (
         <Sheet title="Trener" onClose={() => setCoach(false)}>
-          <p className="m-sub m-dim py-6 text-center">Rozmowa z trenerem w nowym wyglądzie powstaje (krok 3 w docs/24). Na razie jest w poprzednim widoku: Dziś → Trener.</p>
+          <div className="flex flex-col items-center gap-3 py-4 text-center">
+            <img src={ART.coachWave} alt="" width={160} height={214} className="h-[214px] w-[160px] object-contain" />
+            <p className="m-sub m-dim">Rozmowa z trenerem w nowym wyglądzie powstaje (krok 3 w docs/24). Na razie jest w poprzednim widoku: Dziś → Trener.</p>
+          </div>
         </Sheet>
       )}
     </div>

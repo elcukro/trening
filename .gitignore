@@ -13,3 +13,4 @@ supabase/.branches/
 *.log
 .claude/worktrees/
 __pycache__/
+scratch/
