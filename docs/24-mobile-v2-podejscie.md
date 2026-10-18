@@ -228,6 +228,16 @@ w dniu; bez jazdy ze Stravy – komunikat i samo RPE). Wspólne drobiazgi (`Stat
 w `src/m/components/Bits.tsx`. Karta dnia: „Pokaż kroki” → jazda, „Podsumowanie” → podsumowanie; `mobilePathFor`
 mapuje `/i/trening/:d` → `/m/jazda/:d`.
 
+**Krok 5 zrobiony 18.10.2026:** Plan – `WeekPager` (trzy tygodnie ze `scroll-snap`, środkowy bieżący; zatrzymanie na
+sąsiednim panelu zmienia trasę `/m/plan/:monday` z zachowaniem `?today=`, panel wraca na środek bez animacji),
+`useLongPress` (420 ms bez ruchu; kliknięcie z tego samego dotknięcia nie przechodzi dalej) → `DayMenuSheet`:
+„Przenieś na inny dzień” (dni wolne od dziś w tym miesiącu, `validateMove` z silnika – zabronione wyszarzone z powodem),
+„Zamień z innym dniem” (ten tydzień, `validateSwap`), „Wersja pod dachem”, „Pomiń ten trening” (log `skipped` +
+override `skip`), „Cofnij zmiany tego dnia”. Każda zmiana to `toast.run` z akcją „Cofnij” (`removeOverride`, dla
+pominięcia także log z powrotem na `planned`). Baner „Na Bolcie jest stara wersja: …” pojawia się, gdy `external_id`
+wpisu w `wahoo_pushes` różni się od `pushItemForDay` dla dnia ≥ dziś; „Wyślij” wysyła tydzień przez `pushPayloadFor`.
+Ekran logowania w `/m` ładuje `ios.css` (wspólny `LoginScreen`).
+
 **Stan: kroki 0 i 1 zrobione 18.10.2026** (`src/day/`, `src/m/` ze szkieletem trzech ekranów, `ui_mode 'm'`, przełączniki, `mobilePathFor`).
 
 Razem ok. 7 dni pracy; po kroku 3 v2 nadaje się do codziennego użycia równolegle z `/i`.

@@ -7,6 +7,8 @@ import { useEmailSnapshots } from '@/sync/emailSnapshots'
 import { usePushKeepalive } from '@/sync/usePush'
 import { NO_ACCOUNT } from '@/day/useIos'
 import { LoginScreen } from '@/ios/screens/LoginScreen'
+// ekran logowania jest wspólny z /i i potrzebuje jego arkusza (reszta /m ma własny m.css)
+import '@/ios/ios.css'
 import { mobilePathFor } from '@/app/pushNav'
 import './m.css'
 import { TabBar } from './components/Chrome'

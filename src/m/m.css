@@ -550,3 +550,33 @@ button.m-row:active {
     transform: scale(1.1);
   }
 }
+
+/* ---------------------------------------------------------------- tygodnie gestem (Plan) */
+.m-pager {
+  display: flex;
+  overflow-x: auto;
+  scroll-snap-type: x mandatory;
+  scrollbar-width: none;
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior-x: contain;
+  margin: 0 -16px;
+}
+.m-pager::-webkit-scrollbar {
+  display: none;
+}
+.m-pager > * {
+  flex: 0 0 100%;
+  scroll-snap-align: start;
+  scroll-snap-stop: always;
+  padding: 0 16px;
+  box-sizing: border-box;
+}
+.m-hold {
+  -webkit-touch-callout: none;
+  -webkit-user-select: none;
+  user-select: none;
+}
+.m-hold[data-held='true'] {
+  transform: scale(0.985);
+  transition: transform 0.12s ease;
+}
