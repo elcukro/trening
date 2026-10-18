@@ -9,11 +9,11 @@ import { NO_ACCOUNT } from '@/day/useIos'
 import { LoginScreen } from '@/ios/screens/LoginScreen'
 import { mobilePathFor } from '@/app/pushNav'
 import './m.css'
-import { TabBar, Sheet } from './components/Chrome'
+import { TabBar } from './components/Chrome'
+import { CoachSheet } from './components/CoachSheet'
 import { TodayScreen } from './screens/TodayScreen'
 import { PlanScreen } from './screens/PlanScreen'
 import { MeScreen } from './screens/MeScreen'
-import { ART } from './art'
 import { CoachContext } from './coach'
 
 /**
@@ -71,15 +71,7 @@ export function MobileApp() {
           <Route path="*" element={<Navigate to={mobilePathFor(location.pathname) ?? '/m'} replace />} />
         </Routes>
         <TabBar onCoach={() => setCoach({})} />
-        {coach && (
-          <Sheet title="Trener" onClose={() => setCoach(false)}>
-            <div className="flex flex-col items-center gap-3 py-4 text-center">
-              <img src={ART.coachWave} alt="" width={160} height={214} className="h-[214px] w-[160px] object-contain" />
-              <p className="m-sub m-dim">Rozmowa z trenerem w nowym wyglądzie powstaje (krok 3 w docs/24). Na razie jest w poprzednim widoku: Dziś → Trener.</p>
-              {coach.prefill && <p className="m-foot m-dim-3">Początek wiadomości: „{coach.prefill.trim()}…”</p>}
-            </div>
-          </Sheet>
-        )}
+        {coach && <CoachSheet prefill={coach.prefill} onClose={() => setCoach(false)} />}
       </div>
     </CoachContext.Provider>
   )

@@ -16,6 +16,8 @@ export type ChatBlock =
 export interface ChatMessage {
   role: 'user' | 'assistant'
   content: string | ChatBlock[]
+  /** kiedy (ISO) – tylko w jednym wątku `/m`; serwer to pole ignoruje */
+  at?: string
 }
 
 export interface ChatReply {
@@ -25,12 +27,28 @@ export interface ChatReply {
   tools: { id: string; name: string; input: Record<string, unknown> }[]
 }
 
+/** Błąd funkcji po ludzku: treść `error` z odpowiedzi serwera (limit, brak klucza) albo status (401 = sesja wygasła). */
+async function describeError(e: unknown): Promise<string> {
+  const ctx = (e as { context?: Response }).context
+  if (ctx instanceof Response) {
+    if (ctx.status === 401) return 'Sesja wygasła – zaloguj się ponownie.'
+    try {
+      const body = (await ctx.clone().json()) as { error?: string }
+      if (body?.error) return body.error
+    } catch {
+      /* odpowiedź bez JSON */
+    }
+    return `Trener nie odpowiada (${ctx.status}).`
+  }
+  return e instanceof Error ? e.message : 'Trener nie odpowiada'
+}
+
 export const canChat = !!supabase
 
 export async function askCoach(messages: ChatMessage[], context: unknown): Promise<ChatReply> {
   if (!supabase) throw new Error('Bez konta trener nie odpowiada')
   const { data, error } = await supabase.functions.invoke<ChatReply & { error?: string }>('coach-chat', { body: { messages, context } })
-  if (error) throw new Error(error.message)
+  if (error) throw new Error(await describeError(error))
   if (!data || data.error) throw new Error(data?.error ?? 'brak odpowiedzi')
   return data
 }
@@ -56,4 +74,27 @@ export async function pruneChats(today: ISODate): Promise<void> {
   const cutoff = `${KEY}${addDays(today, -KEEP_DAYS)}`
   const old = (await db.kv.where('key').startsWith(KEY).toArray()).filter((r) => r.key < cutoff)
   if (old.length) await db.kv.bulkDelete(old.map((r) => r.key))
+}
+
+/* ------------------------------------------------------------------ jeden ciągły wątek (mobilny v2, docs/24 § 4) */
+
+const THREAD_KEY = 'coach_thread'
+
+/** Wątek z ostatnich 7 dni – zawodnik pyta wieczorem o jutro, więc podział per dzień nie ma sensu. */
+export async function loadThread(today: ISODate): Promise<ChatMessage[]> {
+  const row = await db.kv.get(THREAD_KEY)
+  const all = Array.isArray(row?.value) ? (row.value as ChatMessage[]) : []
+  const cutoff = `${addDays(today, -KEEP_DAYS)}T00:00:00`
+  const kept = all.filter((m) => !m.at || m.at >= cutoff)
+  // wątek nie może zaczynać się od asystenta ani od wyników narzędzi bez ich wywołania – obcinamy do pierwszej wiadomości użytkownika z tekstem
+  const start = kept.findIndex((m) => m.role === 'user' && (typeof m.content === 'string' || m.content.some((b) => b.type === 'text')))
+  return start < 0 ? [] : kept.slice(start)
+}
+
+export async function saveThread(messages: ChatMessage[]): Promise<void> {
+  await db.kv.put({ key: THREAD_KEY, value: messages, updated_at: new Date().toISOString() })
+}
+
+export async function clearThread(): Promise<void> {
+  await db.kv.delete(THREAD_KEY)
 }

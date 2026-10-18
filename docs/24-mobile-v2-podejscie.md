@@ -194,6 +194,14 @@ na Dziś wersja zwarta, w Planie pełna z liczbą treningów i treningiem kluczo
 (`useLastRide`), ilustracja na karcie pominiętego dnia, w Planie ikona typu dnia przy każdym wierszu i znak wyniku
 (✓ / ✕ / –), na Ja trzy kafelki (FTP i brakujące waty do celu, masa z trendem, forma z CTL/TSB) z `useSnapshot`.
 
+**Krok 3 zrobiony 18.10.2026:** `src/m/components/CoachSheet.tsx` – jeden ciągły wątek (`coach_thread` w kv, 7 dni,
+`loadThread`/`saveThread` w `src/sync/coachChat.ts`; wiadomości mają `at`, separatory dni w rozmowie), podpowiedzi
+nad klawiaturą z `src/day/coachChips.ts` (czysty TS wg `DayPhase`: rano waga z ostatnią wartością jako początek wiadomości,
+po jeździe „RPE…”, wieczorem „Co jutro?”, „Jutro nie dam rady”; testy `coachChips.test.ts`), `prefill` z karty dnia
+(`CoachContext.open('Waga 107, tętno ')`), dymki z twarzą trenera, wyniki narzędzi jako zielone/czerwone linie, błędy
+funkcji po ludzku (`describeError`: 401 = sesja wygasła, treść `error` z serwera). Stan dnia liczy wspólny hook
+`src/m/useDayPhase.ts` (Dziś i Trener). `/i` zostaje przy rozmowie per dzień.
+
 **Stan: kroki 0 i 1 zrobione 18.10.2026** (`src/day/`, `src/m/` ze szkieletem trzech ekranów, `ui_mode 'm'`, przełączniki, `mobilePathFor`).
 
 Razem ok. 7 dni pracy; po kroku 3 v2 nadaje się do codziennego użycia równolegle z `/i`.

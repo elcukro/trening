@@ -1,24 +1,22 @@
-import { useMemo, useState } from 'react'
-import { useLiveQuery } from 'dexie-react-hooks'
+import { useState } from 'react'
 import { useParams } from 'react-router'
-import { db } from '@/db'
 import { upsertSessionLog } from '@/db/repo'
 import { addDays, isValidISODate } from '@/engine/dates'
 import type { DayPlan } from '@/engine/plan'
 import { useIosDay, useRideScore, type IosDay } from '@/day/useIos'
 import { useBriefing, type Briefing } from '@/day/useBriefing'
-import { dayPhase, rideVerdict, type DayPhase } from '@/day/dayState'
+import { rideVerdict, type DayPhase } from '@/day/dayState'
 import { mainTarget, structureLabel } from '@/day/summary'
 import { useToast } from '@/components/Toast'
-import { fmtLong, nowHour, todayISO } from '@/lib/dates'
+import { fmtLong, todayISO } from '@/lib/dates'
 import { minutes, num } from '@/lib/format'
 import { DAY_TYPE_LABEL } from '@/lib/labels'
-import { DEFAULT_RIDE_HOURS, type RideHours } from '@/sync/weather'
 import { Btn, Card, Group, Row, Screen } from '../components/Chrome'
 import { CheckinSheet } from '../components/CheckinSheet'
 import { StepsSheet } from '../components/StepsSheet'
 import { dayColor } from '../dayColor'
 import { useLastRide, useWeekState } from '../useWeek'
+import { useDayPhase } from '../useDayPhase'
 import { WeekStrip } from '../components/WeekStrip'
 import { fmtShort } from '@/lib/dates'
 import { ART, dayArt, weatherArt } from '../art'
@@ -26,7 +24,6 @@ import { useOpenCoach } from '../coach'
 
 const LOGGED = ['done', 'modified', 'skipped']
 const cap = (t: string) => t.charAt(0).toUpperCase() + t.slice(1)
-const stateOf = (log: { status: string } | undefined) => (log ? (log.status as 'planned' | 'in_progress' | 'done' | 'modified' | 'skipped') : 'none')
 
 /**
  * Dziś (docs/24 § 4): jedna karta stanu, która zmienia się w ciągu dnia, pod nią oś dnia, żywienie i jutro.
@@ -41,31 +38,11 @@ export function TodayScreen() {
   const toast = useToast()
   const openCoach = useOpenCoach()
   const [sheet, setSheet] = useState<'checkin' | 'steps' | null>(null)
-  const hours = useLiveQuery(async () => ((await db.kv.get('ride_hours'))?.value as RideHours | undefined) ?? DEFAULT_RIDE_HOURS, [], DEFAULT_RIDE_HOURS)
   const brief = useBriefing(day, d.view.overrides.some((o) => o.kind === 'indoor'))
   const activity = d.activities[0]
   const score = useRideScore(activity, day, d.ftp)
-
   const isToday = date === today
-  const weekend = day?.weekday === 'sat' || day?.weekday === 'sun'
-  const phase: DayPhase = useMemo(
-    () =>
-      dayPhase({
-        date,
-        today,
-        ride: day?.bike ? { name: day.bike.name, minutes: day.bike.duration_min, pushable: d.bolt.kind !== 'na' } : null,
-        gym: day?.gym ? { name: day.gym.name } : null,
-        checkedIn: !!d.checkin && (d.checkin.sleep != null || d.checkin.weight_kg != null || d.checkin.legs != null),
-        boltReady: d.bolt.kind === 'ok',
-        rideLog: stateOf(d.rideLog),
-        gymLog: stateOf(d.gymLog),
-        hasActivity: d.activities.length > 0,
-        hour: nowHour(),
-        startHour: weekend ? hours.weekend : hours.weekday,
-        hasRpe: (day?.bike ? d.rideLog?.rpe : d.gymLog?.rpe) != null,
-      }),
-    [date, today, day, d.bolt.kind, d.checkin, d.rideLog, d.gymLog, d.activities.length, hours, weekend],
-  )
+  const phase: DayPhase = useDayPhase(d, date)
   const color = dayColor(day?.day_type, day?.flags.includes('test'))
   const tomorrow = d.view.window.find((x) => x.date === addDays(date, 1)) ?? null
   const week = useWeekState(date, d.view.window, today)
@@ -185,7 +162,7 @@ function StateCard(p: CardProps) {
             <img src={ART.coachWave} alt="" width={84} height={112} className="-mt-2 -mr-2 h-28 w-[84px] shrink-0 object-contain" />
           </div>
           <div className="mt-4 flex flex-col gap-2">
-            <Btn onClick={() => p.onCoach('Waga ')} className="w-full">
+            <Btn onClick={() => p.onCoach(d.lastWeight ? `Waga ${num(d.lastWeight.kg)}, tętno ` : 'Waga ')} className="w-full">
               Powiedz trenerowi
             </Btn>
             <Btn soft onClick={p.onCheckin} className="w-full">
