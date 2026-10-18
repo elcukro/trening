@@ -13,4 +13,8 @@ Kopia do wysłania bez logowania: artefakt opublikowany z tego samego pliku (lin
 
 
 ## Nowy wygląd (18.10.2026)
-Sekcja `#nowy` opisuje mobilny v2 (`/m`, docs/24): karta stanu dnia, Plan z przytrzymaniem dnia, Ja, Trener. Przy zmianach w `/m` aktualizuj tę sekcję; sekcje o `/i` zostają do czasu usunięcia starego widoku.
+`public/pomoc.html` jest przepisana pod mobilny v2 (docs/24): treść uporządkowana według ekranów `/m` (start, nawigacja,
+Dziś – karta dnia, jazda i podsumowanie, Plan z przytrzymaniem dnia, Trener, Ja, Strava, Bolt, maile, żywienie, komputer,
+problemy) i wygląd jak ekran aplikacji – te same tokeny co `src/m/m.css`, karty, wiersze z ikonami 3D z `public/m/art`,
+pasek „Wróć”, tylko jasny motyw. Stary widok `/i` ma w pomocy jedno zdanie (zapas pod przełącznikiem). Przy zmianach w `/m`
+aktualizuj odpowiednią sekcję; przy nowej ikonie w `public/m/art` można jej użyć w wierszu pomocy.
