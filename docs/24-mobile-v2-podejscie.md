@@ -238,6 +238,15 @@ pominięcia także log z powrotem na `planned`). Baner „Na Bolcie jest stara w
 wpisu w `wahoo_pushes` różni się od `pushItemForDay` dla dnia ≥ dziś; „Wyślij” wysyła tydzień przez `pushPayloadFor`.
 Ekran logowania w `/m` ładuje `ios.css` (wspólny `LoginScreen`).
 
+**Krok 6 zrobiony 18.10.2026:** Ja – kafelki (FTP i brakujące waty, masa z trendem i celem, forma) z `useSnapshot`,
+baner propozycji FTP, grupa „Test FTP” (ostatni z `ctx.tests`, następny z `buildCalendar` po znaczniku `test`, link do dnia),
+„Ostatnie jazdy” (28 dni, TSS z `loadOf`, link do podsumowania), ustawienia codzienne (progi i miernik – `NumbersSheet`,
+pogoda – `LocationSheet`, powiadomienia push), maile (3 przełączniki profilu), połączenia (stan Stravy i Wahoo, łączenie
+w pełnej aplikacji), konto (synchronizacja, wyloguj), więcej (pomoc, pełna aplikacja, powrót do `/i`). Arkusze i `Switch`
+w `src/m/components/SettingsSheets.tsx`. Poza `/m` zostają: motyw (v2 jest tylko jasny), waga docelowa (w programie),
+krzywa mocy, kadencja, raporty, biblioteka, sprzęt, wyjazd, kopia. Linia diagnostyczna okna skrócona do stopki.
+Poprawka Planu: panel tygodnia (`.m-pager`, przewijanie poziome przycina też w pionie) bez ujemnego marginesu podtytułu.
+
 **Stan: kroki 0 i 1 zrobione 18.10.2026** (`src/day/`, `src/m/` ze szkieletem trzech ekranów, `ui_mode 'm'`, przełączniki, `mobilePathFor`).
 
 Razem ok. 7 dni pracy; po kroku 3 v2 nadaje się do codziennego użycia równolegle z `/i`.

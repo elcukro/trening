@@ -555,6 +555,8 @@ button.m-row:active {
 .m-pager {
   display: flex;
   overflow-x: auto;
+  /* przewijanie poziome przycina też w pionie – zapas na cień kart i wystające elementy */
+  padding: 4px 0 12px;
   scroll-snap-type: x mandatory;
   scrollbar-width: none;
   -webkit-overflow-scrolling: touch;

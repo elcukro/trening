@@ -13,6 +13,7 @@ export const ART = {
   test: '/m/art/test.png',
   rest: '/m/art/rest.png',
   gym: '/m/art/gym.png',
+  ride_key: '/m/art/ride-key.png',
 } as const
 
 /** Ikona typu dnia: Z2/lekko – gravel, akcent – błyskawica, długa – droga przez wzgórze, test – stoper, siłownia – hantel, wolne – kawa. */

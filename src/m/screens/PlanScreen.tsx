@@ -168,7 +168,7 @@ function WeekPanel({ monday, today, current, onHold, onPush }: { monday: ISODate
 
   return (
     <div className="flex flex-col gap-4">
-      <p className="m-sub m-dim -mt-2 px-1">{sub}</p>
+      <p className="m-sub m-dim px-1">{sub}</p>
       {first && <WeekStrip week={week} today={today} />}
       {current && stale.length > 0 && (
         <div className="m-card flex items-center gap-3 p-3" style={{ background: 'rgb(255 149 0 / 0.12)' }}>
