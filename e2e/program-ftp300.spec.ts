@@ -71,7 +71,7 @@ test.describe('uproszczony interfejs', () => {
   })
 
   test('Dziś, Tydzień, Postęp i Więcej bez literałów programu alpejskiego', async ({ page }) => {
-    for (const path of ['/i', '/i/tydzien', '/i/postep', '/i/wiecej']) {
+    for (const path of ['/i', '/i/tydzien', '/i/postep', '/i/wiecej', '/m', '/m/plan', '/m/ja']) {
       await page.goto(`${path}?today=2026-11-04`)
       await page.waitForTimeout(500)
       await expectNoLeaks(page, path)

@@ -36,10 +36,11 @@ export const NO_ACCOUNT = 'trening:no-account'
 const PHONE_MAX_PX = 1024
 
 /**
- * Domyślnie: telefon i tablet otwierają uproszczony interfejs, komputer – pełną aplikację.
- * Szerokość czytamy raz przy wczytaniu modułu, żeby obracanie ekranu nie przerzucało widoku w trakcie pracy.
+ * Domyślnie: telefon i tablet otwierają mobilny v2 (`/m`, od 18.10.2026 – docs/24 krok 7), komputer – pełną aplikację.
+ * `/i` zostaje jako zapas pod przełącznikiem. Szerokość czytamy raz przy wczytaniu modułu, żeby obracanie ekranu
+ * nie przerzucało widoku w trakcie pracy.
  */
-const DEFAULT_MODE: UiMode = typeof window !== 'undefined' && window.innerWidth < PHONE_MAX_PX ? 'ios' : 'classic'
+const DEFAULT_MODE: UiMode = typeof window !== 'undefined' && window.innerWidth < PHONE_MAX_PX ? 'm' : 'classic'
 
 export function useUiMode(): { mode: UiMode; loaded: boolean; explicit: boolean; set: (m: UiMode) => Promise<void> } {
   // `?? null` jest konieczne: brak wiersza też zwraca `undefined`, a po tym rozpoznajemy „jeszcze nie wczytane”

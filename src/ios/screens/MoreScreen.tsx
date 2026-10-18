@@ -358,7 +358,7 @@ export function MoreScreen() {
         </List>
       </Section>
 
-      <Section footer={ui.mode === 'ios' ? 'Ten widok otwiera się domyślnie na telefonie i tablecie; na komputerze zawsze startuje pełna aplikacja.' : 'Włącz, żeby ten widok otwierał się domyślnie po uruchomieniu.'}>
+      <Section footer={ui.mode === 'ios' ? 'Ten widok otwiera się domyślnie na telefonie i tablecie; na komputerze zawsze startuje pełna aplikacja.' : ui.mode === 'm' ? 'Domyślnie na telefonie otwiera się nowy wygląd. Włącz, żeby zamiast niego startował ten widok.' : 'Włącz, żeby ten widok otwierał się domyślnie po uruchomieniu.'}>
         <div className="px-4">
           <Btn kind="gray" className="w-full" onClick={() => void ui.set(ui.mode === 'ios' ? 'classic' : 'ios')}>
             {ui.mode === 'ios' ? 'Nie otwieraj domyślnie' : 'Otwieraj ten widok domyślnie'}

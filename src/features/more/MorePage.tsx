@@ -45,7 +45,7 @@ export function MorePage() {
           } catch {
             /* prywatne okno */
           }
-          navigate(ui.mode === 'm' ? '/m' : '/i')
+          navigate(ui.mode === 'ios' ? '/i' : '/m')
         }}
         className="mb-3 flex min-h-14 w-full items-center gap-3 rounded-2xl border border-sky-200 bg-sky-50 px-4 py-3 text-left transition-colors hover:bg-sky-100 dark:border-sky-900 dark:bg-sky-950/50 dark:hover:bg-sky-900/50"
       >

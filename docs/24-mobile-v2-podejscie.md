@@ -247,6 +247,16 @@ w `src/m/components/SettingsSheets.tsx`. Poza `/m` zostają: motyw (v2 jest tylk
 krzywa mocy, kadencja, raporty, biblioteka, sprzęt, wyjazd, kopia. Linia diagnostyczna okna skrócona do stopki.
 Poprawka Planu: panel tygodnia (`.m-pager`, przewijanie poziome przycina też w pionie) bez ujemnego marginesu podtytułu.
 
+**Krok 7 zrobiony 18.10.2026:** `/m` jest domyślne na telefonie i tablecie (`DEFAULT_MODE` w `src/day/useIos.ts`), `/i` pod
+przełącznikiem (Więcej → „Otwieraj ten widok domyślnie”); pełna aplikacja „Prosty widok na iPhone'a” prowadzi do `/m`, chyba
+że zapisano `ios`. Deep linki z push nie wymagały zmian: serwer wysyła ścieżki pełnej aplikacji (`/`, `/dzien/:d`,
+`/postep/tydzien/:m`), a `ModeGate` + `mobilePathFor` kierują `/` i `/dzien/:d` do `/m`, raport tygodnia zostaje w pełnej.
+Pomoc: sekcja „Nowy wygląd na telefonie” w `public/pomoc.html`. E2E: `e2e/mobile.spec.ts` (Dziś z check-inem i jazdą,
+dzień wolny i test, Plan ze strzałkami i menu po przytrzymaniu z przeniesieniem i cofnięciem, Ja z arkuszem progów,
+Trener, brak wystawania poza ekran z pominięciem sąsiednich paneli tygodnia); `ios.spec.ts` dostosowany do nowego
+domyślnego, `program-ftp300.spec.ts` sprawdza wycieki także w `/m`. **Wszystkie kroki 0–7 zrobione.** Dalej: szlif na
+podstawie użycia, zdjęcie linii diagnostycznej okna, potem usunięcie `/i` (`src/ios/` poza `LoginScreen` i `Icons`).
+
 **Stan: kroki 0 i 1 zrobione 18.10.2026** (`src/day/`, `src/m/` ze szkieletem trzech ekranów, `ui_mode 'm'`, przełączniki, `mobilePathFor`).
 
 Razem ok. 7 dni pracy; po kroku 3 v2 nadaje się do codziennego użycia równolegle z `/i`.

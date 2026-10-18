@@ -64,13 +64,17 @@ test('Tydzień i Postęp: liczby i nawigacja zakładkami', async ({ page }) => {
   await expect(page.getByText('FTP', { exact: true })).toBeVisible()
 })
 
-test('Na telefonie start otwiera prosty widok; da się przejść do pełnej aplikacji i wrócić', async ({ page }) => {
-  // domyślnie (bez żadnego ustawienia) telefon startuje w uproszczonym widoku
+test('Na telefonie start otwiera nowy wygląd (/m); /i jest pod przełącznikiem; da się przejść do pełnej aplikacji i wrócić', async ({ page }) => {
+  // domyślnie (bez żadnego ustawienia) telefon startuje w mobilnym v2 (docs/24 krok 7)
+  await page.goto('/?today=2026-09-23')
+  await expect(page).toHaveURL(/\/m\?/)
+
+  // z /i da się ustawić poprzedni widok jako domyślny
+  await page.goto('/i/wiecej?today=2026-09-23')
+  await page.getByRole('button', { name: 'Otwieraj ten widok domyślnie' }).click()
+  await expect(page.getByRole('button', { name: 'Nie otwieraj domyślnie' })).toBeVisible()
   await page.goto('/?today=2026-09-23')
   await expect(page).toHaveURL(/\/i\?/)
-
-  await page.getByRole('link', { name: 'Więcej' }).click()
-  await expect(page.getByRole('button', { name: 'Nie otwieraj domyślnie' })).toBeVisible()
   // z datą w adresie – przejście do pełnej aplikacji zachowuje `?today=`, kliknięcie zakładki nie
   await page.goto('/i/wiecej?today=2026-09-23')
   await page.getByText('Otwórz pełną aplikację').click()
@@ -84,6 +88,7 @@ test('Na telefonie start otwiera prosty widok; da się przejść do pełnej apli
 
 test('Wyłączenie domyślnego widoku zostawia start w pełnej aplikacji', async ({ page }) => {
   await page.goto('/i/wiecej?today=2026-09-23')
+  await page.getByRole('button', { name: 'Otwieraj ten widok domyślnie' }).click()
   await page.getByRole('button', { name: 'Nie otwieraj domyślnie' }).click()
   await expect(page.getByRole('button', { name: 'Otwieraj ten widok domyślnie' })).toBeVisible()
   await page.goto('/?today=2026-09-23')
@@ -165,10 +170,10 @@ test('Żaden panel nie wychodzi za krawędź ekranu', async ({ page }) => {
   }
 })
 
-test('cel powiadomienia: ścieżka pełnej aplikacji na telefonie otwiera ekran w /i, raport zostaje w pełnej', async ({ page }) => {
+test('cel powiadomienia: ścieżka pełnej aplikacji na telefonie otwiera ekran w /m, raport zostaje w pełnej', async ({ page }) => {
   await page.goto('/dzien/2026-09-23?today=2026-09-23')
-  await expect(page).toHaveURL(/\/i\/dzien\/2026-09-23/)
-  await expect(page.getByRole('heading', { name: 'Baza tlenowa Z2' })).toBeVisible()
+  await expect(page).toHaveURL(/\/m\/dzien\/2026-09-23/)
+  await expect(page.getByText('Baza tlenowa Z2').first()).toBeVisible()
   await page.goto('/postep/tydzien/2026-09-21?today=2026-09-27')
   await expect(page).toHaveURL(/\/postep\/tydzien\/2026-09-21/)
   await expect(page.getByRole('heading', { name: /Przegląd tygodnia/ })).toBeVisible()
