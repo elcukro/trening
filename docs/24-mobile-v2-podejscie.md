@@ -128,7 +128,9 @@ API nie działa w PWA na iOS – nie udajemy własnego nagrywania).
 
 ## 5. Wygląd
 
-- **Układ jak aplikacja, nie strona** (18.10.2026): korzeń `.m` ma `height: 100dvh; overflow: hidden`, przewija się wewnętrzny
+- **Układ jak aplikacja, nie strona** (18.10.2026): korzeń `.m` ma `height: var(--m-h)` (pomiar `innerHeight` w JS –
+  `src/m/useViewport.ts`, bo po wznowieniu PWA iOS podaje nieaktualne `100dvh`; pomiar powtarzany po `visibilitychange`,
+  `pageshow`, `focus`, obrocie i zmianach `visualViewport`) i `overflow: hidden`, przewija się wewnętrzny
   `<main class="m-scroll">`, a dolny pasek jest `position: absolute` względem korzenia. Powód: iOS w trybie PWA po wznowieniu
   aplikacji przez chwilę liczył `position: fixed` względem nieaktualnego viewportu i pasek „pływał” o kilkanaście pt, aż do
   pierwszego przewinięcia. Zmiana ekranu przewija kontener na górę (`MobileApp`), zwijany tytuł obserwuje sentinel względem
@@ -199,7 +201,9 @@ na Dziś wersja zwarta, w Planie pełna z liczbą treningów i treningiem kluczo
 (`useLastRide`), ilustracja na karcie pominiętego dnia, w Planie ikona typu dnia przy każdym wierszu i znak wyniku
 (✓ / ✕ / –), na Ja trzy kafelki (FTP i brakujące waty do celu, masa z trendem, forma z CTL/TSB) z `useSnapshot`.
 
-**Krok 3 zrobiony 18.10.2026:** `src/m/components/CoachSheet.tsx` – jeden ciągły wątek (`coach_thread` w kv, 7 dni,
+**Krok 3 zrobiony 18.10.2026:** `src/m/components/CoachSheet.tsx` – **pełny ekran** (`.m-chat`: nagłówek z twarzą,
+przewijane wiadomości, stopka z podpowiedziami zawijanymi w wiersze i polem; wysokość i przesunięcie z `visualViewport`,
+więc pole zostaje nad klawiaturą), jeden ciągły wątek (`coach_thread` w kv, 7 dni,
 `loadThread`/`saveThread` w `src/sync/coachChat.ts`; wiadomości mają `at`, separatory dni w rozmowie), podpowiedzi
 nad klawiaturą z `src/day/coachChips.ts` (czysty TS wg `DayPhase`: rano waga z ostatnią wartością jako początek wiadomości,
 po jeździe „RPE…”, wieczorem „Co jutro?”, „Jutro nie dam rady”; testy `coachChips.test.ts`), `prefill` z karty dnia

@@ -11,6 +11,7 @@ import { mobilePathFor } from '@/app/pushNav'
 import './m.css'
 import { TabBar } from './components/Chrome'
 import { CoachSheet } from './components/CoachSheet'
+import { useViewport } from './useViewport'
 import { TodayScreen } from './screens/TodayScreen'
 import { PlanScreen } from './screens/PlanScreen'
 import { MeScreen } from './screens/MeScreen'
@@ -25,6 +26,7 @@ export function MobileApp() {
   useWahooAutoPush()
   useEmailSnapshots()
   usePushKeepalive()
+  useViewport()
   const auth = useAuth()
   const location = useLocation()
   // arkusz Trener otwierany z paska i z kart (CoachContext); `prefill` to początek wiadomości, np. „Waga ”

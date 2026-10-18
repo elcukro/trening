@@ -8,7 +8,6 @@ import { askCoach, canChat, clearThread, loadThread, saveThread, type ChatBlock,
 import { useToast } from '@/components/Toast'
 import { fmtDayMonth, todayISO } from '@/lib/dates'
 import { IconCheck, IconClose } from '@/ios/components/Icons'
-import { Sheet } from './Chrome'
 import { useDayPhase } from '../useDayPhase'
 import { ART } from '../art'
 
@@ -134,101 +133,117 @@ export function CoachSheet({ prefill, onClose }: { prefill?: string; onClose: ()
 
   const lines = toLines(messages, today)
 
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') onClose()
+    }
+    document.addEventListener('keydown', onKey)
+    return () => document.removeEventListener('keydown', onKey)
+  }, [onClose])
+
   return (
-    <Sheet title="Trener" onClose={onClose} action={lines.length ? <button className="m-nav-btn m-sub" onClick={() => void reset()} disabled={!!busy}>Wyczyść</button> : undefined}>
-      <div className="flex flex-col" style={{ minHeight: '70dvh' }}>
-        {!canChat && <p className="m-sub m-dim py-6 text-center">Czat wymaga konta – aplikacja działa lokalnie.</p>}
-        {canChat && loaded && !lines.length && (
-          <div className="flex flex-col items-center gap-2 py-3 text-center">
-            <img src={ART.coachWave} alt="" width={120} height={160} className="h-40 w-[120px] object-contain" />
-            <p className="m-sub m-dim px-2">Widzę Twój plan, ostatnie jazdy i check-iny. Podaj dane zdaniem – zapiszę je. Możesz też zapytać o plan albo poprosić o przeniesienie jazdy.</p>
-          </div>
-        )}
-        <div className="flex flex-1 flex-col gap-2 py-2" aria-live="polite">
-          {lines.map((l, i) => {
-            if (l.role === 'day') return <div key={i} className="m-eyebrow self-center py-1">{l.text}</div>
-            if (l.role === 'tool')
-              return (
-                <div key={i} className="m-foot flex items-start gap-1.5 self-center px-2 py-1" style={{ color: l.ok ? 'var(--green)' : 'var(--red)' }}>
-                  {l.ok ? <IconCheck size={14} /> : <IconClose size={14} />}
-                  <span>{l.text}</span>
-                </div>
-              )
-            if (l.role === 'user')
-              return (
-                <div key={i} className="max-w-[82%] self-end whitespace-pre-wrap rounded-2xl rounded-br-md px-3.5 py-2 text-[16px] leading-snug" style={{ background: 'var(--accent)', color: '#fff' }}>
-                  {l.text}
-                </div>
-              )
-            return (
-              <div key={i} className="flex max-w-[88%] items-end gap-2 self-start">
-                <img src="/m/art/coach-face.png" alt="" width={28} height={28} className="h-7 w-7 shrink-0 rounded-full object-cover" style={{ boxShadow: '0 0 0 1.5px var(--accent-soft)' }} />
-                <div className="whitespace-pre-wrap rounded-2xl rounded-bl-md px-3.5 py-2 text-[16px] leading-snug" style={{ background: 'var(--card)', color: 'var(--label)', boxShadow: 'var(--shadow)' }}>
-                  {l.text}
-                </div>
-              </div>
-            )
-          })}
-          {busy && (
-            <div className="m-foot m-dim flex items-center gap-2 self-start px-2 py-1">
-              <span className="m-typing" aria-hidden />
-              {busy}
-            </div>
-          )}
-          {error && <div className="m-foot self-start px-2 py-1" style={{ color: 'var(--red)' }}>{error}</div>}
-          <div ref={bottom} />
-        </div>
-        {canChat && (
-          <div className="sticky bottom-0 pt-2" style={{ background: 'var(--bg)' }}>
-            <div className="-mx-4 mb-2 flex gap-2 overflow-x-auto px-4" style={{ scrollbarWidth: 'none' }}>
-              {chips.map((c) => (
-                <button
-                  key={c.label}
-                  className="m-press shrink-0 rounded-full px-3 py-1.5 text-[14px] font-medium"
-                  style={{ background: 'var(--card)', color: 'var(--accent)', boxShadow: 'var(--shadow)' }}
-                  disabled={!!busy}
-                  onClick={() => {
-                    if (c.send) void send(c.send)
-                    else if (c.prefill) {
-                      setDraft(c.prefill)
-                      input.current?.focus()
-                    }
-                  }}
-                >
-                  {c.label}
-                </button>
-              ))}
-            </div>
-            <form
-              className="flex items-end gap-2 pb-1"
-              onSubmit={(e) => {
-                e.preventDefault()
-                void send(draft)
-              }}
-            >
-              <textarea
-                ref={input}
-                className="m-input flex-1"
-                rows={1}
-                placeholder="Napisz albo podyktuj…"
-                aria-label="Wiadomość do trenera"
-                value={draft}
-                disabled={!!busy}
-                onChange={(e) => setDraft(e.target.value)}
-                onKeyDown={(e) => {
-                  if (e.key === 'Enter' && !e.shiftKey) {
-                    e.preventDefault()
-                    void send(draft)
-                  }
-                }}
-              />
-              <button type="submit" className="m-send" disabled={!!busy || !draft.trim()} aria-label="Wyślij">
-                ↑
-              </button>
-            </form>
-          </div>
+    <div className="m-chat" role="dialog" aria-modal="true" aria-label="Trener">
+      <div className="m-chat-head">
+        <button className="m-nav-btn" onClick={onClose} aria-label="Zamknij">
+          <IconClose size={22} />
+        </button>
+        <span className="m-headline flex items-center gap-2">
+          <img src="/m/art/coach-face.png" alt="" width={28} height={28} className="h-7 w-7 rounded-full object-cover" />
+          Trener
+        </span>
+        {lines.length ? (
+          <button className="m-nav-btn m-sub" onClick={() => void reset()} disabled={!!busy}>
+            Wyczyść
+          </button>
+        ) : (
+          <span className="min-w-11" />
         )}
       </div>
-    </Sheet>
+
+      <div className="m-chat-body" aria-live="polite">
+        {!canChat && <p className="m-sub m-dim py-6 text-center">Czat wymaga konta – aplikacja działa lokalnie.</p>}
+        {canChat && loaded && !lines.length && (
+          <div className="flex flex-1 flex-col items-center justify-center gap-3 text-center">
+            <img src={ART.coachWave} alt="" width={140} height={187} className="h-[187px] w-[140px] object-contain" />
+            <p className="m-sub m-dim px-4">Widzę Twój plan, ostatnie jazdy i check-iny. Podaj dane zdaniem – zapiszę je. Możesz też zapytać o plan albo poprosić o przeniesienie jazdy.</p>
+          </div>
+        )}
+        {lines.map((l, i) => {
+          if (l.role === 'day') return <div key={i} className="m-eyebrow self-center py-1">{l.text}</div>
+          if (l.role === 'tool')
+            return (
+              <div key={i} className="m-foot flex items-start gap-1.5 self-center px-2" style={{ color: l.ok ? 'var(--green)' : 'var(--red)' }}>
+                {l.ok ? <IconCheck size={14} /> : <IconClose size={14} />}
+                <span>{l.text}</span>
+              </div>
+            )
+          if (l.role === 'user') return <div key={i} className="m-bubble-user">{l.text}</div>
+          return (
+            <div key={i} className="m-bubble-coach">
+              <img src="/m/art/coach-face.png" alt="" width={28} height={28} />
+              <div>{l.text}</div>
+            </div>
+          )
+        })}
+        {busy && (
+          <div className="m-foot m-dim flex items-center gap-2 self-start px-2">
+            <span className="m-typing" aria-hidden />
+            {busy}
+          </div>
+        )}
+        {error && <div className="m-foot self-start px-2" style={{ color: 'var(--red)' }}>{error}</div>}
+        <div ref={bottom} />
+      </div>
+
+      {canChat && (
+        <div className="m-chat-foot">
+          <div className="m-chips">
+            {chips.map((c) => (
+              <button
+                key={c.label}
+                className="m-chip"
+                disabled={!!busy}
+                onClick={() => {
+                  if (c.send) void send(c.send)
+                  else if (c.prefill) {
+                    setDraft(c.prefill)
+                    input.current?.focus()
+                  }
+                }}
+              >
+                {c.label}
+              </button>
+            ))}
+          </div>
+          <form
+            className="flex items-end gap-2"
+            onSubmit={(e) => {
+              e.preventDefault()
+              void send(draft)
+            }}
+          >
+            <textarea
+              ref={input}
+              className="m-input flex-1"
+              rows={1}
+              placeholder="Napisz albo podyktuj…"
+              aria-label="Wiadomość do trenera"
+              value={draft}
+              disabled={!!busy}
+              onChange={(e) => setDraft(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter' && !e.shiftKey) {
+                  e.preventDefault()
+                  void send(draft)
+                }
+              }}
+            />
+            <button type="submit" className="m-send" disabled={!!busy || !draft.trim()} aria-label="Wyślij">
+              ↑
+            </button>
+          </form>
+        </div>
+      )}
+    </div>
   )
 }

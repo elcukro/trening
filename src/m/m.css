@@ -47,7 +47,8 @@
   position: relative;
   display: flex;
   flex-direction: column;
-  height: 100dvh;
+  /* wysokość z pomiaru JS (useViewport) – `100dvh` bywa nieaktualne po wznowieniu PWA na iOS */
+  height: var(--m-h, 100dvh);
   overflow: hidden;
   overflow-wrap: break-word;
   color-scheme: light;
@@ -388,7 +389,106 @@ button.m-row:active {
   }
 }
 
-/* ---------------------------------------------------------------- rozmowa z trenerem */
+/* ---------------------------------------------------------------- rozmowa z trenerem (pełny ekran) */
+.m-chat {
+  position: fixed;
+  left: 0;
+  right: 0;
+  z-index: 51;
+  /* dopasowanie do widocznego obszaru: gdy klawiatura jest otwarta, visualViewport jest niższy i przesunięty */
+  top: var(--m-vv-top, 0px);
+  height: var(--m-vvh, var(--m-h, 100dvh));
+  display: flex;
+  flex-direction: column;
+  background: var(--bg);
+  animation: m-up 0.3s cubic-bezier(0.32, 0.72, 0, 1);
+}
+.m-chat-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: calc(env(safe-area-inset-top, 0px) + 6px) 8px 6px;
+  box-shadow: inset 0 -0.5px 0 var(--separator);
+  background: var(--bar);
+  -webkit-backdrop-filter: saturate(180%) blur(20px);
+  backdrop-filter: saturate(180%) blur(20px);
+}
+.m-chat-body {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior-y: contain;
+  padding: 12px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.m-chat-foot {
+  flex: none;
+  padding: 8px 12px calc(env(safe-area-inset-bottom, 0px) + 8px);
+  background: var(--bg);
+  box-shadow: inset 0 0.5px 0 var(--separator);
+}
+.m-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px 8px;
+  margin-bottom: 8px;
+}
+.m-chip {
+  padding: 6px 12px;
+  border-radius: 999px;
+  background: var(--card);
+  color: var(--accent);
+  font-size: 13px;
+  font-weight: 600;
+  line-height: 18px;
+  box-shadow: var(--shadow);
+  white-space: nowrap;
+}
+.m-chip:disabled {
+  opacity: 0.4;
+}
+.m-chip:active {
+  opacity: 0.6;
+}
+.m-bubble-user {
+  align-self: flex-end;
+  max-width: 82%;
+  padding: 9px 14px;
+  border-radius: 18px 18px 6px 18px;
+  background: var(--accent);
+  color: #fff;
+  font-size: 16px;
+  line-height: 21px;
+  white-space: pre-wrap;
+}
+.m-bubble-coach {
+  align-self: flex-start;
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  max-width: 90%;
+}
+.m-bubble-coach > div {
+  padding: 9px 14px;
+  border-radius: 6px 18px 18px 18px;
+  background: var(--card);
+  color: var(--label);
+  font-size: 16px;
+  line-height: 21px;
+  white-space: pre-wrap;
+  box-shadow: var(--shadow);
+}
+.m-bubble-coach img {
+  width: 28px;
+  height: 28px;
+  flex: none;
+  border-radius: 50%;
+  object-fit: cover;
+  box-shadow: 0 0 0 1.5px var(--accent-soft);
+}
 .m-input {
   min-height: 44px;
   max-height: 120px;
