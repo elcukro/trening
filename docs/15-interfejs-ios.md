@@ -78,7 +78,7 @@ Dane z integracji na ekranach `/i`:
 
 ## Przepływ dnia
 
-`src/ios/dayState.ts` (czysty TypeScript, testy `src/ios/__tests__/dayState.test.ts`) liczy listę kroków
+`src/day/dayState.ts` (czysty TypeScript, testy `src/day/__tests__/dayState.test.ts`; od 18.10.2026 logika bez UI jest w `src/day/`, wspólna z `/m` – docs/24) liczy listę kroków
 i jeden następny:
 
 1. **Poranny check-in** – zrobiony, gdy jest wpis z wagą albo samopoczuciem.
@@ -105,10 +105,10 @@ pasek przeglądarki; aplikacja jest przeznaczona do uruchamiania z ekranu począ
 ```
 src/ios/ios.css              tokeny i klasy wyglądu
 src/ios/IosApp.tsx           powłoka: trasy i pasek zakładek
-src/ios/dayState.ts          kroki dnia, ważenie co drugi dzień, forma i ocena w słowach (testowane)
-src/ios/summary.ts           główny cel treningu i etykieta struktury („3 × 12 min”)
-src/ios/useIos.ts            tryb interfejsu, dane dnia, zgodność jazdy, liczby na Postęp
-src/ios/useBriefing.ts       pogoda w oknie treningu + ubiór i jedzenie
+src/day/dayState.ts          kroki dnia, ważenie co drugi dzień, forma i ocena w słowach (testowane)
+src/day/summary.ts           główny cel treningu i etykieta struktury („3 × 12 min”)
+src/day/useIos.ts            tryb interfejsu, dane dnia, zgodność jazdy, liczby na Postęp
+src/day/useBriefing.ts       pogoda w oknie treningu + ubiór i jedzenie
 src/ios/components/          Chrome.tsx (ekran, listy, arkusz, przyciski), Icons.tsx, arkusze
 src/ios/screens/             DayScreen, WorkoutScreen, WeekScreen, ProgressScreen, MoreScreen
 e2e/ios.spec.ts              testy przepływu (bez emulacji `isMobile` – patrz komentarz w pliku)

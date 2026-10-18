@@ -12,7 +12,7 @@ import { WeekScreen } from './screens/WeekScreen'
 import { ProgressScreen } from './screens/ProgressScreen'
 import { MoreScreen } from './screens/MoreScreen'
 import { LoginScreen } from './screens/LoginScreen'
-import { NO_ACCOUNT } from './useIos'
+import { NO_ACCOUNT } from '@/day/useIos'
 import { IconMore, IconProgress, IconToday, IconWeek } from './components/Icons'
 
 const TABS = [

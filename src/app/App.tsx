@@ -20,7 +20,7 @@ import { ToastProvider } from '@/components/Toast'
 import { useWahooAutoPush } from '@/sync/useWahoo'
 import { useEmailSnapshots } from '@/sync/emailSnapshots'
 import { MovedBanner } from './MovedBanner'
-import { iosPathFor, isNavigateMessage } from './pushNav'
+import { iosPathFor, isNavigateMessage, mobilePathFor } from './pushNav'
 import { usePushKeepalive } from '@/sync/usePush'
 import { useEngine } from '@/app/useSettings'
 import { todayISO } from '@/lib/dates'
@@ -29,10 +29,11 @@ import { days as daysLabel } from '@/lib/format'
 import { PHASE_COLOR, PHASE_SHORT } from '@/lib/labels'
 import type { PhaseId } from '@/engine/types'
 import type { Feature } from '@/engine/schema'
-import { FULL_ESCAPE, useUiMode } from '@/ios/useIos'
+import { FULL_ESCAPE, useUiMode } from '@/day/useIos'
 
 const ProgressPage = lazy(() => import('@/features/progress/ProgressPage').then((m) => ({ default: m.ProgressPage })))
 const IosApp = lazy(() => import('@/ios/IosApp').then((m) => ({ default: m.IosApp })))
+const MobileApp = lazy(() => import('@/m/MobileApp').then((m) => ({ default: m.MobileApp })))
 const ReportPage = lazy(() => import('@/features/progress/ReportPage').then((m) => ({ default: m.ReportPage })))
 
 /** Dolny pasek na telefonie – bez zmian; Kalendarz jest dostępny przez „Więcej”. */
@@ -190,9 +191,10 @@ function ModeGate({ children }: { children: ReactNode }) {
   } catch {
     /* prywatne okno */
   }
-  const target = typeof window === 'undefined' ? '/i' : iosPathFor(window.location.pathname)
+  const path = typeof window === 'undefined' ? '/' : window.location.pathname
+  const target = mode === 'm' ? mobilePathFor(path) : iosPathFor(path)
   if (!loaded) return null
-  if (mode === 'ios' && !escaped && target) return <Navigate to={{ pathname: target, search }} replace />
+  if (mode !== 'classic' && !escaped && target) return <Navigate to={{ pathname: target, search }} replace />
   return <>{children}</>
 }
 
@@ -281,6 +283,7 @@ export function App() {
             </Route>
             <Route path="silownia/:date" element={<GymModePage />} />
             <Route path="i/*" element={<Suspense fallback={null}><IosApp /></Suspense>} />
+            <Route path="m/*" element={<Suspense fallback={null}><MobileApp /></Suspense>} />
           </Routes>
         </BrowserRouter>
       </ToastProvider>

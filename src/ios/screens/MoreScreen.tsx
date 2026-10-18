@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import { useNavigate } from 'react-router'
 import { useLiveQuery } from 'dexie-react-hooks'
 import { useEngine } from '@/app/useSettings'
 import { geocode, getLocation, setLocation, type WeatherLocation } from '@/sync/weather'
@@ -11,7 +12,7 @@ import { num } from '@/lib/format'
 import { useAuth } from '@/sync/auth'
 import { resetSyncCursors, runSync } from '@/sync/sync'
 import { fmtDayMonth } from '@/lib/dates'
-import { useOpenFull, useSyncStatus, useUiMode } from '../useIos'
+import { useOpenFull, useSyncStatus, useUiMode } from '@/day/useIos'
 import { Btn, List, Row, RowIcon, Screen, Section, Seg, Sheet } from '../components/Chrome'
 import { IconBolt, IconCheck, IconChevron, IconFlag, IconGear, IconHeart, IconSun, IconWatch } from '../components/Icons'
 
@@ -155,6 +156,7 @@ export function MoreScreen() {
   const engine = useEngine()
   const toast = useToast()
   const openFull = useOpenFull()
+  const navigate = useNavigate()
   const ui = useUiMode()
   const auth = useAuth()
   const sync = useSyncStatus()
@@ -347,6 +349,12 @@ export function MoreScreen() {
       <Section header="Pełna aplikacja" footer={`Kalendarz z przenoszeniem treningów, krzywa mocy, wykres formy, biblioteka ćwiczeń, sprzęt${engine.ctx.program.features.includes('trip') ? ', wyjazd' : ''}, kopia danych.`}>
         <List>
           <Row icon={<RowIcon color="var(--label-3)"><IconGear size={18} /></RowIcon>} title="Otwórz pełną aplikację" onClick={() => openFull('/')} accessory={<span className="ios-dim-3"><IconChevron size={18} /></span>} />
+        </List>
+      </Section>
+
+      <Section header="Nowy wygląd" footer="Mobilny interfejs v2: jedna karta stanu dnia, trener pod kciukiem. W budowie – ten widok zostaje, dopóki nowy nie będzie gotowy.">
+        <List>
+          <Row icon={<RowIcon color="var(--blue)"><IconFlag size={18} /></RowIcon>} title="Wypróbuj nowy wygląd" onClick={() => void ui.set('m').then(() => navigate('/m'))} accessory={<span className="ios-dim-3"><IconChevron size={18} /></span>} />
         </List>
       </Section>
 

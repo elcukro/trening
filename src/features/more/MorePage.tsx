@@ -2,7 +2,7 @@ import type { ReactNode } from 'react'
 import { Link, useNavigate } from 'react-router'
 import { useEngine } from '@/app/useSettings'
 import { PageTitle } from '@/components/ui'
-import { FULL_ESCAPE } from '@/ios/useIos'
+import { FULL_ESCAPE, useUiMode } from '@/day/useIos'
 import type { Feature } from '@/engine/schema'
 
 const ITEMS: { to: string; icon: string; label: string; sub: string; feature?: Feature; external?: boolean }[] = [
@@ -34,6 +34,7 @@ const LATER: { icon: string; label: string; sub: string }[] = []
 export function MorePage() {
   const engine = useEngine()
   const navigate = useNavigate()
+  const ui = useUiMode()
   return (
     <div>
       <PageTitle sub={`Program ${engine.ctx.program.version}`}>Więcej</PageTitle>
@@ -44,7 +45,7 @@ export function MorePage() {
           } catch {
             /* prywatne okno */
           }
-          navigate('/i')
+          navigate(ui.mode === 'm' ? '/m' : '/i')
         }}
         className="mb-3 flex min-h-14 w-full items-center gap-3 rounded-2xl border border-sky-200 bg-sky-50 px-4 py-3 text-left transition-colors hover:bg-sky-100 dark:border-sky-900 dark:bg-sky-950/50 dark:hover:bg-sky-900/50"
       >

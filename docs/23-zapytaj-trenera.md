@@ -5,7 +5,7 @@ Czat z trenerem w uproszczonym interfejsie `/i` (ekran Dziś → sekcja „Trene
 poprosić o przeniesienie jazdy albo wysyłkę na Bolta. Punkt 1 z backlogu `docs/21` § 2.
 
 ## Podział ról: aplikacja ma dane i narzędzia, serwer tylko rozmawia
-1. **Kontekst buduje aplikacja** (`src/ios/coachContext.ts`, czysty TS, testy `src/ios/__tests__/coachContext.test.ts`):
+1. **Kontekst buduje aplikacja** (`src/day/coachContext.ts`, czysty TS, testy `src/day/__tests__/coachContext.test.ts`):
    dni od −7 do +7 z wynikiem (`done/modified/skipped/missed/extra/free/pending`) i stanem na Bolcie, jazdy ze Stravy z 14 dni
    (czas, km, moc tylko z miernika, tętno, TSS/IF z `rideLoad`, dryf, notatka trenera), check-iny, logi, aktywne nadpisania,
    ustalenia o zawodniku (`program.coach_notes`), cel, FTP/LTHR, ostatnia masa i masa docelowa. Do tego **sygnały luzowania**
@@ -20,7 +20,7 @@ poprosić o przeniesienie jazdy albo wysyłkę na Bolta. Punkt 1 z backlogu `doc
    odpowiedzi + `stop_reason`. Każda tura = jeden wpis w `ai_calls` (limit miesięczny wspólny, dzienny 80 na konto –
    wyższy niż dla check-inu zdaniem, bo narzędzie to dodatkowa tura). Czysty TS: `_shared/coach_chat.ts`, testy
    `src/engine/__tests__/coach_chat.test.ts`.
-3. **Narzędzia wykonuje aplikacja** (`src/ios/coachTools.ts`, testy `coachTools.test.ts`), model tylko o nie prosi:
+3. **Narzędzia wykonuje aplikacja** (`src/day/coachTools.ts`, testy `coachTools.test.ts`), model tylko o nie prosi:
    - `save_checkin` – `upsertCheckin`; zakresy jak w check-inie zdaniem (waga 40–200, tętno 30–120, oceny 1–5),
      pola pominięte bez zmian, uwagi ≤ 300 znaków;
    - `set_rpe` – RPE 1–10 do `session_logs` (jazda albo siłownia zależnie od dnia), opcjonalnie notatka;
@@ -29,7 +29,7 @@ poprosić o przeniesienie jazdy albo wysyłkę na Bolta. Punkt 1 z backlogu `doc
      Kalendarzu (`move` z `what: 'bike'`); odmowa wraca do modelu z powodem, żeby zaproponował inny dzień;
    - `push_wahoo` – `pushPayloadFor(dziś, 7)` + `wahoo.push` (z nadpisaniami, jak automat dzienny).
    Wynik narzędzia to zdanie po polsku; wraca do modelu jako `tool_result` i pokazuje się w czacie jako zielona/czerwona linia.
-4. **Pętla w arkuszu** (`src/ios/components/CoachSheet.tsx`, dane z `useCoach.ts`): wiadomość → model → gdy
+4. **Pętla w arkuszu** (`src/ios/components/CoachSheet.tsx`, dane z `src/day/useCoach.ts`): wiadomość → model → gdy
    `stop_reason = tool_use`, aplikacja wykonuje narzędzia, dokłada wyniki i woła model znowu; najwyżej 4 rundy na wiadomość.
    Bloki myślenia (`thinking` z podpisem) muszą wrócić do modelu w kontynuacji – dlatego historia trzyma surowe bloki.
 5. **Historia w `kv`** (`src/sync/coachChat.ts`): klucz `coach_chat:<data>`, lokalnie (kv nie jest synchronizowane),

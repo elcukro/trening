@@ -1,4 +1,4 @@
-import { useSyncStatus, useOpenFull } from '../useIos'
+import { useSyncStatus, useOpenFull } from '@/day/useIos'
 import { IconChevron, IconGear } from './Icons'
 
 /**

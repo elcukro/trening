@@ -1,4 +1,4 @@
-import type { Briefing } from '../useBriefing'
+import type { Briefing } from '@/day/useBriefing'
 import { IconFood, IconShirt, IconSun, IconWind } from './Icons'
 import { List, Row, RowIcon, Section, Sheet } from './Chrome'
 import { num } from '@/lib/format'

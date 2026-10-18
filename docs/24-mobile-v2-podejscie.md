@@ -170,6 +170,8 @@ API nie działa w PWA na iOS – nie udajemy własnego nagrywania).
 | 6 | Ja: cel, masa, forma, jazdy, test, ustawienia | parytet z Postęp + Więcej w `/i` (bez sprzętu/wyjazdu) | 1 dzień |
 | 7 | Push deep linki, pomoc, e2e, domyślne `/m` dla nowych urządzeń | `pomoc.html` opisuje v2, e2e zielone, `/i` tylko przez przełącznik | 0,5 dnia |
 
+**Stan: kroki 0 i 1 zrobione 18.10.2026** (`src/day/`, `src/m/` ze szkieletem trzech ekranów, `ui_mode 'm'`, przełączniki, `mobilePathFor`).
+
 Razem ok. 7 dni pracy; po kroku 3 v2 nadaje się do codziennego użycia równolegle z `/i`.
 
 ## 8. Decyzje do podjęcia przed startem

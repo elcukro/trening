@@ -25,7 +25,8 @@ import type { BoltState } from '@/features/today/WahooStatus'
 
 /* ------------------------------------------------------------------ tryb interfejsu */
 
-export type UiMode = 'classic' | 'ios'
+/** `classic` = pełna aplikacja, `ios` = uproszczony `/i` (fallback), `m` = mobilny v2 `/m` (docs/24) */
+export type UiMode = 'classic' | 'ios' | 'm'
 const UI_MODE_KEY = 'ui_mode'
 /** Ucieczka do pełnej aplikacji na czas sesji – żeby przekierowanie nie odsyłało z powrotem. */
 export const FULL_ESCAPE = 'trening:full-ui'
@@ -46,12 +47,12 @@ export function useUiMode(): { mode: UiMode; loaded: boolean; explicit: boolean;
   const set = useCallback(async (m: UiMode) => {
     await db.kv.put({ key: UI_MODE_KEY, value: m, updated_at: new Date().toISOString() })
     try {
-      if (m === 'ios') sessionStorage.removeItem(FULL_ESCAPE)
+      if (m !== 'classic') sessionStorage.removeItem(FULL_ESCAPE)
     } catch {
       /* prywatne okno */
     }
   }, [])
-  const saved = row?.value === 'ios' || row?.value === 'classic' ? (row.value as UiMode) : null
+  const saved = row?.value === 'ios' || row?.value === 'classic' || row?.value === 'm' ? (row.value as UiMode) : null
   return { mode: saved ?? DEFAULT_MODE, loaded: row !== undefined, explicit: saved !== null, set }
 }
 

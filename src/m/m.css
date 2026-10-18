@@ -1,0 +1,373 @@
+/*
+ * Mobilny interfejs v2 (`/m`, docs/24) – własna warstwa wyglądu, niezależna od `src/ios/ios.css`.
+ * Tokeny na korzeniu `.m`, motyw ciemny przez klasę `dark` na <html> (jak w reszcie aplikacji).
+ * Zasady: czcionka systemowa, liczby tabelaryczne, cele dotyku ≥ 44 pt, safe areas, bez bibliotek.
+ */
+
+.m {
+  --bg: #f2f2f7;
+  --card: #ffffff;
+  --card-2: #f7f7fa;
+  --label: #0b0b0f;
+  --label-2: rgb(60 60 67 / 0.62);
+  --label-3: rgb(60 60 67 / 0.32);
+  --separator: rgb(60 60 67 / 0.16);
+  --fill: rgb(120 120 128 / 0.12);
+  --fill-2: rgb(120 120 128 / 0.18);
+  --accent: #0a7aff;
+  --accent-soft: rgb(10 122 255 / 0.12);
+  --green: #2fb353;
+  --red: #ff3b30;
+  --orange: #ff9500;
+  --yellow: #ffcc00;
+  --indigo: #5856d6;
+  --bar: rgb(249 249 251 / 0.86);
+  --shadow: 0 1px 2px rgb(0 0 0 / 0.05), 0 8px 24px rgb(0 0 0 / 0.06);
+  --radius: 20px;
+  --radius-sm: 12px;
+
+  /* kolor dnia – ustawiany na ekranie wg głównego kroku (Z2 zielony, akcent pomarańczowy, test czerwony, wolne szary) */
+  --day: var(--accent);
+  --day-soft: var(--accent-soft);
+
+  background: var(--bg);
+  color: var(--label);
+  -webkit-font-smoothing: antialiased;
+  -webkit-tap-highlight-color: transparent;
+  font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'Segoe UI', Roboto, sans-serif;
+  font-size: 17px;
+  line-height: 22px;
+  letter-spacing: -0.3px;
+  min-height: 100dvh;
+  overflow-wrap: break-word;
+  overscroll-behavior-y: none;
+}
+
+html.dark .m {
+  --bg: #000000;
+  --card: #1c1c1e;
+  --card-2: #26262a;
+  --label: #f5f5f7;
+  --label-2: rgb(235 235 245 / 0.62);
+  --label-3: rgb(235 235 245 / 0.32);
+  --separator: rgb(84 84 88 / 0.6);
+  --fill: rgb(120 120 128 / 0.24);
+  --fill-2: rgb(120 120 128 / 0.32);
+  --accent: #0a84ff;
+  --accent-soft: rgb(10 132 255 / 0.2);
+  --green: #30d158;
+  --red: #ff453a;
+  --orange: #ff9f0a;
+  --yellow: #ffd60a;
+  --indigo: #5e5ce6;
+  --bar: rgb(22 22 24 / 0.84);
+  --shadow: none;
+}
+
+/* ---------------------------------------------------------------- typografia */
+.m-display {
+  font-size: 34px;
+  line-height: 40px;
+  font-weight: 800;
+  letter-spacing: -0.8px;
+}
+.m-title {
+  font-size: 22px;
+  line-height: 27px;
+  font-weight: 700;
+  letter-spacing: -0.5px;
+}
+.m-headline {
+  font-size: 17px;
+  line-height: 22px;
+  font-weight: 600;
+}
+.m-sub {
+  font-size: 15px;
+  line-height: 20px;
+  letter-spacing: -0.2px;
+}
+.m-foot {
+  font-size: 13px;
+  line-height: 17px;
+  letter-spacing: 0;
+}
+.m-eyebrow {
+  font-size: 12px;
+  line-height: 16px;
+  font-weight: 600;
+  letter-spacing: 0.4px;
+  text-transform: uppercase;
+  color: var(--label-2);
+}
+.m-dim {
+  color: var(--label-2);
+}
+.m-dim-3 {
+  color: var(--label-3);
+}
+.m-num {
+  font-variant-numeric: tabular-nums;
+}
+.m-big {
+  font-size: 28px;
+  line-height: 32px;
+  font-weight: 700;
+  letter-spacing: -0.6px;
+  font-variant-numeric: tabular-nums;
+}
+
+/* ---------------------------------------------------------------- pasek nawigacji z dużym tytułem */
+.m-nav {
+  position: sticky;
+  top: 0;
+  z-index: 30;
+  padding-top: env(safe-area-inset-top, 0px);
+  transition: background-color 0.2s ease;
+}
+.m-nav[data-scrolled='true'] {
+  background: var(--bar);
+  -webkit-backdrop-filter: saturate(180%) blur(20px);
+  backdrop-filter: saturate(180%) blur(20px);
+  box-shadow: inset 0 -0.5px 0 var(--separator);
+}
+.m-nav-inner {
+  position: relative;
+  display: flex;
+  align-items: center;
+  height: 44px;
+  padding: 0 8px;
+}
+.m-nav-title {
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+  max-width: 55%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 17px;
+  font-weight: 600;
+  opacity: 0;
+  transition: opacity 0.2s ease;
+  pointer-events: none;
+}
+.m-nav[data-scrolled='true'] .m-nav-title {
+  opacity: 1;
+}
+.m-nav-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  min-height: 44px;
+  min-width: 44px;
+  padding: 0 8px;
+  color: var(--accent);
+  font-size: 17px;
+  background: none;
+  border: 0;
+}
+
+/* ---------------------------------------------------------------- karty, listy, przyciski */
+.m-card {
+  background: var(--card);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+}
+.m-card-day {
+  background: linear-gradient(160deg, var(--day-soft), var(--card) 55%);
+}
+.m-list {
+  background: var(--card);
+  border-radius: var(--radius-sm);
+  box-shadow: var(--shadow);
+  overflow: hidden;
+}
+.m-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-height: 52px;
+  width: 100%;
+  padding: 10px 16px;
+  text-align: left;
+  color: inherit;
+  background: none;
+  border: 0;
+}
+.m-row + .m-row {
+  box-shadow: inset 0 0.5px 0 var(--separator);
+}
+button.m-row:active {
+  background: var(--fill);
+}
+.m-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  min-height: 50px;
+  padding: 0 20px;
+  border: 0;
+  border-radius: 14px;
+  font-size: 17px;
+  font-weight: 600;
+  letter-spacing: -0.3px;
+  background: var(--day);
+  color: #fff;
+  transition: transform 0.12s ease, opacity 0.12s ease;
+}
+.m-btn-soft {
+  background: var(--fill);
+  color: var(--label);
+}
+.m-btn:active {
+  transform: scale(0.97);
+}
+.m-btn:disabled {
+  opacity: 0.4;
+}
+.m-press:active {
+  opacity: 0.6;
+}
+
+/* ---------------------------------------------------------------- dolny pasek: 3 zakładki + Trener */
+.m-tabbar {
+  position: fixed;
+  inset: auto 0 0 0;
+  z-index: 40;
+  display: grid;
+  grid-template-columns: 1fr 1fr 1.2fr 1fr 1fr;
+  align-items: end;
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+  background: var(--bar);
+  -webkit-backdrop-filter: saturate(180%) blur(20px);
+  backdrop-filter: saturate(180%) blur(20px);
+  box-shadow: inset 0 0.5px 0 var(--separator);
+}
+.m-tab {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+  min-height: 52px;
+  padding-top: 6px;
+  color: var(--label-2);
+  font-size: 10px;
+  font-weight: 500;
+  letter-spacing: 0.1px;
+}
+.m-tab[aria-current='page'] {
+  color: var(--accent);
+}
+.m-tab-coach {
+  grid-column: 3;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  min-height: 52px;
+  padding-top: 0;
+  color: var(--label-2);
+  font-size: 10px;
+  font-weight: 500;
+  background: none;
+  border: 0;
+}
+.m-tab-coach-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 52px;
+  height: 52px;
+  margin-top: -18px;
+  border-radius: 50%;
+  background: var(--accent);
+  color: #fff;
+  box-shadow: 0 6px 18px rgb(10 122 255 / 0.35);
+  transition: transform 0.12s ease;
+}
+.m-tab-coach:active .m-tab-coach-btn {
+  transform: scale(0.94);
+}
+.m-pb-tab {
+  padding-bottom: calc(60px + env(safe-area-inset-bottom, 0px) + 24px);
+}
+
+/* ---------------------------------------------------------------- arkusz od dołu */
+.m-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 50;
+  background: rgb(0 0 0 / 0.4);
+  animation: m-fade 0.2s ease;
+}
+.m-sheet {
+  position: fixed;
+  inset: auto 0 0 0;
+  z-index: 51;
+  max-height: 92dvh;
+  display: flex;
+  flex-direction: column;
+  border-radius: 16px 16px 0 0;
+  background: var(--bg);
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+  animation: m-up 0.3s cubic-bezier(0.32, 0.72, 0, 1);
+}
+.m-grabber {
+  width: 36px;
+  height: 5px;
+  margin: 6px auto 2px;
+  border-radius: 3px;
+  background: var(--label-3);
+}
+@keyframes m-up {
+  from {
+    transform: translateY(100%);
+  }
+  to {
+    transform: translateY(0);
+  }
+}
+@keyframes m-fade {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+/* ---------------------------------------------------------------- oś dnia (kropki) */
+.m-dots {
+  display: flex;
+  align-items: center;
+  gap: 0;
+}
+.m-dot {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  border: 2px solid var(--label-3);
+  background: transparent;
+}
+.m-dot[data-done='true'] {
+  border-color: var(--day);
+  background: var(--day);
+}
+.m-dot-line {
+  flex: 1;
+  height: 2px;
+  background: var(--separator);
+}
+.m-dot-line[data-done='true'] {
+  background: var(--day);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .m-sheet,
+  .m-backdrop {
+    animation: none;
+  }
+}
