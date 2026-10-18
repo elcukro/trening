@@ -219,6 +219,15 @@ po jeździe „RPE…”, wieczorem „Co jutro?”, „Jutro nie dam rady”; t
 funkcji po ludzku (`describeError`: 401 = sesja wygasła, treść `error` z serwera). Stan dnia liczy wspólny hook
 `src/m/useDayPhase.ts` (Dziś i Trener). `/i` zostaje przy rozmowie per dzień.
 
+**Krok 4 zrobiony 18.10.2026:** `src/m/screens/RideScreen.tsx` (`/m/jazda/:date` – pasek struktury, cele, stan Bolta,
+„Wyślij na Bolta” tylko dla dziś i przyszłości, „Wersja pod dachem” / „Wróć do wersji na dworze” przez override `indoor`,
+kroki jako pionowa oś z kolorem strefy, opis treningu; pogoda zostaje na karcie dnia) i `SummaryScreen.tsx`
+(`/m/podsumowanie/:date` – zgodność %, TSS, dryf tętna lub śr. tętno, RPE jednym dotknięciem, pełna notatka trenera
+z „Odpowiedz trenerowi” (prefill), czas w strefach tętna z `zoneDistribution`, siatka liczb; przełącznik przy dwóch jazdach
+w dniu; bez jazdy ze Stravy – komunikat i samo RPE). Wspólne drobiazgi (`Stat`, `Targets`, `StructureBar`, `RpeRow`)
+w `src/m/components/Bits.tsx`. Karta dnia: „Pokaż kroki” → jazda, „Podsumowanie” → podsumowanie; `mobilePathFor`
+mapuje `/i/trening/:d` → `/m/jazda/:d`.
+
 **Stan: kroki 0 i 1 zrobione 18.10.2026** (`src/day/`, `src/m/` ze szkieletem trzech ekranów, `ui_mode 'm'`, przełączniki, `mobilePathFor`).
 
 Razem ok. 7 dni pracy; po kroku 3 v2 nadaje się do codziennego użycia równolegle z `/i`.

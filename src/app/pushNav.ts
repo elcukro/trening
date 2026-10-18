@@ -26,8 +26,9 @@ export function mobilePathFor(pathname: string): string | null {
   if (!m) return null
   switch (m[1]) {
     case 'dzien':
-    case 'trening':
       return `/m/dzien${m[2] ?? ''}`
+    case 'trening':
+      return m[2] ? `/m/jazda${m[2]}` : '/m'
     case 'tydzien':
       return `/m/plan${m[2] ?? ''}`
     case 'postep':

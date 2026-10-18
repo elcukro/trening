@@ -1,19 +1,19 @@
 import { useState } from 'react'
-import { useParams } from 'react-router'
+import { useNavigate, useParams } from 'react-router'
 import { upsertSessionLog } from '@/db/repo'
 import { addDays, isValidISODate } from '@/engine/dates'
 import type { DayPlan } from '@/engine/plan'
 import { useIosDay, useRideScore, type IosDay } from '@/day/useIos'
 import { useBriefing, type Briefing } from '@/day/useBriefing'
 import { rideVerdict, type DayPhase } from '@/day/dayState'
-import { mainTarget, structureLabel } from '@/day/summary'
+import { structureLabel } from '@/day/summary'
 import { useToast } from '@/components/Toast'
 import { fmtLong, todayISO } from '@/lib/dates'
 import { minutes, num } from '@/lib/format'
 import { DAY_TYPE_LABEL } from '@/lib/labels'
 import { Btn, Card, Group, Row, Screen } from '../components/Chrome'
 import { CheckinSheet } from '../components/CheckinSheet'
-import { StepsSheet } from '../components/StepsSheet'
+import { RpeRow, Stat, Targets } from '../components/Bits'
 import { dayColor } from '../dayColor'
 import { useLastRide, useWeekState } from '../useWeek'
 import { useDayPhase } from '../useDayPhase'
@@ -36,8 +36,9 @@ export function TodayScreen() {
   const d = useIosDay(date)
   const day = d.day
   const toast = useToast()
+  const navigate = useNavigate()
   const openCoach = useOpenCoach()
-  const [sheet, setSheet] = useState<'checkin' | 'steps' | null>(null)
+  const [sheet, setSheet] = useState<'checkin' | null>(null)
   const brief = useBriefing(day, d.view.overrides.some((o) => o.kind === 'indoor'))
   const activity = d.activities[0]
   const score = useRideScore(activity, day, d.ftp)
@@ -81,7 +82,7 @@ export function TodayScreen() {
           <p className="m-sub m-dim">Tego dnia nie ma w planie.</p>
         </Card>
       ) : (
-        <StateCard phase={phase} day={day} d={d} brief={brief} score={score} onCoach={openCoach} onCheckin={() => setSheet('checkin')} onSteps={() => setSheet('steps')} onBolt={sendBolt} onRpe={saveRpe} onUnskip={unskip} />
+        <StateCard phase={phase} day={day} d={d} brief={brief} score={score} onCoach={openCoach} onCheckin={() => setSheet('checkin')} onSteps={() => navigate(`/m/jazda/${date}`)} onSummary={() => navigate(`/m/podsumowanie/${date}`)} onBolt={sendBolt} onRpe={saveRpe} onUnskip={unskip} />
       )}
 
       {day && isToday && phase !== 'rest' && (
@@ -117,7 +118,6 @@ export function TodayScreen() {
       )}
 
       {sheet === 'checkin' && <CheckinSheet checkin={d.checkin} lastWeight={d.lastWeight} onClose={() => setSheet(null)} onSave={d.saveCheckin} />}
-      {sheet === 'steps' && day?.workout && <StepsSheet workout={day.workout} onClose={() => setSheet(null)} />}
     </Screen>
   )
 }
@@ -133,6 +133,7 @@ interface CardProps {
   onCoach: (prefill?: string) => void
   onCheckin: () => void
   onSteps: () => void
+  onSummary: () => void
   onBolt: () => void
   onRpe: (rpe: number) => Promise<void>
   onUnskip: () => Promise<void>
@@ -240,17 +241,15 @@ function StateCard(p: CardProps) {
           )}
           {note && <NoteExcerpt text={note} />}
           <div className="mt-4">
-            <p className="m-foot m-dim mb-2">{rpe != null ? `RPE ${rpe} – zmień jednym dotknięciem` : 'Jak ciężko było? RPE 1–10'}</p>
-            <div className="grid grid-cols-10 gap-1" role="radiogroup" aria-label="RPE">
-              {Array.from({ length: 10 }, (_, i) => i + 1).map((v) => (
-                <button key={v} role="radio" aria-checked={rpe === v} onClick={() => void p.onRpe(v)} className="m-num min-h-10 rounded-lg text-[15px] font-semibold" style={rpe === v ? { background: 'var(--day)', color: '#fff' } : { background: 'var(--fill)', color: 'var(--label)' }}>
-                  {v}
-                </button>
-              ))}
-            </div>
+            <RpeRow value={rpe} onPick={(v) => void p.onRpe(v)} />
           </div>
+          {a && (
+            <Btn onClick={p.onSummary} className="mt-4 w-full">
+              Podsumowanie
+            </Btn>
+          )}
           {phase === 'evening' && (
-            <Btn soft onClick={() => p.onCoach()} className="mt-4 w-full">
+            <Btn soft onClick={() => p.onCoach()} className="mt-2 w-full">
               Powiedz trenerowi
             </Btn>
           )}
@@ -302,28 +301,6 @@ function StateCard(p: CardProps) {
         </Card>
       )
   }
-}
-
-function Targets({ day }: { day: DayPlan }) {
-  const t = day.workout ? mainTarget(day.workout) : null
-  if (!t) return null
-  const cells = [t.watts ? { v: `${t.watts[0]}–${t.watts[1]}`, l: 'W' } : null, t.bpm ? { v: `${t.bpm[0]}–${t.bpm[1]}`, l: 'bpm' } : null, t.cadence ? { v: `${t.cadence[0]}–${t.cadence[1]}`, l: 'rpm' } : { v: `${t.rpe[0]}–${t.rpe[1]}`, l: 'RPE' }].filter((x): x is { v: string; l: string } => !!x)
-  return (
-    <div className={`mt-3 grid gap-2 grid-cols-${cells.length}`}>
-      {cells.map((c) => (
-        <Stat key={c.l} value={c.v} label={c.l} />
-      ))}
-    </div>
-  )
-}
-
-function Stat({ value, label }: { value: string; label: string }) {
-  return (
-    <div className="rounded-xl px-2 py-2 text-center" style={{ background: 'var(--fill)' }}>
-      <div className="m-num whitespace-nowrap text-[18px] font-bold leading-6 tracking-tight">{value}</div>
-      <div className="m-foot m-dim">{label}</div>
-    </div>
-  )
 }
 
 /** Dwa pierwsze zdania notatki trenera; reszta po dotknięciu. */

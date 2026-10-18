@@ -15,6 +15,8 @@ import { useViewport } from './useViewport'
 import { TodayScreen } from './screens/TodayScreen'
 import { PlanScreen } from './screens/PlanScreen'
 import { MeScreen } from './screens/MeScreen'
+import { RideScreen } from './screens/RideScreen'
+import { SummaryScreen } from './screens/SummaryScreen'
 import { CoachContext } from './coach'
 
 /**
@@ -75,6 +77,8 @@ export function MobileApp() {
             <Route path="dzien/:date" element={<TodayScreen />} />
             <Route path="plan" element={<PlanScreen />} />
             <Route path="plan/:date" element={<PlanScreen />} />
+            <Route path="jazda/:date" element={<RideScreen />} />
+            <Route path="podsumowanie/:date" element={<SummaryScreen />} />
             <Route path="ja" element={<MeScreen />} />
             <Route path="*" element={<Navigate to={mobilePathFor(location.pathname) ?? '/m'} replace />} />
           </Routes>
