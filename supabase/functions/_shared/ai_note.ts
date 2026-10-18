@@ -181,6 +181,29 @@ export async function callClaude(system: string, user: string, model = MODEL, ma
   return { text, usage: out.usage ?? {}, stop: `${out.stop_reason ?? '?'}${text ? '' : ` (bloki: ${(out.content ?? []).map((c) => c.type).join(',') || 'brak'})`}` }
 }
 
+/**
+ * Rozmowa z narzędziami (czat „Zapytaj trenera”): pełna historia wiadomości i definicje narzędzi; zwraca surowe bloki
+ * odpowiedzi (tekst, tool_use, bloki myślenia z podpisem – muszą wrócić w kontynuacji) i powód zatrzymania.
+ */
+export async function callClaudeChat(system: string, messages: readonly unknown[], tools: readonly unknown[], model = MODEL, maxTokens = 3000): Promise<{ content: Record<string, unknown>[]; usage: Record<string, number>; stop: string }> {
+  const res = await fetch('https://api.anthropic.com/v1/messages', {
+    method: 'POST',
+    headers: { 'x-api-key': env('ANTHROPIC_API_KEY'), 'anthropic-version': '2023-06-01', 'content-type': 'application/json' },
+    body: JSON.stringify({
+      model,
+      max_tokens: maxTokens,
+      thinking: { type: 'adaptive' },
+      output_config: { effort: 'low' },
+      system: [{ type: 'text', text: system, cache_control: { type: 'ephemeral' } }],
+      tools,
+      messages,
+    }),
+  })
+  const out = (await res.json()) as { content?: Record<string, unknown>[]; usage?: Record<string, number>; stop_reason?: string; error?: { message?: string } }
+  if (!res.ok) throw new Error(`anthropic ${res.status}: ${out.error?.message ?? ''}`)
+  return { content: out.content ?? [], usage: out.usage ?? {}, stop: out.stop_reason ?? '?' }
+}
+
 export interface NoteResult {
   note: string
   source: 'ai' | 'rules'

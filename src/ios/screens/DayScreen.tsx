@@ -18,6 +18,8 @@ import { SyncBanner } from '../components/SyncBanner'
 import { CheckinSheet } from '../components/CheckinSheet'
 import { AfterSheet } from '../components/AfterSheet'
 import { BriefingSheet } from '../components/BriefingSheet'
+import { CoachSheet } from '../components/CoachSheet'
+import { canChat } from '@/sync/coachChat'
 
 const WEEKDAY_TITLE: Record<string, string> = { mon: 'Poniedziałek', tue: 'Wtorek', wed: 'Środa', thu: 'Czwartek', fri: 'Piątek', sat: 'Sobota', sun: 'Niedziela' }
 
@@ -217,7 +219,7 @@ export function DayScreen() {
   const d = useIosDay(date)
   const brief = useBriefing(d.day, d.view.overrides.some((o) => o.kind === 'indoor'))
   const score = useRideScore(d.activities[0], d.day, d.ftp)
-  const [sheet, setSheet] = useState<'checkin' | 'after' | 'brief' | null>(null)
+  const [sheet, setSheet] = useState<'checkin' | 'after' | 'brief' | 'coach' | null>(null)
   const [sending, setSending] = useState(false)
 
   const day = d.day
@@ -417,6 +419,14 @@ export function DayScreen() {
         </Section>
       )}
 
+      {canChat && (
+        <Section header="Trener" footer="Podaj dane zdaniem (zapisze je), zapytaj o plan albo poproś o przeniesienie jazdy.">
+          <List>
+            <Row icon={<RowIcon color="var(--indigo)"><IconHeart size={18} /></RowIcon>} title="Zapytaj trenera" onClick={() => setSheet('coach')} accessory={<span className="ios-dim-3"><IconChevron size={18} /></span>} />
+          </List>
+        </Section>
+      )}
+
       <Section header="Żywienie" footer={day.nutrition.post_workout ?? undefined}>
         <List>
           <Row icon={<RowIcon color="var(--green)"><IconHeart size={18} /></RowIcon>} title="Dziś" subtitle={day.nutrition.label} value={`${day.protein_g} g białka`} />
@@ -435,6 +445,7 @@ export function DayScreen() {
           }}
         />
       )}
+      {sheet === 'coach' && <CoachSheet d={d} date={date} onClose={() => setSheet(null)} />}
       {sheet === 'brief' && brief && <BriefingSheet b={brief} onClose={() => setSheet(null)} onIndoor={() => { void d.view.applyAction({ kind: 'indoor', date, label: '', payload: {} }); setSheet(null) }} />}
     </Screen>
   )
