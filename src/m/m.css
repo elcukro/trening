@@ -61,6 +61,13 @@ html:has(.m) body {
   background: #f2f2f7;
   color-scheme: light;
 }
+/* PWA z ekranu początkowego nie ma paska przeglądarki – podłoga na pełny ekran, żeby iOS nie układał strony o pasek statusu za krótko */
+@media (display-mode: standalone) {
+  html:has(.m),
+  html:has(.m) body {
+    min-height: 100lvh;
+  }
+}
 .m-scroll {
   flex: 1 1 auto;
   min-height: 0;
