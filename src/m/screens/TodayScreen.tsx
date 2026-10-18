@@ -1,16 +1,33 @@
+import { useMemo, useState } from 'react'
+import { useLiveQuery } from 'dexie-react-hooks'
 import { useParams } from 'react-router'
-import { isValidISODate } from '@/engine/dates'
-import { useIosDay } from '@/day/useIos'
-import { fmtLong, todayISO } from '@/lib/dates'
-import { minutes } from '@/lib/format'
+import { db } from '@/db'
+import { upsertSessionLog } from '@/db/repo'
+import { addDays, isValidISODate } from '@/engine/dates'
+import type { DayPlan } from '@/engine/plan'
+import { useIosDay, useRideScore, type IosDay } from '@/day/useIos'
+import { useBriefing, type Briefing } from '@/day/useBriefing'
+import { dayPhase, rideVerdict, type DayPhase } from '@/day/dayState'
+import { mainTarget, structureLabel } from '@/day/summary'
+import { useToast } from '@/components/Toast'
+import { fmtLong, nowHour, todayISO } from '@/lib/dates'
+import { minutes, num } from '@/lib/format'
 import { DAY_TYPE_LABEL } from '@/lib/labels'
-import { Card, Screen } from '../components/Chrome'
+import { DEFAULT_RIDE_HOURS, type RideHours } from '@/sync/weather'
+import { Btn, Card, Group, Row, Screen } from '../components/Chrome'
+import { CheckinSheet } from '../components/CheckinSheet'
+import { StepsSheet } from '../components/StepsSheet'
 import { dayColor } from '../dayColor'
-import { dayArt } from '../art'
+import { ART, dayArt, weatherArt } from '../art'
+import { useOpenCoach } from '../coach'
+
+const LOGGED = ['done', 'modified', 'skipped']
+const cap = (t: string) => t.charAt(0).toUpperCase() + t.slice(1)
+const stateOf = (log: { status: string } | undefined) => (log ? (log.status as 'planned' | 'in_progress' | 'done' | 'modified' | 'skipped') : 'none')
 
 /**
- * Dziś – szkielet (krok 1 w docs/24): karta dnia w kolorze dnia i oś dnia z czterech kropek.
- * Karta stanu z siedmioma stanami (morning → brief → riding → after → evening) przyjdzie w kroku 2.
+ * Dziś (docs/24 § 4): jedna karta stanu, która zmienia się w ciągu dnia, pod nią oś dnia, żywienie i jutro.
+ * Stany liczy `dayPhase` (czysty TS); dane dnia daje `useIosDay` – ten sam hook co w `/i`.
  */
 export function TodayScreen() {
   const params = useParams()
@@ -18,24 +35,76 @@ export function TodayScreen() {
   const date = params.date && isValidISODate(params.date) ? params.date : today
   const d = useIosDay(date)
   const day = d.day
-  const color = dayColor(day?.day_type, day?.flags.includes('test'))
+  const toast = useToast()
+  const openCoach = useOpenCoach()
+  const [sheet, setSheet] = useState<'checkin' | 'steps' | null>(null)
+  const hours = useLiveQuery(async () => ((await db.kv.get('ride_hours'))?.value as RideHours | undefined) ?? DEFAULT_RIDE_HOURS, [], DEFAULT_RIDE_HOURS)
+  const brief = useBriefing(day, d.view.overrides.some((o) => o.kind === 'indoor'))
+  const activity = d.activities[0]
+  const score = useRideScore(activity, day, d.ftp)
+
   const isToday = date === today
+  const weekend = day?.weekday === 'sat' || day?.weekday === 'sun'
+  const phase: DayPhase = useMemo(
+    () =>
+      dayPhase({
+        date,
+        today,
+        ride: day?.bike ? { name: day.bike.name, minutes: day.bike.duration_min, pushable: d.bolt.kind !== 'na' } : null,
+        gym: day?.gym ? { name: day.gym.name } : null,
+        checkedIn: !!d.checkin && (d.checkin.sleep != null || d.checkin.weight_kg != null || d.checkin.legs != null),
+        boltReady: d.bolt.kind === 'ok',
+        rideLog: stateOf(d.rideLog),
+        gymLog: stateOf(d.gymLog),
+        hasActivity: d.activities.length > 0,
+        hour: nowHour(),
+        startHour: weekend ? hours.weekend : hours.weekday,
+        hasRpe: (day?.bike ? d.rideLog?.rpe : d.gymLog?.rpe) != null,
+      }),
+    [date, today, day, d.bolt.kind, d.checkin, d.rideLog, d.gymLog, d.activities.length, hours, weekend],
+  )
+  const color = dayColor(day?.day_type, day?.flags.includes('test'))
+  const tomorrow = d.view.window.find((x) => x.date === addDays(date, 1)) ?? null
+  const warn = d.view.warnings.filter((w) => w.severity === 'warn')
+
+  async function saveRpe(rpe: number) {
+    const log = day?.bike ? d.rideLog : d.gymLog
+    const status = log && LOGGED.includes(log.status) && log.status !== 'skipped' ? (log.status as 'done' | 'modified') : score != null && score < 70 ? 'modified' : 'done'
+    await toast.run('Zapisuję RPE…', () => d.logRide(status, { rpe }), () => `RPE ${rpe} zapisane`)
+  }
+  async function unskip() {
+    const kind = day?.bike ? 'bike' : 'gym'
+    await toast.run('Przywracam…', async () => {
+      await upsertSessionLog(date, kind, { status: 'planned', rpe: null })
+      for (const o of d.view.overrides.filter((o) => o.kind === 'skip')) await d.view.undo(o.id)
+    }, () => 'Trening wrócił do planu')
+  }
+  const sendBolt = () => void toast.run('Wysyłam na Bolta…', d.sendToBolt, (s) => (s === 'updated' ? 'Zaktualizowano na Bolcie. Zsynchronizuj licznik.' : 'Wysłano na Bolta. Zsynchronizuj licznik.'))
 
   return (
-    <Screen title={isToday ? 'Dziś' : fmtLong(date).split(',')[0]!} subtitle={`${fmtLong(date)}${day ? ` · tydzień ${day.week}` : ''}`} back={isToday ? undefined : '/m/plan'} day={color}>
-      {day ? (
-        <Card day>
-          <div className="flex items-start gap-3">
-            <div className="min-w-0 flex-1">
-              <p className="m-eyebrow" style={{ color: 'var(--day)' }}>
-                {day.bike ? DAY_TYPE_LABEL[day.day_type] : day.gym ? 'Siłownia' : 'Wolne'}
-              </p>
-              <p className="m-title mt-1">{day.bike?.name ?? day.gym?.name ?? 'Dzień wolny'}</p>
-              {day.bike && <p className="m-big mt-3">{minutes(day.bike.duration_min)}</p>}
-            </div>
-            <img src={dayArt(day.day_type, day.flags.includes('test'))} alt="" width={96} height={96} className="-mt-1 -mr-1 h-24 w-24 shrink-0 object-contain" />
-          </div>
-          <div className="m-dots mt-5" aria-label="Oś dnia">
+    <Screen title={isToday ? 'Dziś' : cap(fmtLong(date).split(',')[0]!)} subtitle={`${fmtLong(date)}${day ? ` · tydzień ${day.week}${day.week_type === 'deload' ? ' · lżejszy' : ''}` : ''}`} back={isToday ? undefined : '/m/plan'} day={color}>
+      {warn.length > 0 && (
+        <div className="m-list p-3" style={{ background: 'rgb(255 204 0 / 0.18)' }}>
+          <p className="m-sub">{warn[0]!.message}</p>
+          {warn[0]!.actions?.[0] && (
+            <button className="m-headline mt-1" style={{ color: 'var(--accent)' }} onClick={() => void d.view.applyAction(warn[0]!.actions![0]!)}>
+              {warn[0]!.actions[0].label}
+            </button>
+          )}
+        </div>
+      )}
+
+      {!day ? (
+        <Card>
+          <p className="m-sub m-dim">Tego dnia nie ma w planie.</p>
+        </Card>
+      ) : (
+        <StateCard phase={phase} day={day} d={d} brief={brief} score={score} onCoach={openCoach} onCheckin={() => setSheet('checkin')} onSteps={() => setSheet('steps')} onBolt={sendBolt} onRpe={saveRpe} onUnskip={unskip} />
+      )}
+
+      {day && isToday && phase !== 'rest' && (
+        <div className="px-1">
+          <div className="m-dots" aria-label="Oś dnia">
             {d.flow.steps.map((s, i) => (
               <span key={s.key} className="contents">
                 {i > 0 && <span className="m-dot-line" data-done={s.done} />}
@@ -43,14 +112,236 @@ export function TodayScreen() {
               </span>
             ))}
           </div>
-          <p className="m-foot m-dim mt-2">{d.flow.steps.map((s) => s.title.replace('Poranny ', '')).join(' · ')}</p>
-        </Card>
-      ) : (
-        <Card>
-          <p className="m-sub m-dim">Tego dnia nie ma w planie.</p>
-        </Card>
+          <p className="m-foot m-dim mt-1.5">{d.flow.steps.map((s) => (s.key === 'checkin' ? 'check-in' : s.key === 'bolt' ? 'Bolt' : s.key === 'train' ? 'trening' : 'RPE')).join(' · ')}</p>
+        </div>
       )}
-      <p className="m-foot m-dim px-1">Szkielet nowego wyglądu (docs/24). Karta stanu dnia, odprawa, kroki jazdy i podsumowanie – kroki 2 i 4.</p>
+
+      {day && (
+        <Group>
+          <Row title="Żywienie" sub={day.nutrition.label} value={`${day.protein_g} g białka`} icon={<img src={ART.scale} alt="" width={28} height={28} className="h-7 w-7 object-contain" />} />
+          {isToday && tomorrow && <Row title="Jutro" sub={tomorrow.bike ? `${tomorrow.bike.name} · ${minutes(tomorrow.bike.duration_min)}` : tomorrow.gym ? tomorrow.gym.name : 'Wolne'} to={`/m/dzien/${tomorrow.date}`} icon={<img src={dayArt(tomorrow.day_type, tomorrow.flags.includes('test'))} alt="" width={28} height={28} className="h-7 w-7 object-contain" />} />}
+        </Group>
+      )}
+
+      {sheet === 'checkin' && <CheckinSheet checkin={d.checkin} lastWeight={d.lastWeight} onClose={() => setSheet(null)} onSave={d.saveCheckin} />}
+      {sheet === 'steps' && day?.workout && <StepsSheet workout={day.workout} onClose={() => setSheet(null)} />}
     </Screen>
+  )
+}
+
+/* ------------------------------------------------------------------ karta stanu */
+
+interface CardProps {
+  phase: DayPhase
+  day: DayPlan
+  d: IosDay
+  brief: Briefing | null
+  score: number | null
+  onCoach: (prefill?: string) => void
+  onCheckin: () => void
+  onSteps: () => void
+  onBolt: () => void
+  onRpe: (rpe: number) => Promise<void>
+  onUnskip: () => Promise<void>
+}
+
+function StateCard(p: CardProps) {
+  const { phase, day, d } = p
+  const name = day.bike?.name ?? day.gym?.name ?? 'Dzień wolny'
+  const eyebrow = day.flags.includes('test') ? 'Test' : day.bike ? DAY_TYPE_LABEL[day.day_type] : day.gym ? 'Siłownia' : 'Wolne'
+  const art = dayArt(day.day_type, day.flags.includes('test'))
+
+  switch (phase) {
+    case 'morning':
+      return (
+        <Card day>
+          <div className="flex items-start gap-3">
+            <div className="min-w-0 flex-1">
+              <p className="m-eyebrow" style={{ color: 'var(--day)' }}>
+                Dzień dobry
+              </p>
+              <p className="m-title mt-1">Jak się czujesz?</p>
+              <p className="m-sub m-dim mt-2">
+                {day.bike ? `${name} · ${minutes(day.bike.duration_min)}` : day.gym ? name : 'Dziś wolne'}
+                {d.lastWeight ? ` · ostatnia waga ${num(d.lastWeight.kg)} kg` : ''}
+              </p>
+            </div>
+            <img src={ART.coachWave} alt="" width={84} height={112} className="-mt-2 -mr-2 h-28 w-[84px] shrink-0 object-contain" />
+          </div>
+          <div className="mt-4 flex flex-col gap-2">
+            <Btn onClick={() => p.onCoach('Waga ')} className="w-full">
+              Powiedz trenerowi
+            </Btn>
+            <Btn soft onClick={p.onCheckin} className="w-full">
+              Wpisz ręcznie
+            </Btn>
+          </div>
+        </Card>
+      )
+    case 'brief':
+    case 'riding':
+    case 'future':
+      return (
+        <Card day>
+          <div className="flex items-start gap-3">
+            <div className="min-w-0 flex-1">
+              <p className="m-eyebrow" style={{ color: 'var(--day)' }}>
+                {eyebrow}
+                {day.workout && structureLabel(day.workout) ? ` · ${structureLabel(day.workout)}` : ''}
+              </p>
+              <p className="m-title mt-1">{name}</p>
+              {day.bike && <p className="m-big mt-2">{minutes(day.bike.duration_min)}</p>}
+            </div>
+            <img src={art} alt="" width={96} height={96} className="-mt-1 -mr-1 h-24 w-24 shrink-0 object-contain" />
+          </div>
+          {day.workout && <Targets day={day} />}
+          {p.brief && (
+            <div className="mt-4 flex items-center gap-3">
+              <img src={weatherArt(p.brief.summary?.code, { night: p.brief.summary?.dark, windKmh: p.brief.summary?.wind_kmh })} alt="" width={40} height={40} className="h-10 w-10 shrink-0 object-contain" />
+              <p className="m-sub min-w-0">
+                {p.brief.summary ? `${num(p.brief.summary.feels_c, 0)} °C odczuwalne · wiatr ${p.brief.summary.wind_kmh} km/h · deszcz ${p.brief.summary.precip_prob} %` : p.brief.location === null ? 'Bez prognozy – ustaw miejscowość w Ja' : p.brief.loading ? 'Pobieram prognozę…' : 'Bez prognozy'}
+                {p.brief.clothing && <span className="m-dim block truncate">{p.brief.clothing.label}</span>}
+              </p>
+            </div>
+          )}
+          {day.bike && d.bolt.kind !== 'na' && (
+            <p className="m-sub mt-3 flex items-center gap-2">
+              <img src={ART.bolt} alt="" width={24} height={24} className="h-6 w-6 object-contain" />
+              <span style={{ color: d.bolt.kind === 'ok' ? 'var(--green)' : d.bolt.kind === 'error' ? 'var(--red)' : 'var(--label-2)' }}>{d.bolt.kind === 'ok' ? 'Na liczniku' : d.bolt.kind === 'stale' ? 'Na liczniku jest stara wersja' : d.bolt.kind === 'error' ? `Bolt: ${d.bolt.error}` : 'Jeszcze nie na liczniku'}</span>
+            </p>
+          )}
+          {phase === 'riding' && <p className="m-foot m-dim mt-3">Jazda w toku – czekam na import ze Stravy.</p>}
+          <div className="mt-4 flex flex-col gap-2">
+            {day.workout && (
+              <Btn onClick={p.onSteps} className="w-full">
+                Pokaż kroki
+              </Btn>
+            )}
+            {phase !== 'riding' && day.bike && d.bolt.kind !== 'na' && d.bolt.kind !== 'ok' && (
+              <Btn soft onClick={p.onBolt} className="w-full">
+                Wyślij na Bolta
+              </Btn>
+            )}
+          </div>
+        </Card>
+      )
+    case 'after':
+    case 'evening': {
+      const a = d.activities[0]
+      const load = a ? d.loadOf(a) : null
+      const verdict = rideVerdict(p.score)
+      const rpe = day.bike ? d.rideLog?.rpe : d.gymLog?.rpe
+      const note = a?.note ?? null
+      return (
+        <Card day>
+          <p className="m-eyebrow" style={{ color: 'var(--day)' }}>
+            {phase === 'evening' ? 'Po treningu' : 'Jak poszło'}
+          </p>
+          <p className="m-title mt-1">{a?.name ?? name}</p>
+          {a && (
+            <div className="mt-3 grid grid-cols-3 gap-2">
+              <Stat value={p.score != null ? `${p.score} %` : '—'} label={verdict?.text ?? 'zgodność'} />
+              <Stat value={load ? String(Math.round(load.tss)) : '—'} label="TSS" />
+              <Stat value={a.decoupling_pct != null ? `${num(a.decoupling_pct)} %` : a.avg_hr ? `${Math.round(a.avg_hr)}` : '—'} label={a.decoupling_pct != null ? 'dryf tętna' : 'śr. tętno'} />
+            </div>
+          )}
+          {note && <NoteExcerpt text={note} />}
+          <div className="mt-4">
+            <p className="m-foot m-dim mb-2">{rpe != null ? `RPE ${rpe} – zmień jednym dotknięciem` : 'Jak ciężko było? RPE 1–10'}</p>
+            <div className="grid grid-cols-10 gap-1" role="radiogroup" aria-label="RPE">
+              {Array.from({ length: 10 }, (_, i) => i + 1).map((v) => (
+                <button key={v} role="radio" aria-checked={rpe === v} onClick={() => void p.onRpe(v)} className="m-num min-h-10 rounded-lg text-[15px] font-semibold" style={rpe === v ? { background: 'var(--day)', color: '#fff' } : { background: 'var(--fill)', color: 'var(--label)' }}>
+                  {v}
+                </button>
+              ))}
+            </div>
+          </div>
+          {phase === 'evening' && (
+            <Btn soft onClick={() => p.onCoach()} className="mt-4 w-full">
+              Powiedz trenerowi
+            </Btn>
+          )}
+        </Card>
+      )
+    }
+    case 'rest':
+      return (
+        <Card day>
+          <div className="flex items-start gap-3">
+            <div className="min-w-0 flex-1">
+              <p className="m-eyebrow" style={{ color: 'var(--day)' }}>
+                Wolne
+              </p>
+              <p className="m-title mt-1">Dziś odpoczynek</p>
+              <p className="m-sub m-dim mt-2">Regeneracja jest częścią treningu. {day.nutrition.label}</p>
+            </div>
+            <img src={ART.rest} alt="" width={96} height={96} className="-mt-1 -mr-1 h-24 w-24 shrink-0 object-contain" />
+          </div>
+        </Card>
+      )
+    case 'skipped':
+      return (
+        <Card>
+          <p className="m-eyebrow" style={{ color: 'var(--red)' }}>
+            Odpuszczone
+          </p>
+          <p className="m-title mt-1">{name}</p>
+          {(day.bike ? d.rideLog?.notes : d.gymLog?.notes) && <p className="m-sub m-dim mt-2">{day.bike ? d.rideLog?.notes : d.gymLog?.notes}</p>}
+          <Btn soft onClick={() => void p.onUnskip()} className="mt-4 w-full">
+            Cofnij
+          </Btn>
+        </Card>
+      )
+    case 'missed':
+      return (
+        <Card>
+          <p className="m-eyebrow m-dim">Bez jazdy</p>
+          <p className="m-title mt-1">{name}</p>
+          <p className="m-sub m-dim mt-2">Tego dnia nie było treningu ani oznaczenia. Jeśli to decyzja, oznacz jako pominięte – raporty przestaną o to pytać.</p>
+          <Btn soft onClick={() => void p.d.logRide('skipped')} className="mt-4 w-full">
+            Oznacz jako pominięte
+          </Btn>
+        </Card>
+      )
+  }
+}
+
+function Targets({ day }: { day: DayPlan }) {
+  const t = day.workout ? mainTarget(day.workout) : null
+  if (!t) return null
+  const cells = [t.watts ? { v: `${t.watts[0]}–${t.watts[1]}`, l: 'W' } : null, t.bpm ? { v: `${t.bpm[0]}–${t.bpm[1]}`, l: 'bpm' } : null, t.cadence ? { v: `${t.cadence[0]}–${t.cadence[1]}`, l: 'rpm' } : { v: `${t.rpe[0]}–${t.rpe[1]}`, l: 'RPE' }].filter((x): x is { v: string; l: string } => !!x)
+  return (
+    <div className={`mt-3 grid gap-2 grid-cols-${cells.length}`}>
+      {cells.map((c) => (
+        <Stat key={c.l} value={c.v} label={c.l} />
+      ))}
+    </div>
+  )
+}
+
+function Stat({ value, label }: { value: string; label: string }) {
+  return (
+    <div className="rounded-xl px-2 py-2 text-center" style={{ background: 'var(--fill)' }}>
+      <div className="m-num whitespace-nowrap text-[18px] font-bold leading-6 tracking-tight">{value}</div>
+      <div className="m-foot m-dim">{label}</div>
+    </div>
+  )
+}
+
+/** Dwa pierwsze zdania notatki trenera; reszta po dotknięciu. */
+function NoteExcerpt({ text }: { text: string }) {
+  const [open, setOpen] = useState(false)
+  const sentences = text.match(/[^.!?]+[.!?]+/g) ?? [text]
+  const short = sentences.slice(0, 2).join(' ').trim()
+  const more = sentences.length > 2
+  return (
+    <p className="m-sub mt-3">
+      {open || !more ? text : short}
+      {more && (
+        <button className="m-headline ml-1" style={{ color: 'var(--accent)' }} onClick={() => setOpen((v) => !v)}>
+          {open ? 'mniej' : 'więcej'}
+        </button>
+      )}
+    </p>
   )
 }

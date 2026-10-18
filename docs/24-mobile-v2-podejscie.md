@@ -176,6 +176,14 @@ API nie działa w PWA na iOS – nie udajemy własnego nagrywania).
 | 6 | Ja: cel, masa, forma, jazdy, test, ustawienia | parytet z Postęp + Więcej w `/i` (bez sprzętu/wyjazdu) | 1 dzień |
 | 7 | Push deep linki, pomoc, e2e, domyślne `/m` dla nowych urządzeń | `pomoc.html` opisuje v2, e2e zielone, `/i` tylko przez przełącznik | 0,5 dnia |
 
+**Stan: kroki 0, 1 i 2 zrobione 18.10.2026.** Krok 2: `dayPhase` w `src/day/dayState.ts` (9 stanów: morning, brief, riding,
+after, evening, rest, skipped, missed, future; godzina z `nowHour()` – `?hour=HH` w URL nadpisuje ją do podglądu, jak `?today=`),
+`StateCard` w `src/m/screens/TodayScreen.tsx` (cele W/bpm/rpm z `mainTarget`, pogoda z ikoną `weatherArt`, stan Bolta, RPE 1–10
+zapisywane jednym dotknięciem, „Cofnij” dla pominiętego, „Oznacz jako pominięte” dla przeszłości bez jazdy), arkusze
+`CheckinSheet` (ręczny check-in) i `StepsSheet` (kroki z celami – do czasu pełnego ekranu jazdy w kroku 4), `CoachContext`
+(`useOpenCoach`) do otwierania Trenera z kart. Podgląd stanów: `/m?today=2026-10-21&hour=8` (rano), `&hour=19` (w trakcie),
+`/m/dzien/<przeszła data>` (bez jazdy / pominięte), `/m/dzien/<przyszła>` (zapowiedź).
+
 **Stan: kroki 0 i 1 zrobione 18.10.2026** (`src/day/`, `src/m/` ze szkieletem trzech ekranów, `ui_mode 'm'`, przełączniki, `mobilePathFor`).
 
 Razem ok. 7 dni pracy; po kroku 3 v2 nadaje się do codziennego użycia równolegle z `/i`.

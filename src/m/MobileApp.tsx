@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useMemo, useState } from 'react'
 import { Navigate, Route, Routes, useLocation } from 'react-router'
 import { useAuth } from '@/sync/auth'
 import { useSyncRunner } from '@/sync/useSync'
@@ -14,6 +14,7 @@ import { TodayScreen } from './screens/TodayScreen'
 import { PlanScreen } from './screens/PlanScreen'
 import { MeScreen } from './screens/MeScreen'
 import { ART } from './art'
+import { CoachContext } from './coach'
 
 /**
  * Mobilny interfejs v2 (docs/24): trzy zakładki (Dziś, Plan, Ja) i przycisk Trener. Te same hooki konta,
@@ -26,7 +27,9 @@ export function MobileApp() {
   usePushKeepalive()
   const auth = useAuth()
   const location = useLocation()
-  const [coach, setCoach] = useState(false)
+  // arkusz Trener otwierany z paska i z kart (CoachContext); `prefill` to początek wiadomości, np. „Waga ”
+  const [coach, setCoach] = useState<false | { prefill?: string }>(false)
+  const coachApi = useMemo(() => ({ open: (prefill?: string) => setCoach({ prefill }) }), [])
   const [skipped, setSkipped] = useState(() => {
     try {
       return sessionStorage.getItem(NO_ACCOUNT) === '1'
@@ -57,24 +60,27 @@ export function MobileApp() {
   }
 
   return (
-    <div className="m flex min-h-dvh flex-col">
-      <Routes>
-        <Route index element={<TodayScreen />} />
-        <Route path="dzien/:date" element={<TodayScreen />} />
-        <Route path="plan" element={<PlanScreen />} />
-        <Route path="plan/:date" element={<PlanScreen />} />
-        <Route path="ja" element={<MeScreen />} />
-        <Route path="*" element={<Navigate to={mobilePathFor(location.pathname) ?? '/m'} replace />} />
-      </Routes>
-      <TabBar onCoach={() => setCoach(true)} />
-      {coach && (
-        <Sheet title="Trener" onClose={() => setCoach(false)}>
-          <div className="flex flex-col items-center gap-3 py-4 text-center">
-            <img src={ART.coachWave} alt="" width={160} height={214} className="h-[214px] w-[160px] object-contain" />
-            <p className="m-sub m-dim">Rozmowa z trenerem w nowym wyglądzie powstaje (krok 3 w docs/24). Na razie jest w poprzednim widoku: Dziś → Trener.</p>
-          </div>
-        </Sheet>
-      )}
-    </div>
+    <CoachContext.Provider value={coachApi}>
+      <div className="m flex min-h-dvh flex-col">
+        <Routes>
+          <Route index element={<TodayScreen />} />
+          <Route path="dzien/:date" element={<TodayScreen />} />
+          <Route path="plan" element={<PlanScreen />} />
+          <Route path="plan/:date" element={<PlanScreen />} />
+          <Route path="ja" element={<MeScreen />} />
+          <Route path="*" element={<Navigate to={mobilePathFor(location.pathname) ?? '/m'} replace />} />
+        </Routes>
+        <TabBar onCoach={() => setCoach({})} />
+        {coach && (
+          <Sheet title="Trener" onClose={() => setCoach(false)}>
+            <div className="flex flex-col items-center gap-3 py-4 text-center">
+              <img src={ART.coachWave} alt="" width={160} height={214} className="h-[214px] w-[160px] object-contain" />
+              <p className="m-sub m-dim">Rozmowa z trenerem w nowym wyglądzie powstaje (krok 3 w docs/24). Na razie jest w poprzednim widoku: Dziś → Trener.</p>
+              {coach.prefill && <p className="m-foot m-dim-3">Początek wiadomości: „{coach.prefill.trim()}…”</p>}
+            </div>
+          </Sheet>
+        )}
+      </div>
+    </CoachContext.Provider>
   )
 }

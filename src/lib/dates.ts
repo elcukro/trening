@@ -14,6 +14,15 @@ export function todayISO(): ISODate {
   return format(new TZDate(Date.now(), TIMEZONE), 'yyyy-MM-dd')
 }
 
+/** Bieżąca godzina w Warszawie (0–23); `?hour=HH` w URL nadpisuje ją tak jak `?today=` datę (podgląd stanów dnia w /m). */
+export function nowHour(): number {
+  if (typeof window !== 'undefined') {
+    const q = new URLSearchParams(window.location.search).get('hour')
+    if (q && /^\d{1,2}$/.test(q)) return Math.min(23, Number(q))
+  }
+  return new TZDate(Date.now(), TIMEZONE).getHours()
+}
+
 /** Godzina lokalna w Warszawie danego dnia jako ISO w UTC (np. start treningu 6:00 na Bolcie). */
 export function localTimeISO(date: ISODate, hour = 6): string {
   const d = new Date(toUtc(date))

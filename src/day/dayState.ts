@@ -134,3 +134,41 @@ export function goalProgress(ftp: number | null, goalFtp: number): { pct: number
   if (!ftp || !goalFtp) return null
   return { pct: Math.max(0, Math.min(100, Math.round((ftp / goalFtp) * 100))), missing: Math.max(0, Math.round(goalFtp - ftp)) }
 }
+
+/* ------------------------------------------------------------------ stan dnia (mobilny v2, docs/24 § 4) */
+
+/**
+ * Jedna karta, która zmienia się w ciągu dnia – zamiast listy kroków.
+ * morning → brief → riding → after → evening; dzień wolny: morning → rest; pominięte: skipped; przeszłość bez jazdy: missed.
+ */
+export type DayPhase = 'morning' | 'brief' | 'riding' | 'after' | 'evening' | 'rest' | 'skipped' | 'missed' | 'future'
+
+export interface DayPhaseInput extends DayFlowInput {
+  /** godzina teraz (Europe/Warsaw) – używana tylko dla dzisiejszego dnia */
+  hour: number
+  /** planowana godzina startu jazdy (ustawienie `ride_hours`) */
+  startHour: number
+  /** RPE zapisane dla jazdy (albo wynik siłowni) */
+  hasRpe: boolean
+}
+
+const EVENING_HOUR = 20
+
+export function dayPhase(inp: DayPhaseInput): DayPhase {
+  if (inp.date > inp.today) return 'future'
+  const past = inp.date < inp.today
+  const gymOnly = !inp.ride && !!inp.gym
+  const log = gymOnly ? inp.gymLog : inp.rideLog
+  if ((inp.ride || inp.gym) && log === 'skipped') return 'skipped'
+  const trained = gymOnly ? LOGGED.includes(inp.gymLog) : inp.hasActivity || LOGGED.includes(inp.rideLog)
+  if (!inp.ride && !inp.gym) {
+    if (!past && !inp.checkedIn) return 'morning'
+    return 'rest'
+  }
+  if (past) return trained ? 'after' : 'missed'
+  if (!inp.checkedIn && !trained) return 'morning'
+  if (trained) return inp.hasRpe || inp.hour >= EVENING_HOUR ? 'evening' : 'after'
+  if (inp.hour >= EVENING_HOUR) return 'evening'
+  if (inp.hour >= inp.startHour) return 'riding'
+  return 'brief'
+}

@@ -69,10 +69,18 @@ async function fal(path, body) {
   return out
 }
 
+/** Adresy wynikowe z odpowiedzi fal – tylko https i znane hosty fal; plik musi być PNG i mieć rozsądny rozmiar. */
+const ALLOWED_HOSTS = ['fal.media', 'fal.ai', 'fal.run', 'storage.googleapis.com']
+const MAX_BYTES = 20 * 1024 * 1024
 async function download(url) {
-  const r = await fetch(url)
+  const u = new URL(String(url))
+  if (u.protocol !== 'https:' || !ALLOWED_HOSTS.some((h) => u.hostname === h || u.hostname.endsWith(`.${h}`))) throw new Error(`niedozwolony adres: ${u.hostname}`)
+  const r = await fetch(u, { redirect: 'error' })
   if (!r.ok) throw new Error(`pobieranie ${r.status}`)
-  return Buffer.from(await r.arrayBuffer())
+  const buf = Buffer.from(await r.arrayBuffer())
+  if (buf.length > MAX_BYTES) throw new Error('plik za duży')
+  if (buf.subarray(0, 8).toString('hex') !== '89504e470d0a1a0a') throw new Error('to nie jest PNG')
+  return buf
 }
 
 async function make(id) {

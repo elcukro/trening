@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { dayFlow, formLabel, goalProgress, rideVerdict, weighDue, type DayFlowInput } from '../dayState'
+import { dayFlow, dayPhase, formLabel, goalProgress, rideVerdict, weighDue, type DayFlowInput, type DayPhaseInput } from '../dayState'
 
 const BASE: DayFlowInput = {
   date: '2026-09-23',
@@ -96,5 +96,34 @@ describe('formLabel / rideVerdict / goalProgress', () => {
     expect(goalProgress(null, 240)).toBeNull()
     expect(goalProgress(200, 240)).toEqual({ pct: 83, missing: 40 })
     expect(goalProgress(260, 240)).toEqual({ pct: 100, missing: 0 })
+  })
+})
+
+describe('dayPhase (karta stanu dnia w /m)', () => {
+  const P: DayPhaseInput = { ...BASE, hour: 8, startHour: 18, hasRpe: false }
+  it('dzień z jazdą: rano → odprawa → w trakcie → po jeździe → wieczór', () => {
+    expect(dayPhase(P)).toBe('morning')
+    expect(dayPhase({ ...P, checkedIn: true })).toBe('brief')
+    expect(dayPhase({ ...P, checkedIn: true, hour: 18 })).toBe('riding')
+    expect(dayPhase({ ...P, checkedIn: true, hour: 19, hasActivity: true })).toBe('after')
+    expect(dayPhase({ ...P, checkedIn: true, hour: 19, hasActivity: true, hasRpe: true })).toBe('evening')
+    expect(dayPhase({ ...P, checkedIn: true, hour: 21, hasActivity: true })).toBe('evening')
+    expect(dayPhase({ ...P, checkedIn: true, hour: 21 })).toBe('evening')
+  })
+  it('jazda bez check-inu wygrywa z porankiem; pominięte i przeszłość', () => {
+    expect(dayPhase({ ...P, hasActivity: true, hour: 12 })).toBe('after')
+    expect(dayPhase({ ...P, rideLog: 'skipped' })).toBe('skipped')
+    expect(dayPhase({ ...P, date: '2026-09-20' })).toBe('missed')
+    expect(dayPhase({ ...P, date: '2026-09-20', hasActivity: true })).toBe('after')
+    expect(dayPhase({ ...P, date: '2026-09-20', rideLog: 'done' })).toBe('after')
+    expect(dayPhase({ ...P, date: '2026-09-30' })).toBe('future')
+  })
+  it('dzień wolny: check-in, potem odpoczynek; siłownia liczy się przez log', () => {
+    expect(dayPhase({ ...P, ride: null })).toBe('morning')
+    expect(dayPhase({ ...P, ride: null, checkedIn: true })).toBe('rest')
+    expect(dayPhase({ ...P, ride: null, date: '2026-09-20' })).toBe('rest')
+    expect(dayPhase({ ...P, ride: null, gym: { name: 'Sesja A' }, checkedIn: true, hour: 10 })).toBe('brief')
+    expect(dayPhase({ ...P, ride: null, gym: { name: 'Sesja A' }, checkedIn: true, gymLog: 'done', hour: 10 })).toBe('after')
+    expect(dayPhase({ ...P, ride: null, gym: { name: 'Sesja A' }, gymLog: 'skipped' })).toBe('skipped')
   })
 })
