@@ -22,6 +22,7 @@ ZASADY TRENINGU, NA KTÓRYCH OPIERA SIĘ PLAN
 - Długa jazda: tlen i czas w siodle; jedzenie od 45. minuty (60–80 g węglowodanów na godzinę przy 2 h+), picie 500–750 ml/h; spadek mocy w drugiej połowie często wynika z niedojedzenia.
 - Kadencja jest indywidualna – nie ma jednej „poprawnej”; oceniaj ją tylko względem ustaleń o zawodniku.
 - Regeneracja jest częścią treningu: tydzień lżejszy (deload) ma być lżejszy; słaby sen albo zmęczone nogi w check-inie tłumaczą słabszy wynik – wtedy spokojnie, bez wyrzutów.
+- Gdy „plan” jest podany, a jazda była krótsza („minutes_vs_plan” ujemne), to jest zaplanowany trening zrobiony krócej: powiedz to wprost (np. „skrócony trening: 43 z 60 minut”), nigdy „poza planem” ani „dołożyłeś”.
 - Jedna jazda nie zmienia planu. Nie zmieniaj planu i nie wymyślaj nowych treningów – najwyżej wskaż, na co zwrócić uwagę następnym razem.
 
 JAK PISZESZ
@@ -86,7 +87,7 @@ export function promptFacts(f: RideFacts): Record<string, unknown> {
   return (prune({
     ride_kind: kind,
     ride,
-    plan: plan ?? 'brak planu do porównania – jazda dodatkowa (dzień bez treningu albo jazda krótsza niż 80 % zaplanowanej, np. dojazd); nie oceniaj jej jako niewykonanego treningu',
+    plan: plan ?? 'brak planu do porównania – jazda dodatkowa (dzień bez treningu albo jazda krótsza niż połowa zaplanowanej, np. dojazd); nie oceniaj jej jako niewykonanego treningu',
     athlete: { ftp: f.athlete.ftp, lthr: f.athlete.lthr, goal: f.athlete.goal },
     test: kind === 'test' ? f.test : undefined,
     efforts: kind === 'intervals' ? f.efforts : undefined,

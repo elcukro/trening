@@ -5,7 +5,7 @@
  */
 import type { SupabaseClient } from 'npm:@supabase/supabase-js@2'
 import { env } from './env.ts'
-import { fulfilsPlan, type DaySnapshot } from './email_views.ts'
+import { fulfilsPlan, isShortenedPlan, type DaySnapshot } from './email_views.ts'
 import { historyContext, numbersOk, rideFacts, type HistRide, type History, type RideFacts, type RideRowLite, type StoredSamples } from './ride_facts.ts'
 import { COACH_HANDBOOK, promptFacts, ruleNote, userMessage, wordCount } from './ride_note_prompt.ts'
 import { accessTokenFor, stravaScope, updateActivity } from './strava.ts'
@@ -131,8 +131,13 @@ export async function gatherFacts(admin: SupabaseClient, userId: string, activit
     sameWorkoutDates,
     tests: (tests ?? []).map((t) => ({ date: t.date as string, ftp_w: Number(t.ftp_w) })),
   })
-  // jazda krótsza niż 80 % zaplanowanego treningu to nie ten trening (dojazd, rozjazd) – bez porównania z planem
-  const snapForFacts = snap?.planned && !fulfilsPlan(Number(a.moving_time_s), snap.planned.minutes) ? { ...snap, planned: null, context: null } : snap
+  // Czy ta jazda to zaplanowany trening dnia? Tak, gdy wypełnia plan (≥ 80 %) albo jest skróconym treningiem: ≥ 50 % planu
+  // i najdłuższa jazda tego dnia (21.10.2026 – 43 z 60 min Z2 trafiło do notatki jako „44 minuty poza planem”).
+  // Krótsze jazdy (dojazd, rozjazd) idą bez porównania z planem.
+  const movingS = Number(a.moving_time_s)
+  const longestToday = !(allRows ?? []).some((o) => o.date === date && String(o.id) !== String(activityId) && Number(o.moving_time_s) > movingS)
+  const isPlanned = !!snap?.planned && (fulfilsPlan(movingS, snap.planned.minutes) || (longestToday && isShortenedPlan(movingS, snap.planned.minutes)))
+  const snapForFacts = snap?.planned && !isPlanned ? { ...snap, planned: null, context: null } : snap
   const facts = rideFacts(ride, samples, snapForFacts, {
     mmp90,
     previous_same,

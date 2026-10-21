@@ -5,7 +5,7 @@ import { buildCalendar } from '@/engine/calendar'
 import { enrichDay } from '@/engine/plan'
 import { morningEmail, weeklyEmail, workoutEmail } from '../../../supabase/functions/_shared/email_templates'
 import { morningView, snapshotFor, workoutView, zonesFor } from '../emailViews'
-import { buildWorkoutView, fulfilsPlan, hrZoneSeconds, rideLoadLite } from '../../../supabase/functions/_shared/email_views'
+import { buildWorkoutView, fulfilsPlan, hrZoneSeconds, isShortenedPlan, rideLoadLite } from '../../../supabase/functions/_shared/email_views'
 import { zoneDistribution } from '@/engine/zones'
 import { rideLoad } from '@/engine/analysis'
 
@@ -65,6 +65,15 @@ describe('maile', () => {
     const short = { date: '2026-09-22', name: 'Dojazd', moving_time_s: 20 * 60, distance_m: 6000, elevation_m: 10, avg_hr: 120, max_hr: 130, avg_cadence: 80, avg_watts: 120, np_w: 130, device_watts: true, decoupling_pct: null, hr_histogram: null }
     const v = workoutView(short, plan('2026-09-22'), program, { athlete: 'Luke', appUrl: 'https://x.test', ftp: 200, lthr: 150 })
     expect(v.verdict).toMatchObject({ tone: 'warn', text: expect.stringMatching(/^Zaplanowany trening niewykonany – ta jazda to \d+ % planu/) })
+    // od połowy planu to skrócony trening, nie „niewykonany”
+    expect(isShortenedPlan(43 * 60, 60)).toBe(true)
+    expect(isShortenedPlan(29 * 60, 60)).toBe(false)
+    expect(isShortenedPlan(48 * 60, 60)).toBe(false)
+    expect(isShortenedPlan(43 * 60, null)).toBe(false)
+    const shortened = { ...short, name: 'Z2 krócej', moving_time_s: 43 * 60 }
+    const planned = plan("2026-09-22").bike!.duration_min
+    const v2 = workoutView({ ...shortened, moving_time_s: Math.round(planned * 0.72) * 60 }, plan('2026-09-22'), program, { athlete: 'Luke', appUrl: 'https://x.test', ftp: 200, lthr: 150 })
+    expect(v2.verdict).toMatchObject({ tone: 'warn', text: expect.stringMatching(/^Skrócony trening – \d+ % zaplanowanego czasu/) })
   })
 
   it('wieczorne „Dzień w liczbach”: tabela jazd dnia, suma i temat', () => {

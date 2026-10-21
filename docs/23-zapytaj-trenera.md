@@ -55,3 +55,9 @@ poprosić o przeniesienie jazdy albo wysyłkę na Bolta. Punkt 1 z backlogu `doc
 - Monitor spadku formy (pkt 4 backlogu) może reużyć `flags` z `coachContext.ts` – te same kryteria, mail poranny zamiast czatu.
 - Historia per dzień oznacza, że rozmowa z wczoraj nie jest widoczna dziś; jeśli to będzie przeszkadzać – jeden klucz z
   ostatnimi 7 dniami.
+
+## Błąd sieci (21.10.2026)
+„Failed to send a request to the Edge Function” na telefonie = żądanie nie wyszło z urządzenia (w logach serwera brak śladu;
+iOS po wybudzeniu PWA potrafi zerwać pierwsze żądanie). `askCoach` ponawia raz po 1,5 s, potem pokazuje „Brak połączenia z trenerem
+– sprawdź sieć i wyślij jeszcze raz.” Wszystkie funkcje wywoływane z aplikacji wdrażamy z `--no-verify-jwt` (użytkownika sprawdza
+sama funkcja przez `userFromRequest`); `checkin-parse` miało weryfikację na bramie – wyrównane.

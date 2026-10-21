@@ -128,6 +128,15 @@ export function rideLoadLite(r: RideLite, ftp: number | null, zones: ZoneBpmLite
  * czeka na wieczorne „Dzień w liczbach”.
  */
 export const PLAN_FULFIL_RATIO = 0.8
+/**
+ * Próg „to był ten trening, tylko skrócony” (21.10.2026): jazda od połowy planu, najdłuższa danego dnia, jest planowym treningiem
+ * zrobionym krócej – nie jazdą poza planem. Poniżej połowy to dojazd albo inna jazda. Mail od razu nadal tylko od 80 % (`fulfilsPlan`).
+ */
+export const PLAN_PARTIAL_RATIO = 0.5
+
+export function isShortenedPlan(movingS: number, plannedMinutes: number | null | undefined): boolean {
+  return !!plannedMinutes && movingS >= PLAN_PARTIAL_RATIO * plannedMinutes * 60 && movingS < PLAN_FULFIL_RATIO * plannedMinutes * 60
+}
 export function fulfilsPlan(movingS: number, plannedMinutes: number | null | undefined): boolean {
   return plannedMinutes ? movingS >= PLAN_FULFIL_RATIO * plannedMinutes * 60 : movingS >= 30 * 60
 }
@@ -166,8 +175,10 @@ export function buildWorkoutView(ride: RideLite, snap: DaySnapshot | null, opts:
     verdict =
       ratio >= 0.9 && ratio <= 1.2
         ? { tone: 'good', text: 'Zrobione zgodnie z planem' }
-        : ratio < PLAN_FULFIL_RATIO
+        : ratio < PLAN_PARTIAL_RATIO
           ? { tone: 'warn', text: `Zaplanowany trening niewykonany – ta jazda to ${Math.round(ratio * 100)} % planu` }
+          : ratio < PLAN_FULFIL_RATIO
+            ? { tone: 'warn', text: `Skrócony trening – ${Math.round(ratio * 100)} % zaplanowanego czasu` }
           : ratio < 0.9
             ? { tone: 'warn', text: `Krócej niż w planie (${Math.round(ratio * 100)} %)` }
             : { tone: 'ok', text: `Dłużej niż w planie (${Math.round(ratio * 100)} %)` }

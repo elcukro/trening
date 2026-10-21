@@ -68,6 +68,12 @@ odpowiedź wracała bez bloku tekstu (`stop_reason: max_tokens`, tylko blok `thi
 Wyłączyć myślenia nie można (`thinking.type.disabled` odrzucane), więc `callClaude` wysyła `thinking: adaptive`,
 `output_config.effort: low` i `max_tokens` 4000 (list tygodnia 6000). Powód zatrzymania jest w `detail`, gdy tekst pusty.
 
+## Skrócony trening (21.10.2026)
+Jazda 43 z 60 min Z2 dostała notatkę „dołożyłeś 44 minuty poza planem”, bo od 30.09 notatka odcinała plan dla jazd < 80 % planu
+(próg maila `fulfilsPlan`). Teraz plan zostaje także dla **skróconego treningu**: ≥ 50 % planu (`PLAN_PARTIAL_RATIO`,
+`isShortenedPlan` w `email_views.ts`) i najdłuższa jazda dnia. Podręcznik każe wtedy pisać „skrócony trening: 43 z 60 minut”.
+Werdykt maila dla 50–80 %: „Skrócony trening – N % zaplanowanego czasu” (poniżej 50 % bez zmian). Mail od razu nadal od 80 %.
+
 ## Dalej
 Łapka w górę / w dół pod notatką (dostrajanie podręcznika), podsumowanie tygodnia tym samym mechanizmem,
 pogoda z godziny jazdy (Open-Meteo) jako fakt.
