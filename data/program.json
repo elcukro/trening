@@ -1,5 +1,5 @@
 {
- "version": "2026.09.30-3",
+ "version": "2026.10.21-1",
  "meta": {
   "name": "Alpy 2027 – baza i góry",
   "short": "Alpy 2027",
@@ -362,6 +362,7 @@
   "Naturalna kadencja ok. 80 rpm (spokojne jazdy 80–95) – NIE namawiaj do szybszego kręcenia; wymuszone 90 podnosi mu tętno przy tej samej mocy.",
   "Ogranicznikiem jest wydolność oddechowo-sercowa, nie nogi: 5 dni Innsbruck–Monachium (539 km, 4500 m) nogi wytrzymały.",
   "Wskaźnik postępu numer jeden to stosunek mocy do tętna (Pw:HR) i dryf tętna na jazdach Z2, nie średnia moc.",
+  "Na jazdach Z2 (spokojne, długie) prowadzi się wyłącznie tętnem: Z2 to 130–142 bpm (81–89 % LTHR 160), moc ignoruje (decyzja zawodnika 21.10.2026). NIE oceniaj Z2 po mocy ani po IF – nie pisz, że moc była „za wysoka” albo że to „tempo”, jeśli tętno było w Z2; moc i IF podawaj co najwyżej jako obserwację postępu (więcej watów przy tym samym tętnie = dobry znak). Moc liczy się na akcentach, sweet spocie i testach.",
   "Redukcja masy ze ok. 106 do 82 kg do wyjazdu (punkt kontrolny 91 kg na 1.03.2027) przy zachowaniu watów – deficyt codziennie, ale w dni akcentów i długich jazd mały i poza treningiem (paliwo na rowerze bez zmian), a w dni testów bez deficytu; pod górę masa kosztuje go najwięcej.",
   "Cel: utrzymać 30 km/h przez 2–3 h (wymaga FTP ok. 270 W przy jego oporze powietrza na gravelu); Alpy we wrześniu 2027 to horyzont.",
   "Jeździ na gravelu (Trek Checkpoint) po płaskich okolicach Łodzi – wiatr ma duży wpływ na prędkość i moc.",
