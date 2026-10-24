@@ -17,7 +17,7 @@ import json, datetime as dt, os, copy
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 D = dt.date
-PROGRAM_VERSION = "2026.10.21-1"
+PROGRAM_VERSION = "2026.10.24-1"
 
 DEFAULT_SETTINGS = {
     "program_start": "2026-09-14",          # poniedziałek tygodnia 1
@@ -552,10 +552,10 @@ NUTRITION = {
 
 BIKES = {
     # Wszystkie treningi na gravelu (decyzja 24.09.2026); Dogma czeka na rower endurance – raczej przyszły sezon.
-    "default": "Checkpoint (gravel)",
+    "default": "Roubaix (szosa)",
     "indoor": "Wattbike / rowerek na siłowni",
     "by_workout": {w: "Checkpoint (przełożenie 40/50, tarczówki)" for w in ("MOUNTAIN_DAY", "B2B_DAY", "BLOCK_DAY1")},
-    "by_phase": {"II": "Checkpoint (zima, błotniki)", "V": "Checkpoint (docelowy rower wyjazdowy)", "TAPER": "Checkpoint (docelowy rower wyjazdowy)"},
+    "by_phase": {"II": "Roubaix (zima: opony całoroczne); Checkpoint na szuter i błoto", "V": "Checkpoint (docelowy rower wyjazdowy)", "TAPER": "Checkpoint (docelowy rower wyjazdowy)"},
 }
 
 GOAL = {"kind": "speed", "kmh": 30, "label": "30 km/h przez 2–3 godziny", "short": "30 km/h"}
@@ -574,8 +574,8 @@ COACH_NOTES = [
     "Na jazdach Z2 (spokojne, długie) prowadzi się wyłącznie tętnem: Z2 to 130–142 bpm (81–89 % LTHR 160), moc ignoruje (decyzja zawodnika 21.10.2026). NIE oceniaj Z2 po mocy ani po IF – nie pisz, że moc była „za wysoka” albo że to „tempo”, jeśli tętno było w Z2; moc i IF podawaj co najwyżej jako obserwację postępu (więcej watów przy tym samym tętnie = dobry znak). Moc liczy się na akcentach, sweet spocie i testach.",
     "Redukcja masy ze ok. 106 do 82 kg do wyjazdu (punkt kontrolny 91 kg na 1.03.2027) przy zachowaniu watów – deficyt codziennie, ale w dni akcentów i długich jazd mały i poza treningiem (paliwo na rowerze bez zmian), a w dni testów bez deficytu; pod górę masa kosztuje go najwięcej.",
     "Cel: utrzymać 30 km/h przez 2–3 h (wymaga FTP ok. 270 W przy jego oporze powietrza na gravelu); Alpy we wrześniu 2027 to horyzont.",
-    "Jeździ na gravelu (Trek Checkpoint) po płaskich okolicach Łodzi – wiatr ma duży wpływ na prędkość i moc.",
-    "Jednostronny pomiar mocy SRAM na lewej korbie (wynik podwojony) – różnice kilku procent między jazdami mogą wynikać z asymetrii nóg.",
+    "Od 24.10.2026 szosowe treningi jeździ na Specialized Roubaix SL8 (Shimano 105 2×12, 50/34 × 11–36), szutry i błoto na gravelu (Trek Checkpoint, 1×40); płaskie okolice Łodzi – wiatr ma duży wpływ na prędkość i moc.",
+    "Dwa jednostronne mierniki na lewej korbie (wynik podwojony): 4iiii Precision na Roubaix, SRAM na Checkpoincie – różnice kilku procent między rowerami i jazdami mogą wynikać z miernika i asymetrii nóg; porównuj moc w obrębie jednego roweru.",
 ]
 
 

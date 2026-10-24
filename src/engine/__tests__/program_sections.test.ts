@@ -21,7 +21,7 @@ describe('sekcje osobiste programu', () => {
     expect(nutritionFor(alps.nutrition, 'I', 'easy', 45, false)).toMatchObject({ energy: 'deficit_500', protein_g_per_kg: 2.2, deficit_share: 1 })
     expect(nutritionFor(alps.nutrition, 'IV', 'easy', 60, false).energy).toBe('deficit_300_if_above_target')
     expect(nutritionFor(alps.nutrition, 'I', 'trip', 300, false).energy).toBe('maintenance_plus')
-    expect(bikeSuggestion(alps.bikes, 'II', 'Z2')).toBe('Checkpoint (zima, błotniki)')
+    expect(bikeSuggestion(alps.bikes, 'II', 'Z2')).toBe('Roubaix (zima: opony całoroczne); Checkpoint na szuter i błoto')
     expect(bikeSuggestion(alps.bikes, 'I', 'MOUNTAIN_DAY')).toContain('40/50')
     expect(alps.goal).toMatchObject({ kind: 'speed', kmh: 30 })
     expect(alps.cadence).toMatchObject({ floor_rpm: 75, goal_rpm: 78 })
@@ -43,7 +43,7 @@ describe('sekcje osobiste programu', () => {
   it('kalendarz FTP 300 nie zawiera żywienia ani rowerów z programu alpejskiego', () => {
     const days = ftpCalendar.days as unknown as CalendarDay[]
     const text = JSON.stringify(days)
-    for (const leak of ['500 kcal', 'Checkpoint', 'Dogma', 'Wattbike', 'Wyjazd:']) expect(text, leak).not.toContain(leak)
+    for (const leak of ['500 kcal', 'Checkpoint', 'Roubaix', 'Dogma', 'Wattbike', 'Wyjazd:']) expect(text, leak).not.toContain(leak)
     expect(days.every((d) => d.nutrition.energy !== 'deficit_500')).toBe(true)
   })
 

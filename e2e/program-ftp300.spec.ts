@@ -6,7 +6,7 @@ import { expect, test, type Page } from '@playwright/test'
  */
 
 // słowa i liczby, które należą wyłącznie do programu alpejskiego
-const LEAKS = [/Alpy/, /Alpach/, /przełęcz/i, /Łódź/, /Checkpoint/, /Dogma/, /30 km\/h/, /Sesja B/, /do wyjazdu/, /Data wyjazdu/, /53 tygodni/]
+const LEAKS = [/Alpy/, /Alpach/, /przełęcz/i, /Łódź/, /Checkpoint/, /Dogma/, /Roubaix/, /30 km\/h/, /Sesja B/, /do wyjazdu/, /Data wyjazdu/, /53 tygodni/]
 
 async function expectNoLeaks(page: Page, where: string) {
   // bez list wyboru – przełącznik programu w Ustawieniach słusznie wymienia oba programy
