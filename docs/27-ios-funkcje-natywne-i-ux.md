@@ -59,6 +59,34 @@ interfejsu `/m`. Założenia bez zmian: jeden kod ekranów dla webu i iOS, wtycz
 `weather_location` z nazwą „Moja lokalizacja (lat, lon)” – bez geokodowania odwrotnego (Open-Meteo go nie ma). Sprawdzone
 w symulatorze (systemowe pytanie, zapis, komunikat).
 
+**Animowany ekran startowy (26.10.2026), sprawdzone w symulatorze iPhone 16e:** natywny ekran startowy zostaje jednolity
+(#f2f2f7, storyboard nie może być animowany), a po nim WebView pokazuje ok. 1,3 s sceny paralaksy w stylu grafik `/m` –
+trzy warstwy krajobrazu przesuwają się z różną prędkością (daleko ±4, blisko ±14, droga ±34 % szerokości), rowerzysta
+(trener z ikony) wjeżdża z lewej i kołysze się na pedałach. Bez tekstów (HIG: ekran startowy to nie reklama).
+
+- **Wariant:** pora roku (meteorologiczna) wybiera warstwy, pora dnia (godzina względem przybliżonego wschodu i zachodu
+  w danym miesiącu – w grudniu o 16:00 noc, w czerwcu o 20:00 wieczór) – niebo, słońce/księżyc z gwiazdami i odcień
+  krajobrazu w CSS, a w nocy lampkę roweru i jasny tekst paska statusu. Logika: `src/m/introScene.ts` (czysty TS, test
+  `src/m/__tests__/introScene.test.ts`), data i godzina z `todayISO`/`nowHour` (Europe/Warsaw).
+- **Grafiki:** `public/m/intro/` – `intro-<pora roku>-{far,near,road}.webp` (4 × 3, 1800 px) i `intro-rider.webp`
+  (480 px), razem **588 KB**; niebo używa istniejących `sun.png`, `night.png`, `cloud.png`. Generuje je
+  `scripts/fal-art.mjs` (nano-banana-pro → birefnet, przycięcie do treści, WebP przez `cwebp`; `--webp` przerabia
+  zapisane wycięcia bez fal.ai). Wysokości warstw i miejsce kół na drodze są zmierzone na obrazkach i zapisane w
+  `src/m/intro.css` (`--far`, `--near`, `--road`, `--wheel`, `--fill`) – nowa warstwa = nowe pomiary.
+- **Przebieg** (`src/m/Intro.tsx`, montowane w `App.tsx` nad wszystkim): intro przejmuje ekran startowy (`holdSplash`
+  w `src/native/shell.ts`), wczytuje i dekoduje warstwy (najdłużej 1,5 s – inaczej start bez intro, jak dotąd), odsłania
+  scenę (`revealSplash`) i znika (0,38 s) po animacji **i** narysowaniu pierwszego ekranu `/m` (`firstScreenDrawn`),
+  najpóźniej po 3,5 s. Aplikacja ładuje dane pod spodem, dotknięcie pomija intro, raz na uruchomienie (powrót z tła go
+  nie powtarza). **Przy „ogranicz ruch” intra nie ma** – start jak przed zmianą.
+- **Tylko aplikacja iOS, nie PWA:** PWA nie ma natywnego ekranu startowego, który intro by przejmowało, iOS często ubija
+  PWA w tle (intro przy co którymś otwarciu byłoby przypadkowym opóźnieniem), a 588 KB trafiałoby do pamięci każdej
+  przeglądarki. WebP nie pasuje do wzorców precache (`vite.config.ts`), więc PWA ich nie pobiera.
+- **Podgląd:** `?intro=autumn-morning` (albo `?intro=now`) poza produkcyjną aplikacją iOS, a do zrzutów z symulatora
+  build z `VITE_INTRO_PREVIEW=winter-night` – w podglądzie scena zostaje do dotknięcia. E2E: `e2e/mobile.spec.ts`
+  („Intro (podgląd…)”).
+- **Propozycja (bez zmiany):** ikona aplikacji spójna ze sceną – trener na rowerze na tle gór zamiast samej twarzy;
+  do decyzji użytkownika.
+
 Zostaje z § 3.1: nic. Z § 3.2/3.3 – etap 1b i osobne zadania (Dynamic Type, VoiceOver, przejścia między ekranami).
 
 ## 1. Co daje natywna aplikacja, czego PWA nie umie

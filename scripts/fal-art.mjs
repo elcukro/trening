@@ -5,6 +5,7 @@
  *   FAL_KEY=… node scripts/fal-art.mjs            # wszystkie brakujące
  *   FAL_KEY=… node scripts/fal-art.mjs coach sun  # wybrane (nadpisuje)
  *   FAL_KEY=… node scripts/fal-art.mjs --all      # wszystkie, nadpisuje
+ *   node scripts/fal-art.mjs --webp               # warstwy intro z zapisanych wycięć w scratch/ (bez fal.ai)
  *
  * Klucz nie jest w repo – podaj go zmienną środowiskową. Wynik: public/m/art/<id>.png (postacie 512 px, ikony 256 px), surowe w scratch/.
  */
@@ -12,11 +13,13 @@ import { existsSync, mkdirSync, writeFileSync } from 'node:fs'
 import { execFileSync } from 'node:child_process'
 
 const KEY = process.env.FAL_KEY
-if (!KEY) {
+if (!KEY && !process.argv.includes('--webp')) {
   console.error('Brak FAL_KEY w środowisku')
   process.exit(1)
 }
 const OUT = 'public/m/art'
+const SCENE_OUT = 'public/m/intro'
+const target = (id) => (ASSETS[id].scene ? `${SCENE_OUT}/${id}.webp` : `${OUT}/${id}.png`)
 const RAW = process.env.FAL_RAW_DIR ?? 'scratch/fal-raw'
 mkdirSync(OUT, { recursive: true })
 mkdirSync(RAW, { recursive: true })
@@ -62,6 +65,30 @@ const ASSETS = {
   'tab-plan': { prompt: 'A weekly planner icon: a sky blue rounded square (same proportions as a calendar app icon, seen straight on, not tilted, no perspective) with three horizontal white bars of different lengths, each with a small round orange dot on the left.' },
   'tab-me': { prompt: 'A progress icon: a sky blue rounded square (same proportions as a calendar app icon, seen straight on, not tilted, no perspective) with a bold white rising zigzag arrow pointing up-right.' },
   heart: { prompt: 'A glossy red heart with a thin white heartbeat line across it.' },
+  // ekran startowy aplikacji iOS (docs/27): warstwy paralaksy per pora roku (WebP 1800 px do public/m/intro/) i rowerzysta;
+  // niebo, słońce/księżyc i pora dnia są w CSS (src/m/intro/)
+  ...sceneAssets(),
+}
+
+/** Warstwy krajobrazu: szeroki pas na białym tle (do wycięcia), płaski dół, widok z boku jak w grze side-scroller. */
+function sceneAssets() {
+  const SCENE = 'Soft 3D clay-style diorama render, smooth rounded forms, matte surfaces with subtle glossy highlights, gentle daylight from top-left, ' +
+    'friendly saturated colors. Pure side view like a layer of a 2D side-scrolling game, the element spans the full width edge to edge, its bottom edge is flat and straight. ' +
+    'Isolated on a plain pure white background (no sky, no clouds, no sun), no text, no people, no frame.'
+  const seasons = {
+    spring: { far: 'blue-grey alpine mountain range with big white snow caps', near: 'fresh light green rolling hills with a few round trees in pink and white blossom and small yellow flowers', road: 'fresh green grass with tiny yellow and white flowers' },
+    summer: { far: 'blue-grey alpine mountain range with only small patches of snow on the highest peaks', near: 'lush deep green rolling hills with round green trees and a few dark green pines', road: 'lush green grass' },
+    autumn: { far: 'blue-grey alpine mountain range with fresh light snow on the peaks', near: 'golden-ochre rolling hills with round trees in orange, red and yellow autumn foliage and a few dark green pines', road: 'golden-brown grass with a few fallen orange leaves' },
+    winter: { far: 'alpine mountain range completely covered in white snow with pale blue shadows', near: 'rolling hills fully covered in smooth white snow with snowy dark green pine trees', road: 'smooth white snow' },
+  }
+  const out = {}
+  for (const [k, v] of Object.entries(seasons)) {
+    out[`intro-${k}-far`] = { scene: true, prompt: `A wide panorama of a distant ${v.far}, several overlapping peaks of different heights. ${SCENE}` }
+    out[`intro-${k}-near`] = { scene: true, prompt: `A wide band of ${v.near}, gentle low hills, much lower than mountains. ${SCENE}` }
+    out[`intro-${k}-road`] = { scene: true, prompt: `A long thin horizontal ground strip seen exactly from the side: a smooth dark grey asphalt road with a thin white edge line on top of a rounded strip of earth, ${v.road} along the top edge of the road. Flat cross-section, no perspective, no vanishing point. ${SCENE}` }
+  }
+  out['intro-rider'] = { scene: true, ratio: '1:1', width: 480, prompt: 'A friendly cycling coach mascot riding a light blue road bike, pure side view facing right, pedalling, slightly leaning forward: stylized 3D character with short beard, white cycling helmet, sunglasses, light blue cycling jersey, black shorts, white shoes, both wheels fully visible. ' + STYLE }
+  return out
 }
 
 async function fal(path, body) {
@@ -93,10 +120,11 @@ async function make(id) {
   const a = ASSETS[id]
   const t0 = Date.now()
   // 1) generacja (Gemini 3 Pro Image przez fal – dobrze trzyma styl zestawu)
-  const gen = await fal('fal-ai/nano-banana-pro', { prompt: a.raw ? a.prompt : `${a.prompt} ${a.ratio ? STYLE : ICON_STYLE}`, aspect_ratio: a.ratio ?? '1:1', resolution: '1K', output_format: 'png', num_images: 1 })
+  const gen = await fal('fal-ai/nano-banana-pro', { prompt: a.raw || a.scene ? a.prompt : `${a.prompt} ${a.ratio ? STYLE : ICON_STYLE}`, aspect_ratio: a.ratio ?? (a.scene ? '21:9' : '1:1'), resolution: '1K', output_format: 'png', num_images: 1 })
   const src = gen.images?.[0]?.url
   if (!src) throw new Error(`brak obrazu: ${JSON.stringify(gen).slice(0, 200)}`)
   writeFileSync(`${RAW}/${id}.png`, await download(src))
+  if (a.scene) return saveScene(id, a, src)
   if (a.raw) {
     console.log(`✓ ${id} → ${RAW}/${id}.png (bez wycinania tła)`)
     return
@@ -111,10 +139,43 @@ async function make(id) {
   console.log(`✓ ${id} (${Math.round((Date.now() - t0) / 1000)} s)`)
 }
 
+/** Warstwa sceny: wycięte tło, WebP z kanałem alfa (cwebp z Homebrew) – nie trafia do precache PWA (tylko png). */
+async function saveScene(id, a, src) {
+  const cut = await fal('fal-ai/birefnet/v2', { image_url: src, model: 'General Use (Heavy)', operating_resolution: '2048x2048', output_format: 'png', refine_foreground: true })
+  const png = `${RAW}/${id}-cut.png`
+  writeFileSync(png, await download(cut.image.url))
+  toWebp(id, a)
+}
+
+/** `${RAW}/<id>-cut.png` → `public/m/intro/<id>.webp` (osobno, żeby zmienić kadr albo jakość bez ponownej generacji: `--webp`). */
+function toWebp(id, a) {
+  const png = `${RAW}/${id}-cut.png`
+  mkdirSync(SCENE_OUT, { recursive: true })
+  // przycięcie do treści (kanał alfa), żeby warstwy dało się ustawiać od dołu bez zgadywania pustego marginesu
+  const crop = trimBox(png)
+  execFileSync('cwebp', ['-quiet', '-q', '78', '-alpha_q', '85', ...(crop ? ['-crop', ...crop] : []), '-resize', String(a.width ?? 1800), '0', png, '-o', target(id)])
+  console.log(`✓ ${id} → ${target(id)}`)
+}
+
+/** Prostokąt nieprzezroczystej treści PNG (x y w h) – przez Pillow, bo w projekcie nie ma biblioteki obrazów dla Node. */
+function trimBox(png) {
+  try {
+    const py = 'import sys\nfrom PIL import Image\nb=Image.open(sys.argv[1]).getchannel("A").point(lambda v:255 if v>8 else 0).getbbox()\nprint(b[0],b[1],b[2]-b[0],b[3]-b[1])'
+    return execFileSync('python3', ['-I', '-c', py, png]).toString().trim().split(' ')
+  } catch {
+    console.warn('  (bez przycięcia – brak python3 z Pillow)')
+    return null
+  }
+}
+
 const args = process.argv.slice(2)
 const all = args.includes('--all')
+if (args.includes('--webp')) {
+  for (const id of Object.keys(ASSETS).filter((id) => ASSETS[id].scene && existsSync(`${RAW}/${id}-cut.png`))) toWebp(id, ASSETS[id])
+  process.exit(0)
+}
 const ids = args.filter((x) => !x.startsWith('--'))
-const todo = ids.length ? ids : Object.keys(ASSETS).filter((id) => all || !existsSync(`${OUT}/${id}.png`))
+const todo = ids.length ? ids : Object.keys(ASSETS).filter((id) => all || (!ASSETS[id].raw && !existsSync(target(id))))
 for (const id of todo) if (!ASSETS[id]) throw new Error(`nieznany id: ${id}`)
 console.log(`Generuję ${todo.length}: ${todo.join(', ')}`)
 

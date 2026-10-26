@@ -120,3 +120,19 @@ test('Nic nie wystaje poza szerokość ekranu (bez paneli sąsiednich tygodni)',
     expect(r.scrollWidth, path).toBeLessThanOrEqual(r.innerWidth)
   }
 })
+
+test('Intro (podgląd `?intro=`): scena pory roku i dnia, dotknięcie odsłania Dziś; bez parametru intro nie ma', async ({ page }) => {
+  await page.goto('/m?today=2026-09-23&hour=8&intro=winter-night')
+  const intro = page.getByTestId('intro')
+  await expect(intro).toHaveAttribute('data-season', 'winter')
+  await expect(intro).toHaveAttribute('data-time', 'night')
+  await expect(intro).toHaveAttribute('data-phase', 'play')
+  await expect(intro.locator('.intro-beam')).toHaveCount(1)
+  await intro.click()
+  await expect(intro).toBeHidden()
+  await expect(page.getByRole('heading', { name: 'Dziś' })).toBeVisible()
+
+  await page.goto('/m?today=2026-09-23&hour=8')
+  await expect(page.getByRole('heading', { name: 'Dziś' })).toBeVisible()
+  await expect(page.getByTestId('intro')).toHaveCount(0)
+})

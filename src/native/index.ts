@@ -3,7 +3,7 @@
  * na webie są puste, więc ekrany i testy Vitest/Playwright działają bez zmian.
  */
 export { IS_IOS_APP, isNative, platform } from './platform'
-export { hideSplash, initShell } from './shell'
+export { firstScreenDrawn, hideSplash, holdSplash, initShell, revealSplash, statusBarLight } from './shell'
 export { haptic } from './haptics'
 export { confirmAction } from './confirm'
 export { health } from './health'

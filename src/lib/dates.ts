@@ -6,7 +6,7 @@ import { addDays, toUtc, type ISODate } from '@/engine/dates'
 export const TIMEZONE = 'Europe/Warsaw'
 
 /** Parametry podglądu z URL (`?today=`, `?hour=`) – wszędzie poza produkcyjnym buildem aplikacji iOS (docs/26 § 1). */
-function urlParam(name: string): string | null {
+export function urlParam(name: string): string | null {
   if (typeof window === 'undefined') return null
   if (import.meta.env.VITE_TARGET === 'ios' && import.meta.env.PROD) return null
   return new URLSearchParams(window.location.search).get(name)

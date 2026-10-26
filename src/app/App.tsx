@@ -28,6 +28,7 @@ import type { PhaseId } from '@/engine/types'
 import type { Feature } from '@/engine/schema'
 import { FULL_ESCAPE, useUiMode } from '@/day/useIos'
 import { IS_IOS_APP } from '@/native'
+import { Intro } from '@/m/Intro'
 
 const ProgressPage = lazy(() => import('@/features/progress/ProgressPage').then((m) => ({ default: m.ProgressPage })))
 const IosApp = lazy(() => import('@/ios/IosApp').then((m) => ({ default: m.IosApp })))
@@ -265,6 +266,8 @@ function WaitingScreen({ waiting, sync }: { waiting: 'settings' | 'session' | 'p
 export function App() {
   return (
     <ErrorBoundary>
+      {/* animowany ekran startowy aplikacji iOS – nad wszystkim, także nad czekaniem na profil (src/m/Intro.tsx) */}
+      <Intro />
       <ToastProvider>
         <SettingsProvider>
         <MovedBanner />
