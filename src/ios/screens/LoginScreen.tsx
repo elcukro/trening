@@ -1,13 +1,15 @@
 import { useState } from 'react'
 import type { AuthState } from '@/sync/auth'
 import { useToast } from '@/components/Toast'
+import { OAuthButtons } from '@/components/OAuthButtons'
 import { Btn, List, Row, Section } from '../components/Chrome'
 import { IconBike, IconChevron } from '../components/Icons'
 
 /**
  * Ekran logowania: bez konta aplikacja nie ma skąd wziąć jazd, check-inów ani zmian planu,
  * więc zamiast po cichu pokazywać pusty tydzień – prosi o zalogowanie.
- * Logowanie kodem z maila, bo PWA na telefonie ma osobną pamięć niż przeglądarka i link może nie trafić tam, gdzie trzeba.
+ * Google i Strava jednym dotknięciem (docs/28), kod z maila jako zapas – PWA na telefonie ma osobną pamięć niż
+ * przeglądarka, więc link z maila może nie trafić tam, gdzie trzeba.
  */
 export function LoginScreen({ auth, onSkip }: { auth: AuthState; onSkip: () => void }) {
   const toast = useToast()
@@ -16,7 +18,9 @@ export function LoginScreen({ auth, onSkip }: { auth: AuthState; onSkip: () => v
   const [link, setLink] = useState('')
   const [sent, setSent] = useState(false)
   const [linkMode, setLinkMode] = useState(false)
-  const [msg, setMsg] = useState<string | null>(auth.urlError)
+  // `undefined` = komunikat z adresu powrotu (błąd logowania Stravą przychodzi po wymianie biletu, już po pierwszym rysunku)
+  const [ownMsg, setMsg] = useState<string | null | undefined>(undefined)
+  const msg = ownMsg === undefined ? auth.urlError : ownMsg
 
   async function send() {
     setMsg(null)
@@ -58,6 +62,9 @@ export function LoginScreen({ auth, onSkip }: { auth: AuthState; onSkip: () => v
       </header>
 
       <div className="mt-6">
+        <div className="px-4 pb-2">
+          <OAuthButtons auth={auth} returnPath={window.location.pathname} onError={setMsg} />
+        </div>
         <Section header="E-mail" footer={sent ? undefined : 'Wyślemy kod jednorazowy. Hasła nie ma.'}>
           <List>
             <div className="ios-row">

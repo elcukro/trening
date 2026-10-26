@@ -1,0 +1,14 @@
+{
+  "name": "trening-auth",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Logowanie Google i Stravą w aplikacji Trening przez ASWebAuthenticationSession (docs/28). Interfejs JS: src/native/webAuth.ts.",
+  "license": "UNLICENSED",
+  "files": ["ios/Sources", "Package.swift"],
+  "capacitor": {
+    "ios": { "src": "ios" }
+  },
+  "peerDependencies": {
+    "@capacitor/core": "^8.0.0"
+  }
+}

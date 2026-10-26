@@ -5,6 +5,7 @@ import { resetSyncCursors, runSync } from '@/sync/sync'
 import { db, SYNC_TABLES } from '@/db'
 import { Actions, Button, Card, CardTitle, Field, Input, Inset, Row, Textarea } from '@/components/ui'
 import { useToast } from '@/components/Toast'
+import { OAuthButtons } from '@/components/OAuthButtons'
 
 const STATE_LABEL: Record<string, string> = { idle: 'Zsynchronizowano', syncing: 'Synchronizuję…', error: 'Błąd', offline: 'Offline', unauthenticated: 'Niezalogowany', disabled: 'Wyłączona (brak konfiguracji)' }
 
@@ -16,7 +17,9 @@ export function AccountSection() {
   const [link, setLink] = useState('')
   const [code, setCode] = useState('')
   const [sent, setSent] = useState(false)
-  const [msg, setMsg] = useState<string | null>(auth.urlError)
+  // `undefined` = komunikat z adresu powrotu (logowanie Google/Strava, link z maila)
+  const [ownMsg, setMsg] = useState<string | null | undefined>(undefined)
+  const msg = ownMsg === undefined ? auth.urlError : ownMsg
 
   async function send() {
     setMsg(null)
@@ -86,6 +89,9 @@ export function AccountSection() {
         </>
       ) : (
         <>
+          <div className="mb-3">
+            <OAuthButtons auth={auth} returnPath={window.location.pathname} onError={setMsg} />
+          </div>
           <Field label="E-mail (magic link)">
             <Input type="email" inputMode="email" autoComplete="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="twoj@adres.pl" />
           </Field>

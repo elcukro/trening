@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import type { Session } from '@supabase/supabase-js'
 import { supabase } from './supabase'
 import { authErrorFromLocation, parseMagicLink } from './magicLink'
+import { consumeAuthReturn, signInWithGoogle, signInWithStrava, type OAuthResult } from './oauth'
 
 export interface AuthState {
   session: Session | null
@@ -12,24 +13,34 @@ export interface AuthState {
   signInWithLink: (link: string) => Promise<{ error: string | null }>
   /** Logowanie kodem z maila (wymaga szablonu z {{ .Token }} → własne SMTP). */
   signInWithCode: (email: string, code: string) => Promise<{ error: string | null }>
+  /** Logowanie Google / Stravą (docs/28); `returnPath` – dokąd wrócić w przeglądarce (aplikacja iOS wraca przez trening://auth). */
+  signInWithGoogle: (returnPath: string) => Promise<OAuthResult>
+  signInWithStrava: (returnPath: string) => Promise<OAuthResult>
   signOut: () => Promise<void>
-  /** błąd przekazany w URL po powrocie z maila */
+  /** błąd przekazany w URL po powrocie z maila, Google albo Stravy */
   urlError: string | null
 }
 
 export function useAuth(): AuthState {
   const [session, setSession] = useState<Session | null>(null)
   const [loading, setLoading] = useState(!!supabase)
-  const [urlError] = useState<string | null>(() => (typeof window !== 'undefined' ? authErrorFromLocation(window.location) : null))
+  const [urlError, setUrlError] = useState<string | null>(initialUrlError)
 
   useEffect(() => {
     if (!supabase) return
     let active = true
-    supabase.auth.getSession().then(({ data }) => {
-      if (!active) return
-      setSession(data.session)
-      setLoading(false)
-    })
+    // najpierw bilet Stravy z adresu powrotu (jeśli jest) – inaczej przez chwilę widać ekran logowania
+    void consumeAuthReturn()
+      .then((err) => {
+        if (active && err) setUrlError(err)
+      })
+      .finally(() =>
+        supabase!.auth.getSession().then(({ data }) => {
+          if (!active) return
+          setSession(data.session)
+          setLoading(false)
+        }),
+      )
     const { data: sub } = supabase.auth.onAuthStateChange((_event, s) => {
       setSession(s)
       setLoading(false)
@@ -66,11 +77,20 @@ export function useAuth(): AuthState {
       const { error } = await supabase.auth.verifyOtp({ email: email.trim().toLowerCase(), token, type: 'email' })
       return { error: error ? translateAuthError(error.message) : null }
     },
+    signInWithGoogle,
+    signInWithStrava,
     async signOut() {
       await supabase?.auth.signOut()
     },
     urlError,
   }
+}
+
+// adres czytany raz przy starcie: `consumeAuthReturn` czyści go z parametrów logowania, a hook montuje się w kilku miejscach
+let firstUrlError: string | null | undefined
+function initialUrlError(): string | null {
+  if (firstUrlError === undefined) firstUrlError = typeof window !== 'undefined' ? authErrorFromLocation(window.location) : null
+  return firstUrlError
 }
 
 function translateAuthError(msg: string): string {

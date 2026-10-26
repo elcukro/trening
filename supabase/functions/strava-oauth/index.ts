@@ -42,7 +42,9 @@ Deno.serve(async (req) => {
     const state = url.searchParams.get('state') ?? ''
     const payload = await verify(state)
     if (!payload) return back('strava=error&reason=bad_state')
-    const { uid, exp } = JSON.parse(payload) as { uid: string; exp: number }
+    const { uid, exp, p } = JSON.parse(payload) as { uid: string; exp: number; p?: string }
+    // stan i bilet logowania (strava-login) są podpisane tym samym kluczem – tu ich nie przyjmujemy
+    if (p !== undefined || typeof uid !== 'string') return back('strava=error&reason=bad_state')
     if (Date.now() > exp) return back('strava=error&reason=state_expired')
     const scope = url.searchParams.get('scope') ?? ''
     if (!scope.includes('activity:read')) return back('strava=error&reason=scope')

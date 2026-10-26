@@ -1,3 +1,5 @@
+import { parseAuthReturn } from './authReturn'
+
 /** Wyciąga `token_hash` i typ z linku logowania Supabase (…/auth/v1/verify?token=…&type=magiclink&redirect_to=…). */
 export function parseMagicLink(input: string): { token_hash: string; type: 'magiclink' | 'email' | 'signup' | 'recovery' } | null {
   const m = /https?:\/\/\S+/.exec(input.trim())
@@ -14,12 +16,8 @@ export function parseMagicLink(input: string): { token_hash: string; type: 'magi
   return { token_hash: token, type: type as 'magiclink' | 'email' | 'signup' | 'recovery' }
 }
 
-/** Błąd logowania przekazany w URL po powrocie z maila (np. link wygasł). */
+/** Błąd logowania przekazany w URL po powrocie z maila, Google albo Stravy (np. link wygasł, adres spoza listy). */
 export function authErrorFromLocation(loc: { hash: string; search: string }): string | null {
-  const params = new URLSearchParams(loc.hash.startsWith('#') ? loc.hash.slice(1) : loc.search)
-  const desc = params.get('error_description') ?? params.get('error')
-  if (!desc) return null
-  const d = decodeURIComponent(desc.replace(/\+/g, ' '))
-  if (/expired|invalid/i.test(d)) return 'Link wygasł lub został już użyty – wyślij nowy.'
-  return d
+  const r = parseAuthReturn(loc)
+  return r?.kind === 'error' ? r.message : null
 }
