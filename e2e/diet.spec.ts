@@ -49,7 +49,7 @@ test('Jedzenie: karta tylko po włączeniu, etykieta → ilość → zapis i Cof
   await page.reload()
   await expect(page.getByRole('heading', { name: 'Jedzenie' })).toBeVisible()
   await expect(page.getByText('zjedzone 0 kcal')).toBeVisible()
-  await expect(page.getByRole('button', { name: /Uzupełnij wzrost i rok urodzenia/ })).toBeVisible()
+  await expect(page.getByRole('button', { name: /Uzupełnij wzrost i datę urodzenia/ })).toBeVisible()
 
   await patchSettings(page, { height_cm: 180, birth_year: 1990 })
   await page.reload()

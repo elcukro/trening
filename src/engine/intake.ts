@@ -14,9 +14,11 @@ export function bmr(weightKg: number, heightCm: number, age: number): number {
   return 10 * weightKg + 6.25 * heightCm - 5 * age + 5
 }
 
-/** Wiek w danym roku – dokładność do roku wystarcza (1 rok = 5 kcal). */
-export function ageOn(birthYear: number, date: string): number {
-  return Number(date.slice(0, 4)) - birthYear
+/** Wiek w dniu `date`: z pełnej daty urodzenia co do dnia, z samego roku – różnica lat (1 rok = 5 kcal). */
+export function ageOn(birth: number | string, date: string): number {
+  if (typeof birth === 'number') return Number(date.slice(0, 4)) - birth
+  const years = Number(date.slice(0, 4)) - Number(birth.slice(0, 4))
+  return date.slice(5) < birth.slice(5) ? years - 1 : years
 }
 
 /** Deficyt dnia w kcal: liczba z masy, gdy program ją liczy; inaczej z rodzaju dnia (300/500); dni bez deficytu – 0. */
@@ -79,6 +81,8 @@ export interface DayIntakeInput {
   weightKg: number
   heightCm: number | null | undefined
   birthYear: number | null | undefined
+  /** pełna data urodzenia ma pierwszeństwo przed rokiem */
+  birthDate?: string | null
   nutrition: Pick<Nutrition, 'energy' | 'deficit_kcal'>
   aboveTarget: boolean
   ride: RideEnergyInput
@@ -102,8 +106,9 @@ export interface DayIntake {
 
 export function dayIntake(inp: DayIntakeInput): DayIntake {
   const eaten = sumMeals(inp.meals)
-  if (!inp.heightCm || !inp.birthYear) return { eaten, protein_target_g: inp.proteinTargetG, budget: null }
-  const base = Math.round(bmr(inp.weightKg, inp.heightCm, ageOn(inp.birthYear, inp.date)) * ACTIVITY_FACTOR)
+  const birth = inp.birthDate ?? inp.birthYear
+  if (!inp.heightCm || !birth) return { eaten, protein_target_g: inp.proteinTargetG, budget: null }
+  const base = Math.round(bmr(inp.weightKg, inp.heightCm, ageOn(birth, inp.date)) * ACTIVITY_FACTOR)
   const ride = rideKcal(inp.ride)
   const deficit = deficitKcal(inp.nutrition, inp.aboveTarget)
   // budżet zaokrąglony do 10 kcal – to szacunek ±10 %, nie pomiar

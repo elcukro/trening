@@ -141,6 +141,8 @@ export const SettingsSchema = z.object({
   /** Dietetyk (docs/25): wzrost i rok urodzenia do budżetu kcal; bez nich karta Jedzenie pokazuje tylko sumy */
   height_cm: z.number().int().min(120).max(230).nullable().optional(),
   birth_year: z.number().int().min(1920).max(2020).nullable().optional(),
+  /** pełna data urodzenia (YYYY-MM-DD); gdy jest – wiek liczony co do dnia, `birth_year` to jej rok */
+  birth_date: z.string().regex(/^\d{4}-\d{2}-\d{2}$/).nullable().optional(),
   /** karta Jedzenie i zdjęcia posiłków – beta, domyślnie wyłączona */
   diet_enabled: z.boolean().nullable().optional(),
   units: z.string(),

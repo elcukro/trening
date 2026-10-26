@@ -122,10 +122,11 @@ const PROFILE_MAP: [keyof Settings, string][] = [
   ['strava_write', 'strava_write'],
   ['height_cm', 'height_cm'],
   ['birth_year', 'birth_year'],
+  ['birth_date', 'birth_date'],
   ['diet_enabled', 'diet_enabled'],
 ]
 
-const PROFILE_TEXT_KEYS = new Set(['program_start', 'trip_start', 'program_id', 'athlete_name'])
+const PROFILE_TEXT_KEYS = new Set(['program_start', 'trip_start', 'program_id', 'athlete_name', 'birth_date'])
 
 /**
  * Profil scalany per pole (`profileMerge.ts`): wysyłamy tylko pola nowsze lokalnie, pobieramy tylko nowsze na serwerze.

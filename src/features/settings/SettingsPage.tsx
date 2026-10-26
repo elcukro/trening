@@ -32,7 +32,7 @@ type Form = {
   gym_enabled: boolean
   volume_scale: string
   height_cm: string
-  birth_year: string
+  birth_date: string
 }
 
 type FieldErrors = Partial<Record<keyof Form, string>>
@@ -54,7 +54,7 @@ function toForm(s: Settings): Form {
     gym_enabled: s.gym_enabled,
     volume_scale: String(s.volume_scale),
     height_cm: s.height_cm != null ? String(s.height_cm) : '',
-    birth_year: s.birth_year != null ? String(s.birth_year) : '',
+    birth_date: s.birth_date ?? (s.birth_year != null ? `${s.birth_year}-01-01` : ''),
   }
 }
 
@@ -100,7 +100,8 @@ function fromForm(f: Form, base: Settings): { settings: Settings; errors: FieldE
     gym_enabled: f.gym_enabled,
     volume_scale: Math.round(req('volume_scale', f.volume_scale, 0.7, 1) * 100) / 100,
     height_cm: intOrNull(opt('height_cm', f.height_cm, 120, 230)),
-    birth_year: intOrNull(opt('birth_year', f.birth_year, 1920, 2020)),
+    birth_date: f.birth_date && isValidISODate(f.birth_date) ? f.birth_date : null,
+    birth_year: f.birth_date && isValidISODate(f.birth_date) ? Number(f.birth_date.slice(0, 4)) : null,
   }
   return { settings, errors }
 }
@@ -189,7 +190,9 @@ function SettingsForm({ engine, saved, setSaved }: { engine: ReturnType<typeof u
                 {numField('ftp_w_goal', 'Cel FTP (W)', 'numeric')}
                 {numField('bike_and_kit_kg', 'Rower + bagaż (kg)', 'decimal', 'do kalkulatora podjazdu')}
                 {numField('height_cm', 'Wzrost (cm)', 'numeric', 'do budżetu kcal')}
-                {numField('birth_year', 'Rok urodzenia', 'numeric', 'do budżetu kcal')}
+                <Field label="Data urodzenia" hint="do budżetu kcal">
+                  <Input type="date" min="1920-01-01" max="2015-12-31" value={form.birth_date} onChange={set('birth_date')} />
+                </Field>
               </div>
             </div>
             <CardSection>

@@ -8,6 +8,9 @@ describe('intake – budżet dnia (docs/25 § 4.2)', () => {
     // 100 kg, 186 cm, 42 lata: 1000 + 1162,5 − 210 + 5
     expect(bmr(100, 186, 42)).toBeCloseTo(1957.5)
     expect(ageOn(1984, '2026-10-26')).toBe(42)
+    // z pełnej daty – co do dnia
+    expect(ageOn('1984-11-03', '2026-10-26')).toBe(41)
+    expect(ageOn('1984-10-26', '2026-10-26')).toBe(42)
   })
 
   it('deficyt: liczba z masy ma pierwszeństwo, potem rodzaj dnia, dni bez deficytu = 0', () => {
@@ -66,6 +69,7 @@ describe('intake – budżet dnia (docs/25 § 4.2)', () => {
     expect(r.protein_target_g).toBe(180)
     expect(dayIntake({ ...base, heightCm: null }).budget).toBeNull()
     expect(dayIntake({ ...base, birthYear: undefined }).budget).toBeNull()
+    expect(dayIntake({ ...base, birthYear: undefined, birthDate: '1984-01-01' }).budget?.base_kcal).toBe(2643)
   })
 
   it('etykieta: wartości na 100 × ilość', () => {

@@ -29,6 +29,7 @@ export function useMeals(date: ISODate, day: DayPlan | null, d: { activities: St
     weightKg,
     heightCm: settings.height_cm,
     birthYear: settings.birth_year,
+    birthDate: settings.birth_date,
     nutrition: day.nutrition,
     aboveTarget: weightKg > settings.body_weight_target_kg,
     ride: {

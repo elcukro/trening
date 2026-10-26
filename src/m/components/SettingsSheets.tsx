@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { useEngine } from '@/app/useSettings'
 import { geocode, setLocation, type WeatherLocation } from '@/sync/weather'
 import { useToast } from '@/components/Toast'
+import { fmtDate } from '@/lib/dates'
 import { Btn, Sheet } from './Chrome'
 
 /** Przełącznik w stylu systemowym. */
@@ -13,9 +14,8 @@ export function Switch({ on, label, onChange, disabled }: { on: boolean; label: 
   )
 }
 
-// wzrost i rok urodzenia z listy zamiast z klawiatury – na iOS klawiatura w arkuszu chowała pola (26.10.2026)
+// wzrost z listy, data urodzenia z kalendarza – zamiast klawiatury – na iOS klawiatura w arkuszu chowała pola (26.10.2026)
 const HEIGHTS = Array.from({ length: 81 }, (_, i) => String(140 + i))
-const YEARS = Array.from({ length: 71 }, (_, i) => String(2010 - i))
 
 /**
  * Progi i miernik – jedyne ustawienia zmieniane często (po każdym teście).
@@ -36,7 +36,8 @@ function NumbersSheetLoaded({ onClose }: { onClose: () => void }) {
   const [lthr, setLthr] = useState(settings.lthr_bpm != null ? String(settings.lthr_bpm) : '')
   const [power, setPower] = useState(settings.power_meter)
   const [height, setHeight] = useState(settings.height_cm != null ? String(settings.height_cm) : '')
-  const [born, setBorn] = useState(settings.birth_year != null ? String(settings.birth_year) : '')
+  // bez pełnej daty, a z samym rokiem – kalendarz startuje od 1 stycznia tego roku
+  const [born, setBorn] = useState(settings.birth_date ?? (settings.birth_year != null ? `${settings.birth_year}-01-01` : ''))
   const [busy, setBusy] = useState(false)
 
   async function save() {
@@ -51,7 +52,8 @@ function NumbersSheetLoaded({ onClose }: { onClose: () => void }) {
       }
       await engine.settingsApi.update({
         height_cm: intIn(height, 120, 230, settings.height_cm),
-        birth_year: intIn(born, 1920, 2020, settings.birth_year),
+        birth_date: /^\d{4}-\d{2}-\d{2}$/.test(born) ? born : null,
+        birth_year: /^\d{4}-\d{2}-\d{2}$/.test(born) ? Number(born.slice(0, 4)) : null,
         ftp_w_estimate: Number.isFinite(f) && f > 0 ? Math.round(f) : settings.ftp_w_estimate,
         lthr_bpm: lthr.trim() && Number.isFinite(l) && l > 0 ? Math.round(l) : null,
         power_meter: power,
@@ -90,17 +92,12 @@ function NumbersSheetLoaded({ onClose }: { onClose: () => void }) {
             </select>
             <span className="m-foot m-dim">cm</span>
           </label>
-          <label className="m-list p-3">
-            <span className="m-eyebrow block">Rok urodzenia</span>
-            <select className="m-big mt-1 w-full appearance-none bg-transparent outline-none" value={born} onChange={(e) => setBorn(e.target.value)} aria-label="Rok urodzenia">
-              <option value="">—</option>
-              {YEARS.map((y) => (
-                <option key={y} value={y}>
-                  {y}
-                </option>
-              ))}
-            </select>
+          {/* natywny kalendarz iOS: przezroczyste pole daty na całej karcie, pod nim sformatowana wartość */}
+          <label className="m-list relative p-3">
+            <span className="m-eyebrow block">Data urodzenia</span>
+            <span className="m-big m-num mt-1 block">{born ? fmtDate(born) : '—'}</span>
             <span className="m-foot m-dim">do budżetu kcal</span>
+            <input type="date" className="absolute inset-0 h-full w-full opacity-0" min="1920-01-01" max="2015-12-31" value={born} onChange={(e) => setBorn(e.target.value)} aria-label="Data urodzenia" />
           </label>
         </div>
         <div className="m-list">
