@@ -1,6 +1,6 @@
 import { isNative } from '@/native/platform'
 import { openAuthSession } from '@/native/webAuth'
-import { b64url, challengeFor } from '../../supabase/functions/_shared/strava_login'
+import { b64url, challengeFor, STATE_TTL_MS } from '../../supabase/functions/_shared/strava_login'
 import { authErrorMessage, parseAuthReturn, splitUrl, withoutAuthParams } from './authReturn'
 import { SUPABASE_KEY, SUPABASE_URL, supabase } from './supabase'
 
@@ -74,10 +74,12 @@ export async function signInWithStrava(path: string): Promise<OAuthResult> {
     const back = await openAuthSession(url, 'trening')
     return back ? completeAuthReturn(back, verifier) : { error: null, canceled: true }
   }
+  // localStorage, nie sessionStorage: logowanie do Stravy (np. przez Google/Apple) potrafi wrócić w nowej karcie,
+  // a sessionStorage jest osobny dla każdej karty – weryfikator ważny tyle co stan OAuth
   try {
-    sessionStorage.setItem(VERIFIER_KEY, verifier)
+    localStorage.setItem(VERIFIER_KEY, JSON.stringify({ v: verifier, exp: Date.now() + STATE_TTL_MS }))
   } catch {
-    return { error: 'Przeglądarka blokuje pamięć sesji (prywatne okno?) – zaloguj się kodem z maila.' }
+    return { error: 'Przeglądarka blokuje pamięć strony (prywatne okno?) – zaloguj się kodem z maila.' }
   }
   window.location.assign(url)
   return { error: null, redirecting: true }
@@ -111,9 +113,10 @@ export async function completeAuthReturn(href: string, verifier?: string): Promi
 
 function takeVerifier(): string | null {
   try {
-    const v = sessionStorage.getItem(VERIFIER_KEY)
-    sessionStorage.removeItem(VERIFIER_KEY)
-    return v
+    const raw = localStorage.getItem(VERIFIER_KEY)
+    localStorage.removeItem(VERIFIER_KEY)
+    const saved = raw ? (JSON.parse(raw) as { v?: unknown; exp?: unknown }) : null
+    return saved && typeof saved.v === 'string' && typeof saved.exp === 'number' && saved.exp > Date.now() ? saved.v : null
   } catch {
     return null
   }

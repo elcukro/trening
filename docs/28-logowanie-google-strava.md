@@ -32,7 +32,8 @@ Supabase nie ma dostawcy Strava, więc:
 
 1. Aplikacja losuje weryfikator (32 bajty), liczy wyzwanie `SHA-256` (jak PKCE) i otwiera
    `…/functions/v1/strava-login/start?return=<adres powrotu>&challenge=<wyzwanie>` (przeglądarka: przekierowanie,
-   weryfikator w `sessionStorage`; iOS: ASWebAuthenticationSession, weryfikator w pamięci).
+   weryfikator w `localStorage` z 10-minutowym terminem – logowanie do Stravy potrafi wrócić w nowej karcie, a
+   `sessionStorage` jest osobny dla każdej karty; iOS: ASWebAuthenticationSession, weryfikator w pamięci).
 2. Funkcja sprawdza adres powrotu z listą (`trening://auth`, `https://trening.felsztukier.pl`,
    `https://trening-inky.vercel.app`, `APP_URL`, opcjonalny sekret `LOGIN_RETURN_ORIGINS`, `http://localhost:*`) –
    bez tego byłaby otwartym przekierowaniem – i przekierowuje do Stravy ze stanem podpisanym HMAC (10 min).

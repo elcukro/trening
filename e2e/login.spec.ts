@@ -83,7 +83,13 @@ test('Strava: konto bez połączonej Stravy dostaje instrukcję, a adres jest cz
 
 test('Strava: bilet wymieniany z weryfikatorem; przeterminowany daje komunikat', async ({ page }) => {
   await providers(page, true, true)
-  await page.addInitScript(() => sessionStorage.setItem('trening:strava-verifier', 'v'.repeat(43)))
+  await page.addInitScript(() => {
+    // tylko przy pierwszym wejściu – po wymianie biletu weryfikator ma zniknąć
+    if (!sessionStorage.getItem('e2e:seeded')) {
+      sessionStorage.setItem('e2e:seeded', '1')
+      localStorage.setItem('trening:strava-verifier', JSON.stringify({ v: 'v'.repeat(43), exp: Date.now() + 600_000 }))
+    }
+  })
   let body: Record<string, unknown> | null = null
   await page.route(`${SB}/functions/v1/strava-login`, (r) => {
     body = r.request().postDataJSON() as Record<string, unknown>
@@ -93,7 +99,7 @@ test('Strava: bilet wymieniany z weryfikatorem; przeterminowany daje komunikat',
   await expect(page.getByText(/trwało za długo/)).toBeVisible()
   expect(body).toEqual({ action: 'redeem', ticket: 'abc.def', verifier: 'v'.repeat(43) })
   // bilet nie zostaje w adresie ani weryfikator w pamięci
-  expect(await page.evaluate(() => [location.hash, sessionStorage.getItem('trening:strava-verifier')])).toEqual(['', null])
+  expect(await page.evaluate(() => [location.hash, localStorage.getItem('trening:strava-verifier')])).toEqual(['', null])
 })
 
 test('Google: wyjście przez Supabase Auth z powrotem na tę samą stronę', async ({ page, baseURL }) => {
