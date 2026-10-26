@@ -12,21 +12,32 @@ import { wahoo, type WahooStatus } from '@/sync/wahoo'
 import { pushStatus, subscribePush, unsubscribePush, type PushStatus } from '@/sync/push'
 import { resetSyncCursors, runSync } from '@/sync/sync'
 import { useToast } from '@/components/Toast'
-import { useIosDay, useOpenFull, useSnapshot, useSyncStatus, useUiMode } from '@/day/useIos'
+import { NO_ACCOUNT, useIosDay, useOpenFull, useSnapshot, useSyncStatus, useUiMode } from '@/day/useIos'
 import { formLabel } from '@/day/dayState'
 import { fmtDayMonth, fmtShort, todayISO } from '@/lib/dates'
 import { num } from '@/lib/format'
 import { Group, Row, Screen } from '../components/Chrome'
 import { LocationSheet, NumbersSheet, Switch } from '../components/SettingsSheets'
 import { ART } from '../art'
+import { IS_IOS_APP } from '@/native'
 
 const SYNC_FOOTER: Record<string, string> = {
-  idle: 'Konto i połączenia są wspólne z pełną aplikacją.',
+  // aplikacja iOS nie odsyła do „pełnej aplikacji” (docs/26 § 3 pkt 9)
+  idle: IS_IOS_APP ? 'Konto i połączenia są wspólne z trening.felsztukier.pl.' : 'Konto i połączenia są wspólne z pełną aplikacją.',
   syncing: 'Synchronizuję…',
   offline: 'Brak sieci – zapisy czekają w kolejce.',
   unauthenticated: 'Bez logowania aplikacja działa offline: plan i zapisy zostają na telefonie.',
   disabled: 'Aplikacja działa lokalnie – bez Supabase nie ma synchronizacji.',
   error: 'Ostatnia synchronizacja się nie udała.',
+}
+/** Aplikacja iOS nie ma ustawień pełnej aplikacji – „Zaloguj” wraca do ekranu logowania `/m` (cofa „bez konta”). */
+function backToLogin() {
+  try {
+    sessionStorage.removeItem(NO_ACCOUNT)
+  } catch {
+    /* brak pamięci sesji */
+  }
+  window.location.replace('/m')
 }
 const linkLabel = (x: StravaStatus | WahooStatus | 'error' | null) => (x === null ? '…' : x === 'error' ? 'brak danych' : x.connected ? 'połączone' : 'brak')
 
@@ -95,7 +106,7 @@ export function MeScreen() {
         <div className="m-card flex items-center gap-3 p-3" style={{ background: 'rgb(47 179 83 / 0.12)' }}>
           <img src={ART.test} alt="" width={32} height={32} className="h-8 w-8 object-contain" />
           <span className="m-sub min-w-0 flex-1">
-            FTP może być wyższe: <b>{snap.ftp.suggestion.ftp} W</b> ({snap.ftp.suggestion.basis === '20min' ? 'najlepsze 20 min' : 'pełna godzina'} {snap.ftp.suggestion.effort_w} W, {fmtDayMonth(snap.ftp.suggestion.ride_date)}). Zmianę zapisz w pełnej aplikacji.
+            FTP może być wyższe: <b>{snap.ftp.suggestion.ftp} W</b> ({snap.ftp.suggestion.basis === '20min' ? 'najlepsze 20 min' : 'pełna godzina'} {snap.ftp.suggestion.effort_w} W, {fmtDayMonth(snap.ftp.suggestion.ride_date)}). {IS_IOS_APP ? 'Zmianę zapiszesz w Progach.' : 'Zmianę zapisz w pełnej aplikacji.'}
           </span>
         </div>
       )}
@@ -116,14 +127,15 @@ export function MeScreen() {
       <Group label="Ustawienia">
         <Row icon={<img src={ART.bolt} alt="" width={28} height={28} className="h-7 w-7 object-contain" />} title="Progi i miernik" sub={`${s.ftp_w_estimate} W${s.lthr_bpm ? ` · ${s.lthr_bpm} bpm` : ' · brak LTHR'} · ${s.power_meter ? 'z miernikiem mocy' : 'bez miernika'}`} onClick={() => setSheet('numbers')} />
         <Row icon={<img src="/m/art/sun.png" alt="" width={28} height={28} className="h-7 w-7 object-contain" />} title="Pogoda" sub={loc ? loc.name : loc === null ? 'Ustaw miejscowość prognozy' : undefined} onClick={() => setSheet('location')} />
-        <div className="m-row">
+        {/* Web Push nie działa w WKWebView – w aplikacji iOS powiadomienia przyjdą z APNs (docs/26, etap 3) */}
+        {!IS_IOS_APP && <div className="m-row">
           <img src="/m/art/night.png" alt="" width={28} height={28} className="h-7 w-7 object-contain" />
           <span className="min-w-0 flex-1">
             <span className="block">Powiadomienia</span>
             <span className="m-foot m-dim block">{push?.supported === false ? 'dodaj aplikację do ekranu początkowego' : 'rano o planie, wieczorem podsumowanie'}</span>
           </span>
           <Switch on={!!push?.subscribed} label="Powiadomienia" disabled={push?.supported === false} onChange={() => void togglePush()} />
-        </div>
+        </div>}
       </Group>
 
       {auth.session && (
@@ -144,17 +156,18 @@ export function MeScreen() {
       )}
 
       <Group label="Połączenia">
-        <Row title="Strava" sub={sv !== null && sv !== 'error' && sv.connected ? 'jazdy wpadają same' : 'łączenie w pełnej aplikacji'} value={linkLabel(sv)} onClick={() => openFull('/wiecej/ustawienia')} />
-        <Row title="Wahoo" sub={wh !== null && wh !== 'error' && wh.connected ? 'plany lecą na Bolta' : 'łączenie w pełnej aplikacji'} value={linkLabel(wh)} onClick={() => openFull('/wiecej/ustawienia')} />
+        {/* łączenie z aplikacji iOS przez ASWebAuthenticationSession to etap 1 (docs/26 § 2) – do tego czasu na stronie */}
+        <Row title="Strava" sub={sv !== null && sv !== 'error' && sv.connected ? 'jazdy wpadają same' : IS_IOS_APP ? 'łączenie na trening.felsztukier.pl' : 'łączenie w pełnej aplikacji'} value={linkLabel(sv)} onClick={IS_IOS_APP ? undefined : () => openFull('/wiecej/ustawienia')} />
+        <Row title="Wahoo" sub={wh !== null && wh !== 'error' && wh.connected ? 'plany lecą na Bolta' : IS_IOS_APP ? 'łączenie na trening.felsztukier.pl' : 'łączenie w pełnej aplikacji'} value={linkLabel(wh)} onClick={IS_IOS_APP ? undefined : () => openFull('/wiecej/ustawienia')} />
       </Group>
 
       <Group label="Konto">
         {!auth.configured ? (
-          <Row title="Tryb lokalny" sub="Bez konfiguracji Supabase dane zostają w tej przeglądarce" />
+          <Row title="Tryb lokalny" sub={`Bez konfiguracji Supabase dane zostają ${IS_IOS_APP ? 'na tym telefonie' : 'w tej przeglądarce'}`} />
         ) : auth.session ? (
           <Row title="Zalogowany" sub={`${auth.session.user.email ?? ''}${sync.last_sync ? ` · synchronizacja ${fmtDayMonth(sync.last_sync.slice(0, 10))}` : ''}${sync.pending > 0 ? ` · czeka ${sync.pending}` : ''}`} />
         ) : (
-          <Row title={auth.loading ? 'Sprawdzam konto…' : 'Nie jesteś zalogowany'} sub={auth.loading ? undefined : 'Jazdy, check-iny i zmiany planu nie pobierają się z konta'} onClick={() => openFull('/wiecej/ustawienia')} />
+          <Row title={auth.loading ? 'Sprawdzam konto…' : 'Nie jesteś zalogowany'} sub={auth.loading ? undefined : 'Jazdy, check-iny i zmiany planu nie pobierają się z konta'} onClick={IS_IOS_APP ? backToLogin : () => openFull('/wiecej/ustawienia')} />
         )}
         {auth.session && <Row title={sync.state === 'syncing' ? 'Synchronizuję…' : 'Synchronizuj teraz'} onClick={sync.state === 'syncing' ? undefined : () => void toast.run('Synchronizuję…', () => runSync({ programVersion: engine.ctx.program.version }), () => 'Zsynchronizowano')} />}
         {auth.session && (
@@ -178,8 +191,8 @@ export function MeScreen() {
 
       <Group label="Więcej">
         <Row title="Jak korzystać z aplikacji" sub="Instrukcja, działa też bez sieci" onClick={() => window.location.assign('/pomoc.html')} />
-        <Row title="Otwórz pełną aplikację" sub="Kalendarz, wykresy, biblioteka, sprzęt, kopia, integracje" onClick={() => openFull('/')} />
-        <Row title="Wróć do poprzedniego wyglądu" sub="Uproszczony interfejs (/i) zostaje jako zapas" onClick={() => void ui.set('ios').then(() => navigate('/i'))} />
+        {!IS_IOS_APP && <Row title="Otwórz pełną aplikację" sub="Kalendarz, wykresy, biblioteka, sprzęt, kopia, integracje" onClick={() => openFull('/')} />}
+        {!IS_IOS_APP && <Row title="Wróć do poprzedniego wyglądu" sub="Uproszczony interfejs (/i) zostaje jako zapas" onClick={() => void ui.set('ios').then(() => navigate('/i'))} />}
       </Group>
       <p className="m-foot m-dim-3 m-num px-1">
         Program {engine.ctx.program.version} · cel FTP {snap.goal.ftp} W{diag ? ` · okno ${diag}` : ''}

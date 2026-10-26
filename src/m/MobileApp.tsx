@@ -19,6 +19,7 @@ import { MeScreen } from './screens/MeScreen'
 import { RideScreen } from './screens/RideScreen'
 import { SummaryScreen } from './screens/SummaryScreen'
 import { CoachContext } from './coach'
+import { hideSplash } from '@/native'
 
 /**
  * Mobilny interfejs v2 (docs/24): trzy zakładki (Dziś, Plan, Ja) i przycisk Trener. Te same hooki konta,
@@ -29,6 +30,8 @@ export function MobileApp() {
   useEmailSnapshots()
   usePushKeepalive()
   useViewport()
+  // aplikacja iOS: ekran startowy znika, gdy `/m` (albo logowanie) jest już na ekranie
+  useEffect(hideSplash, [])
   const auth = useAuth()
   const location = useLocation()
   // arkusz Trener otwierany z paska i z kart (CoachContext); `prefill` to początek wiadomości, np. „Waga ”

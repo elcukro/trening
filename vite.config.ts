@@ -5,6 +5,8 @@ import tailwindcss from '@tailwindcss/vite'
 import { VitePWA } from 'vite-plugin-pwa'
 import { fileURLToPath, URL } from 'node:url'
 
+// cel builda: `ios` = aplikacja w powłoce Capacitora (docs/26) – bez service workera i manifestu PWA
+const target = process.env.VITE_TARGET === 'ios' ? 'ios' : 'web'
 const buildId = new Intl.DateTimeFormat('pl-PL', { timeZone: 'Europe/Warsaw', dateStyle: 'short', timeStyle: 'short' }).format(new Date())
 
 export default defineConfig({
@@ -12,7 +14,7 @@ export default defineConfig({
   plugins: [
     react(),
     tailwindcss(),
-    VitePWA({
+    target === 'web' && VitePWA({
       // własny service worker – potrzebny do obsługi powiadomień Web Push
       strategies: 'injectManifest',
       srcDir: 'src',
@@ -45,7 +47,11 @@ export default defineConfig({
   ],
   build: { chunkSizeWarningLimit: 1000 },
   resolve: {
-    alias: { '@': fileURLToPath(new URL('./src', import.meta.url)) },
+    alias: {
+      '@': fileURLToPath(new URL('./src', import.meta.url)),
+      // w aplikacji iOS zasoby są w bundlu – rejestracja service workera to pusta funkcja
+      ...(target === 'ios' ? { 'virtual:pwa-register': fileURLToPath(new URL('./src/native/noServiceWorker.ts', import.meta.url)) } : {}),
+    },
   },
   test: {
     include: ['src/**/*.test.ts', 'src/**/*.test.tsx'],

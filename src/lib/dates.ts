@@ -5,21 +5,24 @@ import { addDays, toUtc, type ISODate } from '@/engine/dates'
 
 export const TIMEZONE = 'Europe/Warsaw'
 
+/** Parametry podglądu z URL (`?today=`, `?hour=`) – wszędzie poza produkcyjnym buildem aplikacji iOS (docs/26 § 1). */
+function urlParam(name: string): string | null {
+  if (typeof window === 'undefined') return null
+  if (import.meta.env.VITE_TARGET === 'ios' && import.meta.env.PROD) return null
+  return new URLSearchParams(window.location.search).get(name)
+}
+
 /** Dzisiejsza data w strefie Europe/Warsaw; `?today=YYYY-MM-DD` w URL nadpisuje (testy, podgląd). */
 export function todayISO(): ISODate {
-  if (typeof window !== 'undefined') {
-    const q = new URLSearchParams(window.location.search).get('today')
-    if (q && /^\d{4}-\d{2}-\d{2}$/.test(q)) return q
-  }
+  const q = urlParam('today')
+  if (q && /^\d{4}-\d{2}-\d{2}$/.test(q)) return q
   return format(new TZDate(Date.now(), TIMEZONE), 'yyyy-MM-dd')
 }
 
 /** Bieżąca godzina w Warszawie (0–23); `?hour=HH` w URL nadpisuje ją tak jak `?today=` datę (podgląd stanów dnia w /m). */
 export function nowHour(): number {
-  if (typeof window !== 'undefined') {
-    const q = new URLSearchParams(window.location.search).get('hour')
-    if (q && /^\d{1,2}$/.test(q)) return Math.min(23, Number(q))
-  }
+  const q = urlParam('hour')
+  if (q && /^\d{1,2}$/.test(q)) return Math.min(23, Number(q))
   return new TZDate(Date.now(), TIMEZONE).getHours()
 }
 

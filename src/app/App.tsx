@@ -29,6 +29,7 @@ import { PHASE_COLOR, PHASE_SHORT } from '@/lib/labels'
 import type { PhaseId } from '@/engine/types'
 import type { Feature } from '@/engine/schema'
 import { FULL_ESCAPE, useUiMode } from '@/day/useIos'
+import { IS_IOS_APP } from '@/native'
 
 const ProgressPage = lazy(() => import('@/features/progress/ProgressPage').then((m) => ({ default: m.ProgressPage })))
 const IosApp = lazy(() => import('@/ios/IosApp').then((m) => ({ default: m.IosApp })))
@@ -273,6 +274,14 @@ export function App() {
           <PushNavigator />
           <SettingsGate fallback={(waiting, sync) => <WaitingScreen waiting={waiting} sync={sync} />}>
           <Routes>
+            {IS_IOS_APP ? (
+              // aplikacja iOS (docs/26 § 1): tylko `/m`, bez ModeGate, klasycznego UI i `/i`
+              <>
+                <Route path="m/*" element={<Suspense fallback={null}><MobileApp /></Suspense>} />
+                <Route path="*" element={<Navigate to="/m" replace />} />
+              </>
+            ) : (
+            <>
             <Route element={<Layout />}>
               <Route index element={<ModeGate><TodayPage /></ModeGate>} />
               <Route path="dzien/:date" element={<ModeGate><DayPage /></ModeGate>} />
@@ -298,6 +307,8 @@ export function App() {
             <Route path="silownia/:date" element={<GymModePage />} />
             <Route path="i/*" element={<Suspense fallback={null}><IosApp /></Suspense>} />
             <Route path="m/*" element={<Suspense fallback={null}><MobileApp /></Suspense>} />
+            </>
+            )}
           </Routes>
           </SettingsGate>
         </BrowserRouter>

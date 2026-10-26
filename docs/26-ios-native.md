@@ -1,8 +1,39 @@
 # 26 · Natywna aplikacja iOS (Capacitor) – analiza i plan
 
-Stan: analiza 26.10.2026, przed implementacją. Decyzja: **opcja 1** – istniejąca aplikacja React (`/m`) w natywnej
+Stan: analiza 26.10.2026; **etap 0 (powłoka) zrobiony 26.10.2026** – patrz „Stan wdrożenia” niżej. Decyzja: **opcja 1** – istniejąca aplikacja React (`/m`) w natywnej
 powłoce iOS (Capacitor), z natywnymi wtyczkami tam, gdzie PWA nie sięga. Silnik (`src/engine/`), synchronizacja (Dexie +
 Supabase), Edge Functions i wersja webowa zostają bez zmian – aplikacja iOS to trzeci „cel builda”, nie nowy projekt.
+
+## Stan wdrożenia
+
+**Etap 0 – powłoka (26.10.2026), działa w symulatorze (iPhone 16e, iOS 26.1, build Debug):**
+
+- Capacitor 8.5 (`@capacitor/core`, `ios`, `status-bar`, `splash-screen`, `keyboard`; `cli` w dev), projekt Xcode w `ios/`
+  (Swift Package Manager, bez CocoaPods), `capacitor.config.ts`: `pl.felsztukier.trening`, „Trening”, `webDir: dist`,
+  bez `server.url`. Bundle kopiuje `cap sync` do `ios/App/App/public` (ignorowany w git, tak jak `capacitor.config.json`).
+- `npm run build:ios` = `tsc -b` + `VITE_TARGET=ios vite build` + `cap sync ios`; `npm run ios:open` otwiera Xcode
+  (schemat `App`). Build iOS: bez wtyczki PWA (manifest, `sw.js`), `virtual:pwa-register` podmieniony aliasem na pustą
+  funkcję (`src/native/noServiceWorker.ts`), w routerze tylko `/m/*` (reszta → `/m`, bez `ModeGate`), motyw systemu
+  ignorowany, `?today=`/`?hour=` działają tylko w buildzie deweloperskim (`urlParam` w `src/lib/dates.ts`).
+  Kod klasycznego UI i `/i` nadal leży w bundlu (leniwe chunki), ale nie ma do niego trasy.
+- `src/native/` – jedyne miejsce z importami Capacitora: `platform.ts` (`IS_IOS_APP` – stała builda, `isNative()`),
+  `shell.ts` (`initShell`: klasa `native` na `<html>`, `user-scalable=no`, ciemny tekst paska statusu; `hideSplash` –
+  ekran startowy znika po pierwszym rysunku `/m` albo po 4 s), `index.ts`.
+- Wygląd natywny: ikona 1024 px z `public/icon-src.png` i ekran startowy w kolorze tła `/m` (#f2f2f7, bez logo) generuje
+  `node scripts/icons.mjs`; `UIUserInterfaceStyle = Light`, okno też wymuszone na jasne (`SceneDelegate.swift`), tylko pion,
+  tylko iPhone (`TARGETED_DEVICE_FAMILY = 1`), `CFBundleDevelopmentRegion = pl`. Bez białego błysku: tło WebView, okna,
+  ekranu startowego i `/m` to ten sam kolor. CSS dla `html.native` (`src/index.css`): bez zaznaczania tekstu poza polami,
+  bez menu linku po przytrzymaniu, bez przybliżania dwukrotnym dotknięciem, bez odbicia dokumentu (`ios.scrollEnabled: false`).
+- Teksty w Ja (§ 3 pkt 9) w buildzie iOS: bez „Otwórz pełną aplikację” i „Wróć do poprzedniego wyglądu”, bez wiersza
+  Powiadomienia (Web Push nie działa w WKWebView – APNs w etapie 3), Strava/Wahoo „łączenie na trening.felsztukier.pl”
+  (bez przejścia), „Nie jesteś zalogowany” wraca do ekranu logowania. Wejść do siłowni w `/m` nie ma (decyzja w § 9 pkt 3).
+- Sprawdzone w symulatorze: start z lokalnego bundla prosto do logowania `/m`, „Zobacz tylko plan, bez konta” → Dziś,
+  zakładki Dziś/Plan/Ja, arkusz „Progi i miernik”, czat Trenera z klawiaturą, długie przytrzymanie tekstu bez menu.
+
+**Nie sprawdzone:** prawdziwy telefon (wymaga Apple ID w Xcode → Signing & Capabilities → Team; darmowe konto = instalacja
+ważna 7 dni), praca przy faktycznie odciętej sieci (symulator korzysta z sieci Maca; ścieżka bez konta nie wysyła zapytań,
+a bundle jest lokalny), logowanie kodem i synchronizacja z `capacitor://localhost` (etap 1), przybliżanie szczypnięciem,
+build Release i rozmiar aplikacji.
 
 ## 1. Architektura
 
@@ -29,13 +60,13 @@ Supabase), Edge Functions i wersja webowa zostają bez zmian – aplikacja iOS t
 | Strava / Wahoo – połączenie | `window.location.assign(OAuth)` w **pełnej aplikacji** (`IntegrationsSection`) | ekran w `/m` + `ASWebAuthenticationSession` (`@capacitor/browser` lub wtyczka auth) i powrót przez własny schemat / Universal Link; Edge Functions `strava-oauth`/`wahoo-oauth` dostają adres powrotu aplikacji | M |
 | Ustawienia konta, maile, powiadomienia, program, kopia | tylko pełna aplikacja (`/wiecej/ustawienia`) | **przenieść do `/m` → Ja** (arkusze) – w aplikacji nie ma „Otwórz pełną aplikację” | M |
 | Powiadomienia push | Web Push (VAPID) przez `src/sw.ts`, Edge Function `push-send` | **APNs** (`@capacitor/push-notifications`); `push-send` wysyła też na tokeny APNs (klucz `.p8` – sekret ustawia użytkownik); tabela `push_subscriptions` z kolumną `kind` | M |
-| Timer przerwy (siłownia) | `navigator.vibrate` (iOS nie obsługuje) + powiadomienie z SW | **lokalne powiadomienie** zaplanowane na koniec przerwy + **haptyka** – działa przy zablokowanym ekranie | S |
+| Timer przerwy (siłownia) | `navigator.vibrate` (iOS nie obsługuje) + powiadomienie z SW | **nie dotyczy** – siłowni nie ma w aplikacji iOS (decyzja 26.10.2026) | — |
 | Zdjęcie posiłku / etykiety | `<input type=file capture>` + zmniejszanie w canvas | `@capacitor/camera` (aparat lub biblioteka, od razu JPEG ≤ 1024 px) | S |
 | Długie przytrzymanie, przeciąganie | pointer events | bez zmian + haptyka przy „podniesieniu” | S |
 | Pogoda | miejscowość wpisana ręcznie (kv) | opcjonalnie **Core Location** „przy użyciu” zamiast wpisywania | S |
 | Wysyłka planów na Wahoo | automat raz dziennie **przy otwarciu aplikacji** (`useWahoo`) | bez zmian; opcjonalnie `BGAppRefreshTask` (iOS nie gwarantuje pory) | S |
 | Instrukcja | `public/pomoc.html` poza routerem | ekran w aplikacji (ten sam HTML w WKWebView lub komponent) – bez wyjścia do Safari | S |
-| Pełna aplikacja (kalendarz z przenoszeniem, Postęp z wykresami, Biblioteka, tryb siłowni, Sprzęt, Wyjazd, raporty) | tylko `/` | **v1: bez nich** (zostają w webie na komputerze); do `/m` w kolejnych etapach – najpierw tryb siłowni i Postęp | L |
+| Pełna aplikacja (kalendarz z przenoszeniem, Postęp z wykresami, Biblioteka, tryb siłowni, Sprzęt, Wyjazd, raporty) | tylko `/` | **v1: bez nich** (zostają w webie na komputerze); do `/m` w kolejnych etapach – najpierw Postęp. **Trybu siłowni nie przenosimy** (decyzja 26.10.2026: aplikacja iOS tylko kolarska, bez wejść do siłowni; kod siłowni w webie zostaje – używa go program FTP300) | L |
 
 S ≈ do pół dnia, M ≈ 1 dzień, L ≈ kilka dni.
 
@@ -130,7 +161,7 @@ Plan prac zakłada, że punkty z § 5 robimy od razu (są też dobre same w sobi
 | **2. Wymogi App Store** | usuwanie konta (Edge Function + UI), polityka prywatności, ekran zgody na AI, informacja „nie porada medyczna”, opisy uprawnień, konto demo | 1–2 dni |
 | **3. Natywne funkcje** | APNs (zamiast Web Push w aplikacji), lokalne powiadomienia (przerwa, check-in), HealthKit odczyt (masa, tętno spocz., HRV, sen) → check-in, zapis posiłków do Zdrowia, sesja w Keychain | 2–3 dni |
 | **4. Wyróżniki** | widżet Dziś, szybkie akcje, skaner kodów + Open Food Facts, OCR etykiety na urządzeniu, App Intents | 3–4 dni |
-| **5. Brakujące ekrany** | tryb siłowni i Postęp w `/m` (dziś tylko w pełnej aplikacji), potem kalendarz miesiąca | 3–5 dni |
+| **5. Brakujące ekrany** | Postęp w `/m` (dziś tylko w pełnej aplikacji), potem kalendarz miesiąca; tryb siłowni **nie** (decyzja 26.10.2026) | 2–4 dni |
 | **6. Dystrybucja** | App Store Connect, TestFlight; ewentualnie zgłoszenie do recenzji | 0,5 dnia + czas Apple |
 
 Etapy 0–3 dają aplikację lepszą od PWA na co dzień; 4–5 robią z niej coś, czego PWA nie umie.
@@ -139,6 +170,15 @@ Etapy 0–3 dają aplikację lepszą od PWA na co dzień; 4–5 robią z niej co
 
 - **WKWebView nadal jest WebKitem** – część błędów układu z klawiaturą może zostać; sprawdzić w etapie 0 na telefonie, zanim
   zaczniemy usuwać obejścia.
+  **Wyniki z symulatora (26.10.2026, `@capacitor/keyboard`, `resize: native`):** klawiatura zmniejsza cały WebView do
+  obszaru nad nią – pole e-mail na logowaniu i pole czatu Trenera stoją tuż nad klawiaturą, nagłówek arkusza zostaje
+  widoczny, nic nie chowa się pod klawiaturą. Po zamknięciu klawiatury (logowanie, czat) układ wraca do pełnej wysokości –
+  błąd PWA „okno krótsze o pasek statusu” (docs/24 § 6) się nie pojawił. Pod zaokrąglonymi rogami klawiatury było widać
+  czarne tło okna – naprawione tłem okna #f2f2f7 w `SceneDelegate.swift`. Obejścia `useViewport` zostają, dopóki ten sam
+  test nie przejdzie na telefonie (zwłaszcza wznowienie aplikacji z tła z otwartą klawiaturą); wtedy do usunięcia
+  w buildzie iOS: leczenie `display` i podłoga `100lvh`, zostaje pomiar `--m-vvh` (albo zdarzenia `keyboardWillShow`).
+  Uwaga do testów: w buildzie Debug zrzuty z symulatora bywają ~1–2 s za dotknięciem – brak reakcji na zrzucie to zwykle
+  opóźnienie, nie zgubione dotknięcie.
 - **Dwa kanały powiadomień** (Web Push dla webu, APNs dla iOS) – `push-send` musi wysyłać na oba bez dubli na tym samym
   telefonie (subskrypcja web na iPhonie wygasa po instalacji aplikacji – usuwać ją przy rejestracji tokenu APNs).
 - **Testy E2E** pokrywają web, nie powłokę iOS – dla iOS zostają testy ręczne w symulatorze (narzędzie symulatora
@@ -152,6 +192,7 @@ Etapy 0–3 dają aplikację lepszą od PWA na co dzień; 4–5 robią z niej co
    etap 0 na darmowym koncie? *Rekomendacja: wykupić przed etapem 3 – APNs i dystrybucja TestFlight go wymagają.*
 2. **Cel dystrybucji**: tylko TestFlight dla dwóch kont, czy docelowo App Store? Od tego zależy, czy etap 2 jest
    obowiązkowy przed pierwszą instalacją (rekomendacja: zrobić i tak).
-3. **Zakres v1**: czy tryb siłowni i Postęp muszą być w pierwszej wersji aplikacji (dziś są tylko w pełnej aplikacji)?
+3. ~~**Zakres v1**~~ – **rozstrzygnięte 26.10.2026**: siłownia znika z aplikacji iOS całkowicie (aplikacja tylko kolarska),
+   Postęp zostaje i wchodzi w późniejszym etapie (5). Czy siłownia zniknie też z webu – nie zdecydowano (używa jej program FTP300).
 4. **Identyfikator aplikacji i nazwa**: np. `pl.felsztukier.trening`, nazwa „Trening” (nazwa w App Store musi być unikalna –
    ewentualnie „Trening – Kolarski Trener”).

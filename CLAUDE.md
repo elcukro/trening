@@ -20,7 +20,8 @@ Osobisty asystent treningowy (PWA na iPhone) dla jednego użytkownika przygotowu
 - `npm run build` – build produkcyjny PWA (`dist/`, własny service worker z `src/sw.ts`)
 - `npm run e2e` – Playwright, Chromium z viewportem iPhone 14 (buduje i uruchamia `vite preview` na porcie 4173); zrzuty w `test-results/`
 - `npm run data:generate` – `python3 data/reference_generator.py`
-- `node scripts/icons.mjs` – ikony PWA (192/512/apple) z `public/icon-src.png` (trener 3D z fal.ai, 18.10.2026; alternatywa z rowerem w `docs/art/icon-bike-alt.png`); `icon.svg` to stare logo, zostaje tylko jako zapas
+- `npm run build:ios` – aplikacja iOS (Capacitor, docs/26): build `VITE_TARGET=ios` (tylko `/m`, bez service workera) + `cap sync ios`; potem `npm run ios:open` (Xcode, schemat `App`, symulator albo telefon z Apple ID w Signing & Capabilities). Wtyczki Capacitora importuje wyłącznie `src/native/`
+- `node scripts/icons.mjs` – ikony PWA (192/512/apple) i iOS (AppIcon 1024, ekran startowy #f2f2f7) z `public/icon-src.png` (trener 3D z fal.ai, 18.10.2026; alternatywa z rowerem w `docs/art/icon-bike-alt.png`); `icon.svg` to stare logo, zostaje tylko jako zapas
 - `FAL_KEY=… node scripts/fal-art.mjs [id…|--all]` – grafiki 3D dla `/m` (`public/m/art/`, docs/24 § 5); klucz fal.ai poza repo (użytkownik ma go w innym projekcie)
 - Projekt w chmurze: ref `kgllegvlnmchdvkkbitt` (podlinkowany), produkcja `https://trening-inky.vercel.app`. Ustawienia auth (site_url, redirecty) wypychane przez `supabase config push` z **minimalnego** config.toml zawierającego tylko `[auth]` (pełny plik z szablonu `init` nadpisałby ustawienia hostowane) – zawsze najpierw `supabase config diff`.
 - `supabase db push` – wgranie migracji do podlinkowanego projektu (`supabase link --project-ref …`); `supabase migration new` może zawisnąć w tej sesji – twórz plik ręcznie z tym samym formatem nazwy

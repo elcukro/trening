@@ -6,6 +6,8 @@
   "scripts": {
     "dev": "vite",
     "build": "tsc -b && vite build",
+    "build:ios": "tsc -b && VITE_TARGET=ios vite build && cap sync ios",
+    "ios:open": "cap open ios",
     "preview": "vite preview",
     "lint": "oxlint src e2e",
     "typecheck": "tsc -b",
@@ -16,6 +18,11 @@
     "data:generate": "python3 data/reference_generator.py && python3 data/ftp300_generator.py"
   },
   "dependencies": {
+    "@capacitor/core": "^8.5.3",
+    "@capacitor/ios": "^8.5.3",
+    "@capacitor/keyboard": "^8.0.6",
+    "@capacitor/splash-screen": "^8.0.2",
+    "@capacitor/status-bar": "^8.0.4",
     "@date-fns/tz": "^1.5.0",
     "@supabase/supabase-js": "^2.116.0",
     "@tanstack/react-query": "^5.102.8",
@@ -29,6 +36,7 @@
     "zod": "^4.6.2"
   },
   "devDependencies": {
+    "@capacitor/cli": "^8.5.3",
     "@playwright/test": "^1.63.0",
     "@tailwindcss/vite": "^4.3.3",
     "@types/node": "^24.13.3",
