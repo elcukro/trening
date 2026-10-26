@@ -1,12 +1,14 @@
-import { useMemo, useRef, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { useLiveQuery } from 'dexie-react-hooks'
 import { useNavigate } from 'react-router'
 import { db, type OnboardingRow } from '@/db'
-import { completeOnboarding, saveOnboardingDraft, savePlanFromProfile, softDelete } from '@/db/repo'
+import { PLAN_ID, completeOnboarding, saveOnboardingDraft, savePlanFromProfile, savePlanTuning, softDelete } from '@/db/repo'
 import { useEngine } from '@/app/useSettings'
 import { useToast } from '@/components/Toast'
 import { friendlyError } from '@/lib/errors'
-import { ONBOARDING_ID, SKIPPABLE, STEPS, checks, finalize, firstIncomplete, healthScreen, nextStep, prevStep, stepNumber, stepValid, type AthleteProfile, type Draft, type Step } from '@/engine/onboarding'
+import { ONBOARDING_ID, SKIPPABLE, STEPS, checks, finalize, firstIncomplete, healthScreen, nextStep, planInputs, prevStep, stepNumber, stepValid, type AthleteProfile, type Draft, type Step } from '@/engine/onboarding'
+import { clampTuning, type PlanTuning } from '@/engine/generator'
+import { requestTuning } from '@/sync/planTune'
 import type { Settings } from '@/engine/schema'
 import { todayISO } from '@/lib/dates'
 import { minutes as fmtMinutes, num } from '@/lib/format'
@@ -20,6 +22,7 @@ import { useEdgeBack } from '../useEdgeBack'
 import { Btn } from '../components/Chrome'
 import { Notice, STEP_BODY, STEP_HEAD, type StepProps } from './steps'
 import { DAY_SHORT, STEP_TITLE, stepSummary } from './labels'
+import { PlanWhy } from './PlanWhy'
 
 type View = StartStep | 'done'
 
@@ -112,6 +115,11 @@ function Flow({ row, settings, home, me }: { row: OnboardingRow | null; settings
         if (settings.program_id !== 'generated') patch.program_id = 'generated'
       }
       if (Object.keys(patch).length) await engine.settingsApi.update(patch)
+      // po zmianie potrzeb trener dopasowuje plan na nowo w tle – chyba że zawodnik sam ustawił parametry
+      if (editing && settings.program_id === 'generated') {
+        const plan = await db.plans.get(PLAN_ID)
+        if (plan && plan.tuning_source !== 'user') void requestTuning(planInputs(r.profile, today)).then((t) => savePlanTuning(t.tuning, t.source))
+      }
       if (editing) {
         toast.notify('Zapisano zmiany', 'success')
         navigate(me, { replace: true })
@@ -333,14 +341,35 @@ function Summary({ draft, today, editing, onEdit, onRemove }: { draft: Draft; to
  */
 function Done({ draft, profile, today }: { draft: Draft; profile: AthleteProfile | null; today: string }) {
   const doctor = healthScreen(draft.health).level === 'doctor'
+  // wiersz planu konta (null = konto przy programie z data/ – bez dopasowania), undefined = jeszcze czytam
+  const plan = useLiveQuery(() => db.plans.get(PLAN_ID).then((r) => (r && !r.deleted_at ? r : null)), [], undefined)
+  const inputs = useMemo(() => (profile ? planInputs(profile, today) : null), [profile, today])
+  // dopasowanie czytamy z wiersza planu (zapis AI albo zawodnika odświeża ekran sam) – zawsze przez clamp
+  const tuning = useMemo(() => (inputs && plan?.tuning ? clampTuning(inputs, plan.tuning).tuning : null), [inputs, plan])
+  const tuningSource = plan?.tuning_source ?? null
+  const [tuneFailed, setTuneFailed] = useState(false)
+  const started = useRef(false)
+  const tuningBusy = !!plan && !plan.tuning && !tuneFailed
+  // dopasowanie przez trenera (AI) zaraz po zapisie – raz; bez sieci zostaje plan z reguł (docs/33 § 8.2)
+  useEffect(() => {
+    if (!inputs || !plan || plan.tuning || started.current) return
+    started.current = true
+    void requestTuning(inputs)
+      .then((r) => savePlanTuning(r.tuning, r.source))
+      .then((saved) => {
+        if (!saved) setTuneFailed(true)
+      })
+      .catch(() => setTuneFailed(true))
+  }, [inputs, plan])
+  const change = (t: PlanTuning) => void savePlanTuning(t, 'user')
   const preview = useMemo(() => {
-    if (!profile) return null
+    if (!profile || tuningBusy) return null
     try {
-      return planPreview(profile, today)
+      return planPreview(profile, today, tuning)
     } catch {
       return null
     }
-  }, [profile, today])
+  }, [profile, today, tuning, tuningBusy])
   return (
     <>
       <div className="ob-hero ob-done">
@@ -357,6 +386,8 @@ function Done({ draft, profile, today }: { draft: Draft; profile: AthleteProfile
           Do czasu rozmowy z lekarzem plan będzie tylko spokojny.
         </Notice>
       )}
+      {tuningBusy && <p className="m-sub m-dim px-1" data-testid="plan-tuning">Trener dopasowuje plan do Twoich odpowiedzi…</p>}
+      {preview && inputs && tuning && <PlanWhy inputs={inputs} tuning={tuning} source={tuningSource} onChange={change} />}
       {preview && (
         <>
           <section className="flex flex-col gap-2" data-testid="plan-preview">
@@ -390,7 +421,7 @@ function Done({ draft, profile, today }: { draft: Draft; profile: AthleteProfile
               {n}
             </Notice>
           ))}
-          <p className="m-foot m-dim px-1">Plan liczy kod z Twoich odpowiedzi – trener go tylko objaśnia. Kolejne tygodnie zobaczysz w zakładce Plan, gdy plan zostanie przypisany do konta.</p>
+          <p className="m-foot m-dim px-1">Plan liczy kod z Twoich odpowiedzi – trener wybiera tylko rodzaj planu i parametry, w granicach zasad. Każdy wybór możesz zmienić wyżej. Kolejne tygodnie zobaczysz w zakładce Plan, gdy plan zostanie przypisany do konta.</p>
         </>
       )}
     </>

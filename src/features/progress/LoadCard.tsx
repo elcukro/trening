@@ -1,7 +1,8 @@
 import { useMemo } from 'react'
 import { useLiveQuery } from 'dexie-react-hooks'
 import { Bar, BarChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts'
-import { db, type KeyValueRow, type SessionLog, type StravaActivity } from '@/db'
+import { db, type KeyValueRow, type SessionLog } from '@/db'
+import type { RideRow } from '@/app/useRides'
 import { rideLoad, type RideLoad } from '@/engine/analysis'
 import { addDays, mondayOf } from '@/engine/dates'
 import type { HrZone } from '@/engine/schema'
@@ -11,15 +12,14 @@ import { fmtDayMonth } from '@/lib/dates'
 
 const METHOD_PL = { power: 'moc', hr: 'tętno', rpe: 'RPE' } as const
 
-/** Obciążenie treningowe (TSS) z jazd ze Stravy: tygodnie + lista ostatnich jazd ze zgodnością z planu vs wykonanie. */
-export function LoadCard({ acts, logs, ftp, lthr, zones, today }: { acts: StravaActivity[]; logs: SessionLog[]; ftp: number | null; lthr: number | null; zones: HrZone[]; today: string }) {
+/** Obciążenie treningowe (TSS) z jazd (Wahoo, Strava): tygodnie + lista ostatnich jazd ze zgodnością z planu vs wykonanie. */
+export function LoadCard({ acts, logs, ftp, lthr, zones, today }: { acts: RideRow[]; logs: SessionLog[]; ftp: number | null; lthr: number | null; zones: HrZone[]; today: string }) {
   const analyses = useLiveQuery(async () => (await db.kv.where('key').startsWith('analysis:').toArray()) as KeyValueRow[], [], [] as KeyValueRow[])
   const scoreOf = (id: string) => (analyses.find((k) => k.key === `analysis:${id}`)?.value as { score: number | null } | undefined)?.score ?? null
 
   const rides = useMemo(() => {
     const rpeByDate = new Map(logs.filter((l) => l.kind === 'bike' && !l.deleted_at && l.rpe).map((l) => [l.date, l.rpe as number]))
     return acts
-      .filter((a) => !a.deleted_at && a.is_ride)
       .map((a) => ({ a, load: rideLoad({ moving_s: a.moving_time_s, device_watts: a.device_watts, np_w: a.np_w, avg_watts: a.avg_watts, ftp, hr_histogram: a.hr_histogram, zones, lthr, rpe: rpeByDate.get(a.date) }) as RideLoad | null }))
       .toSorted((x, y) => (x.a.date < y.a.date ? 1 : -1))
   }, [acts, logs, ftp, lthr, zones])
@@ -60,9 +60,9 @@ export function LoadCard({ acts, logs, ftp, lthr, zones, today }: { acts: Strava
         <CardSection>
           <ul className="divide-y divide-slate-100 text-xs dark:divide-slate-700/80">
             {rides.slice(0, 10).map(({ a, load }) => {
-              const score = scoreOf(a.id)
+              const score = scoreOf(a.key)
               return (
-                <li key={a.id} className="grid grid-cols-[auto_minmax(0,1fr)_auto_auto] items-center gap-x-2 py-1.5 tabular-nums">
+                <li key={a.key} className="grid grid-cols-[auto_minmax(0,1fr)_auto_auto] items-center gap-x-2 py-1.5 tabular-nums">
                   <span className="text-slate-500 dark:text-slate-400">{fmtDayMonth(a.date)}</span>
                   <span className="min-w-0 truncate" title={a.name ?? ''}>
                     {a.name ?? 'Jazda'} <span className="text-slate-400 dark:text-slate-500">{num(a.moving_time_s / 3600, 1)} h{a.np_w && a.device_watts ? ` · NP ${a.np_w} W` : ''}</span>

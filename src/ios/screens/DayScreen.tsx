@@ -275,17 +275,17 @@ export function DayScreen() {
         <Section header="Po treningu">
           {d.activities.map((a, i) => (
             <RideResult
-              key={a.id}
+              key={a.key}
               className={i > 0 ? 'mt-3' : ''}
-              name={a.name ?? 'Jazda'}
+              name={a.name}
               minutes={Math.round(a.moving_time_s / 60)}
               powerW={a.device_watts ? (a.np_w ?? a.avg_watts ?? null) : null}
               powerLabel={a.np_w ? 'NP' : 'śr. moc'}
               avgHr={a.avg_hr ?? null}
               maxHr={a.max_hr ?? null}
-              km={a.distance_m != null ? a.distance_m / 1000 : null}
+              km={a.distance_m > 0 ? a.distance_m / 1000 : null}
               tss={d.loadOf(a)?.tss ?? null}
-              speedKmh={a.avg_speed_ms != null ? a.avg_speed_ms * 3.6 : null}
+              speedKmh={a.distance_m > 0 && a.moving_time_s > 0 ? (a.distance_m / a.moving_time_s) * 3.6 : null}
               cadence={a.avg_cadence ?? null}
               ascentM={a.elevation_m ?? null}
               decoupling={i === 0 && (!day.bike || day.day_type === 'easy' || day.day_type === 'long') ? (a.decoupling_pct ?? null) : null}

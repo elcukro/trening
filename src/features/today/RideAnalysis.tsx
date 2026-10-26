@@ -1,11 +1,12 @@
 import { useEffect, useState } from 'react'
 import { CartesianGrid, ComposedChart, Line, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts'
-import { db, type StravaActivity } from '@/db'
+import { db } from '@/db'
+import type { RideRow } from '@/app/useRides'
 import { upsertSessionLog, findSessionLog } from '@/db/repo'
 import { chartSeries, matchSteps, rideLoad, statusFromScore, type MatchResult, type RideSamples, type StepResult } from '@/engine/analysis'
 import type { HrZone } from '@/engine/schema'
 import type { ResolvedWorkout } from '@/engine/types'
-import { loadStreams } from '@/sync/strava'
+import { loadRideStreams } from '@/sync/strava'
 import { Button, Inset } from '@/components/ui'
 import { useToast } from '@/components/Toast'
 import { seconds } from '@/lib/format'
@@ -16,7 +17,7 @@ import { useEngine } from '@/app/useSettings'
 const RATING_ICON = { ok: '✅', warn: '⚠️', miss: '❌' } as const
 
 /** Obciążenie jazdy (TSS/IF) – z mocy, tętna albo RPE; jedna linijka pod jazdą. */
-export function RideLoadLine({ a, ftp, lthr, zones, rpe, steady = true }: { a: StravaActivity; ftp: number | null; lthr: number | null; zones: HrZone[]; rpe?: number | null; steady?: boolean }) {
+export function RideLoadLine({ a, ftp, lthr, zones, rpe, steady = true }: { a: RideRow; ftp: number | null; lthr: number | null; zones: HrZone[]; rpe?: number | null; steady?: boolean }) {
   const load = rideLoad({ moving_s: a.moving_time_s, device_watts: a.device_watts, np_w: a.np_w, avg_watts: a.avg_watts, ftp, hr_histogram: a.hr_histogram, zones, lthr, rpe })
   if (!load) return null
   const method = load.method === 'power' ? 'z mocy' : load.method === 'hr' ? 'z tętna' : 'z RPE'
@@ -43,13 +44,13 @@ interface Saved {
  * Plan vs wykonanie: dopasowanie kroków treningu do próbek jazdy. Wynik (przesunięcie, zgodność) zapamiętujemy w `kv`,
  * a status logu dnia zmieniamy z „wykonane” na „zmienione”, gdy kroki pracy w większości nie trafiły w cel.
  */
-export function RideAnalysis({ a, workout, ftp, date, lthr = null }: { a: StravaActivity; workout: ResolvedWorkout; ftp: number | null; date: string; lthr?: number | null }) {
+export function RideAnalysis({ a, workout, ftp, date, lthr = null }: { a: RideRow; workout: ResolvedWorkout; ftp: number | null; date: string; lthr?: number | null }) {
   const toast = useToast()
   const [samples, setSamples] = useState<RideSamples | null>(null)
   const [match, setMatch] = useState<MatchResult | null>(null)
   const [open, setOpen] = useState(false)
   const [busy, setBusy] = useState(false)
-  const kvKey = `analysis:${a.id}`
+  const kvKey = `analysis:${a.key}`
 
   useEffect(() => {
     let alive = true
@@ -64,7 +65,7 @@ export function RideAnalysis({ a, workout, ftp, date, lthr = null }: { a: Strava
   async function analyze(mode: 'auto' | number) {
     setBusy(true)
     try {
-      const s = samples ?? (await loadStreams(a.id))
+      const s = samples ?? (await loadRideStreams(a))
       if (!s) {
         toast.notify('Ta jazda nie ma zapisanych strumieni – kliknij „Pobierz ostatnie 30 dni” w Integracjach.', 'error')
         return
@@ -106,7 +107,7 @@ export function RideAnalysis({ a, workout, ftp, date, lthr = null }: { a: Strava
   )
 }
 
-function AnalysisBody({ match, samples, busy, onOffset, onAuto, a, ftp, lthr }: { match: MatchResult; samples: RideSamples; busy: boolean; onOffset: (o: number) => void; onAuto: () => void; a: StravaActivity; ftp: number | null; lthr: number | null }) {
+function AnalysisBody({ match, samples, busy, onOffset, onAuto, a, ftp, lthr }: { match: MatchResult; samples: RideSamples; busy: boolean; onOffset: (o: number) => void; onAuto: () => void; a: RideRow; ftp: number | null; lthr: number | null }) {
   const data = chartSeries(samples, match, 30)
   const program = useEngine().ctx.program
   const cad = cadenceHistogram(samples)

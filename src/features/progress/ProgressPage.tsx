@@ -2,7 +2,8 @@ import { useMemo, useState } from 'react'
 import { useLiveQuery } from 'dexie-react-hooks'
 import { Bar, BarChart, CartesianGrid, Line, LineChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts'
 import { useEngine } from '@/app/useSettings'
-import { db, type Checkin, type SessionLog, type StravaActivity, type TestResult } from '@/db'
+import { db, type Checkin, type SessionLog, type TestResult } from '@/db'
+import { useRides } from '@/app/useRides'
 import { ZoneBar } from '@/features/today/StravaCard'
 import { addDays } from '@/engine/dates'
 import { buildCalendar } from '@/engine/calendar'
@@ -29,12 +30,12 @@ export function ProgressPage() {
   const checkins = useLiveQuery(() => db.checkins.orderBy('date').toArray(), [], [] as Checkin[])
   const tests = useLiveQuery(() => db.test_results.orderBy('date').toArray(), [], [] as TestResult[])
   const rides = useLiveQuery(() => db.session_logs.toArray(), [], [] as SessionLog[])
-  const allActs = useLiveQuery(() => db.strava_activities.where('date').aboveOrEqual(addDays(today, -90)).toArray(), [today], [] as StravaActivity[])
+  const allActs = useRides(addDays(today, -90), today)
   const acts = useMemo(() => allActs.filter((a) => a.date >= addDays(today, -27)), [allActs, today])
   const zoneHist = useMemo(() => {
     const h: number[] = []
     for (const a of acts) {
-      if (a.deleted_at || !a.is_ride || !a.hr_histogram) continue
+      if (!a.hr_histogram) continue
       a.hr_histogram.forEach((v, i) => {
         if (v) h[i] = (h[i] ?? 0) + v
       })

@@ -22,7 +22,7 @@ tekst się nie zmienił.
 | Umowa 2.3 (i) | “Strava Data” means all data you access or collect from the Strava API Materials | **Strava Data = to, co przyszło z API Stravy.** Ta sama jazda pobrana z Wahoo Cloud to „Developer Application Data” (2.3 ii) – nie podlega § 5.3. Na tym stoi decyzja 1. |
 | 5.3 | You may not use the Strava API Materials or Strava Data, directly or indirectly, in connection with the development, training, evaluation, or operation of any AI Application. This prohibition extends to: Any data derived from, aggregated from, anonymized from, or generated using Strava Data, in any form (including original, derivative, aggregated, anonymized, de-identified, or model-output form); and […] ingestion into a context window or working memory […] | Żadna liczba policzona ze Stravy (TSS, EF, CTL, rekordy, „ile jazd w tygodniu”, propozycja FTP ze strumieni) nie może trafić do promptu. Także pośrednio – np. FTP zaproponowane ze strumieni Stravy, a potem wpisane w snapshot. |
 | 5.10 | You may not, directly or indirectly, disclose, market, sell, license, lease, or make available […] any Strava Data to any third party — including advertisers, data brokers, AI Application providers, or model developers — even if a user of your Developer Application consents. | Zgoda zawodnika nic nie zmienia. Anthropic i OpenRouter nie dostają nic ze Stravy. |
-| 5.4 | You may not process or disclose Strava Data […] for the purposes of analytics, analyses, customer insight generation, or product or service improvements. You may not combine Strava Data with other customer data for these or any other purposes. | Czytamy jako zakaz analiz **po stronie dewelopera** (statystyki produktu, wiele kont naraz). Analizy treningu pokazywane samemu zawodnikowi to „operation of your Developer Application” (5.1). **Niejasne** – pytanie 2 do Stravy (§ 9). Do czasu odpowiedzi: zero metryk produktu ze Stravy, zero zestawień między kontami. |
+| 5.4 | You may not process or disclose Strava Data […] for the purposes of analytics, analyses, customer insight generation, or product or service improvements. You may not combine Strava Data with other customer data for these or any other purposes. | Czytamy jako zakaz analiz **po stronie dewelopera** (statystyki produktu, wiele kont naraz). Analizy treningu pokazywane samemu zawodnikowi to „operation of your Developer Application” (5.1). **Niejasne** – czytamy zachowawczo (§ 10): zero metryk produktu ze Stravy, zero zestawień między kontami. |
 | 5.5 | You may not store Strava Data, or any data derived from Strava Data, in any Persistent Index. The foregoing prohibits indefinite storage in […] archives, and any other storage configured to enable subsequent retrieval, query, or use. The seven-day cache permitted under Section 6.2 is not a Persistent Index […] | Także **dane pochodne** (nasze TSS, NP, krzywa mocy, `note_facts`) nie mogą leżeć dłużej niż 7 dni. Czytanie zachowawcze – § 5. |
 | 6.2 | You may not retain Strava Data in your cache for longer than seven (7) days. […] Except for such limited caching, you may not store Strava Data […] | Wszystko, co przyszło ze Stravy, żyje 7 dni od pobrania. |
 | 6.3 | Deletions must be reflected in your Developer Application expeditiously but in all cases within forty-eight (48) hours. | Już jest: webhook `delete` → soft delete; czyszczenie fizyczne w ramach retencji. |
@@ -35,7 +35,7 @@ tekst się nie zmienił.
 | Umowa 7.1 | Your Developer Applications may include the option to upload activities or information to the Strava Platform | Zapis tytułu/opisu jest co do zasady dozwolony – ale § 6. |
 | 3.3 | Standard Tier Applications are subject to subscription requirements […] including a requirement that the developer or specified end users maintain an active Strava subscription | Bez zmian względem docs/29. |
 
-Pojęć „AI Application” i „Persistent Index” ani polityka, ani umowa nie definiują – pytanie 1 w § 9.
+Pojęć „AI Application” i „Persistent Index” ani polityka, ani umowa nie definiują – czytamy zachowawczo (§ 10).
 
 ## 2. Przepływ danych po zmianie (wg źródła)
 
@@ -109,7 +109,7 @@ aplikacji – mogą iść do AI jak dotąd (zgoda na AI z onboardingu, docs/31).
 
 Skutek: **dla zawodnika z Wahoo nic nie znika** – historia, PMC, krzywa mocy i notatki są z Wahoo. Konto bez Wahoo
 widzi jazdy ze Stravy przez 7 dni (plan vs wykonanie bieżącego tygodnia, notatka z reguł); długich analiz nie ma.
-Gdyby Strava potwierdziła, że nasze **własne liczby pochodne** (np. TSS dnia) mogą zostać, retencję poluzujemy jedną
+Gdyby kiedyś okazało się, że nasze **własne liczby pochodne** (np. TSS dnia) mogą zostać, retencję poluzujemy jedną
 zmianą w `purge_strava`.
 
 ## 6. Zapis na Stravę (tytuł i opis z AI)
@@ -119,9 +119,9 @@ Ale: żeby zapisać, aplikacja musi czytać Stravę (identyfikator jazdy, obecny
 a 5.3 zakazuje użycia „Strava API Materials […] directly or indirectly, in connection with the […] operation of any AI
 Application” – wysyłka tekstu modelu przez API Stravy może być tak odczytana. **Niejasne → wyłączone domyślnie**:
 - serwer pisze na Stravę tylko przy sekrecie `STRAVA_WRITE_ENABLED=1` **i** `profiles.strava_write`;
-- migracja ustawia `strava_write = false` wszystkim kontom (zawodnik może włączyć ponownie, gdy Strava odpowie);
+- migracja ustawia `strava_write = false` wszystkim kontom (przełącznik w profilu nic nie robi bez sekretu serwera);
 - przy włączeniu: tytuł i opis tylko z faktów Wahoo albo `ruleDraft` (bez AI dla jazd tylko ze Stravy);
-- pytanie 3 w § 9.
+- maila do Stravy nie wysyłamy (§ 10).
 
 ## 7. Wahoo jako źródło dla AI
 
@@ -210,45 +210,29 @@ na płacącego < 0,10 USD/rok. Limit: 10 wywołań/dzień na konto w `ai_calls`.
 4. **(d) Szablony i `plan-tune`** – `data/templates/`, `tuning.ts`, generator czyta szablony, Edge Function `plan-tune`,
    sekcja „Dlaczego taki plan” i arkusz poprawek.
 
-## 10. Otwarte pytania
+## 10. Stan wdrożenia (26.10.2026)
 
-Do użytkownika:
-1. Zapis na Stravę – wyłączyć wszystkim teraz (rekomendacja) czy zostawić u siebie do odpowiedzi Stravy?
-2. Drugie konto – czy ma połączone Wahoo? Bez Wahoo straci notatki AI i analizy dłuższe niż 7 dni.
-3. Webhook Wahoo – wpisanie adresu `…/functions/v1/wahoo-webhook` i tokenu w portalu Wahoo + sekret
-   `WAHOO_WEBHOOK_TOKEN`; bez tego zostaje odpytywanie co 30 min (notatka i mail do 30 min po jeździe).
-4. Zgoda na pierwsze czyszczenie danych Stravy starszych niż 7 dni na produkcji.
+| Krok | Kod | Wdrożone |
+|---|---|---|
+| (a) proweniencja, AI tylko na Wahoo | `_shared/provenance.ts`, `_shared/rides.ts`, `ai_note.ts` (`RideRef`, `loadRidesRange`), `email_send.ts`, `coachContext.ts`, migracja `20261026230000_wahoo_ai_source.sql` | czeka na `supabase db push` i wdrożenie funkcji |
+| (b) FIT i webhook Wahoo | `_shared/fit.ts`, `_shared/wahoo_sync.ts`, `_shared/ride_pipeline.ts`, `wahoo-webhook`, `wahoo-push {completed, backfill, cron}` | jw. |
+| (c) retencja Stravy | migracja `20261026240000_strava_retention.sql` (`purge_strava` za flagą `strava_purge`, `purge_strava_user` przy rozłączeniu, `strava_purge_enabled` dla aplikacji), `strava-oauth` (sync 7 dni, backfill 410), widoki na `useRides` (`src/app/useRides.ts`), `purgeLocalStrava` | jw.; **flaga wyłączona** do sprawdzenia historii Wahoo obu kont |
+| (d) szablony i dopasowanie | `data/templates/*.json`, `src/engine/generator/templates.ts`, `tuning.ts`, `plan-tune`, `src/sync/planTune.ts`, `PlanWhy.tsx`, migracja `20261026250000_plan_tuning.sql` | jw. |
 
-Do developers@strava.com (projekt maila):
+Kolejność po zgodzie: `supabase db push` (trzy migracje) → wdrożenie `wahoo-webhook`, `wahoo-push`, `strava-webhook`,
+`strava-oauth`, `ride-note`, `coach-chat`, `email-send`, `plan-tune` → `wahoo-push {mode: 'backfill'}` dla obu kont →
+sprawdzenie, że `wahoo_workouts` pokrywa historię jazd ze Stravy → `insert into private.app_flags values ('strava_purge', 'on')`.
 
-> Subject: API Policy 1.06.2026 – AI features on non-Strava data, caching of derived metrics, uploads
->
-> Hello,
->
-> I run a small personal training app (Standard Tier, 2 athletes) that imports activities via the Strava API.
-> To comply with the API Policy effective June 1, 2026, we are separating data sources and would like to confirm
-> our reading of a few clauses:
->
-> 1. **§ 5.3 / Agreement § 2.3.** Our AI features (post-ride notes, a weekly letter, a coaching chat) will use only data
->    we obtain directly from the athlete's head unit cloud (Wahoo Cloud API) and data the athlete enters in our app.
->    No data obtained from the Strava API – raw or derived – will be sent to any model. Is it correct that the same ride
->    obtained from Wahoo is not "Strava Data" even though it also exists on Strava? "AI Application" is not defined in
->    the Policy or the Agreement – does it cover an app whose non-AI features use Strava Data while separate AI features
->    use only non-Strava data?
-> 2. **§ 5.4.** We show each athlete analyses of their own Strava activities (training load, power curve, plan vs.
->    completed rides), visible only to that athlete and computed by code, never by AI. We read § 5.4 as covering analytics
->    for the developer's own purposes (product insights, cross-user aggregates), not features displayed to the athlete.
->    Is that correct? And does "combine Strava Data with other customer data" refer to other users' data?
-> 3. **Agreement § 7.1 with § 5.3.** May we upload a title/description to the athlete's Strava activity (with the
->    athlete's opt-in and `activity:write` scope) when that text was generated by an AI model from Wahoo data only?
->    Our app would read the Strava activity only to identify it and to check that the title is still the default.
-> 4. **§ 5.5 / § 6.2.** We delete everything obtained from Strava (raw fields and streams) 7 days after retrieval.
->    Does the 7-day limit also apply to our own derived numbers (e.g. a daily training-stress score computed by our
->    code from a Strava activity), shown only to that athlete? Is a done/not-done status on the athlete's own training
->    plan, derived from a Strava activity, "data derived from Strava Data" that must be deleted after 7 days?
->
-> Thank you,
-> Łukasz Felsztukier
+## 11. Decyzje i otwarte pytania
 
-Do sprawdzenia po stronie Wahoo: warunki Wahoo API (umowa dewelopera) o AI i przechowywaniu – w dokumentacji
-`cloud-api.wahooligan.com` nic o AI nie ma; przed wersją komercyjną przeczytać umowę z portalu.
+Decyzje użytkownika (26.10.2026, po lekturze tego dokumentu):
+1. **Zapis na Stravę wyłączony wszystkim** – migracja `strava_write = false`, serwer pisze tylko z `STRAVA_WRITE_ENABLED=1`.
+2. Oba konta jeżdżą z Wahoo – historia i AI z Wahoo nic nie tracą po retencji Stravy.
+3. Webhook Wahoo ustawia użytkownik (portal Wahoo: adres `https://kgllegvlnmchdvkkbitt.supabase.co/functions/v1/wahoo-webhook`,
+   token = sekret `WAHOO_WEBHOOK_TOKEN`, sprawdzany w polu `webhook_token` treści zdarzenia). Do tego czasu odpytanie co 30 min.
+4. Pierwsze czyszczenie danych Stravy starszych niż 7 dni – dopiero po sprawdzeniu historii z Wahoo dla obu kont.
+5. **Maila do Stravy nie wysyłamy** – prywatny deweloper, decyzja 26.10.2026. Niejasności z § 1 (5.4 „analyses”,
+   pojęcie „AI Application”, zapis tytułów, liczby pochodne po 7 dniach) rozstrzygamy czytaniem zachowawczym jak wyżej.
+
+Do sprawdzenia przed wersją komercyjną: warunki Wahoo API (umowa dewelopera) o AI i przechowywaniu – w dokumentacji
+`cloud-api.wahooligan.com` nic o AI nie ma.

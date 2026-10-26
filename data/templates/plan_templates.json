@@ -1,0 +1,118 @@
+{
+  "version": 1,
+  "_comment": "Szablony struktury planu (docs/33 § 8.1). Generator (src/engine/generator) bierze z szablonu drabinki akcentów per faza (pierwszy akcent, drugi akcent) i podział faz; AI wybiera szablon i stroi parametry w granicach z kodu (tuning.ts). 'pyramidal' = plan sprzed szablonów – jego wynik nie może się zmienić (test).",
+  "templates": [
+    {
+      "id": "pyramidal",
+      "name": "Piramida: baza, próg, specyfika",
+      "summary": "Dużo spokojnej jazdy, akcenty od sweet spotu przez próg do treningu pod cel. Najbezpieczniejszy wybór dla większości.",
+      "intensity": "ok. 80 % czasu spokojnie, akcenty rosną z fazą",
+      "disciplines": ["road", "gravel", "mtb"],
+      "goals": ["event", "ftp", "speed", "weight", "fitness", "comeback"],
+      "min_experience": "novice",
+      "max_hours": null,
+      "phase_split": [0.45, 0.75],
+      "ladders": {
+        "base": ["sweet_spot", "tempo"],
+        "build": ["threshold", "sweet_spot"],
+        "specific": { "ftp": ["vo2max", "threshold"], "speed": ["threshold", "tempo"], "event": ["threshold", "tempo"], "event_hilly": ["threshold", "sweet_spot"], "other": ["sweet_spot", "tempo"] }
+      }
+    },
+    {
+      "id": "polarized",
+      "name": "Spolaryzowany",
+      "summary": "Jazdy spokojne naprawdę spokojne, a akcenty naprawdę mocne (próg, VO2max) – bez „szarej strefy”. Dla doświadczonych z czasem na długie Z2.",
+      "intensity": "ok. 80–85 % czasu w Z1–Z2, reszta powyżej progu",
+      "disciplines": ["road", "gravel", "mtb"],
+      "goals": ["event", "ftp", "speed", "fitness"],
+      "min_experience": "intermediate",
+      "max_hours": null,
+      "phase_split": [0.4, 0.7],
+      "ladders": {
+        "base": ["threshold", "tempo"],
+        "build": ["vo2max", "threshold"],
+        "specific": { "ftp": ["vo2max", "vo2_short"], "speed": ["threshold", "vo2max"], "event": ["vo2max", "threshold"], "event_hilly": ["threshold", "vo2max"], "other": ["vo2max", "threshold"] }
+      }
+    },
+    {
+      "id": "time_crunched",
+      "name": "Mało czasu",
+      "summary": "Przy kilku godzinach w tygodniu każda jazda musi coś dać: akcenty sweet spot i próg zamiast długich, luźnych kilometrów.",
+      "intensity": "więcej czasu przy progu, mniej spokojnej jazdy",
+      "disciplines": ["road", "gravel", "mtb"],
+      "goals": ["event", "ftp", "speed", "weight", "fitness"],
+      "min_experience": "intermediate",
+      "max_hours": 6,
+      "phase_split": [0.35, 0.7],
+      "ladders": {
+        "base": ["sweet_spot", "threshold"],
+        "build": ["threshold", "over_under"],
+        "specific": { "ftp": ["over_under", "vo2max"], "speed": ["threshold", "sweet_spot"], "event": ["over_under", "threshold"], "event_hilly": ["threshold", "sweet_spot"], "other": ["sweet_spot", "threshold"] }
+      }
+    },
+    {
+      "id": "climbing",
+      "name": "Góry i długie podjazdy",
+      "summary": "Pod wyjazd w góry albo wyścig z przewyższeniem: długie wysiłki pod górę na niższej kadencji, próg na podjazdach.",
+      "intensity": "akcenty to długie, równe wysiłki pod górę",
+      "disciplines": ["road", "gravel"],
+      "goals": ["event", "ftp", "fitness"],
+      "min_experience": "novice",
+      "max_hours": null,
+      "phase_split": [0.4, 0.7],
+      "ladders": {
+        "base": ["climb", "tempo"],
+        "build": ["climb", "threshold"],
+        "specific": { "ftp": ["threshold", "climb"], "speed": ["threshold", "climb"], "event": ["threshold", "climb"], "event_hilly": ["threshold", "climb"], "other": ["climb", "tempo"] }
+      }
+    },
+    {
+      "id": "gravel_endurance",
+      "name": "Wytrzymałość na długi dystans",
+      "summary": "Długie jazdy i tempo przy zmęczeniu, zmiany rytmu pod i nad progiem – pod gravel, ultra i długie wydarzenia.",
+      "intensity": "dużo objętości, akcenty pod i nad progiem",
+      "disciplines": ["gravel", "road"],
+      "goals": ["event", "speed", "fitness"],
+      "min_experience": "intermediate",
+      "max_hours": null,
+      "phase_split": [0.45, 0.75],
+      "ladders": {
+        "base": ["sweet_spot", "tempo"],
+        "build": ["over_under", "tempo"],
+        "specific": { "ftp": ["over_under", "threshold"], "speed": ["over_under", "tempo"], "event": ["over_under", "sweet_spot"], "event_hilly": ["climb", "over_under"], "other": ["sweet_spot", "tempo"] }
+      }
+    },
+    {
+      "id": "mtb_xc",
+      "name": "MTB XC",
+      "summary": "Krótkie, mocne zmiany tempa (30/30, VO2max) i próg – tak wygląda wyścig w terenie. Technika na łatwych jazdach.",
+      "intensity": "krótkie mocne wysiłki, spokojne dni z techniką",
+      "disciplines": ["mtb"],
+      "goals": ["event", "ftp", "fitness"],
+      "min_experience": "intermediate",
+      "max_hours": null,
+      "phase_split": [0.4, 0.7],
+      "ladders": {
+        "base": ["sweet_spot", "tempo"],
+        "build": ["threshold", "vo2_short"],
+        "specific": { "ftp": ["vo2max", "threshold"], "speed": ["threshold", "vo2_short"], "event": ["vo2_short", "over_under"], "event_hilly": ["threshold", "vo2_short"], "other": ["vo2_short", "threshold"] }
+      }
+    },
+    {
+      "id": "comeback",
+      "name": "Łagodny powrót",
+      "summary": "Najpierw regularność i baza, akcenty tylko umiarkowane (tempo, sweet spot). Po przerwie, po chorobie albo gdy zdrowie każe uważać.",
+      "intensity": "prawie wszystko spokojnie, akcenty umiarkowane",
+      "disciplines": ["road", "gravel", "mtb"],
+      "goals": ["event", "ftp", "speed", "weight", "fitness", "comeback"],
+      "min_experience": "novice",
+      "max_hours": null,
+      "phase_split": [0.6, 0.9],
+      "ladders": {
+        "base": ["tempo", "tempo"],
+        "build": ["sweet_spot", "tempo"],
+        "specific": { "ftp": ["sweet_spot", "tempo"], "speed": ["sweet_spot", "tempo"], "event": ["sweet_spot", "tempo"], "event_hilly": ["sweet_spot", "tempo"], "other": ["sweet_spot", "tempo"] }
+      }
+    }
+  ]
+}

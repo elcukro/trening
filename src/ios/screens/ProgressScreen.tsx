@@ -1,6 +1,7 @@
 import { useLiveQuery } from 'dexie-react-hooks'
 import { useNavigate } from 'react-router'
-import { db, type KeyValueRow, type SessionLog, type StravaActivity } from '@/db'
+import { db, type KeyValueRow, type SessionLog } from '@/db'
+import { useRides } from '@/app/useRides'
 import { useEngine } from '@/app/useSettings'
 import { rideLoad } from '@/engine/analysis'
 import { addDays } from '@/engine/dates'
@@ -38,7 +39,7 @@ export function ProgressScreen() {
   const goal = goalProgress(snap.ftp.w, snap.goal.ftp)
   const form = formLabel(snap.form?.tsb ?? null)
 
-  const acts = useLiveQuery(async () => (await db.strava_activities.where('date').aboveOrEqual(addDays(today, -28)).toArray()).filter((a) => !a.deleted_at && a.is_ride).toSorted((a, b) => (a.date < b.date ? 1 : -1)), [today], [] as StravaActivity[])
+  const acts = useRides(addDays(today, -28), today).toReversed()
   const logs = useLiveQuery(async () => (await db.session_logs.where('date').aboveOrEqual(addDays(today, -28)).toArray()).filter((l) => !l.deleted_at && l.kind === 'bike'), [today], [] as SessionLog[])
   const analyses = useLiveQuery(async () => (await db.kv.where('key').startsWith('analysis:').toArray()) as KeyValueRow[], [], [] as KeyValueRow[])
 
@@ -120,7 +121,7 @@ export function ProgressScreen() {
         </Section>
       )}
 
-      <Section header="Ostatnie jazdy" footer={acts.length === 0 ? 'Jazdy pojawią się po synchronizacji ze Stravą.' : undefined}>
+      <Section header="Ostatnie jazdy" footer={acts.length === 0 ? 'Jazdy pojawią się po synchronizacji z Wahoo albo Stravą.' : undefined}>
         <List>
           {acts.slice(0, 8).map((a) => {
             const load = rideLoad({
@@ -134,13 +135,13 @@ export function ProgressScreen() {
               lthr,
               rpe: logs.find((l) => l.date === a.date)?.rpe ?? undefined,
             })
-            const score = (analyses.find((k) => k.key === `analysis:${a.id}`)?.value as { score: number | null } | undefined)?.score ?? null
+            const score = (analyses.find((k) => k.key === `analysis:${a.key}`)?.value as { score: number | null } | undefined)?.score ?? null
             return (
               <Row
-                key={a.id}
+                key={a.key}
                 onClick={() => navigate(`/i/dzien/${a.date}`)}
                 icon={<RowIcon color="var(--blue)"><IconBike size={18} /></RowIcon>}
-                title={a.name ?? 'Jazda'}
+                title={a.name}
                 subtitle={`${fmtDayMonth(a.date)} · ${Math.round(a.moving_time_s / 60)} min${a.device_watts && a.np_w ? ` · NP ${a.np_w} W` : a.avg_hr ? ` · ${a.avg_hr} bpm` : ''}${score != null ? ` · zgodność ${score} %` : ''}`}
                 value={load ? `${load.tss} TSS` : undefined}
                 accessory={<span className="ios-dim-3"><IconChevron size={18} /></span>}

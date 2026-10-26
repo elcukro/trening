@@ -35,7 +35,7 @@ function buildFit(opts: { seconds: number; power: (i: number) => number; dev?: b
       if (opts.dev) out.push(0xaa, 0xbb)
     }
   }
-  const header = [14, 0x20, 0x08, 0x08, ...[out.length & 0xff, (out.length >> 8) & 0xff, (out.length >> 16) & 0xff, (out.length >> 24) & 0xff], 0x2e, 0x46, 0x49, 0x54, 0, 0]
+  const header = [14, 0x20, 0x08, 0x08, out.length & 0xff, (out.length >> 8) & 0xff, (out.length >> 16) & 0xff, (out.length >> 24) & 0xff, 0x2e, 0x46, 0x49, 0x54, 0, 0]
   return new Uint8Array([...header, ...out, 0, 0])
 }
 

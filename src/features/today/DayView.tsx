@@ -19,11 +19,10 @@ import { useActivities } from './StravaCard'
 import { FtpSuggestionCard } from '@/features/progress/FtpSuggestionCard'
 import { todayISO } from '@/lib/dates'
 import { addDays } from '@/engine/dates'
-import type { PlanOverrideRow, StravaActivity } from '@/db'
+import type { PlanOverrideRow } from '@/db'
+import { useRides } from '@/app/useRides'
 import type { RuleAction, RuleWarning } from '@/engine/rules'
 import { WahooButton } from './WahooButton'
-import { useLiveQuery } from 'dexie-react-hooks'
-import { db } from '@/db'
 
 function typeBadges(day: DayPlan) {
   const out: { label: string; color: string }[] = []
@@ -209,6 +208,7 @@ export function DayView({ day, engine, warnings = [], overrides = [], onAction, 
 
 /** Propozycja nowego FTP z ostatnich jazd – tylko na ekranie Dziś (szczegóły w Postępie). */
 function TodayFtpSuggestion({ engine }: { engine: Engine }) {
-  const acts = useLiveQuery(() => db.strava_activities.where('date').aboveOrEqual(addDays(todayISO(), -90)).toArray(), [], [] as StravaActivity[])
+  const today = todayISO()
+  const acts = useRides(addDays(today, -90), today)
   return <FtpSuggestionCard engine={engine} acts={acts} />
 }

@@ -1,6 +1,7 @@
 import { mergeProfile, type RemoteProfile } from './profileMerge'
 import { db, SYNC_TABLES, UPDATE_ONLY_TABLES, USER_SCOPED_ID_TABLES, type SettingsRow, type SyncTable, type SyncedRow } from '@/db'
 import { supabase } from './supabase'
+import { purgeLocalStrava } from './strava'
 import type { Settings } from '@/engine/schema'
 
 /**
@@ -174,6 +175,8 @@ export async function runSync(opts: { programVersion: string }): Promise<void> {
       await pushOutbox(userId)
       await syncProfile(userId, opts.programVersion)
       for (const t of SYNC_TABLES) await pullTable(t)
+      // twarde usunięcia Stravy (7 dni) nie przychodzą pullem – sprzątamy lokalnie
+      await purgeLocalStrava()
       const now = new Date().toISOString()
       await db.kv.put({ key: 'last_sync', value: now, updated_at: now })
       // które tabele mają za sobą pełne pobranie – `last_sync` sprzed dodania tabeli nie mówi, że jej wiersze już są (onboarding)

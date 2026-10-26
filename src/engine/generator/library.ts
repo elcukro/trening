@@ -1,5 +1,6 @@
 import type { BikeWorkout, HrZone, PowerZone, Step, StepBlock } from '../schema'
 import type { Discipline, MeasureLevel } from '../onboarding'
+import { LADDER_IDS, WORKOUT_FAMILIES, type LadderId, type WorkoutFamily } from './templates'
 
 /**
  * Biblioteka treningów generatora (docs/32 § 3). Te same identyfikatory i kształt kroków co w programach
@@ -115,39 +116,31 @@ function intervals(id: string, name: string, category: string, reps: number, wor
   return { id, name, category, key: true, steps, duration_min: Math.round(totalSeconds(steps) / 60), description }
 }
 
-/** Drabinki progresji akcentów – generator wybiera szczebel wg numeru tygodnia w fazie i limitu czasu dnia. */
-export const LADDERS = {
-  sweet_spot: [
-    ['SS_2x10', 2, 10, 5],
-    ['SS_2x12', 2, 12, 5],
-    ['SS_3x10', 3, 10, 5],
-    ['SS_2x15', 2, 15, 5],
-    ['SS_3x12', 3, 12, 5],
-    ['SS_3x15', 3, 15, 5],
-    ['SS_2x20', 2, 20, 5],
-    ['SS_3x20', 3, 20, 5],
-  ],
-  threshold: [
-    ['THR_4x6', 4, 6, 4],
-    ['THR_4x8', 4, 8, 4],
-    ['THR_3x12', 3, 12, 5],
-    ['THR_3x15', 3, 15, 5],
-    ['THR_2x20', 2, 20, 6],
-  ],
-  vo2max: [
-    ['VO2_4x3', 4, 3, 3],
-    ['VO2_5x3', 5, 3, 3],
-    ['VO2_6x3', 6, 3, 3],
-  ],
-  tempo: [
-    ['TEMPO_2x15', 2, 15, 5],
-    ['TEMPO_2x20', 2, 20, 5],
-    ['TEMPO_3x15', 3, 15, 5],
-    ['TEMPO_3x20', 3, 20, 5],
-  ],
-} as const satisfies Record<string, readonly (readonly [string, number, number, number])[]>
+/** Pod i nad progiem: w powtórzeniu na zmianę 2 min `zone` i 1 min `zone_over`, bez przerwy (jeden poziom powtórzeń). */
+function overUnder(id: string, name: string, f: WorkoutFamily, reps: number, workMin: number, recMin: number, description: string, lagNote: string): BikeWorkout {
+  const inner: StepBlock[] = []
+  for (let k = 0; k < Math.floor(workMin / 3); k++) inner.push(step('Pod progiem 2 min', 2, f.zone, 'active', f.cadence, k === 0 ? lagNote : undefined), step('Nad progiem 1 min', 1, f.zone_over ?? 'THR', 'lt', f.cadence))
+  const steps: StepBlock[] = [WU(f.warmup_min), repeat(reps, [...inner, step('Przerwa', recMin, 'Z1', 'recover', CAD_EASY)]), CD(10)]
+  return { id, name, category: f.category, key: true, steps, duration_min: Math.round(totalSeconds(steps) / 60), description }
+}
 
-export type LadderId = keyof typeof LADDERS
+/** Serie 30/30: `sets` serii po `per` powtórzeń (30 s mocno / 30 s luźno), między seriami `recMin` minut luźno. */
+function sets30(id: string, name: string, f: WorkoutFamily, sets: number, per: number, recMin: number, description: string): BikeWorkout {
+  const steps: StepBlock[] = [WU(f.warmup_min)]
+  for (let i = 0; i < sets; i++) {
+    steps.push(repeat(per, [step('30 s mocno', 0.5, f.zone, 'map', f.cadence, undefined, [9, 9]), step('30 s luźno', 0.5, 'Z1', 'recover', CAD_EASY)]))
+    if (i < sets - 1) steps.push(step('Luźno między seriami', recMin, 'Z1', 'recover', CAD_EASY))
+  }
+  steps.push(CD(10))
+  return { id, name, category: f.category, key: true, steps, duration_min: Math.round(totalSeconds(steps) / 60), description }
+}
+
+/**
+ * Drabinki progresji akcentów – z `data/templates/workouts.json` (docs/33 § 8.1). Generator wybiera szczebel wg numeru
+ * tygodnia w fazie i limitu czasu dnia. Szczebel: [id, powtórzenia, minuty pracy, minuty przerwy].
+ */
+export const LADDERS = Object.fromEntries(LADDER_IDS.map((id) => [id, WORKOUT_FAMILIES[id].rungs])) as Record<LadderId, [string, number, number, number][]>
+export type { LadderId }
 
 const TERRAIN: Record<Discipline, { long: string; hills: string; climbs: string; bike: string; indoor: string }> = {
   road: {
@@ -200,20 +193,20 @@ export function buildLibrary(o: LibraryOptions): Record<string, BikeWorkout> {
   add(endurance({ id: 'DELOAD', name: 'Tydzień lżejszy: Z2 z pobudzeniem', minutes: 60, desc: `Z2 (${z2}), w środku 3×1 min mocniej (Z3–Z4) z 3 min luzu. Nogi mają wyjść świeższe, nie zmęczone.`, insert: repeat(3, [step('Pobudzenie', 1, 'Z4', 'lt', [90, 100]), step('Luz', 3, 'Z2', 'recover', CAD_EASY)]) }))
   if (o.discipline === 'mtb') add(endurance({ id: 'MTB_SKILLS', name: 'Technika na szlaku', minutes: 60, desc: `Łatwy, znany szlak w Z2 (${z2}) z kilkoma powtórzeniami krótkich odcinków technicznych (zakręty, korzenie, zjazd) – luźno, bez ścigania. Celem jest płynność, nie tętno.`, category: 'skills' }))
 
-  const ssDesc = `Sweet spot: mocno, ale kontrolowanie (${intensityText(L, 'SS')}). ${T.climbs.replace('Interwały', 'Najlepiej')} Kadencja 80–90.`
-  const thrDesc = `${T.climbs} Intensywność progowa: ${intensityText(L, 'THR')}. Kadencja 75–85.`
-  const vo2Desc = `VO2max: 3 min mocno, ale równo (${intensityText(L, 'Z5b')}) – nie sprint na starcie. Przerwa 3 min bardzo luźno.`
-  const tempoDesc = `Tempo: płynnie i równo (${intensityText(L, 'Z3')}), pozycja aerodynamiczna, kadencja 88–95. Przerwa 5 min w Z2.`
-  const labels: Record<LadderId, [string, string, string, [number, number]]> = {
-    sweet_spot: ['Sweet spot', 'sweet_spot', 'SS', [80, 90]],
-    threshold: ['Próg', 'threshold', 'THR', [75, 85]],
-    vo2max: ['VO2max', 'vo2max', 'Z5b', [85, 95]],
-    tempo: ['Tempo', 'tempo', 'Z3', [88, 95]],
-  }
-  const descs: Record<LadderId, string> = { sweet_spot: ssDesc, threshold: thrDesc, vo2max: vo2Desc, tempo: tempoDesc }
-  for (const ladder of Object.keys(LADDERS) as LadderId[]) {
-    const [label, category, zone, cad] = labels[ladder]
-    for (const [id, reps, m, rec] of LADDERS[ladder]) add(intervals(id, `${label} ${reps}×${m} min`, category, reps, m, rec, zone, cad, descs[ladder], lag, ladder === 'vo2max' ? 20 : 15))
+  // akcenty z rodzin w data/templates/workouts.json; {SS}/{THR}/{Z3}/{Z5b} – intensywność w języku poziomu pomiaru
+  const fill = (text: string) =>
+    text
+      .replace('{climbs_best}', T.climbs.replace('Interwały', 'Najlepiej'))
+      .replace('{climbs}', T.climbs)
+      .replace(/\{(SS|THR|Z3|Z5b)\}/g, (_, z: 'SS' | 'THR' | 'Z3' | 'Z5b') => intensityText(L, z))
+  for (const ladder of LADDER_IDS) {
+    const f = WORKOUT_FAMILIES[ladder]
+    const desc = fill(f.description)
+    for (const [id, reps, m, rec] of f.rungs) {
+      if (f.kind === 'intervals') add(intervals(id, `${f.label} ${reps}×${m} min`, f.category, reps, m, rec, f.zone, f.cadence, desc, lag, f.warmup_min))
+      else if (f.kind === 'over_under') add(overUnder(id, `${f.label} ${reps}×${m} min`, f, reps, m, rec, desc, lag))
+      else add(sets30(id, `${f.label} ${reps}×${m}`, f, reps, m, rec, desc))
+    }
   }
   add(intervals('INDOOR_4x4', `Wersja pod dachem: 4×4 min (${o.indoor ? 'trenażer' : 'rowerek stacjonarny'})`, 'indoor', 4, 4, 3, 'Z5b', [85, 95], `Gdy nie da się wyjechać (gołoledź, mróz, burza). Zastępuje akcent tygodnia. ${intensityText(L, 'Z5b')}.`, lag, 10, 5))
 

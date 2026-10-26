@@ -1,6 +1,7 @@
 import { useMemo, useState } from 'react'
 import { useLiveQuery } from 'dexie-react-hooks'
-import { db, type BaselineEntry, type Checkin, type StravaActivity } from '@/db'
+import { db, type BaselineEntry, type Checkin } from '@/db'
+import type { RideRow } from '@/app/useRides'
 import { addBaselineEntry, softDelete } from '@/db/repo'
 import { BASELINE_DEFS, baselineTable, cdaFromRide, currentValues, programGoal, type BaselineMetric } from '@/engine/baseline'
 import { effectiveFtp, effectiveLthr } from '@/engine/progress'
@@ -18,7 +19,7 @@ function fmt(v: number | null, decimals: number): string {
  * Punkt wyjścia (docs/14, pkt 0): pierwszy zapis każdego miernika vs wartość bieżąca z danych aplikacji,
  * plus cel programu (`program.goal`) przeliczony na waty i FTP.
  */
-export function BaselineCard({ engine, checkins, acts }: { engine: Engine; checkins: Checkin[]; acts: StravaActivity[] }) {
+export function BaselineCard({ engine, checkins, acts }: { engine: Engine; checkins: Checkin[]; acts: RideRow[] }) {
   const toast = useToast()
   const today = todayISO()
   const s = engine.ctx.settings
@@ -33,7 +34,7 @@ export function BaselineCard({ engine, checkins, acts }: { engine: Engine; check
       lthr: effectiveLthr(today, s.lthr_bpm, tests.filter((t): t is { date: string; lthr_bpm: number } => !!t.lthr_bpm)).lthr,
       hrMaxSetting: s.hr_max_bpm,
       checkins: checkins.filter((c) => !c.deleted_at),
-      rides: acts.filter((a) => !a.deleted_at && a.is_ride),
+      rides: acts,
     })
   }, [today, s, engine.ctx.tests, checkins, acts])
   const rows = useMemo(() => baselineTable(live, current), [live, current])

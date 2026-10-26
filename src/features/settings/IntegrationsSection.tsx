@@ -109,13 +109,13 @@ function StravaCard() {
               disabled={busy}
               onClick={() =>
                 run('Pobieram jazdy ze Stravy', async () => {
-                  const r = await strava.sync(30)
+                  const r = await strava.sync(7)
                   await runSync({ programVersion: engine.ctx.program.version })
-                  return `Pobrano ${r.imported} jazd z ${r.scanned} aktywności (30 dni).`
+                  return `Pobrano ${r.imported} jazd z ${r.scanned} aktywności (7 dni).`
                 })
               }
             >
-              Pobierz ostatnie 30 dni
+              Pobierz ostatnie 7 dni
             </Button>
             <Button variant="secondary" disabled={busy} onClick={() => run('Sprawdzam webhook', async () => `Webhook: ${(await strava.subscribe()).detail}`)}>
               Sprawdź webhook

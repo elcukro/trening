@@ -3,6 +3,8 @@ import type { PhaseId, WeekType } from '../types'
 import { WEEKDAYS, addDays, diffDays, mondayOf, weekdayIndex, type ISODate, type Weekday } from '../dates'
 import type { PlanInputs } from '../onboarding'
 import { LADDERS, testIdFor, type LadderId } from './library'
+import { templateById, type TemplateId } from './templates'
+import { defaultTuning, maxKeySessions, type PlanTuning } from './tuning'
 
 /**
  * Szkielet planu (docs/32 § 2): ile tygodni, które są rozładowaniem, testem i taperem, jaka faza i objętość,
@@ -63,13 +65,14 @@ function totalWeeks(inp: PlanInputs, start: ISODate): { count: number; horizon: 
 const round5 = (m: number) => Math.round(m / 5) * 5
 const floor5 = (m: number) => Math.floor(m / 5) * 5
 
-export function buildSkeleton(inp: PlanInputs, today: ISODate): Skeleton {
+export function buildSkeleton(inp: PlanInputs, today: ISODate, t: PlanTuning = defaultTuning(inp)): Skeleton {
   const start = programStart(today)
   const { count: T, horizon } = totalWeeks(inp, start)
   const date = 'date' in inp.goal ? inp.goal.date : null
   const trip_start = horizon === 'to_goal' && date ? date : addDays(start, T * 7 - 1)
   const perf = PERFORMANCE.has(inp.goal.type)
-  const block = inp.experience === 'novice' || inp.cautious ? 3 : 4
+  const block = t.block_weeks
+  const [splitBase, splitBuild] = templateById(t.template).phase_split
   const taper = perf && horizon === 'to_goal' && inp.intensity_allowed ? (T >= 10 ? 2 : T >= 5 ? 1 : 0) : 0
   const middle = T - 1 - taper
   const testOk = inp.intensity_allowed
@@ -81,14 +84,15 @@ export function buildSkeleton(inp: PlanInputs, today: ISODate): Skeleton {
     if (perf) {
       if (middle < 6) return 'I'
       if (middle < 10) return f < 0.6 ? 'I' : 'II'
-      return f < 0.45 ? 'I' : f < 0.75 ? 'II' : 'III'
+      return f < splitBase ? 'I' : f < splitBuild ? 'II' : 'III'
     }
     return middle >= 10 && f >= 0.5 ? 'II' : 'I'
   }
 
   const startMin = inp.start_weekly_hours * 60
-  const targetMin = inp.weekly_hours * 60
-  const ramp = inp.experience === 'novice' || inp.cautious ? 0.07 : 0.1
+  // objętość z dopasowania: % dostępnych godzin, nigdy więcej (100 % = jak przed szablonami)
+  const targetMin = (inp.weekly_hours * 60 * t.volume_pct) / 100
+  const ramp = t.ramp_pct / 100
 
   const weeks: WeekSkeleton[] = []
   const week0Test = testOk && !inp.cautious
@@ -98,7 +102,8 @@ export function buildSkeleton(inp: PlanInputs, today: ISODate): Skeleton {
   let lastBuild = startMin
   let buildNo = 0
   let lastPhase: PhaseId = 'PREP'
-  const firstTestAt = week0Test ? 2 * block + 1 : block + 1
+  const testEvery = t.test_every_blocks * block
+  const firstTestAt = week0Test ? testEvery + 1 : block + 1
   for (let j = 1; j <= middle; j++) {
     const phase = phaseOf(j)
     if (phase !== lastPhase) {
@@ -107,7 +112,7 @@ export function buildSkeleton(inp: PlanInputs, today: ISODate): Skeleton {
     }
     const deload = j % block === 0 && j < middle
     const nearEnd = taper > 0 && j > middle - 2
-    const test = testOk && !deload && !nearEnd && j >= firstTestAt && (j - firstTestAt) % (2 * block) === 0
+    const test = testOk && !deload && !nearEnd && j >= firstTestAt && (j - firstTestAt) % testEvery === 0
     let minutes: number
     if (deload) minutes = round5(lastBuild * 0.65)
     else {
@@ -154,7 +159,7 @@ const adjacent = (a: Weekday, b: Weekday) => {
  * akcenty w dniach z największym zapasem, nigdy dzień po dniu i w miarę możliwości nie obok długiej;
  * dojazdy i jazda z grupą zostają tam, gdzie są.
  */
-export function layoutDays(inp: PlanInputs, keyCount: number, testMin: number): DayLayout {
+export function layoutDays(inp: PlanInputs, keyCount: number, testMin: number, fixedDays: Pick<PlanTuning, 'long_day' | 'key_days'> = { long_day: null, key_days: null }): DayLayout {
   const caps = inp.day_caps_min
   const days = WEEKDAYS.filter((d) => caps[d] > 0)
   const fixed = (kind: string) => inp.fixed.find((f) => f.kind === kind && caps[f.day] > 0)?.day ?? null
@@ -170,6 +175,8 @@ export function layoutDays(inp: PlanInputs, keyCount: number, testMin: number): 
   if (group && long && group !== long && caps[group] >= caps[long] * 0.8) long = group
   // stała jazda „inne” o podobnym limicie też staje się długą jazdą (np. wolny poniedziałek z długą trasą)
   else if (other && long && other !== long && caps[other] >= caps[long] * 0.8) long = other
+  // dni wskazane w dopasowaniu (sprawdzone w `clampTuning`): długa i akcenty tam, gdzie zawodnik chce
+  if (fixedDays.long_day && free.includes(fixedDays.long_day)) long = fixedDays.long_day
   if (free.length === 1) keyCount = 0
 
   const keys: Weekday[] = []
@@ -181,6 +188,7 @@ export function layoutDays(inp: PlanInputs, keyCount: number, testMin: number): 
     candidates
       .filter((d) => !keys.includes(d) && !keys.some((k) => adjacent(k, d)) && (allowNextToLong || !long || !adjacent(long, d)))
       .toSorted((a, b) => Number(afterLong(a)) - Number(afterLong(b)) || caps[b] - caps[a] || WEEKDAYS.indexOf(a) - WEEKDAYS.indexOf(b))[0]
+  for (const k of fixedDays.key_days ?? []) if (keys.length < keyCount && candidates.includes(k) && !keys.includes(k)) keys.push(k)
   while (keys.length < keyCount) {
     const d = pick(false) ?? pick(true)
     if (!d) break
@@ -196,6 +204,8 @@ export function layoutDays(inp: PlanInputs, keyCount: number, testMin: number): 
 
 export interface FillContext {
   inp: PlanInputs
+  /** szablon planu (drabinki akcentów per faza) */
+  template?: TemplateId
   layout: DayLayout
   lib: Record<string, BikeWorkout>
   /** stan przenoszony między tygodniami: ostatnia długa (progresja +20 min/tydz.) */
@@ -208,20 +218,22 @@ export interface FillContext {
 
 type Slot = [string, number | null] | null
 
-/** Drabinka akcentu dla fazy i celu; `second` = drugi akcent tygodnia (zawsze łagodniejszy). */
-export function ladderFor(inp: PlanInputs, phase: PhaseId, second: boolean): LadderId {
-  const g = inp.goal.type
+/**
+ * Drabinka akcentu dla fazy i celu wg szablonu (`data/templates/plan_templates.json`); `second` = drugi akcent tygodnia
+ * (zawsze łagodniejszy). Ostrożny zawodnik dostaje sweet spot i tempo niezależnie od szablonu (granica kodu).
+ */
+export function ladderFor(inp: PlanInputs, phase: PhaseId, second: boolean, template: TemplateId = 'pyramidal'): LadderId {
+  const l = templateById(template).ladders
+  const pick = (p: readonly [LadderId, LadderId]) => p[second ? 1 : 0]
   if (inp.cautious) return second ? 'tempo' : 'sweet_spot'
-  if (phase === 'I' || phase === 'PREP') return second ? 'tempo' : 'sweet_spot'
-  if (phase === 'II') return second ? 'sweet_spot' : 'threshold'
+  if (phase === 'I' || phase === 'PREP') return pick(l.base)
+  if (phase === 'II') return pick(l.build)
   // faza III – specyfika celu
-  if (g === 'ftp') return second ? 'threshold' : 'vo2max'
-  if (g === 'speed') return second ? 'tempo' : 'threshold'
-  if (g === 'event') {
-    const hilly = inp.goal.type === 'event' && inp.goal.elevation_m / Math.max(1, inp.goal.distance_km) >= 12
-    return hilly ? (second ? 'sweet_spot' : 'threshold') : second ? 'tempo' : 'threshold'
-  }
-  return second ? 'tempo' : 'sweet_spot'
+  const g = inp.goal
+  if (g.type === 'ftp') return pick(l.specific.ftp)
+  if (g.type === 'speed') return pick(l.specific.speed)
+  if (g.type === 'event') return pick(g.elevation_m / Math.max(1, g.distance_km) >= 12 ? l.specific.event_hilly : l.specific.event)
+  return pick(l.specific.other)
 }
 
 /** Najwyższy szczebel drabinki, który mieści się w limicie dnia i nie przeskakuje progresji (`buildNo`). */
@@ -245,10 +257,10 @@ function keySlot(ctx: FillContext, wk: WeekSkeleton, day: Weekday, second: boole
   if (wk.type === 'deload') return cap < 45 ? ['Z2', 0] : ['DELOAD', Math.min(cap, 60)]
   if (wk.type === 'taper' || (wk.phase === 'TAPER' && !wk.test)) {
     if (wk.lastTaper) return lib.OPENERS!.duration_min <= cap ? ['OPENERS', null] : ['Z2', 0]
-    const id = pickRung(lib, ladderFor(inp, 'I', second), 0, cap, inp.experience)
+    const id = pickRung(lib, ladderFor(inp, 'I', second, ctx.template), 0, cap, inp.experience)
     return id ? [id, null] : ['Z2', 0]
   }
-  const id = pickRung(lib, ladderFor(inp, wk.phase, second), wk.buildNo, cap, inp.experience)
+  const id = pickRung(lib, ladderFor(inp, wk.phase, second, ctx.template), wk.buildNo, cap, inp.experience)
   return id ? [id, null] : ['Z2', 0]
 }
 
@@ -373,9 +385,5 @@ function easyId(ctx: FillContext, wk: WeekSkeleton, day: Weekday, minutes: numbe
 
 /** Liczba akcentów w tygodniu: 0 bez zgody na intensywność, 1 przy małym czasie / ostrożnie / nowicjusz, inaczej 2. */
 export function keyCountFor(inp: PlanInputs): number {
-  if (!inp.intensity_allowed) return 0
-  const days = WEEKDAYS.filter((d) => inp.day_caps_min[d] > 0 && !inp.fixed.some((f) => f.day === d && f.kind === 'commute'))
-  if (days.length <= 2) return days.length === 2 ? 1 : 0
-  if (inp.cautious || inp.experience === 'novice' || inp.weekly_hours < 4) return 1
-  return inp.weekly_hours >= 6 && days.length >= 4 ? 2 : 1
+  return maxKeySessions(inp)
 }

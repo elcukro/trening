@@ -1,6 +1,6 @@
 import { getCalendarWeek } from '@/engine/calendar'
 import type { ISODate, Weekday } from '@/engine/dates'
-import { generateProgram, type GeneratedPlan } from '@/engine/generator'
+import { generateProgram, type GeneratedPlan, type PlanTuning } from '@/engine/generator'
 import type { AthleteProfile } from '@/engine/onboarding'
 import type { DayType } from '@/engine/types'
 
@@ -34,8 +34,9 @@ export interface PlanPreview {
   notes: string[]
 }
 
-export function planPreview(profile: AthleteProfile, today: ISODate): PlanPreview {
-  const plan = generateProgram(profile, today)
+/** `tuning` – dopasowanie z wiersza planu (AI albo wybór zawodnika, docs/33 § 8.2); bez niego plan domyślny. */
+export function planPreview(profile: AthleteProfile, today: ISODate, tuning?: PlanTuning | null): PlanPreview {
+  const plan = generateProgram(profile, today, tuning)
   const { program } = plan
   const settings = program.default_settings
   const days = getCalendarWeek(settings.program_start, { program, settings })
