@@ -2,6 +2,7 @@
 
 Analiza z 26.10.2026, bez zmian w kodzie. Pytanie: czy „Trening” (web + aplikacja iOS) ma sens jako produkt komercyjny
 w modelu freemium. Proponowany model: za darmo plany, cele i typy rowerów; płatne analizy AI, Dietetyk i integracja z Wahoo.
+Przepływ pracy z aplikacją (etapy 0–9: od opisu siebie do następnego celu) jest w [docs/30](30-flow-produktu.md).
 
 Oznaczenia: **[S]** – szacunek albo założenie autora, **[NZ]** – nie udało się zweryfikować, **[W]** – źródło wtórne
 (agregator, blog, forum). Wszystkie źródła sprawdzone 26.10.2026. Kwoty w USD przeliczane po **3,80 zł/USD** i
