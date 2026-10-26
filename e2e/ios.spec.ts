@@ -23,7 +23,7 @@ test('Dziś: karta treningu, kroki dnia i check-in', async ({ page }) => {
   // pierwszy krok dnia to check-in i on jest wyróżniony jako działanie
   await page.getByRole('button', { name: 'Zrób check-in' }).click()
   await expect(page.getByRole('dialog', { name: 'Check-in' })).toBeVisible()
-  await page.getByLabel('Waga w kilogramach').fill('106,5')
+  await page.getByLabel('Masa ciała w kilogramach').fill('106,5')
   await page.getByRole('radio', { name: '4' }).first().click()
   await page.getByRole('button', { name: 'Zapisz' }).click()
   await expect(page.getByRole('dialog', { name: 'Check-in' })).toBeHidden()
@@ -116,7 +116,7 @@ test.describe('bez konta', () => {
     // ten blok celowo nie ustawia znacznika „bez konta”
     await page.addInitScript(() => sessionStorage.removeItem('trening:no-account'))
     await page.goto('/i?today=2026-09-23')
-    await expect(page.getByRole('heading', { name: 'Trening' })).toBeVisible()
+    await expect(page.getByRole('heading', { name: 'Bicycle Coach' })).toBeVisible()
     await expect(page.getByText(/Zaloguj się, żeby zobaczyć swoje jazdy/)).toBeVisible()
     await expect(page.getByRole('button', { name: 'Wyślij kod na maila' })).toBeDisabled()
     await page.getByLabel('Adres e-mail').fill('ktos@example.com')

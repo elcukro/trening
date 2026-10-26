@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import { setWebConfirm, type ConfirmRequest } from '@/native'
+import { useT } from '@/i18n/react'
 
 /**
  * Arkusz akcji jak systemowy `UIAlertController(.actionSheet)` dla `/m` w przeglądarce (docs/27 § 6): tytuł i opis
@@ -7,6 +8,7 @@ import { setWebConfirm, type ConfirmRequest } from '@/native'
  * pokazuje arkusz systemowy i tu nic nie trafia. Tło, Esc i „Anuluj” = nie.
  */
 export function ActionSheetHost() {
+  const t = useT()
   const [req, setReq] = useState<(ConfirmRequest & { resolve: (v: boolean) => void }) | null>(null)
   const cancelRef = useRef<HTMLButtonElement>(null)
 
@@ -53,7 +55,7 @@ export function ActionSheetHost() {
           </button>
         </div>
         <button ref={cancelRef} type="button" className="m-asheet-btn m-asheet-cancel" onClick={() => answer(false)}>
-          Anuluj
+          {t.common.cancel}
         </button>
       </div>
     </div>

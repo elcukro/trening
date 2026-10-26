@@ -3,6 +3,7 @@ import type { ResolvedWorkout } from '@/engine/types'
 import { mainTarget } from '@/day/summary'
 import { zoneColor } from '@/lib/zones'
 import { haptic } from '@/native'
+import { useT } from '@/i18n/react'
 
 /** Kolor oceny jazdy (rideVerdict.tone): dobrze zielony, tak sobie pomarańczowy, źle czerwony. */
 export const TONE_COLOR: Record<'good' | 'ok' | 'warn', string> = { good: 'var(--green)', ok: 'var(--orange)', warn: 'var(--red)' }
@@ -33,9 +34,10 @@ export function Targets({ day }: { day: DayPlan }) {
 
 /** Pasek struktury treningu – szerokość odcinka proporcjonalna do czasu kroku, kolor = strefa. */
 export function StructureBar({ workout, height = 10 }: { workout: ResolvedWorkout; height?: number }) {
+  const t = useT()
   const total = workout.steps.reduce((a, s) => a + s.duration_s, 0) || 1
   return (
-    <div className="flex w-full gap-px overflow-hidden rounded-full" style={{ height }} role="img" aria-label="Struktura treningu">
+    <div className="flex w-full gap-px overflow-hidden rounded-full" style={{ height }} role="img" aria-label={t.m.ui.workoutStructure}>
       {workout.steps.map((s, i) => (
         <div key={i} className={zoneColor(s.zone)} style={{ width: `${(s.duration_s / total) * 100}%` }} />
       ))}
@@ -45,9 +47,10 @@ export function StructureBar({ workout, height = 10 }: { workout: ResolvedWorkou
 
 /** RPE 1–10 jednym dotknięciem – zapis natychmiastowy, bez „Zapisz”. */
 export function RpeRow({ value, onPick, color = 'var(--day-fill, var(--day))' }: { value: number | null | undefined; onPick: (rpe: number) => void; color?: string }) {
+  const t = useT()
   return (
     <div>
-      <p className="m-foot m-dim mb-2">{value != null ? `RPE ${value} – zmień jednym dotknięciem` : 'Jak ciężko było? RPE 1–10'}</p>
+      <p className="m-foot m-dim mb-2">{value != null ? t.m.ui.rpeSet(value) : t.m.ui.rpeAsk}</p>
       {/* dwa rzędy po 5 – przy 10 w rzędzie przyciski miały ~31 pt szerokości (HIG: ≥ 44 pt, docs/27 § 3.1) */}
       <div className="grid grid-cols-5 gap-2" role="radiogroup" aria-label="RPE">
         {Array.from({ length: 10 }, (_, i) => i + 1).map((v) => (

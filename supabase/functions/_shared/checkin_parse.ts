@@ -1,6 +1,8 @@
 // Check-in jednym zdaniem (docs/21 § 2 pkt 2): tekst zawodnika („104,8, tętno 52, spałem słabo, nogi 3”) → pola check-inu.
 // Czysty TS: prompt, parsowanie odpowiedzi i walidacja zakresów – testy w src/engine/__tests__/checkin_parse.test.ts.
 
+import type { Lang } from './i18n.ts'
+
 export interface CheckinFields {
   weight_kg: number | null
   resting_hr: number | null
@@ -21,19 +23,22 @@ Słowa na skalę 1–5: fatalnie/tragicznie=1, słabo/kiepsko=2, średnio/ok/nor
 „Nogi ciężkie”=2, „nogi lekkie”=4, „nogi jak z waty”=1. Liczba bez jednostki od 40 do 200 z dziesiątkami to waga; liczba 30–120 przy słowach tętno/puls/HR to tętno.
 Pole, o którym zdanie nie mówi, ma wartość null. Nie zgaduj. Żadnego tekstu poza JSON-em.`
 
+/** Dla zawodnika z aplikacją po angielsku: zdanie jest po angielsku, a `notes` ma wrócić po angielsku. */
+const EN_HINT = 'Zdanie jest po angielsku (np. terrible=1, poor/heavy legs=2, ok/normal=3, good/fresh legs=4, great=5; „legs like jelly”=1). Pole notes napisz po angielsku.'
+
 const inRange = (v: unknown, lo: number, hi: number): number | null => {
   const n = typeof v === 'number' ? v : typeof v === 'string' ? Number(v.replace(',', '.')) : NaN
   return Number.isFinite(n) && n >= lo && n <= hi ? Math.round(n * 10) / 10 : null
 }
 
 /** Podpowiedź do promptu tylko jako liczby w sensownym zakresie – nic innego z klienta nie trafia do modelu. */
-export function userPrompt(text: string, hint: { last_weight_kg?: unknown; last_resting_hr?: unknown }): string {
+export function userPrompt(text: string, hint: { last_weight_kg?: unknown; last_resting_hr?: unknown }, lang: Lang = 'pl'): string {
   const h: string[] = []
   const w = inRange(hint.last_weight_kg, 30, 300)
   const hr = inRange(hint.last_resting_hr, 20, 200)
   if (w != null) h.push(`ostatnia waga ${w} kg`)
   if (hr != null) h.push(`ostatnie tętno spoczynkowe ${Math.round(hr)} bpm`)
-  return `${h.length ? `Kontekst (do rozstrzygania, która liczba jest czym): ${h.join(', ')}.\n` : ''}Zdanie: ${text.trim().slice(0, 500)}`
+  return `${h.length ? `Kontekst (do rozstrzygania, która liczba jest czym): ${h.join(', ')}.\n` : ''}${lang === 'en' ? `${EN_HINT}\n` : ''}Zdanie: ${text.trim().slice(0, 500)}`
 }
 
 const int15 = (v: unknown): number | null => (typeof v === 'number' && Number.isFinite(v) && v >= 1 && v <= 5 ? Math.round(v) : null)

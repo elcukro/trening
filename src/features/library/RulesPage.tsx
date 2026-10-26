@@ -2,17 +2,21 @@ import { Link } from 'react-router'
 import { Card, CardTitle, PageTitle } from '@/components/ui'
 import { useEngine } from '@/app/useSettings'
 
+import { useT } from '@/i18n/react'
+
 export function RulesPage() {
   const { text, hierarchy, pass_strategy } = useEngine().ctx.program.rules
+  const t = useT()
+  const R = t.classic.rulesPage
   return (
     <div className="space-y-3">
       <Link to="/biblioteka" className="inline-flex min-h-11 items-center text-sm font-medium text-sky-700 hover:underline dark:text-sky-300">
-        ‹ Biblioteka
+        ‹ {t.classic.library.title}
       </Link>
-      <PageTitle sub="Co robić, gdy życie nie idzie zgodnie z planem">Zasady</PageTitle>
+      <PageTitle sub={R.sub}>{R.title}</PageTitle>
       {pass_strategy && (
         <Card>
-          <CardTitle icon="🏔️">Strategia na przełęcz</CardTitle>
+          <CardTitle icon="🏔️">{R.passStrategy}</CardTitle>
           <ul className="list-disc space-y-1 pl-5 text-sm">
             {pass_strategy.map((s, i) => (
               <li key={i}>{s}</li>
@@ -21,7 +25,7 @@ export function RulesPage() {
         </Card>
       )}
       <Card tone="muted">
-        <CardTitle icon="🪜">Hierarchia ważności (wycinaj od dołu)</CardTitle>
+        <CardTitle icon="🪜">{R.hierarchy}</CardTitle>
         <ol className="list-decimal space-y-0.5 pl-5 text-sm">
           {hierarchy.map((h) => (
             <li key={h}>{h}</li>

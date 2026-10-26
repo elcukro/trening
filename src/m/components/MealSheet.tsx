@@ -10,15 +10,22 @@ import { nowHHMM, todayISO } from '@/lib/dates'
 import { num } from '@/lib/format'
 import { Btn, Sheet } from './Chrome'
 import { Waiting } from './Waiting'
+import { t as tr } from '@/i18n'
+import { useT } from '@/i18n/react'
 
 const PORTIONS = [
-  { f: 0.75, label: 'Mniej' },
-  { f: 1, label: 'Tak jak jest' },
-  { f: 1.25, label: 'Więcej' },
-  { f: 2, label: 'Podwójna' },
+  { f: 0.75, label: 'less' },
+  { f: 1, label: 'asIs' },
+  { f: 1.25, label: 'more' },
+  { f: 2, label: 'double' },
 ] as const
 
-const kcal = (n: number) => `${n.toLocaleString('pl-PL')} kcal`
+const kcal = (n: number) => `${num(n, 0)} kcal`
+/** „białko 30 g · węglowodany 40 g · tłuszcz 10 g” – brakujące wartości pomijamy. */
+function macros(protein: number | null, carbs: number | null, fat: number | null, digits = 1): string {
+  const m = tr().m.meal
+  return [protein != null ? m.protein(num(protein, digits)) : null, carbs != null ? m.carbs(num(carbs, digits)) : null, fat != null ? m.fat(num(fat, digits)) : null].filter(Boolean).join(' · ')
+}
 
 /** Szkic posiłku przed zapisem – to samo dla nowego zdjęcia i edycji zapisanego wpisu. */
 interface Draft {
@@ -61,6 +68,8 @@ function totals(d: Draft): { kcal: number; protein_g: number; carbs_g: number | 
  * Zdjęcie zmniejszamy na telefonie i wysyłamy raz; nie zapisujemy go nigdzie.
  */
 export function MealSheet({ date, meal, proteinTarget, onClose }: { date: string; meal?: MealRow; proteinTarget: number; onClose: () => void }) {
+  const tx = useT()
+  const tm = tx.m.meal
   const toast = useToast()
   const camera = useRef<HTMLInputElement>(null)
   const gallery = useRef<HTMLInputElement>(null)
@@ -81,7 +90,7 @@ export function MealSheet({ date, meal, proteinTarget, onClose }: { date: string
       const url = await shrinkPhoto(f)
       setPhotos((p) => [...p, url].slice(0, 2))
     } catch {
-      setError('Nie udało się wczytać zdjęcia')
+      setError(tm.photoLoadFailed)
     }
   }
 
@@ -101,7 +110,7 @@ export function MealSheet({ date, meal, proteinTarget, onClose }: { date: string
       haptic.success()
     } catch (e) {
       if (ctl.signal.aborted) return
-      setError(`Nie rozpoznano posiłku. ${friendlyError(e).message}`)
+      setError(tm.notRecognized(friendlyError(e).message))
       haptic.error()
     } finally {
       if (abort.current === ctl) abort.current = null
@@ -117,7 +126,7 @@ export function MealSheet({ date, meal, proteinTarget, onClose }: { date: string
     if (!draft) return
     const t = totals(draft)
     const row = {
-      name: draft.name.trim() || 'Posiłek',
+      name: draft.name.trim() || tm.fallbackName,
       kcal: t.kcal,
       protein_g: t.protein_g,
       carbs_g: t.carbs_g,
@@ -130,14 +139,14 @@ export function MealSheet({ date, meal, proteinTarget, onClose }: { date: string
     try {
       if (meal) {
         await updateMeal(meal.id, row)
-        toast.notify(`Zmienione: ${kcal(t.kcal)} · białko ${t.protein_g} g`, 'success')
+        toast.notify(tm.changed(kcal(t.kcal), t.protein_g), 'success')
       } else {
         const saved = await addMeal({ ...row, date, time: date === todayISO() ? nowHHMM() : null, source: draft.source, confidence: draft.confidence, label: draft.label, note: note.trim() || null })
-        toast.notify(`Zapisane: ${kcal(t.kcal)} · białko ${t.protein_g} g`, 'success', undefined, { label: 'Cofnij', onClick: () => void deleteMeal(saved.id) })
+        toast.notify(tm.saved(kcal(t.kcal), t.protein_g), 'success', undefined, { label: tx.common.undo, onClick: () => void deleteMeal(saved.id) })
       }
       onClose()
     } catch (e) {
-      toast.notify('Nie zapisano posiłku', 'error', friendlyError(e).message)
+      toast.notify(tm.saveFailed, 'error', friendlyError(e).message)
     } finally {
       setBusy(false)
     }
@@ -146,36 +155,36 @@ export function MealSheet({ date, meal, proteinTarget, onClose }: { date: string
   // usunięcie: systemowy arkusz z czerwonym „Usuń posiłek”, potem i tak „Cofnij” (docs/27 § 6)
   async function remove() {
     if (!meal) return
-    if (!(await confirmAction({ title: `Usunąć „${meal.name}”?`, message: 'Posiłek zniknie z bilansu dnia.', action: 'Usuń posiłek' }))) return
+    if (!(await confirmAction({ title: tm.deleteTitle(meal.name), message: tm.deleteMessage, action: tm.deleteAction }))) return
     try {
       await deleteMeal(meal.id)
-      toast.notify(`Usunięto: ${meal.name}`, 'success', undefined, { label: 'Cofnij', onClick: () => void restoreMeal(meal.id) })
+      toast.notify(tm.deleted(meal.name), 'success', undefined, { label: tx.common.undo, onClick: () => void restoreMeal(meal.id) })
       onClose()
     } catch (e) {
-      toast.notify('Nie usunięto posiłku', 'error', friendlyError(e).message)
+      toast.notify(tm.deleteFailed, 'error', friendlyError(e).message)
     }
   }
 
   const t = draft ? totals(draft) : null
   const saveBtn = draft && t && t.kcal > 0 && (
     <button className="m-nav-btn font-semibold disabled:opacity-40" onClick={() => void save()} disabled={busy}>
-      Zapisz
+      {tx.common.save}
     </button>
   )
 
   return (
-    <Sheet title={meal ? 'Posiłek' : 'Dodaj posiłek'} onClose={onClose} dirty={dirty && !busy} action={saveBtn || undefined}>
+    <Sheet title={meal ? tm.title : tx.m.food.addMeal} onClose={onClose} dirty={dirty && !busy} action={saveBtn || undefined}>
       <div className="flex flex-col gap-4">
         {!draft && (
           <>
-            <input ref={camera} type="file" accept="image/*" capture="environment" className="hidden" onChange={(e) => void addPhoto(e.target.files).then(() => (e.target.value = ''))} aria-label="Zdjęcie z aparatu" />
-            <input ref={gallery} type="file" accept="image/*" className="hidden" onChange={(e) => void addPhoto(e.target.files).then(() => (e.target.value = ''))} aria-label="Zdjęcie z galerii" />
+            <input ref={camera} type="file" accept="image/*" capture="environment" className="hidden" onChange={(e) => void addPhoto(e.target.files).then(() => (e.target.value = ''))} aria-label={tm.cameraAria} />
+            <input ref={gallery} type="file" accept="image/*" className="hidden" onChange={(e) => void addPhoto(e.target.files).then(() => (e.target.value = ''))} aria-label={tm.galleryAria} />
             {photos.length > 0 && (
               <div className="grid grid-cols-2 gap-3">
                 {photos.map((p, i) => (
                   <div key={i} className="relative">
-                    <img src={p} alt={`Zdjęcie ${i + 1}`} className="aspect-square w-full rounded-2xl object-cover" />
-                    <button className="m-hit absolute right-2 top-2 h-8 w-8 rounded-full bg-black/60 text-white" onClick={() => setPhotos((x) => x.filter((_, j) => j !== i))} aria-label="Usuń zdjęcie">
+                    <img src={p} alt={tm.photoAlt(i + 1)} className="aspect-square w-full rounded-2xl object-cover" />
+                    <button className="m-hit absolute right-2 top-2 h-8 w-8 rounded-full bg-black/60 text-white" onClick={() => setPhotos((x) => x.filter((_, j) => j !== i))} aria-label={tm.removePhoto}>
                       ✕
                     </button>
                   </div>
@@ -185,28 +194,29 @@ export function MealSheet({ date, meal, proteinTarget, onClose }: { date: string
             {photos.length < 2 && (
               <div className="grid grid-cols-2 gap-3">
                 <Btn onClick={() => camera.current?.click()} soft={photos.length > 0}>
-                  {photos.length ? 'Drugie zdjęcie' : 'Zrób zdjęcie'}
+                  {photos.length ? tm.secondPhoto : tm.takePhoto}
                 </Btn>
                 <Btn soft onClick={() => gallery.current?.click()}>
-                  Z galerii
+                  {tm.fromGallery}
                 </Btn>
               </div>
             )}
             <p className="m-foot m-dim px-1">
-              Talerz z góry albo z boku. Produkt z opakowania (żelki, napój, baton) – zrób zdjęcie <b>tabeli wartości odżywczych</b>; drugie zdjęcie może pokazać przód opakowania. Zdjęć nie zapisujemy.
+              {tm.tipBefore} <b>{tm.tipBold}</b>
+              {tm.tipAfter}
             </p>
-            <input className="m-input" placeholder="Notatka, np. „duża porcja”, „bez sosu”" value={note} onChange={(e) => setNote(e.target.value)} aria-label="Notatka do posiłku" />
+            <input className="m-input" placeholder={tm.notePlaceholder} value={note} onChange={(e) => setNote(e.target.value)} aria-label={tm.noteAria} />
             {error && (
               <p className="m-sub" role="alert" style={{ color: 'var(--red)' }}>
                 {error}
               </p>
             )}
-            {!canParseMeal && <p className="m-sub m-dim">Rozpoznawanie zdjęć wymaga konta.</p>}
+            {!canParseMeal && <p className="m-sub m-dim">{tm.needsAccount}</p>}
             {recognizing ? (
-              <Waiting label="Rozpoznaję posiłek…" detail="Zwykle ok. 10 sekund" onCancel={cancelRecognize} />
+              <Waiting label={tm.recognizing} detail={tm.tenSeconds} onCancel={cancelRecognize} />
             ) : (
               <Btn onClick={() => void recognize()} disabled={busy || photos.length === 0 || !canParseMeal} className="w-full">
-                {error ? 'Spróbuj ponownie' : 'Rozpoznaj'}
+                {error ? tm.retry : tm.recognize}
               </Btn>
             )}
           </>
@@ -215,8 +225,8 @@ export function MealSheet({ date, meal, proteinTarget, onClose }: { date: string
         {draft && t && (
           <>
             <label className="m-list p-3">
-              <span className="m-eyebrow block">{draft.label ? 'Produkt' : 'Danie'}</span>
-              <input className="m-headline mt-1 w-full bg-transparent outline-none" value={draft.name} onChange={(e) => setDraft({ ...draft, name: e.target.value })} aria-label="Nazwa posiłku" />
+              <span className="m-eyebrow block">{draft.label ? tm.product : tm.dish}</span>
+              <input className="m-headline mt-1 w-full bg-transparent outline-none" value={draft.name} onChange={(e) => setDraft({ ...draft, name: e.target.value })} aria-label={tm.nameAria} />
             </label>
 
             <div className="m-list p-4">
@@ -224,10 +234,7 @@ export function MealSheet({ date, meal, proteinTarget, onClose }: { date: string
                 <span className="m-big m-num">{kcal(t.kcal)}</span>
                 {draft.confidence != null && draft.source === 'photo' && <Confidence value={draft.confidence} />}
               </div>
-              <p className="m-sub m-dim mt-1">
-                białko {t.protein_g} g{t.carbs_g != null ? ` · węgle ${t.carbs_g} g` : ''}
-                {t.fat_g != null ? ` · tłuszcz ${t.fat_g} g` : ''}
-              </p>
+              <p className="m-sub m-dim mt-1">{macros(t.protein_g, t.carbs_g, t.fat_g)}</p>
             </div>
 
             {draft.question && (
@@ -243,10 +250,10 @@ export function MealSheet({ date, meal, proteinTarget, onClose }: { date: string
 
             {draft.label ? <LabelAmount draft={draft} onChange={(amount) => setDraft({ ...draft, amount })} /> : (
               <>
-                <div className="m-chips" role="radiogroup" aria-label="Porcja">
+                <div className="m-chips" role="radiogroup" aria-label={tm.portionAria}>
                   {PORTIONS.map((p) => (
                     <button key={p.f} role="radio" aria-checked={draft.portion === p.f} className="m-chip" style={draft.portion === p.f ? { background: 'var(--accent)', color: '#fff' } : undefined} onClick={() => setDraft({ ...draft, portion: p.f })}>
-                      {p.label}
+                      {tm.portions[p.label]}
                     </button>
                   ))}
                 </div>
@@ -267,15 +274,15 @@ export function MealSheet({ date, meal, proteinTarget, onClose }: { date: string
             )}
 
             <Btn onClick={() => void save()} disabled={busy || t.kcal <= 0} className="w-full">
-              Zapisz
+              {tx.common.save}
             </Btn>
             {meal ? (
               <Btn soft onClick={() => void remove()} className="w-full" style={{ color: 'var(--red)' }}>
-                Usuń posiłek
+                {tm.deleteAction}
               </Btn>
             ) : (
               <button className="m-sub m-hit px-1 text-left" style={{ color: 'var(--accent)' }} onClick={() => setDraft(null)}>
-                Inne zdjęcie
+                {tm.otherPhoto}
               </button>
             )}
           </>
@@ -286,9 +293,10 @@ export function MealSheet({ date, meal, proteinTarget, onClose }: { date: string
 }
 
 function Confidence({ value }: { value: number }) {
+  const t = useT()
   const dots = value >= 0.75 ? 3 : value >= 0.5 ? 2 : 1
   return (
-    <span className="m-foot m-dim flex items-center gap-1" aria-label={`Pewność ${Math.round(value * 100)} %`}>
+    <span className="m-foot m-dim flex items-center gap-1" aria-label={t.m.meal.confidence(Math.round(value * 100))}>
       {[1, 2, 3].map((i) => (
         <span key={i} className="inline-block h-2 w-2 rounded-full" style={{ background: i <= dots ? 'var(--green)' : 'var(--fill-2)' }} />
       ))}
@@ -298,12 +306,13 @@ function Confidence({ value }: { value: number }) {
 
 /** Ilość produktu z etykiety: całe opakowanie, połowa, porcja z etykiety albo dowolne g/ml. */
 function LabelAmount({ draft, onChange }: { draft: Draft; onChange: (amount: number) => void }) {
+  const tm = useT().m.meal
   const l = draft.label!
   const u = l.unit
   const [text, setText] = useState(draft.amount != null ? String(draft.amount) : '')
   const options = [
-    ...(l.package ? [{ v: l.package, label: `Całe opakowanie (${num(l.package, 0)} ${u})` }, { v: Math.round(l.package / 2), label: 'Połowa' }] : []),
-    ...(l.serving && l.serving !== l.package ? [{ v: l.serving, label: `Porcja z etykiety (${num(l.serving, 0)} ${u})` }] : []),
+    ...(l.package ? [{ v: l.package, label: tm.wholePack(`${num(l.package, 0)} ${u}`) }, { v: Math.round(l.package / 2), label: tm.half }] : []),
+    ...(l.serving && l.serving !== l.package ? [{ v: l.serving, label: tm.labelServing(`${num(l.serving, 0)} ${u}`) }] : []),
   ]
   const pick = (v: number) => {
     setText(String(v))
@@ -312,13 +321,11 @@ function LabelAmount({ draft, onChange }: { draft: Draft; onChange: (amount: num
   return (
     <>
       <p className="m-foot m-dim px-1">
-        Na 100 {u}: {num(l.per_100.kcal, 0)} kcal
-        {l.per_100.protein_g != null ? ` · białko ${num(l.per_100.protein_g)} g` : ''}
-        {l.per_100.carbs_g != null ? ` · węgle ${num(l.per_100.carbs_g)} g` : ''}
-        {l.per_100.fat_g != null ? ` · tłuszcz ${num(l.per_100.fat_g)} g` : ''}
+        {tm.per100(u, num(l.per_100.kcal, 0))}
+        {macros(l.per_100.protein_g, l.per_100.carbs_g, l.per_100.fat_g).replace(/^(?=.)/, ' · ')}
       </p>
       {options.length > 0 && (
-        <div className="m-chips" role="radiogroup" aria-label="Ile zjedzone">
+        <div className="m-chips" role="radiogroup" aria-label={tm.howMuchAria}>
           {options.map((o) => (
             <button key={o.label} role="radio" aria-checked={draft.amount === o.v} className="m-chip" style={draft.amount === o.v ? { background: 'var(--accent)', color: '#fff' } : undefined} onClick={() => pick(o.v)}>
               {o.label}
@@ -327,7 +334,7 @@ function LabelAmount({ draft, onChange }: { draft: Draft; onChange: (amount: num
         </div>
       )}
       <label className="m-list flex items-center gap-2 p-3">
-        <span className="flex-1">Zjedzone</span>
+        <span className="flex-1">{tm.eaten}</span>
         <input
           className="m-headline w-24 bg-transparent text-right outline-none"
           inputMode="decimal"
@@ -337,7 +344,7 @@ function LabelAmount({ draft, onChange }: { draft: Draft; onChange: (amount: num
             const n = Number(e.target.value.replace(',', '.'))
             if (Number.isFinite(n) && n >= 0) onChange(n)
           }}
-          aria-label={`Zjedzona ilość w ${u}`}
+          aria-label={tm.eatenAria(u)}
         />
         <span className="m-dim">{u}</span>
       </label>

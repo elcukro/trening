@@ -1,5 +1,6 @@
 import type { ReactNode } from 'react'
 import '../feedback.css'
+import { useT } from '@/i18n/react'
 
 /**
  * Animacja oczekiwania (docs/27 § 6): czarno-biały rysunek kreską z fal.ai (`public/m/wait/`), ruch w CSS – koło się
@@ -95,6 +96,7 @@ export function WaitArt({ variant = WAIT_VARIANT, size = 96 }: { variant?: WaitV
  * `aria-live`, więc VoiceOver przeczyta go raz, a obrazek jest ukryty przed czytnikiem.
  */
 export function Waiting({ label, detail, onCancel, variant, size = 112, children }: { label: string; detail?: string; onCancel?: () => void; variant?: WaitVariant; size?: number; children?: ReactNode }) {
+  const t = useT()
   return (
     <div className="mw-wait" role="status" aria-live="polite">
       <WaitArt variant={variant} size={size} />
@@ -103,7 +105,7 @@ export function Waiting({ label, detail, onCancel, variant, size = 112, children
       {children}
       {onCancel && (
         <button type="button" className="m-headline m-hit mt-1" style={{ color: 'var(--accent)' }} onClick={onCancel}>
-          Anuluj
+          {t.common.cancel}
         </button>
       )}
     </div>

@@ -6,9 +6,11 @@ import { ftpSeries, powerCurve } from '@/engine/power'
 import { Card, CardSection, CardTitle, Metric } from '@/components/ui'
 import { num } from '@/lib/format'
 import { fmtDayMonth, todayISO } from '@/lib/dates'
+import { useT } from '@/i18n/react'
 
 /** Krzywa mocy (MMP 28 / 90 dni) i historia FTP z W/kg – pkt 3 planu usprawnień. */
 export function PowerCard({ engine, acts, tests, checkins, goalFtp }: { engine: Engine; acts: StravaActivity[]; tests: TestResult[]; checkins: Checkin[]; goalFtp: number }) {
+  const tp = useT().progress.power
   const today = todayISO()
   const s = engine.ctx.settings
   const curve = useMemo(() => powerCurve(acts.filter((a) => !a.deleted_at && a.is_ride), today), [acts, today])
@@ -28,29 +30,29 @@ export function PowerCard({ engine, acts, tests, checkins, goalFtp }: { engine: 
   return (
     <Card>
       <CardTitle icon="📈" right={<Metric>{last.ftp} W{last.wkg ? ` · ${num(last.wkg, 2)} W/kg` : ''}</Metric>}>
-        Moc
+        {tp.title}
       </CardTitle>
       {hasCurve ? (
         <div className="h-40">
           <ResponsiveContainer>
-            <BarChart data={curve.map((p) => ({ label: p.label, '28 dni': p.recent, '90 dni': p.all }))} margin={{ top: 5, right: 5, left: -22, bottom: 0 }}>
+            <BarChart data={curve.map((p) => ({ label: p.label, recent: p.recent, all: p.all }))} margin={{ top: 5, right: 5, left: -22, bottom: 0 }}>
               <CartesianGrid strokeDasharray="3 3" stroke="#94a3b8" strokeOpacity={0.3} />
               <XAxis dataKey="label" tick={{ fontSize: 10 }} />
               <YAxis tick={{ fontSize: 10 }} />
               <Tooltip formatter={(v) => `${v} W`} />
               <Legend wrapperStyle={{ fontSize: 10 }} />
-              <Bar dataKey="90 dni" fill="#cbd5e1" isAnimationActive={false} />
-              <Bar dataKey="28 dni" fill="#0ea5e9" isAnimationActive={false} />
+              <Bar dataKey="all" name={tp.days90} fill="#cbd5e1" isAnimationActive={false} />
+              <Bar dataKey="recent" name={tp.days28} fill="#0ea5e9" isAnimationActive={false} />
             </BarChart>
           </ResponsiveContainer>
         </div>
       ) : (
-        <p className="text-sm text-slate-500 dark:text-slate-400">Krzywa mocy (najlepsze 5 s, 1, 5, 20 i 60 min) pojawi się po pierwszej jeździe z miernikiem mocy zaimportowanej ze Stravy.</p>
+        <p className="text-sm text-slate-500 dark:text-slate-400">{tp.empty}</p>
       )}
       {hasCurve && (
         <ul className="mt-2 grid grid-cols-5 gap-1 text-center text-xs tabular-nums">
           {curve.map((p) => (
-            <li key={p.key} className="min-w-0 rounded-lg bg-slate-100 px-1 py-1 dark:bg-slate-900/60" title={p.all_date ? `rekord 90 dni: ${fmtDayMonth(p.all_date)}` : ''}>
+            <li key={p.key} className="min-w-0 rounded-lg bg-slate-100 px-1 py-1 dark:bg-slate-900/60" title={p.all_date ? tp.record(fmtDayMonth(p.all_date)) : ''}>
               <div className="font-semibold">{p.recent ?? p.all ?? '—'}</div>
               <div className="truncate text-slate-500 dark:text-slate-400">{p.label}</div>
             </li>
@@ -58,7 +60,7 @@ export function PowerCard({ engine, acts, tests, checkins, goalFtp }: { engine: 
         </ul>
       )}
       <CardSection>
-        <p className="mb-1 text-xs font-medium text-slate-500 dark:text-slate-400">FTP i W/kg w czasie (cel {goalFtp} W)</p>
+        <p className="mb-1 text-xs font-medium text-slate-500 dark:text-slate-400">{tp.history(goalFtp)}</p>
         {history.length >= 2 ? (
           <div className="h-36">
             <ResponsiveContainer>
@@ -76,7 +78,7 @@ export function PowerCard({ engine, acts, tests, checkins, goalFtp }: { engine: 
           </div>
         ) : (
           <p className="text-xs text-slate-500 dark:text-slate-400">
-            Start: {last.ftp} W (szacunek). Po pierwszym teście albo zaakceptowanej propozycji z jazdy pojawi się wykres.
+            {tp.start(last.ftp)}
           </p>
         )}
       </CardSection>

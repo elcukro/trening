@@ -13,13 +13,13 @@ import { ART } from '../art'
 import { confirmAction } from '@/native'
 import { friendlyError } from '@/lib/errors'
 import { WaitArt } from './Waiting'
+import { t as tr } from '@/i18n'
+import { useT } from '@/i18n/react'
 
 const MAX_ROUNDS = 4
-const TOOL_LABEL: Record<string, string> = { save_checkin: 'zapis check-inu', set_rpe: 'zapis RPE', mark_skipped: 'oznaczenie pominięcia', move_ride: 'przeniesienie jazdy', push_wahoo: 'wysyłka na Bolta' }
-const CHANGED_LABEL: Record<string, string> = { checkin: 'Check-in zapisany', log: 'RPE zapisane', plan: 'Plan zmieniony', bolt: 'Wysłano na Bolta' }
 
 /** Model mimo instrukcji potrafi pogrubić markdownem – w dymku ma być czysty tekst. */
-const plain = (t: string) => t.replace(/\*\*(.+?)\*\*/g, '$1').replace(/(^|\s)_(.+?)_(?=\s|$|[.,])/g, '$1$2')
+const plain = (s: string) => s.replace(/\*\*(.+?)\*\*/g, '$1').replace(/(^|\s)_(.+?)_(?=\s|$|[.,])/g, '$1$2')
 
 interface Line {
   role: 'user' | 'assistant' | 'tool' | 'day'
@@ -34,7 +34,7 @@ function toLines(messages: ChatMessage[], today: string): Line[] {
   for (const m of messages) {
     const day = m.at?.slice(0, 10) ?? ''
     if (day && day !== lastDay) {
-      out.push({ role: 'day', text: day === today ? 'Dziś' : day === addDays(today, -1) ? 'Wczoraj' : fmtDayMonth(day) })
+      out.push({ role: 'day', text: day === today ? tr().common.today : day === addDays(today, -1) ? tr().common.yesterday : fmtDayMonth(day) })
       lastDay = day
     }
     if (typeof m.content === 'string') {
@@ -54,6 +54,8 @@ function toLines(messages: ChatMessage[], today: string): Line[] {
  * początek wiadomości z karty (`prefill`), narzędzia wykonywane lokalnie z wynikiem w rozmowie.
  */
 export function CoachSheet({ prefill, onClose }: { prefill?: string; onClose: () => void }) {
+  const tx = useT()
+  const tc = tx.coach
   const toast = useToast()
   const today = todayISO()
   const d = useIosDay(today)
@@ -102,7 +104,7 @@ export function CoachSheet({ prefill, onClose }: { prefill?: string; onClose: ()
       const at = new Date().toISOString()
       let history: ChatMessage[] = [...messages, { role: 'user', content: t, at }]
       setMessages(history)
-      setBusy('Trener czyta…')
+      setBusy(tc.reading)
       const ctl = new AbortController()
       abort.current = ctl
       try {
@@ -114,17 +116,17 @@ export function CoachSheet({ prefill, onClose }: { prefill?: string; onClose: ()
           if (reply.stop_reason !== 'tool_use' || !reply.tools.length) break
           const results: ChatBlock[] = []
           for (const call of reply.tools) {
-            setBusy(`Wykonuję: ${TOOL_LABEL[call.name] ?? call.name}…`)
+            setBusy(tc.running((tc.tools as Record<string, string>)[call.name] ?? call.name))
             const r = await runCoachTool(call.name, call.input, deps)
             results.push({ type: 'tool_result', tool_use_id: call.id, content: r.text, ...(r.ok ? {} : { is_error: true }) })
-            if (r.ok && r.changed) toast.notify(CHANGED_LABEL[r.changed] ?? 'Zapisano')
+            if (r.ok && r.changed) toast.notify((tc.changed as Record<string, string>)[r.changed] ?? tc.savedFallback)
           }
           history = [...history, { role: 'user', content: results, at: new Date().toISOString() }]
           setMessages(history)
-          setBusy('Trener odpowiada…')
+          setBusy(tc.replying)
         }
       } catch (e) {
-        if (!ctl.signal.aborted) setError(`Trener nie odpowiedział. ${friendlyError(e).message}`)
+        if (!ctl.signal.aborted) setError(tc.noReply(friendlyError(e).message))
       } finally {
         abort.current = null
         // „Zatrzymaj”: rozmowa wraca do stanu sprzed wiadomości, a tekst do pola – można go poprawić i wysłać jeszcze raz
@@ -138,12 +140,12 @@ export function CoachSheet({ prefill, onClose }: { prefill?: string; onClose: ()
         await saveThread(history)
       }
     },
-    [busy, messages, context, deps, toast],
+    [busy, messages, context, deps, toast, tc],
   )
 
   const reset = async () => {
     // rozmowy nie da się odzyskać – najpierw pytanie (docs/27 § 3.1)
-    if (!(await confirmAction({ title: 'Wyczyścić rozmowę z trenerem?', message: 'Historii nie da się przywrócić. Zapisane dane (check-iny, RPE, przeniesienia) zostają.', action: 'Wyczyść' }))) return
+    if (!(await confirmAction({ title: tc.clearTitle, message: tc.clearMessage, action: tc.clear }))) return
     await clearThread()
     setMessages([])
     setError(null)
@@ -160,18 +162,18 @@ export function CoachSheet({ prefill, onClose }: { prefill?: string; onClose: ()
   }, [onClose])
 
   return (
-    <div className="m-chat" role="dialog" aria-modal="true" aria-label="Trener">
+    <div className="m-chat" role="dialog" aria-modal="true" aria-label={tc.title}>
       <div className="m-chat-head">
-        <button className="m-nav-btn" onClick={onClose} aria-label="Zamknij">
+        <button className="m-nav-btn" onClick={onClose} aria-label={tx.common.close}>
           <IconClose size={22} />
         </button>
         <span className="m-headline flex items-center gap-2">
           <img src="/m/art/coach-face.png" alt="" width={28} height={28} className="h-7 w-7 rounded-full object-cover" />
-          Trener
+          {tc.title}
         </span>
         {lines.length ? (
           <button className="m-nav-btn m-sub" onClick={() => void reset()} disabled={!!busy}>
-            Wyczyść
+            {tc.clear}
           </button>
         ) : (
           <span className="min-w-11" />
@@ -179,11 +181,11 @@ export function CoachSheet({ prefill, onClose }: { prefill?: string; onClose: ()
       </div>
 
       <div className="m-chat-body" aria-live="polite">
-        {!canChat && <p className="m-sub m-dim py-6 text-center">Czat wymaga konta – aplikacja działa lokalnie.</p>}
+        {!canChat && <p className="m-sub m-dim py-6 text-center">{tc.needsAccount}</p>}
         {canChat && loaded && !lines.length && (
           <div className="flex flex-1 flex-col items-center justify-center gap-3 text-center">
             <img src={ART.coachWave} alt="" width={140} height={187} className="h-[187px] w-[140px] object-contain" />
-            <p className="m-sub m-dim px-4">Widzę Twój plan, ostatnie jazdy i check-iny. Podaj dane zdaniem – zapiszę je. Możesz też zapytać o plan albo poprosić o przeniesienie jazdy.</p>
+            <p className="m-sub m-dim px-4">{tc.intro}</p>
           </div>
         )}
         {lines.map((l, i) => {
@@ -209,7 +211,7 @@ export function CoachSheet({ prefill, onClose }: { prefill?: string; onClose: ()
             <span className="flex flex-col items-start">
               {busy}
               <button type="button" className="m-hit font-semibold" style={{ color: 'var(--accent)' }} onClick={() => abort.current?.abort()}>
-                Zatrzymaj
+                {tc.stop}
               </button>
             </span>
           </div>
@@ -253,8 +255,8 @@ export function CoachSheet({ prefill, onClose }: { prefill?: string; onClose: ()
               ref={input}
               className="m-input flex-1"
               rows={1}
-              placeholder="Napisz albo podyktuj…"
-              aria-label="Wiadomość do trenera"
+              placeholder={tc.placeholder}
+              aria-label={tc.inputAria}
               value={draft}
               disabled={!!busy}
               onChange={(e) => setDraft(e.target.value)}
@@ -265,7 +267,7 @@ export function CoachSheet({ prefill, onClose }: { prefill?: string; onClose: ()
                 }
               }}
             />
-            <button type="submit" className="m-send" disabled={!!busy || !draft.trim()} aria-label="Wyślij">
+            <button type="submit" className="m-send" disabled={!!busy || !draft.trim()} aria-label={tc.send}>
               ↑
             </button>
           </form>

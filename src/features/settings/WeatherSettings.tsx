@@ -4,12 +4,15 @@ import { db } from '@/db'
 import { DEFAULT_RIDE_HOURS, geocode, getLocation, setLocation, setRideHours, type RideHours, type WeatherLocation } from '@/sync/weather'
 import { Actions, Button, Card, CardTitle, Field, Input, Select } from '@/components/ui'
 import { useToast } from '@/components/Toast'
+import { useT } from '@/i18n/react'
+import { num } from '@/lib/format'
 
 const HOURS = Array.from({ length: 17 }, (_, i) => i + 5) // 5:00–21:00
 
 /** Lokalizacja prognozy i typowe godziny startu jazdy – dla odprawy przed jazdą (pkt 6). Zapis lokalny (kv). */
 export function WeatherSettings() {
   const toast = useToast()
+  const tw = useT().settings.weather
   const loc = useLiveQuery(getLocation, [], null)
   const hours = useLiveQuery(async () => ((await db.kv.get('ride_hours'))?.value as RideHours | undefined) ?? DEFAULT_RIDE_HOURS, [], DEFAULT_RIDE_HOURS)
   const [query, setQuery] = useState('')
@@ -17,26 +20,29 @@ export function WeatherSettings() {
 
   async function search() {
     if (!query.trim()) return
-    const r = await toast.run('Szukam miejscowości…', () => geocode(query), (list) => (list.length ? `Znaleziono ${list.length}` : 'Nic nie znaleziono'))
+    const r = await toast.run(tw.searching, () => geocode(query), (list) => (list.length ? tw.found(list.length) : tw.notFound))
     setFound(r ?? [])
   }
 
   return (
     <Card>
-      <CardTitle icon="🌤️">Pogoda i pora jazdy</CardTitle>
+      <CardTitle icon="🌤️">{tw.title}</CardTitle>
       <p className="text-sm">
         {loc ? (
           <>
-            Prognoza dla: <b>{loc.name}</b> <span className="text-xs text-slate-500 dark:text-slate-400">({loc.lat}, {loc.lon})</span>
+            {tw.forecastFor} <b>{loc.name}</b> <span className="text-xs text-slate-500 dark:text-slate-400">({num(loc.lat, 2)}; {num(loc.lon, 2)})</span>
           </>
         ) : (
-          <>Prognoza: <b>miejscowość nieustawiona</b> – wyszukaj ją poniżej, żeby odprawa przed jazdą miała pogodę.</>
+          <>
+            {tw.forecast} <b>{tw.notSet}</b>
+            {tw.notSetHint}
+          </>
         )}
       </p>
       <div className="mt-2 flex gap-2">
-        <Input aria-label="Miejscowość" placeholder="Nazwa miejscowości" value={query} onChange={(e) => setQuery(e.target.value)} onKeyDown={(e) => e.key === 'Enter' && void search()} className="min-w-0 flex-1" />
+        <Input aria-label={tw.place} placeholder={tw.placePlaceholder} value={query} onChange={(e) => setQuery(e.target.value)} onKeyDown={(e) => e.key === 'Enter' && void search()} className="min-w-0 flex-1" />
         <Button variant="secondary" onClick={search} disabled={!query.trim()}>
-          Szukaj
+          {tw.search}
         </Button>
       </div>
       {found.length > 0 && (
@@ -58,7 +64,7 @@ export function WeatherSettings() {
         </Actions>
       )}
       <div className="mt-3 grid grid-cols-2 gap-3">
-        <Field label="Start w tygodniu" hint="okno prognozy dla odprawy">
+        <Field label={tw.weekday} hint={tw.weekdayHint}>
           <Select value={hours.weekday} onChange={(e) => void setRideHours({ ...hours, weekday: Number(e.target.value) })}>
             {HOURS.map((h) => (
               <option key={h} value={h}>
@@ -67,7 +73,7 @@ export function WeatherSettings() {
             ))}
           </Select>
         </Field>
-        <Field label="Start w weekend">
+        <Field label={tw.weekend}>
           <Select value={hours.weekend} onChange={(e) => void setRideHours({ ...hours, weekend: Number(e.target.value) })}>
             {HOURS.map((h) => (
               <option key={h} value={h}>
@@ -77,7 +83,7 @@ export function WeatherSettings() {
           </Select>
         </Field>
       </div>
-      <p className="mt-2 text-xs text-slate-500 dark:text-slate-400">Prognoza z Open-Meteo (bez konta), odświeżana co 3 h i buforowana na telefonie. Zapisane tylko na tym urządzeniu.</p>
+      <p className="mt-2 text-xs text-slate-500 dark:text-slate-400">{tw.foot}</p>
     </Card>
   )
 }

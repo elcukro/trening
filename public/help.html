@@ -1,0 +1,231 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#f2f2f7">
+<link rel="icon" href="/favicon.ico">
+<title>Help – Bicycle Coach</title>
+<style>
+/* Wersja angielska pomocy (docs/34) – ta sama struktura i style co pomoc.html. Pomoc wygląda jak ekran aplikacji w nowym wyglądzie (/m, docs/24): te same tokeny co src/m/m.css, tylko jasny motyw. */
+html{color-scheme:light;background:#f2f2f7}
+:root{
+  --bg:#f2f2f7; --card:#ffffff; --label:#0b0b0f; --label-2:rgb(60 60 67 / .62); --label-3:rgb(60 60 67 / .32);
+  --separator:rgb(60 60 67 / .16); --fill:rgb(120 120 128 / .12); --accent:#0a7aff; --accent-soft:rgb(10 122 255 / .12);
+  --green:#2fb353; --orange:#ff9500; --red:#ff3b30; --bar:rgb(249 249 251 / .86);
+  --shadow:0 1px 2px rgb(0 0 0 / .05), 0 8px 24px rgb(0 0 0 / .06); --radius:20px; --radius-sm:12px;
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--label);font:17px/22px -apple-system,BlinkMacSystemFont,"SF Pro Text","Segoe UI",Roboto,sans-serif;letter-spacing:-.3px;-webkit-font-smoothing:antialiased;-webkit-tap-highlight-color:transparent;overflow-wrap:break-word}
+.nav{position:sticky;top:0;z-index:10;padding-top:env(safe-area-inset-top,0px);background:var(--bar);-webkit-backdrop-filter:saturate(180%) blur(20px);backdrop-filter:saturate(180%) blur(20px);box-shadow:inset 0 -.5px 0 var(--separator)}
+.nav-inner{max-width:640px;margin:0 auto;display:flex;align-items:center;height:44px;padding:0 8px}
+.back{display:inline-flex;align-items:center;gap:2px;min-height:44px;padding:0 8px;color:var(--accent);text-decoration:none;font-size:17px}
+.back svg{width:22px;height:22px}
+.nav-title{position:absolute;left:50%;transform:translateX(-50%);font-weight:600}
+/* przełącznik języka: link do drugiej wersji pomocy (help.html ↔ pomoc.html) */
+.lang{margin-left:auto;display:inline-flex;align-items:center;min-height:44px;padding:0 8px;color:var(--accent);text-decoration:none;font-size:15px}
+main{max-width:640px;margin:0 auto;padding:4px 16px calc(env(safe-area-inset-bottom,0px) + 40px)}
+h1{font-size:34px;line-height:40px;font-weight:800;letter-spacing:-.8px;margin:8px 4px 4px}
+.lead{color:var(--label-2);font-size:15px;line-height:20px;margin:0 4px 20px}
+.hero{display:flex;align-items:center;gap:12px;background:linear-gradient(160deg,var(--accent-soft),var(--card) 55%);border-radius:var(--radius);box-shadow:var(--shadow);padding:16px 18px;margin-bottom:20px}
+.hero img{width:92px;height:122px;object-fit:contain;flex:none;margin:-6px -6px -6px 0}
+.hero p{margin:0;font-size:15px;line-height:20px;color:var(--label-2)}
+.hero b{display:block;color:var(--label);font-size:17px;margin-bottom:2px}
+h2{font-size:12px;line-height:16px;font-weight:600;letter-spacing:.4px;text-transform:uppercase;color:var(--label-2);margin:24px 4px 8px}
+h2:first-of-type{margin-top:0}
+/* skok z chipów sekcji: nagłówek pod przyklejonym paskiem „Wróć” (44 pt + safe area) */
+h2[id]{scroll-margin-top:calc(env(safe-area-inset-top,0px) + 56px)}
+h3{font-size:17px;line-height:22px;font-weight:600;margin:16px 4px 6px}
+p{margin:0 4px 10px}
+.card{background:var(--card);border-radius:var(--radius);box-shadow:var(--shadow);padding:16px 18px;margin-bottom:12px}
+.card p:last-child{margin-bottom:0}
+.list{background:var(--card);border-radius:var(--radius-sm);box-shadow:var(--shadow);overflow:hidden;margin-bottom:12px}
+.row{display:flex;align-items:flex-start;gap:12px;padding:12px 16px}
+.row + .row{box-shadow:inset 0 .5px 0 var(--separator)}
+.row img{width:30px;height:30px;object-fit:contain;flex:none;margin-top:1px}
+.row .n{width:30px;height:30px;flex:none;border-radius:50%;background:var(--accent-soft);color:var(--accent);font-weight:700;font-size:15px;display:grid;place-items:center}
+/* numery kroków z licznika – ukryty krok (display:none) nie zabiera numeru */
+.steps{counter-reset:krok}
+.steps .row{counter-increment:krok}
+.steps .n::before{content:counter(krok)}
+/* wariant w aplikacji iOS (docs/26): klasa `in-app` na <html> – bez Safari, ekranu początkowego i pełnej aplikacji na telefonie */
+html:not(.in-app) .only-app,html.in-app .only-web{display:none!important}
+/* aplikacja ma wyłączone przewijanie dokumentu (capacitor.config.ts `ios.scrollEnabled: false`) – przewija się body */
+html.in-app{height:100%;overflow:hidden}
+html.in-app body{height:100%;overflow-y:auto;-webkit-overflow-scrolling:touch;overscroll-behavior-y:contain}
+.row div{min-width:0}
+.row b{display:block;font-weight:600}
+.row span{display:block;color:var(--label-2);font-size:15px;line-height:20px;margin-top:2px}
+.tabbar{display:flex;align-items:center;gap:12px;margin:4px 0 14px}
+.tabs{flex:1;display:grid;grid-template-columns:repeat(3,1fr);height:56px;padding:5px;border-radius:28px;background:var(--card);box-shadow:var(--shadow)}
+.tab{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1px;border-radius:23px;color:var(--label-2);font-size:11px;font-weight:600}
+.tab img{width:22px;height:22px;object-fit:contain}
+.tab.on{color:var(--accent);background:var(--accent-soft)}
+.fab{width:56px;height:56px;border-radius:50%;flex:none;background:linear-gradient(160deg,#3b9bff,var(--accent));box-shadow:0 8px 24px rgb(10 122 255 / .35),inset 0 0 0 2px rgb(255 255 255 / .7);overflow:hidden}
+.fab img{width:100%;height:100%;object-fit:cover}
+.note{background:var(--accent-soft);border-radius:var(--radius-sm);padding:12px 14px;margin:0 0 12px;font-size:15px;line-height:20px}
+.note p{margin:0}
+.tbl{overflow-x:auto;background:var(--card);border-radius:var(--radius-sm);box-shadow:var(--shadow);margin-bottom:12px}
+table{border-collapse:collapse;width:100%;font-size:15px;line-height:20px}
+th,td{text-align:left;padding:10px 14px;vertical-align:top;border-bottom:.5px solid var(--separator)}
+tr:last-child td{border-bottom:0}
+th{font-size:12px;letter-spacing:.4px;text-transform:uppercase;color:var(--label-2);font-weight:600}
+td:first-child{white-space:nowrap;font-weight:600}
+code{font-family:ui-monospace,Menlo,monospace;font-size:.92em;background:var(--fill);padding:1px 6px;border-radius:6px}
+a{color:var(--accent)}
+.toc{display:flex;flex-wrap:wrap;gap:6px 8px;margin:0 0 16px}
+.toc a{text-decoration:none;font-size:13px;font-weight:600;padding:6px 12px;border-radius:999px;background:var(--card);box-shadow:var(--shadow)}
+@media (prefers-reduced-motion:no-preference){html{scroll-behavior:smooth}}
+</style>
+<script>
+// powłoka Capacitora wstrzykuje `window.Capacitor` do każdej strony w WebView – na webie go nie ma
+if (window.Capacitor && window.Capacitor.isNativePlatform && window.Capacitor.isNativePlatform()) document.documentElement.classList.add('in-app')
+</script>
+</head>
+<body>
+
+<div class="nav"><div class="nav-inner">
+  <a class="back" href="/" id="back" aria-label="Back to the app"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5l-7 7 7 7"/></svg>Back</a>
+  <span class="nav-title">Help</span>
+  <a class="lang" href="/pomoc.html" id="lang" hreflang="pl" lang="pl">Polski</a>
+</div></div>
+
+<main>
+<h1>Help</h1>
+<p class="lead">How to use Bicycle Coach on your phone. The app works offline too.</p>
+
+<div class="hero">
+  <p><b>The app guides you day by day</b>A check-in in the morning, then the workout on your Bolt, and after the ride – once it’s on Strava – a note from your coach. Not sure about something? Ask your coach: the round button with their face is always under your thumb.</p>
+  <img src="/m/art/coach-wave.png" alt="">
+</div>
+
+<div class="toc" aria-label="Contents">
+  <a href="#start">Getting started</a><a href="#today">Today</a><a href="#ride">Ride and summary</a><a href="#plan">Plan</a><a href="#coach">Coach</a><a href="#me">Me</a><a href="#strava">Strava</a><a href="#bolt">Bolt</a><a href="#email">Emails and notifications</a><a href="#nutrition">Nutrition</a><a href="#computer">Computer</a><a href="#trouble">Troubleshooting</a>
+</div>
+
+<h2 id="start">Getting started</h2>
+<div class="list steps">
+  <div class="row only-web"><span class="n"></span><div><b>Open the app’s address in Safari</b><span>You’ll get the address from whoever set up your account. On a phone you’ll see three tabs – Today, Plan, Me – and the Coach button.</span></div></div>
+  <div class="row only-web"><span class="n"></span><div><b>Add it to your Home Screen</b><span>Safari → Share → “Add to Home Screen”. The app then works like a native one: full screen, offline and with notifications.</span></div></div>
+  <div class="row"><span class="n"></span><div><b>Sign in with Google or Strava</b><span>One tap: Google with your account’s email address, or Strava if you’ve already connected it to the app (Settings → Integrations). A Google account with a different address will see a “no access” message.</span></div></div>
+  <div class="row"><span class="n"></span><div><b>…or with a code from the email</b><span>Enter your account’s email address. You’ll get a 6-digit code – type it into the app. There’s no password. If your session expires, the Today screen shows a yellow bar asking you to sign in again.</span></div></div>
+  <div class="row"><span class="n"></span><div><b>Check your thresholds</b><span>Me → “Thresholds and power meter”: FTP, threshold heart rate and whether you have a power meter. All workout zones are based on these numbers.</span></div></div>
+  <div class="row"><span class="n"></span><div><b>Connect Strava and your Bolt</b><span>See below. The app works without them, but you’ll have to log rides by hand.</span></div></div>
+</div>
+
+<h2>Navigation</h2>
+<div class="tabbar" aria-hidden="true">
+  <div class="tabs"><div class="tab on"><img src="/m/art/tab-today.png" alt="">Today</div><div class="tab"><img src="/m/art/tab-plan.png" alt="">Plan</div><div class="tab"><img src="/m/art/tab-me.png" alt="">Me</div></div>
+  <div class="fab"><img src="/m/art/coach-face.png" alt=""></div>
+</div>
+<div class="list">
+  <div class="row"><img src="/m/art/tab-today.png" alt=""><div><b>Today</b><span>What now: a single card that changes through the day.</span></div></div>
+  <div class="row"><img src="/m/art/tab-plan.png" alt=""><div><b>Plan</b><span>What’s next: the week with its hours, swipe to change weeks.</span></div></div>
+  <div class="row"><img src="/m/art/tab-me.png" alt=""><div><b>Me</b><span>How it’s going: FTP, weight, form, rides, test, settings.</span></div></div>
+  <div class="row"><img src="/m/art/coach-face.png" alt="" style="border-radius:50%"><div><b>Coach</b><span>A conversation: your data in one sentence, questions about the plan, moving workouts.</span></div></div>
+</div>
+
+<h2 id="today">Today – the day card</h2>
+<p>The card at the top of Today always shows one thing: what to do right now.</p>
+<div class="list">
+  <div class="row"><img src="/m/art/coach-face.png" alt="" style="border-radius:50%"><div><b>Morning: “How are you feeling?”</b><span>“Tell your coach” opens the conversation with a ready start (“Weight 80.5, resting HR …”) – add the rest and send. “Enter manually” opens a sheet with weight, resting heart rate and three 1–5 ratings. From these numbers the app works out today’s calorie deficit, your weight trend and signs of fatigue.</span></div></div>
+  <div class="row"><img src="/m/art/ride-easy.png" alt=""><div><b>Before the ride: the workout and its targets</b><span>Name, duration, W / bpm / rpm targets for the main step, the weather for your ride time with what to wear, and the Bolt status (“On your Bolt” or “Send to Bolt”). “Show steps” opens the ride screen.</span></div></div>
+  <div class="row"><img src="/m/art/heart.png" alt=""><div><b>After the ride: how it went</b><span>Once the ride is in from Strava: match with the plan, TSS, heart-rate drift, the coach’s note and an RPE row from 1 to 10 – one tap saves it. “Summary” shows everything, including heart-rate zones.</span></div></div>
+  <div class="row"><img src="/m/art/rest.png" alt=""><div><b>Rest day and skipped workout</b><span>On a rest day the card shows your check-in and nutrition for recovery. A skipped workout has “Undo”; a past day with no ride has “Mark as skipped” so reports stop asking about it.</span></div></div>
+</div>
+<p>Below the card: the day timeline (check-in · Bolt · workout · RPE), the week balance (bars: green – done, orange – different from the plan, red outline – skipped, grey – no ride), nutrition, your last ride and tomorrow.</p>
+
+<h2 id="ride">Ride and summary</h2>
+<div class="list">
+  <div class="row"><img src="/m/art/ride-key.png" alt=""><div><b>Ride screen</b><span>A structure bar in zone colours, the targets, and the steps one below another (warm-up, intervals, recoveries, cool-down) with watts, heart rate and cadence. “Indoor version” switches to a trainer workout (you can undo it). “Send to Bolt” – if the automatic upload hasn’t run yet.</span></div></div>
+  <div class="row"><img src="/m/art/heart.png" alt=""><div><b>Summary</b><span>Match with the plan (how the ride fits the steps), TSS, heart-rate drift on easy rides, RPE, the full coach’s note with “Reply to coach”, time in heart-rate zones, and the numbers: time, distance, elevation, power, heart rate, cadence. With two rides in a day, switch between them at the top.</span></div></div>
+  <div class="row"><img src="/m/art/test.png" alt=""><div><b>FTP test</b><span>Every few weeks it replaces the week’s key session: warm-up, 20 min evenly all-out, FTP = 95% of average power. Enter the new values in Me → “Thresholds and power meter”; zones update automatically.</span></div></div>
+</div>
+<div class="note"><p><b>Match vs. the note.</b> Match compares the ride with the plan’s steps, so a ride twice as long gets a low match even when the coach writes it was “easy, just right”. They’re two different measures.</p></div>
+
+<h2 id="plan">Plan</h2>
+<div class="list">
+  <div class="row"><img src="/m/art/tab-plan.png" alt=""><div><b>Week</b><span>Total hours and seven days with a type icon, duration and result (✓ done, ✕ skipped, – no ride, + ride outside the plan). The week’s key session has a ★. Swipe sideways or use the arrows to see other weeks. Tap a day to open its card.</span></div></div>
+  <div class="row"><img src="/m/art/ride-long.png" alt=""><div><b>Touch and hold a day</b><span>Menu: “Move to another day” (rest days in the same month only; days the plan’s rules don’t allow are greyed out with the reason), “Swap with another day” this week, “Indoor version”, “Skip this workout”, “Undo changes to this day”. Every change ends with a message and “Undo”.</span></div></div>
+  <div class="row"><img src="/m/art/bolt.png" alt=""><div><b>After a change, send to Bolt</b><span>When the plan differs from what’s on your Bolt, an orange banner with “Send” appears above the list. Changes are saved to the cloud and sync to all your devices.</span></div></div>
+</div>
+
+<h2 id="coach">Coach</h2>
+<div class="card">
+  <p>The round button with the coach’s face opens the conversation. Your coach sees your plan for two weeks, recent rides with notes, check-ins and what’s known about you. There’s one conversation covering the last 7 days; “Clear” deletes it.</p>
+  <p>Above the keyboard you’ll find suggestions that depend on the time of day: “Weight …” in the morning, “RPE …” after a ride, “What’s tomorrow?” and “I can’t make it tomorrow” in the evening. You can type or dictate (the microphone on the keyboard).</p>
+  <p>Your coach can save your check-in and RPE, mark a workout as skipped, move a workout to a rest day (after checking the plan’s rules) and send the plan to your Bolt. Each save shows in the conversation as a green line, a refusal as a red one with the reason. The coach doesn’t change the structure of the plan and doesn’t diagnose – with symptoms, it sends you to a doctor.</p>
+</div>
+
+<h2 id="me">Me</h2>
+<div class="list">
+  <div class="row"><img src="/m/art/test.png" alt=""><div><b>Three numbers</b><span>FTP and how many watts you’re short of the program’s goal, weight with its weekly trend and target, and form in words based on CTL (fitness) and TSB (freshness). When your rides show power clearly above your FTP, the app suggests a new value.</span></div></div>
+  <div class="row"><img src="/m/art/ride-key.png" alt=""><div><b>FTP test and recent rides</b><span>Your last test with its result, the next one from the plan (ride easy for 2–3 days before it) and rides from the last four weeks with TSS – each opens its summary.</span></div></div>
+  <div class="row"><img src="/m/art/ob-goal.png" alt=""><div><b>Your needs</b><span>You and your goal → “Fill in / Change your needs”: ten short steps (time, fitness, measurement, equipment, consent, body, health, goal) and a summary where you can tap any answer to change it. A new account sees it automatically after the first sign-in; “Later” puts it off and keeps your progress. That’s also where you delete your answers and withdraw consent for health data.</span></div></div>
+  <div class="row only-app"><img src="/m/art/bolt.png" alt=""><div><b>Settings</b><span>Thresholds and power meter, forecast location, Apple Health (weight, heart rate, HRV and sleep go into your check-in), emails (morning briefing, ride summary, Sunday weekly letter), Strava and Wahoo connection status, language, account (sync, sign out).</span></div></div>
+  <div class="row only-web"><img src="/m/art/bolt.png" alt=""><div><b>Settings</b><span>Thresholds and power meter, forecast location, notifications on this phone, emails (morning briefing, ride summary, Sunday weekly letter), Strava and Wahoo connection status, language, account (sync, sign out).</span></div></div>
+</div>
+<p class="only-web">Other settings (profile, dates, data backup) and connecting Strava and Wahoo are in the full app: Me → “Open full app”.</p>
+<p class="only-app">Other settings (profile, dates, data backup) and connecting Strava and Wahoo are at trening.felsztukier.pl (easiest on a computer) – it’s the same account, and changes come back to the app on their own.</p>
+
+<h2 id="strava">Strava</h2>
+<div class="card">
+  <p>Strava is where your completed rides come from. To connect: <span class="only-web">full app</span><span class="only-app">trening.felsztukier.pl</span> → More → Settings → Integrations → “Connect with Strava”. From then on, every ride uploaded to Strava shows up in the app within a few minutes – with power, heart rate, cadence and time in zones.</p>
+  <p><b>Coach’s note.</b> After every ride the AI coach writes a few sentences: what was planned, how it went, how it compares with earlier rides and what it means for tomorrow. Every number in the note comes from your ride data.</p>
+  <p><b>Title and description on Strava.</b> Optionally, the coach gives the ride a title and a short description signed “Notes: Bicycle Coach”. Turn it on in the Strava card <span class="only-web">in the full app</span><span class="only-app">at trening.felsztukier.pl</span>; the first time, reconnect Strava, because the app needs permission to write. Titles you set yourself are kept. “Fetch last 30 days” pulls in older rides.</p>
+</div>
+
+<h2 id="bolt">Wahoo ELEMNT Bolt</h2>
+<div class="list">
+  <div class="row"><img src="/m/art/bolt.png" alt=""><div><b>Automatic upload</b><span>Once a day the app sends the plan for today and the next 6 days. On the Bolt, workouts are under Planned Workouts by date. You can see the status on the day card and in Plan (“on your Bolt”).</span></div></div>
+  <div class="row"><img src="/m/art/ride-easy.png" alt=""><div><b>Manually</b><span>“Send to Bolt” on the day card and the ride screen; in Plan, the banner with “Send” after changes. Your coach can send it too if you ask.</span></div></div>
+  <div class="row"><img src="/m/art/heart.png" alt=""><div><b>Heart rate in the name</b><span>The Bolt doesn’t support heart-rate targets in plans, so the bpm range is in the interval name; the power target (if you have a power meter) comes as a watt range. Workouts completed on the Bolt come back to the app; if the same ride is on Strava, Strava wins.</span></div></div>
+</div>
+
+<h2 id="email">Emails and notifications</h2>
+<div class="tbl"><table>
+<tr><th>What</th><th>When</th><th>Content</th></tr>
+<tr><td>Morning briefing</td><td>7:00, on workout days</td><td>Steps with watts and heart rate, weather, what to wear, what to eat, coach’s tips; one-click “legs 1–5” links.</td></tr>
+<tr><td>Ride summary</td><td>A few minutes after import</td><td>For a ride that completes the plan (≥ 80% of the time): plan vs. actual, zones, note; RPE 1–10 links.</td></tr>
+<tr><td>Day in numbers</td><td>21:00</td><td>Shorter and extra rides of the day in one email; only sent when there are new rides.</td></tr>
+<tr><td>Weekly letter</td><td>Sunday 19:00</td><td>The week in a few paragraphs: what happened, how your body is responding, what to focus on next week.</td></tr>
+<tr class="only-web"><td>Notifications</td><td>Morning, evening, Sunday</td><td>Day plan, summary, weekly report. On iPhone only from the Home Screen app.</td></tr>
+</table></div>
+<p>Turn them on in Me → Email (three switches)<span class="only-web"> and Me → Notifications</span>.</p>
+
+<h2 id="nutrition">Nutrition</h2>
+<div class="card">
+  <p>The “Nutrition” row on Today shows today’s calorie deficit (or “no deficit”) and how much protein to eat. Rest days have a bigger deficit, hard days a small one or none, test days none. The deficit is based on your check-in weight and target weight, with a weekly safety limit. On the bike: carbs per hour depending on the workout. This is general guidance, not a diet or a medical tool.</p>
+</div>
+
+<h2 id="computer">Full app on a computer</h2>
+<div class="card">
+  <p><span class="only-web">The same address on a computer opens the full view with a sidebar; on a phone: Me → “Open full app”.</span><span class="only-app">On a computer, trening.felsztukier.pl opens the full view with a sidebar – the same account as in the app.</span> Extra screens: Calendar with drag-and-drop to move workouts, Season (all weeks of the program), Library (workouts, zones, rules), Progress with the power curve, form chart and reports, Gear and servicing, Trip (in programs with a trip), data backup.</p>
+  <p class="only-web">The previous phone view (<code>/i</code>) stays as a fallback: Me → “Back to the previous look”; from there, More → “Try the new look”.</p>
+</div>
+
+<h2 id="trouble">Troubleshooting</h2>
+<div class="list">
+  <div class="row"><img src="/m/art/night.png" alt=""><div><b>Yellow “session expired” bar</b><span>Me → Sign out, then sign in again. Data on your phone is kept.</span></div></div>
+  <div class="row only-app"><img src="/m/art/heart.png" alt=""><div><b>A ride doesn’t show up from Strava</b><span>Wait 10 minutes; then at trening.felsztukier.pl: More → Settings → Integrations → “Check webhook” and “Fetch last 30 days”.</span></div></div>
+  <div class="row only-web"><img src="/m/art/heart.png" alt=""><div><b>A ride doesn’t show up from Strava</b><span>Wait 10 minutes; then in the full app: Integrations → “Check webhook” and “Fetch last 30 days”.</span></div></div>
+  <div class="row"><img src="/m/art/bolt.png" alt=""><div><b>The workout isn’t on the Bolt</b><span>Day card → “Send to Bolt”; on the Bolt, refresh Planned Workouts (it syncs through the ELEMNT app).</span></div></div>
+  <div class="row"><img src="/m/art/sun.png" alt=""><div><b>No weather on the card</b><span>Me → Weather → set your location. The forecast is for the ride time in your settings.</span></div></div>
+  <div class="row"><img src="/m/art/test.png" alt=""><div><b>Zones look wrong</b><span>Check FTP and threshold heart rate in Me → “Thresholds and power meter”; after a test, enter the new values.</span></div></div>
+  <div class="row"><img src="/m/art/rest.png" alt=""><div><b>No connection</b><span>Today, Plan, Me and rides work offline. Changes are sent automatically once you’re back online. The coach needs a connection.</span></div></div>
+</div>
+</main>
+<script>
+// skąd przyszliśmy (np. `/m/ja`) – zapisuje ekran, który otwiera pomoc; w WKWebView `document.referrer` bywa pusty
+try {
+  var wroc = sessionStorage.getItem('trening:pomoc-wroc')
+  if (wroc && wroc.charAt(0) === '/' && wroc.charAt(1) !== '/') document.getElementById('back').setAttribute('href', wroc)
+} catch (e) { /* brak pamięci sesji */ }
+// przełącznik języka zastępuje bieżący wpis historii – „Wróć” dalej prowadzi do aplikacji, nie do drugiej wersji pomocy
+document.getElementById('lang').addEventListener('click', function (e) { e.preventDefault(); location.replace(this.getAttribute('href')) })
+document.getElementById('back').addEventListener('click', function (e) {
+  if (history.length > 1 && document.referrer && new URL(document.referrer).origin === location.origin) { e.preventDefault(); history.back() }
+})
+</script>
+</body>
+</html>

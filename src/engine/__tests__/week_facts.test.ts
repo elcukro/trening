@@ -65,5 +65,10 @@ describe('fakty tygodnia', () => {
     expect(letter).toMatch(/8 h 51 min z 8 h 15 min/)
     expect(letter).toMatch(/test – ostatnie dni/)
     expect(numbersOk(letter, f).ok).toBe(true)
+    // list z reguł w języku zawodnika (docs/34 § 6): te same liczby, angielskie zdania
+    const en = ruleLetter(f, 'en')
+    expect(en).toMatch(/8 h 51 min of the 8 h 15 min planned/)
+    expect(en).toMatch(/test in the plan/)
+    expect(numbersOk(en, f).ok).toBe(true)
   })
 })

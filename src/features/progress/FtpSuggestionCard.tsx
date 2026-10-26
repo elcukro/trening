@@ -9,6 +9,7 @@ import { loadStreams } from '@/sync/strava'
 import { Actions, Button, Card, CardTitle } from '@/components/ui'
 import { useToast } from '@/components/Toast'
 import { fmtDayMonth, todayISO } from '@/lib/dates'
+import { useT } from '@/i18n/react'
 
 const DISMISS_PREFIX = 'ftp_dismiss:'
 
@@ -31,6 +32,8 @@ export function useFtpSuggestion(engine: Engine, acts: StravaActivity[]): FtpSug
  */
 export function FtpSuggestionCard({ engine, acts }: { engine: Engine; acts: StravaActivity[] }) {
   const toast = useToast()
+  const tp = useT().progress
+  const tf = tp.ftpSuggestion
   const s = useFtpSuggestion(engine, acts)
   // LTHR z próbek tej jazdy – ładowane asynchronicznie, klucz = jazda (nowa propozycja → nowy odczyt)
   const [lthrFor, setLthrFor] = useState<{ ride_id: string; value: { lthr: number; effort_w: number } | null } | null>(null)
@@ -59,7 +62,7 @@ export function FtpSuggestionCard({ engine, acts }: { engine: Engine; acts: Stra
     setBusy(true)
     try {
       await toast.run(
-        'Zapisuję nowe FTP…',
+        tf.saving,
         () =>
           saveTestResult({
             date: s.ride_date,
@@ -67,9 +70,9 @@ export function FtpSuggestionCard({ engine, acts }: { engine: Engine; acts: Stra
             lthr_bpm: lthr?.lthr ?? null,
             avg_power_w: s.effort_w,
             ftp_w: s.ftp,
-            notes: `Automatycznie z jazdy „${s.ride_name ?? 'Jazda'}”: najlepsze ${s.basis === '20min' ? '20 min × 0,95' : '60 min'}${lthr ? `, LTHR z drugiej połowy wysiłku` : ''}.`,
+            notes: tf.notes(s.ride_name ?? tp.rideFallback, s.basis === '20min', !!lthr),
           }),
-        () => `FTP ${s.ftp} W zapisane – strefy od ${fmtDayMonth(s.ride_date)} + 1 dzień`,
+        () => tf.saved(s.ftp, fmtDayMonth(s.ride_date)),
       )
     } finally {
       setBusy(false)
@@ -83,21 +86,21 @@ export function FtpSuggestionCard({ engine, acts }: { engine: Engine; acts: Stra
 
   return (
     <Card tone="accent">
-      <CardTitle icon="⚡">Zaktualizować FTP do {s.ftp} W?</CardTitle>
+      <CardTitle icon="⚡">{tf.title(s.ftp)}</CardTitle>
       <p className="text-sm">
-        Jazda „{s.ride_name ?? 'Jazda'}” z {fmtDayMonth(s.ride_date)}: najlepsze {s.basis === '20min' ? '20 min' : '60 min'} to <b>{s.effort_w} W</b>
-        {s.basis === '20min' ? ` (× 0,95 = ${s.ftp} W)` : ''}, czyli {Math.round(((s.ftp - s.current_ftp) / s.current_ftp) * 100)} % więcej niż obecne {s.current_ftp} W.
-        {lthr ? ` Tętno z drugiej połowy tego wysiłku: ${lthr.lthr} bpm – zapiszę je jako LTHR.` : ''}
+        {tf.bodyA(s.ride_name ?? tp.rideFallback, fmtDayMonth(s.ride_date), tf.basis(s.basis === '20min'))} <b>{s.effort_w} W</b>
+        {tf.bodyB(s.basis === '20min' ? s.ftp : null, Math.round(((s.ftp - s.current_ftp) / s.current_ftp) * 100), s.current_ftp)}
+        {lthr ? tf.lthr(lthr.lthr) : ''}
       </p>
       <Actions className="mt-3">
         <Button onClick={accept} disabled={busy}>
-          Zapisz jako wynik testu
+          {tf.accept}
         </Button>
         <Button variant="ghost" onClick={dismiss} disabled={busy}>
-          Nie teraz
+          {tf.notNow}
         </Button>
       </Actions>
-      <p className="mt-2 text-xs text-slate-500 dark:text-slate-400">Strefy mocy i tętna zmienią się od następnego dnia (R11). Propozycja pojawia się, gdy jazda przebija FTP o ≥ 3 %.</p>
+      <p className="mt-2 text-xs text-slate-500 dark:text-slate-400">{tf.foot}</p>
     </Card>
   )
 }

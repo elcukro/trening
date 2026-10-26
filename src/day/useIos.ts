@@ -23,6 +23,7 @@ import { todayISO } from '@/lib/dates'
 import { dayFlow, weighDue, type DayFlow, type LogState } from './dayState'
 import type { BoltState } from '@/features/today/WahooStatus'
 import { isCheckedIn } from '@/day/health'
+import { UserError, t as msg } from '@/i18n'
 
 /* ------------------------------------------------------------------ tryb interfejsu */
 
@@ -92,7 +93,7 @@ function useBolt(day: DayPlan | null): BoltState {
   )
   if (!day?.bike || !isPushable(day.bike.workout_id)) return { kind: 'na' }
   if (!row) return { kind: 'missing' }
-  if (row.status === 'error') return { kind: 'error', error: row.error ?? 'błąd wysyłki' }
+  if (row.status === 'error') return { kind: 'error', error: row.error ?? msg().day.bolt.sendError }
   const current = pushItemForDay(day, engine.ctx)
   if (current && row.external_id && row.external_id !== current.external_id) return { kind: 'stale', when: row.updated_at }
   return { kind: 'ok', when: row.updated_at }
@@ -199,14 +200,15 @@ export function useIosDay(date: ISODate): IosDay {
   )
 
   const sendToBolt = useCallback(async () => {
-    if (!supabase) throw new Error('Aplikacja działa lokalnie – wysyłka wymaga konfiguracji Supabase.')
-    if (!day) throw new Error('Tego dnia nie ma w planie.')
+    const L = msg().day.bolt
+    if (!supabase) throw new UserError(L.localOnly)
+    if (!day) throw new UserError(L.noDay)
     const item = pushItemForDay(day, engine.ctx)
-    if (!item) throw new Error('Tego dnia nie ma czego wysłać.')
+    if (!item) throw new UserError(L.nothingToSend)
     const res = await wahoo.push([item])
     const r = res.results[0]
-    if (!r || r.status === 'error') throw new Error(r?.error === 'not_connected' ? 'Najpierw połącz Wahoo w Ustawieniach → Integracje.' : (r?.error ?? 'nieznany błąd'))
-    if (r.plan_linked === false) throw new Error('Trening utworzony, ale Wahoo nie podpięło do niego planu.')
+    if (!r || r.status === 'error') throw r?.error === 'not_connected' ? new UserError(L.notConnected) : new Error(r?.error ?? L.unknownError)
+    if (r.plan_linked === false) throw new UserError(L.planNotLinked)
     return r.status === 'updated' ? ('updated' as const) : ('created' as const)
   }, [day, engine.ctx])
 

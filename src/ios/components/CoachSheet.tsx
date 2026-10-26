@@ -7,10 +7,10 @@ import { useCoach } from '@/day/useCoach'
 import type { IosDay } from '@/day/useIos'
 import { Sheet } from './Chrome'
 import { IconCheck, IconClose } from './Icons'
+import { useT } from '@/i18n/react'
 
 /** Ile razy z rzędu model może sięgnąć po narzędzie w jednej wiadomości (każda runda = jedno wywołanie modelu). */
 const MAX_ROUNDS = 4
-const EXAMPLES = ['Waga 104,8, tętno 52, spałem słabo, nogi 3', 'Co mnie czeka w tym tygodniu?', 'Jutro nie dam rady jechać – co z tym zrobić?', 'Jak wyszła sobotnia jazda?']
 
 interface Line {
   role: 'user' | 'assistant' | 'tool'
@@ -40,6 +40,8 @@ function toLines(messages: ChatMessage[]): Line[] {
 /** Czat z trenerem (docs/23): kontekst z aplikacji przy każdej wiadomości, narzędzia wykonywane lokalnie. */
 export function CoachSheet({ d, date, onClose }: { d: IosDay; date: ISODate; onClose: () => void }) {
   const toast = useToast()
+  const tr = useT()
+  const tx = tr.ios.coach
   const { context, deps } = useCoach(d, date)
   const [messages, setMessages] = useState<ChatMessage[]>([])
   const [loaded, setLoaded] = useState(false)
@@ -69,7 +71,7 @@ export function CoachSheet({ d, date, onClose }: { d: IosDay; date: ISODate; onC
       setDraft('')
       let history: ChatMessage[] = [...messages, { role: 'user', content: t }]
       setMessages(history)
-      setBusy('Trener czyta…')
+      setBusy(tx.reading)
       try {
         for (let round = 0; round < MAX_ROUNDS; round++) {
           const reply = await askCoach(history, context())
@@ -78,23 +80,23 @@ export function CoachSheet({ d, date, onClose }: { d: IosDay; date: ISODate; onC
           if (reply.stop_reason !== 'tool_use' || !reply.tools.length) break
           const results: ChatBlock[] = []
           for (const call of reply.tools) {
-            setBusy(`Wykonuję: ${TOOL_LABEL[call.name] ?? call.name}…`)
+            setBusy(tx.running((tx.tool as Record<string, string>)[call.name] ?? call.name))
             const r = await runCoachTool(call.name, call.input, deps)
             results.push({ type: 'tool_result', tool_use_id: call.id, content: r.text, ...(r.ok ? {} : { is_error: true }) })
-            if (r.ok && r.changed) toast.notify(CHANGED_LABEL[r.changed] ?? 'Zapisano')
+            if (r.ok && r.changed) toast.notify((tx.changed as Record<string, string>)[r.changed] ?? tr.common.saved)
           }
           history = [...history, { role: 'user', content: results }]
           setMessages(history)
-          setBusy('Trener odpowiada…')
+          setBusy(tx.replying)
         }
       } catch (e) {
-        setError(e instanceof Error ? e.message : 'Trener nie odpowiada')
+        setError(e instanceof Error ? e.message : tx.noReply)
       } finally {
         setBusy(null)
         await saveChat(date, history)
       }
     },
-    [busy, messages, context, deps, date, toast],
+    [busy, messages, context, deps, date, toast, tx, tr],
   )
 
   const reset = async () => {
@@ -106,14 +108,14 @@ export function CoachSheet({ d, date, onClose }: { d: IosDay; date: ISODate; onC
   const lines = toLines(messages)
 
   return (
-    <Sheet title="Zapytaj trenera" onClose={onClose} done={lines.length ? { label: 'Wyczyść', onClick: () => void reset(), disabled: !!busy } : undefined}>
+    <Sheet title={tx.title} onClose={onClose} done={lines.length ? { label: tx.clear, onClick: () => void reset(), disabled: !!busy } : undefined}>
       <div className="flex min-h-full flex-col px-4" style={{ minHeight: '60vh' }}>
-        {!canChat && <p className="ios-footnote ios-dim py-6 text-center">Czat wymaga konta – aplikacja działa lokalnie.</p>}
+        {!canChat && <p className="ios-footnote ios-dim py-6 text-center">{tx.needsAccount}</p>}
         {canChat && loaded && !lines.length && (
           <div className="py-2">
-            <p className="ios-footnote ios-dim mb-3">Trener widzi Twój plan, ostatnie jazdy i check-iny. Możesz podać dane zdaniem (zapisze je), zapytać o plan albo poprosić o przeniesienie jazdy.</p>
+            <p className="ios-footnote ios-dim mb-3">{tx.intro}</p>
             <div className="flex flex-col gap-2">
-              {EXAMPLES.map((x) => (
+              {tx.examples.map((x) => (
                 <button key={x} className="ios-press rounded-xl px-3 py-2 text-left text-[15px]" style={{ background: 'var(--fill)', color: 'var(--label)' }} onClick={() => void send(x)}>
                   {x}
                 </button>
@@ -152,8 +154,8 @@ export function CoachSheet({ d, date, onClose }: { d: IosDay; date: ISODate; onC
               className="ios-input ios-input-block"
               style={{ padding: '10px 12px', resize: 'none' }}
               rows={1}
-              placeholder="Napisz do trenera…"
-              aria-label="Wiadomość do trenera"
+              placeholder={tx.placeholder}
+              aria-label={tx.inputLabel}
               value={draft}
               disabled={!!busy}
               onChange={(e) => setDraft(e.target.value)}
@@ -164,8 +166,8 @@ export function CoachSheet({ d, date, onClose }: { d: IosDay; date: ISODate; onC
                 }
               }}
             />
-            <button type="submit" className="ios-btn ios-btn-filled shrink-0" disabled={!!busy || !draft.trim()} aria-label="Wyślij">
-              Wyślij
+            <button type="submit" className="ios-btn ios-btn-filled shrink-0" disabled={!!busy || !draft.trim()} aria-label={tx.send}>
+              {tx.send}
             </button>
           </form>
         )}
@@ -173,6 +175,3 @@ export function CoachSheet({ d, date, onClose }: { d: IosDay; date: ISODate; onC
     </Sheet>
   )
 }
-
-const TOOL_LABEL: Record<string, string> = { save_checkin: 'zapis check-inu', set_rpe: 'zapis RPE', mark_skipped: 'oznaczenie pominięcia', move_ride: 'przeniesienie jazdy', push_wahoo: 'wysyłka na Bolta' }
-const CHANGED_LABEL: Record<string, string> = { checkin: 'Check-in zapisany', log: 'RPE zapisane', plan: 'Plan zmieniony', bolt: 'Wysłano na Bolta' }

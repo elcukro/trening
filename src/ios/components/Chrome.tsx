@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState, type ReactNode } from 'react'
 import { useNavigate } from 'react-router'
+import { useT } from '@/i18n/react'
 import { IconChevronLeft, IconClose } from './Icons'
 
 /* ------------------------------------------------------------------ ekran */
@@ -8,9 +9,10 @@ import { IconChevronLeft, IconClose } from './Icons'
  * Ekran z paskiem nawigacji w stylu iOS: duży tytuł zwija się do środka paska,
  * gdy strona zjedzie w dół. Tło paska pojawia się dopiero po przewinięciu.
  */
-export function Screen({ title, subtitle, back, backLabel = 'Wróć', action, children }: { title: string; subtitle?: ReactNode; back?: string | (() => void); backLabel?: string; action?: ReactNode; children: ReactNode }) {
+export function Screen({ title, subtitle, back, backLabel, action, children }: { title: string; subtitle?: ReactNode; back?: string | (() => void); backLabel?: string; action?: ReactNode; children: ReactNode }) {
   const [scrolled, setScrolled] = useState(false)
   const navigate = useNavigate()
+  const t = useT()
   const sentinel = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
@@ -28,7 +30,7 @@ export function Screen({ title, subtitle, back, backLabel = 'Wróć', action, ch
           {back ? (
             <button className="ios-back" onClick={() => (typeof back === 'string' ? navigate(back) : back())}>
               <IconChevronLeft size={22} />
-              {backLabel}
+              {backLabel ?? t.common.back}
             </button>
           ) : (
             <span className="w-2" />
@@ -137,6 +139,7 @@ export function Seg<T extends string>({ value, onChange, options, label }: { val
 /** Arkusz wysuwany od dołu; zamyka go tło, przycisk „Gotowe” i klawisz Escape. */
 export function Sheet({ title, onClose, children, done }: { title: string; onClose: () => void; children: ReactNode; done?: { label: string; onClick: () => void; disabled?: boolean } }) {
   const panel = useRef<HTMLDivElement>(null)
+  const t = useT()
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
       if (e.key === 'Escape') onClose()
@@ -157,7 +160,7 @@ export function Sheet({ title, onClose, children, done }: { title: string; onClo
       <div ref={panel} tabIndex={-1} className="ios-sheet focus:outline-none" role="dialog" aria-modal="true" aria-label={title}>
         <div className="ios-grabber" />
         <div className="ios-hairline-t relative flex items-center justify-between gap-2 px-2 py-2" style={{ boxShadow: 'none' }}>
-          <button className="ios-nav-action" onClick={onClose} aria-label="Zamknij">
+          <button className="ios-nav-action" onClick={onClose} aria-label={t.common.close}>
             <IconClose size={20} />
           </button>
           <span className="ios-headline absolute left-1/2 -translate-x-1/2">{title}</span>

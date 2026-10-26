@@ -1,4 +1,5 @@
-import { supabase } from './supabase'
+import { t, UserError } from '@/i18n'
+import { langHeaders, supabase } from './supabase'
 import { db } from '@/db'
 import type { RideSamples } from '@/engine/analysis'
 
@@ -11,26 +12,21 @@ export interface StravaStatus {
 }
 
 
-const ERROR_PL: Record<string, string> = {
-  unauthorized: 'Zaloguj się w Ustawieniach → Konto, żeby korzystać z integracji.',
-  not_connected: 'Integracja nie jest połączona – zrób to w Ustawieniach → Integracje.',
-  no_items: 'Na ten okres nie ma treningów do wysłania.',
-  unknown_action: 'Nieznana akcja – zgłoś błąd.',
-  method: 'Nieobsługiwane żądanie.',
-}
-
-function translate(code: string): string {
-  return ERROR_PL[code] ?? code
+/** Kod błędu funkcji → zdanie dla zawodnika (`UserError`); nieznany kod zostaje technicznym błędem. */
+function translate(code: string): Error {
+  const m = t().sync.fn
+  const known: Record<string, string> = { unauthorized: m.unauthorized, not_connected: m.notConnected, no_items: m.noItems, unknown_action: m.unknownAction, method: m.method }
+  return known[code] ? new UserError(known[code]) : new Error(code)
 }
 
 /** Żądanie do funkcji nie może wisieć w nieskończoność – bez tego interfejs zostaje „w toku”. */
 async function withTimeout<T>(p: Promise<T>, ms = 45_000): Promise<T> {
-  return Promise.race([p, new Promise<never>((_, reject) => setTimeout(() => reject(new Error(`Brak odpowiedzi serwera w ${ms / 1000} s.`)), ms))])
+  return Promise.race([p, new Promise<never>((_, reject) => setTimeout(() => reject(new UserError(t().sync.timeout(ms / 1000))), ms))])
 }
 
 async function call<T>(action: string, extra: Record<string, unknown> = {}): Promise<T> {
-  if (!supabase) throw new Error('Brak konfiguracji Supabase.')
-  const { data, error } = await withTimeout(supabase.functions.invoke('strava-oauth', { body: { action, ...extra } }))
+  if (!supabase) throw new UserError(t().sync.noBackend)
+  const { data, error } = await withTimeout(supabase.functions.invoke('strava-oauth', { body: { action, ...extra }, headers: langHeaders() }))
   if (error) {
     let detail = error.message
     try {
@@ -39,7 +35,7 @@ async function call<T>(action: string, extra: Record<string, unknown> = {}): Pro
     } catch {
       /* ignoruj */
     }
-    throw new Error(translate(detail))
+    throw translate(detail)
   }
   return data as T
 }

@@ -1,4 +1,5 @@
 import { diffDays, type ISODate } from '@/engine/dates'
+import { t } from '@/i18n'
 
 /**
  * Stan dnia dla uproszczonego interfejsu: lista kroków „od rana do podsumowania”
@@ -47,11 +48,12 @@ export function dayFlow(inp: DayFlowInput): DayFlow {
   const past = inp.date < inp.today
   const future = inp.date > inp.today
   const steps: DayStep[] = []
+  const L = t().day.steps
 
   steps.push({
     key: 'checkin',
-    title: 'Poranny check-in',
-    detail: inp.checkedIn ? null : 'Waga, sen, nogi, motywacja – 20 sekund',
+    title: L.checkin,
+    detail: inp.checkedIn ? null : L.checkinDetail,
     done: inp.checkedIn,
     actionable: !future,
   })
@@ -59,8 +61,8 @@ export function dayFlow(inp: DayFlowInput): DayFlow {
   if (inp.ride?.pushable) {
     steps.push({
       key: 'bolt',
-      title: 'Plan na Bolcie',
-      detail: inp.boltReady ? 'Wysłany – zsynchronizuj licznik' : 'Wyślij trening na licznik',
+      title: L.bolt,
+      detail: inp.boltReady ? L.boltSent : L.boltSend,
       done: inp.boltReady,
       actionable: !past,
     })
@@ -77,8 +79,8 @@ export function dayFlow(inp: DayFlowInput): DayFlow {
     })
     steps.push({
       key: 'log',
-      title: 'Podsumowanie',
-      detail: logged ? null : 'Jak poszło? Jedno dotknięcie',
+      title: L.log,
+      detail: logged ? null : L.logDetail,
       done: logged,
       actionable: !future,
     })
@@ -109,20 +111,22 @@ export interface FormLabel {
 /** TSB (forma) w ludzkich słowach – zamiast liczby, której nikt rano nie interpretuje. */
 export function formLabel(tsb: number | null): FormLabel | null {
   if (tsb == null || !Number.isFinite(tsb)) return null
-  if (tsb > 20) return { text: 'Wypoczęty', hint: 'Dużo świeżości – można docisnąć', tone: 'good' }
-  if (tsb > 5) return { text: 'Świeży', hint: 'Dobry moment na mocny trening', tone: 'good' }
-  if (tsb > -12) return { text: 'W formie', hint: 'Równowaga między obciążeniem a odpoczynkiem', tone: 'ok' }
-  if (tsb > -28) return { text: 'Zmęczony', hint: 'Normalne w bloku – pilnuj snu', tone: 'ok' }
-  return { text: 'Przeciążony', hint: 'Rozważ lżejszy dzień', tone: 'warn' }
+  const f = t().day.form
+  if (tsb > 20) return { ...f.rested, tone: 'good' }
+  if (tsb > 5) return { ...f.fresh, tone: 'good' }
+  if (tsb > -12) return { ...f.inForm, tone: 'ok' }
+  if (tsb > -28) return { ...f.tired, tone: 'ok' }
+  return { ...f.overloaded, tone: 'warn' }
 }
 
 /** Ocena zgodności wykonania z planem – jedno zdanie zamiast tabeli kroków. */
 export function rideVerdict(score: number | null): { text: string; tone: 'good' | 'ok' | 'warn' } | null {
   if (score == null) return null
-  if (score >= 85) return { text: 'Zgodnie z planem', tone: 'good' }
-  if (score >= 70) return { text: 'Blisko planu', tone: 'ok' }
-  if (score >= 45) return { text: 'Sporo odstępstw od planu', tone: 'warn' }
-  return { text: 'Inny trening niż zaplanowany', tone: 'warn' }
+  const v = t().day.verdict
+  if (score >= 85) return { text: v.onPlan, tone: 'good' }
+  if (score >= 70) return { text: v.close, tone: 'ok' }
+  if (score >= 45) return { text: v.off, tone: 'warn' }
+  return { text: v.different, tone: 'warn' }
 }
 
 /** Postęp do celu programu: obecne FTP względem wymaganego. */

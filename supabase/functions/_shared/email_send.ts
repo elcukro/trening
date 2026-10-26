@@ -12,8 +12,10 @@ import { callClaude, loadRide, loadRidesRange, underLimit, type RideRef } from '
 import { assertAiSafe } from './provenance.ts'
 import { fromStrava, fromWahoo, twinOf, type RideRow } from './rides.ts'
 import { buildWorkoutView, fulfilsPlan, type DaySnapshot, type RideLite } from './email_views.ts'
+import { aiLangRule, fix, strings, weekdayOf, weekRange, type Lang } from './i18n.ts'
+import { userLang } from './supabase.ts'
 
-const FROM = 'Trening <trening@felsztukier.pl>'
+const FROM = 'Bicycle Coach <trening@felsztukier.pl>'
 export type EmailKind = 'morning' | 'workout' | 'weekly'
 
 /** Data „dziś” i godzina w Europe/Warsaw. */
@@ -59,45 +61,48 @@ export async function legsLinks(userId: string, date: string): Promise<{ value: 
 }
 
 /** Zapis „nogi” z linku: check-in dnia powstaje, jeśli go nie ma (reszta pól zostaje pusta do uzupełnienia w aplikacji). */
-export async function applyLegs(admin: SupabaseClient, token: string): Promise<{ date: string; legs: number; ok: boolean; reason?: string } | null> {
+/** Powód nieudanego zapisu z linku – tekst dla zawodnika w `strings(lang).pages.reasons`. */
+export type LinkFailure = 'expired' | 'no_ride' | 'db'
+
+export async function applyLegs(admin: SupabaseClient, token: string): Promise<{ userId: string; date: string; legs: number; ok: boolean; reason?: LinkFailure; detail?: string } | null> {
   const payload = await verify(token).catch(() => null)
   const m = payload?.match(/^legs:([0-9a-f-]{36}):(\d{4}-\d{2}-\d{2}):([1-5])$/)
   if (!m) return null
   const [, userId, date, v] = m
   const legs = Number(v)
   const ageDays = (Date.now() - new Date(`${date}T00:00:00Z`).getTime()) / 86_400_000
-  if (ageDays > 7 || ageDays < -1) return { date: date!, legs, ok: false, reason: 'za stary link' }
+  if (ageDays > 7 || ageDays < -1) return { userId: userId!, date: date!, legs, ok: false, reason: 'expired' }
   const { data: row } = await admin.from('checkins').select('id').eq('user_id', userId).eq('date', date).is('deleted_at', null).order('updated_at', { ascending: false }).limit(1).maybeSingle()
   const now = new Date().toISOString()
   const { error } = row ? await admin.from('checkins').update({ legs, updated_at: now }).eq('id', row.id) : await admin.from('checkins').insert({ user_id: userId, date, legs, updated_at: now })
-  if (error) return { date: date!, legs, ok: false, reason: error.message }
-  return { date: date!, legs, ok: true }
+  if (error) return { userId: userId!, date: date!, legs, ok: false, reason: 'db', detail: error.message }
+  return { userId: userId!, date: date!, legs, ok: true }
 }
 
 /** Zapis RPE z linku: tylko dla istniejącej jazdy dnia (log z importu) i tylko do 45 dni wstecz. */
-export async function applyRpe(admin: SupabaseClient, token: string): Promise<{ date: string; rpe: number; ok: boolean; reason?: string } | null> {
+export async function applyRpe(admin: SupabaseClient, token: string): Promise<{ userId: string; date: string; rpe: number; ok: boolean; reason?: LinkFailure; detail?: string } | null> {
   const payload = await verify(token).catch(() => null)
   const m = payload?.match(/^rpe:([0-9a-f-]{36}):(\d{4}-\d{2}-\d{2}):(10|[1-9])$/)
   if (!m) return null
   const [, userId, date, rpeStr] = m
   const rpe = Number(rpeStr)
   const ageDays = (Date.now() - new Date(`${date}T00:00:00Z`).getTime()) / 86_400_000
-  if (ageDays > 45 || ageDays < -1) return { date: date!, rpe, ok: false, reason: 'za stary link' }
+  if (ageDays > 45 || ageDays < -1) return { userId: userId!, date: date!, rpe, ok: false, reason: 'expired' }
   const { data: log } = await admin.from('session_logs').select('id').eq('user_id', userId).eq('date', date).eq('kind', 'bike').is('deleted_at', null).order('updated_at', { ascending: false }).limit(1).maybeSingle()
-  if (!log) return { date: date!, rpe, ok: false, reason: 'brak jazdy tego dnia' }
+  if (!log) return { userId: userId!, date: date!, rpe, ok: false, reason: 'no_ride' }
   const { error } = await admin.from('session_logs').update({ rpe, updated_at: new Date().toISOString() }).eq('id', log.id)
-  if (error) return { date: date!, rpe, ok: false, reason: error.message }
-  return { date: date!, rpe, ok: true }
+  if (error) return { userId: userId!, date: date!, rpe, ok: false, reason: 'db', detail: error.message }
+  return { userId: userId!, date: date!, rpe, ok: true }
 }
 
-export async function unsubscribe(admin: SupabaseClient, token: string): Promise<EmailKind | null> {
+export async function unsubscribe(admin: SupabaseClient, token: string): Promise<{ kind: EmailKind; userId: string } | null> {
   // uszkodzony token (np. obcięty w kliencie poczty) = nieprawidłowy link, nie błąd serwera
   const payload = await verify(token).catch(() => null)
   const m = payload?.match(/^unsub:([0-9a-f-]{36}):(morning|workout|weekly)$/)
   if (!m) return null
   const kind = m[2] as EmailKind
   await admin.from('profiles').update({ [`email_${kind}`]: false }).eq('user_id', m[1])
-  return kind
+  return { kind, userId: m[1]! }
 }
 
 export async function resend(to: string, mail: EmailOut, unsub: string | null, subjectPrefix = ''): Promise<{ id: string | null; error: string | null }> {
@@ -150,7 +155,7 @@ export async function sendMorning(admin: SupabaseClient, userId: string, date: s
   const unsub = await unsubscribeUrl(userId, 'morning')
   const { data: ci } = await admin.from('checkins').select('legs').eq('user_id', userId).eq('date', date).is('deleted_at', null).order('updated_at', { ascending: false }).limit(1).maybeSingle()
   view.legs = { links: await legsLinks(userId, date), current: (ci?.legs as number | null) ?? null }
-  const r = await resend(to, morningEmail(view, { unsubscribeUrl: unsub }), unsub)
+  const r = await resend(to, morningEmail(view, { unsubscribeUrl: unsub, lang: await userLang(admin, userId) }), unsub)
   await finish(admin, userId, 'morning', date, r)
   return r.error ?? 'wysłane'
 }
@@ -200,7 +205,9 @@ async function currentRpe(admin: SupabaseClient, userId: string, date: string): 
 }
 
 async function sendWorkoutMail(admin: SupabaseClient, userId: string, kindRef: string, name: string, a: RideRow, snap: DaySnapshot | null, extras: RideRow[]): Promise<string> {
+  const lang = await userLang(admin, userId)
   const view = buildWorkoutView(rideLite(a), snap, {
+    lang,
     athlete: name,
     appUrl: APP_URL,
     weekDoneMin: await weekDoneMin(admin, userId, a.date),
@@ -212,7 +219,7 @@ async function sendWorkoutMail(admin: SupabaseClient, userId: string, kindRef: s
   const to = await emailOf(admin, userId)
   if (!to) return 'brak adresu'
   const unsub = await unsubscribeUrl(userId, 'workout')
-  const r = await resend(to, workoutEmail(view, { unsubscribeUrl: unsub }), unsub)
+  const r = await resend(to, workoutEmail(view, { unsubscribeUrl: unsub, lang }), unsub)
   await finish(admin, userId, 'workout', kindRef, r)
   return r.error ?? 'wysłane'
 }
@@ -290,18 +297,18 @@ export async function runMorning(admin: SupabaseClient): Promise<Record<string, 
 
 export const WEEKLY_HOUR = 19
 
-const pl1 = (x: number) => x.toFixed(1).replace('.', ',')
-
-/** Widok maila z faktów tygodnia i gotowego listu. */
-export function weeklyView(f: WeekFacts, letter: string, athlete: string): WeeklyView {
+/** Widok maila z faktów tygodnia i gotowego listu (dni tygodnia i etykiety w języku zawodnika). */
+export function weeklyView(f: WeekFacts, letter: string, athlete: string, lang: Lang = 'pl'): WeeklyView {
+  const pl1 = (x: number) => fix(x, 1, lang)
+  const day = (d: { date: string; weekday: string }) => (lang === 'pl' ? d.weekday : weekdayOf(d.date, lang))
   return {
     athlete,
     appUrl: `${APP_URL}/i`,
     reportUrl: `${APP_URL}/postep/tydzien/${f.week.monday}`,
-    weekLabel: f.week.label,
+    weekLabel: lang === 'pl' ? f.week.label : weekRange(f.week.monday, lang),
     letter: letter.split(/\n\s*\n/).map((p) => p.trim()).filter(Boolean),
     days: f.days.map((d) => ({
-      weekday: d.weekday,
+      weekday: day(d),
       planned: d.planned ? `${d.planned.name} · ${hm(d.planned.minutes)}` : null,
       outcome: d.outcome,
       summary: d.rides.length ? d.rides.map((r) => `${hm(r.minutes)}, ${pl1(r.km)} km${r.avg_w != null ? `, ${r.avg_w} W` : ''}${r.avg_hr != null ? `, ${r.avg_hr} bpm` : ''}${r.tss != null ? `, TSS ${r.tss}` : ''}`).join(' + ') + (d.rpe != null ? ` · RPE ${d.rpe}` : '') : null,
@@ -316,7 +323,7 @@ export function weeklyView(f: WeekFacts, letter: string, athlete: string): Weekl
           },
         ].filter((b) => b.weight || b.rhr || b.legs)
       : [],
-    next: f.next_week ? { label: `Następny tydzień · ${hm(f.next_week.total_min)}${f.next_week.week_type === 'deload' ? ' · rozładowanie' : ''}`, days: f.next_week.days.map((d) => ({ weekday: d.weekday, name: d.name, minutes: d.minutes, key: d.day_type === 'key' || d.day_type === 'test' })) } : null,
+    next: f.next_week ? { label: strings(lang).mail.weekly.next(hm(f.next_week.total_min), f.next_week.week_type === 'deload'), days: f.next_week.days.map((d) => ({ weekday: day(d), name: d.name, minutes: d.minutes, key: d.day_type === 'key' || d.day_type === 'test' })) } : null,
   }
 }
 
@@ -350,19 +357,18 @@ export async function gatherWeek(admin: SupabaseClient, userId: string, monday: 
 }
 
 /** Zdanie o jazdach, których list nie omawia (są tylko na Stravie, a ich danych nie przekazujemy AI). */
-export function stravaOnlyLine(n: number): string {
-  const what = n === 1 ? '1 jazda jest' : n < 5 ? `${n} jazdy są` : `${n} jazd jest`
-  return `${what} tylko na Stravie – list ich nie omawia, ale widzisz je w aplikacji.`
+export function stravaOnlyLine(n: number, lang: Lang = 'pl'): string {
+  return strings(lang).letter.stravaOnly(n)
 }
 
 /** List: model z jedną poprawką (liczby tylko z faktów, 90–240 słów), inaczej list z reguł. */
-export async function writeLetter(admin: SupabaseClient, userId: string, facts: WeekFacts): Promise<{ letter: string; source: 'ai' | 'rules'; detail: string }> {
+export async function writeLetter(admin: SupabaseClient, userId: string, facts: WeekFacts, lang: Lang = 'pl'): Promise<{ letter: string; source: 'ai' | 'rules'; detail: string }> {
   let detail = ''
   try {
     if (!Deno.env.get('ANTHROPIC_API_KEY')) throw new Error('brak klucza')
     if (!(await underLimit(admin))) throw new Error('limit miesięczny')
     assertAiSafe(facts)
-    const system = `${WEEK_SYSTEM}\n\nUSTALENIA O TYM ZAWODNIKU\n${facts.athlete.coach_notes.map((n) => `- ${n}`).join('\n') || '- brak'}`
+    const system = [WEEK_SYSTEM, `USTALENIA O TYM ZAWODNIKU\n${facts.athlete.coach_notes.map((n) => `- ${n}`).join('\n') || '- brak'}`, aiLangRule(lang)].filter(Boolean).join('\n\n')
     let user = weekPrompt(facts)
     for (let attempt = 0; attempt < 2; attempt++) {
       const r = await callClaude(system, user, undefined, 6000)
@@ -377,11 +383,11 @@ export async function writeLetter(admin: SupabaseClient, userId: string, facts: 
   } catch (e) {
     detail = e instanceof Error ? e.message : String(e)
   }
-  return { letter: ruleLetter(facts), source: 'rules', detail }
+  return { letter: ruleLetter(facts, lang), source: 'rules', detail }
 }
 
 /** Niedzielny list dla jednego użytkownika za tydzień zaczynający się w `monday`. */
-export async function sendWeekly(admin: SupabaseClient, userId: string, monday: string, opts: { force?: boolean; subjectPrefix?: string } = {}): Promise<string> {
+export async function sendWeekly(admin: SupabaseClient, userId: string, monday: string, opts: { force?: boolean; subjectPrefix?: string; lang?: Lang } = {}): Promise<string> {
   const { data: profile } = await admin.from('profiles').select('email_weekly, name').eq('user_id', userId).maybeSingle()
   if (!opts.force && !profile?.email_weekly) return 'wyłączone'
   const facts = await gatherWeek(admin, userId, monday)
@@ -389,13 +395,14 @@ export async function sendWeekly(admin: SupabaseClient, userId: string, monday: 
   if (!opts.force && !(await reserve(admin, userId, 'weekly', monday))) return 'już wysłane'
   const to = await emailOf(admin, userId)
   if (!to) return 'brak adresu'
-  const ai = await writeLetter(admin, userId, facts)
+  const lang = opts.lang ?? (await userLang(admin, userId))
+  const ai = await writeLetter(admin, userId, facts, lang)
   const { source, detail } = ai
   // jazdy tylko ze Stravy nie idą do modelu – kod dopisuje o nich zdanie poza tekstem listu
   const stravaOnly = (await loadRidesRange(admin, userId, monday, addDays(monday, 6), false)).filter((r) => r.source === 'strava').length
-  const letter = stravaOnly ? `${ai.letter}\n\n${stravaOnlyLine(stravaOnly)}` : ai.letter
+  const letter = stravaOnly ? `${ai.letter}\n\n${stravaOnlyLine(stravaOnly, lang)}` : ai.letter
   const unsub = opts.force ? null : await unsubscribeUrl(userId, 'weekly')
-  const r = await resend(to, weeklyEmail(weeklyView(facts, letter, (profile?.name as string) ?? ''), { unsubscribeUrl: unsub }), unsub, opts.subjectPrefix ?? '')
+  const r = await resend(to, weeklyEmail(weeklyView(facts, letter, (profile?.name as string) ?? '', lang), { unsubscribeUrl: unsub, lang }), unsub, opts.subjectPrefix ?? '')
   if (!opts.force) await finish(admin, userId, 'weekly', monday, r)
   return r.error ?? `wysłane (${source}${detail ? `: ${detail.slice(0, 120)}` : ''})`
 }

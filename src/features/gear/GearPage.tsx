@@ -10,6 +10,8 @@ import { todayISO, fmtDate } from '@/lib/dates'
 import { num } from '@/lib/format'
 import { Actions, Badge, Button, Card, CardSection, CardTitle, Field, Input, PageTitle, Select } from '@/components/ui'
 import { useToast } from '@/components/Toast'
+import { intlLocale, t as tNow } from '@/i18n'
+import { useT } from '@/i18n/react'
 
 /**
  * Sprzęt (docs/18, krok 4): rowery są danymi konta, serwis cykliczny powstaje z szablonu dla każdego roweru,
@@ -21,12 +23,14 @@ const EMPTY_BIKE: BikeForm = { name: '', kind: 'road', brakes: 'disc', role: '' 
 
 function BikesCard({ bikes }: { bikes: BikeRow[] }) {
   const toast = useToast()
+  const tr = useT()
+  const G = tr.classic.gear
   const [form, setForm] = useState<BikeForm | null>(null)
 
   async function save() {
     if (!form?.name.trim()) return
     const f = form
-    await toast.run('Zapisuję rower…', () => saveBike({ id: f.id, name: f.name.trim(), kind: f.kind, brakes: f.brakes, role: f.role.trim() || null }), () => 'Rower zapisany')
+    await toast.run(G.savingBike, () => saveBike({ id: f.id, name: f.name.trim(), kind: f.kind, brakes: f.brakes, role: f.role.trim() || null }), () => tNow().classic.gear.bikeSaved)
     setForm(null)
   }
 
@@ -37,26 +41,26 @@ function BikesCard({ bikes }: { bikes: BikeRow[] }) {
         right={
           !form && (
             <Button variant="ghost" size="sm" onClick={() => setForm(EMPTY_BIKE)}>
-              + Rower
+              + {G.addBike}
             </Button>
           )
         }
       >
-        Twoje rowery
+        {G.bikesTitle}
       </CardTitle>
-      {bikes.length === 0 && !form && <p className="text-sm text-slate-600 dark:text-slate-300">Dodaj swój rower – serwis cykliczny (łańcuch, opony, hamulce) dobierze się do jego typu i hamulców.</p>}
+      {bikes.length === 0 && !form && <p className="text-sm text-slate-600 dark:text-slate-300">{G.bikesEmpty}</p>}
       <ul className="divide-y divide-slate-100 dark:divide-slate-700/80">
         {bikes.map((b) => (
           <li key={b.id} className="flex items-start gap-3 py-2">
             <div className="min-w-0 flex-1">
               <div className="text-sm font-semibold">{b.name}</div>
               <div className="text-xs text-slate-500 dark:text-slate-400">
-                {BIKE_KIND_LABEL[b.kind]} · hamulce {BRAKES_LABEL[b.brakes]}
+                {BIKE_KIND_LABEL[b.kind]} · {G.brakesInline(BRAKES_LABEL[b.brakes])}
               </div>
               {b.role && <p className="mt-0.5 text-sm text-slate-600 dark:text-slate-300">{b.role}</p>}
             </div>
             <Button variant="ghost" size="sm" onClick={() => setForm({ id: b.id, name: b.name, kind: b.kind, brakes: b.brakes, role: b.role ?? '' })}>
-              Edytuj
+              {tr.common.edit}
             </Button>
           </li>
         ))}
@@ -64,10 +68,10 @@ function BikesCard({ bikes }: { bikes: BikeRow[] }) {
       {form && (
         <CardSection>
           <div className="grid grid-cols-2 gap-3">
-            <Field label="Nazwa" className="col-span-2">
-              <Input value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} placeholder="np. marka i model" />
+            <Field label={G.name} className="col-span-2">
+              <Input value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} placeholder={G.namePlaceholder} />
             </Field>
-            <Field label="Typ">
+            <Field label={G.kind}>
               <Select value={form.kind} onChange={(e) => setForm({ ...form, kind: e.target.value as BikeKind })}>
                 {(Object.keys(BIKE_KIND_LABEL) as BikeKind[]).map((k) => (
                   <option key={k} value={k}>
@@ -76,7 +80,7 @@ function BikesCard({ bikes }: { bikes: BikeRow[] }) {
                 ))}
               </Select>
             </Field>
-            <Field label="Hamulce">
+            <Field label={G.brakes}>
               <Select value={form.brakes} onChange={(e) => setForm({ ...form, brakes: e.target.value as BrakeKind })}>
                 {(Object.keys(BRAKES_LABEL) as BrakeKind[]).map((k) => (
                   <option key={k} value={k}>
@@ -85,27 +89,27 @@ function BikesCard({ bikes }: { bikes: BikeRow[] }) {
                 ))}
               </Select>
             </Field>
-            <Field label="Do czego (opcjonalnie)" className="col-span-2">
-              <Input value={form.role} onChange={(e) => setForm({ ...form, role: e.target.value })} placeholder="np. trenażer, zima, długie jazdy" />
+            <Field label={G.role} className="col-span-2">
+              <Input value={form.role} onChange={(e) => setForm({ ...form, role: e.target.value })} placeholder={G.rolePlaceholder} />
             </Field>
           </div>
           <Actions className="mt-3">
             <Button onClick={save} disabled={!form.name.trim()} className="flex-1">
-              Zapisz
+              {tr.common.save}
             </Button>
             <Button variant="secondary" onClick={() => setForm(null)}>
-              Anuluj
+              {tr.common.cancel}
             </Button>
             {form.id && (
               <Button
                 variant="danger"
                 onClick={() => {
                   const id = form.id!
-                  void toast.run('Usuwam…', () => deleteBike(id), () => 'Rower usunięty')
+                  void toast.run(G.deleting, () => deleteBike(id), () => tNow().classic.gear.bikeDeleted)
                   setForm(null)
                 }}
               >
-                Usuń
+                {tr.common.delete}
               </Button>
             )}
           </Actions>
@@ -118,11 +122,13 @@ function BikesCard({ bikes }: { bikes: BikeRow[] }) {
 export function GearPage() {
   const engine = useEngine()
   const toast = useToast()
+  const tr = useT()
+  const G = tr.classic.gear
   const today = todayISO()
   const allBikes = useLiveQuery(() => db.bikes.toArray(), [], [] as BikeRow[])
   const states = useLiveQuery(() => db.gear_task_state.toArray(), [], [] as GearTaskState[])
   const services = useLiveQuery(() => db.service_log.orderBy('date').reverse().toArray(), [], [] as ServiceLogRow[])
-  const bikes = useMemo(() => allBikes.filter((b) => !b.deleted_at).toSorted((a, b) => a.name.localeCompare(b.name, 'pl')), [allBikes])
+  const bikes = useMemo(() => allBikes.filter((b) => !b.deleted_at).toSorted((a, b) => a.name.localeCompare(b.name, intlLocale())), [allBikes])
   const [open, setOpen] = useState<string | null>(null)
   const [form, setForm] = useState({ date: today, bike: '', km: '', description: '' })
   const serviceBike = form.bike || bikes[0]?.id || ''
@@ -138,22 +144,22 @@ export function GearPage() {
 
   async function saveService() {
     if (!form.description.trim() || !serviceBike) return
-    await toast.run('Zapisuję…', () => addServiceEntry({ date: form.date, bike: serviceBike, km: form.km ? Number(form.km) : null, description: form.description.trim() }), () => 'Dopisano do dziennika')
+    await toast.run(tr.common.saving, () => addServiceEntry({ date: form.date, bike: serviceBike, km: form.km ? Number(form.km) : null, description: form.description.trim() }), () => tNow().classic.gear.logAdded)
     setForm({ date: today, bike: serviceBike, km: '', description: '' })
   }
 
   return (
     <div className="space-y-3">
       <Link to="/wiecej" className="inline-flex min-h-11 items-center text-sm font-medium text-sky-700 hover:underline dark:text-sky-300">
-        ‹ Więcej
+        ‹ {tr.classic.nav.more}
       </Link>
-      <PageTitle sub={`${openTasks.length} zadań do zrobienia${cost > 0 ? ` · ok. ${num(cost, 0)} zł` : ''}`}>Sprzęt</PageTitle>
+      <PageTitle sub={G.sub(openTasks.length, cost > 0 ? tr.classic.trip.price(num(cost, 0)) : null)}>{G.title}</PageTitle>
 
       <BikesCard bikes={bikes} />
 
       {tasks.length > 0 && (
         <Card>
-          <CardTitle icon="🔧">Zadania</CardTitle>
+          <CardTitle icon="🔧">{G.tasks}</CardTitle>
           <ul className="divide-y divide-slate-100 dark:divide-slate-700/80">
             {[...openTasks, ...doneTasks].map((t) => {
               const done = t.status === 'done'
@@ -163,7 +169,7 @@ export function GearPage() {
                 <li key={t.id} className="py-2">
                   <div className="flex items-start gap-3">
                     <button
-                      aria-label={done ? 'Cofnij odhaczenie' : 'Odhacz zadanie'}
+                      aria-label={done ? G.uncheck : G.check}
                       onClick={() => setGearStatus(t.id, done ? 'todo' : 'done')}
                       className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-xl border text-base transition-colors ${done ? 'border-emerald-600 bg-emerald-600 text-white hover:bg-emerald-500' : 'border-slate-300 hover:border-sky-500 hover:bg-sky-50 dark:border-slate-600 dark:hover:bg-slate-700'}`}
                     >
@@ -177,19 +183,20 @@ export function GearPage() {
                         {t.bike_label && <Badge color="bg-slate-500">{t.bike_label}</Badge>}
                         {t.every_days ? (
                           <span className={overdue ? 'font-semibold text-red-600 dark:text-red-400' : ''}>
-                            co {t.every_days} dni{done ? ` · następnie ${fmtDate(t.due!)}` : t.done_at ? ` · ostatnio ${fmtDate(t.done_at)}` : ''}
+                            {G.every(t.every_days)}
+                            {done ? ` · ${G.next(fmtDate(t.due!))}` : t.done_at ? ` · ${G.last(fmtDate(t.done_at))}` : ''}
                           </span>
                         ) : (
-                          t.due && <span className={overdue ? 'font-semibold text-red-600 dark:text-red-400' : ''}>do {fmtDate(t.due)}</span>
+                          t.due && <span className={overdue ? 'font-semibold text-red-600 dark:text-red-400' : ''}>{G.due(fmtDate(t.due))}</span>
                         )}
-                        {t.cost_pln != null && <span className="tabular-nums">{num(t.cost_pln, 0)} zł</span>}
-                        {done && !t.every_days && t.done_at && <span className="text-emerald-600 dark:text-emerald-400">zrobione {fmtDate(t.done_at)}</span>}
+                        {t.cost_pln != null && <span className="tabular-nums">{tr.classic.trip.price(num(t.cost_pln, 0))}</span>}
+                        {done && !t.every_days && t.done_at && <span className="text-emerald-600 dark:text-emerald-400">{G.doneOn(fmtDate(t.done_at))}</span>}
                       </div>
                       {open === t.id && (
                         <div className="mt-1">
                           <p className="text-xs text-slate-600 dark:text-slate-300">{t.details}</p>
                           <button onClick={() => setGearStatus(t.id, skipped ? 'todo' : 'skipped')} className="mt-1 min-h-9 text-xs text-slate-500 underline dark:text-slate-400">
-                            {skipped ? 'Przywróć' : 'Nie dotyczy'}
+                            {skipped ? G.restore : G.notApplicable}
                           </button>
                         </div>
                       )}
@@ -203,16 +210,16 @@ export function GearPage() {
       )}
 
       <Card>
-        <CardTitle icon="📒">Dziennik serwisu</CardTitle>
+        <CardTitle icon="📒">{G.logTitle}</CardTitle>
         {bikes.length === 0 ? (
-          <p className="text-sm text-slate-600 dark:text-slate-300">Najpierw dodaj rower – wpisy w dzienniku są przypisane do roweru.</p>
+          <p className="text-sm text-slate-600 dark:text-slate-300">{G.logNeedsBike}</p>
         ) : (
           <>
             <div className="grid grid-cols-2 gap-3">
-              <Field label="Data">
+              <Field label={G.date}>
                 <Input type="date" value={form.date} onChange={(e) => setForm({ ...form, date: e.target.value })} />
               </Field>
-              <Field label="Rower">
+              <Field label={G.bike}>
                 <Select value={serviceBike} onChange={(e) => setForm({ ...form, bike: e.target.value })}>
                   {bikes.map((b) => (
                     <option key={b.id} value={b.id}>
@@ -221,15 +228,15 @@ export function GearPage() {
                   ))}
                 </Select>
               </Field>
-              <Field label="Przebieg (km)">
+              <Field label={G.km}>
                 <Input inputMode="numeric" value={form.km} onChange={(e) => setForm({ ...form, km: e.target.value })} />
               </Field>
-              <Field label="Co zrobione" className="col-span-2">
-                <Input value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} placeholder="np. wymiana łańcucha, klocki przód" />
+              <Field label={G.what} className="col-span-2">
+                <Input value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} placeholder={G.whatPlaceholder} />
               </Field>
             </div>
             <Button onClick={saveService} disabled={!form.description.trim()} className="mt-3 w-full">
-              Dopisz do dziennika
+              {G.addLog}
             </Button>
           </>
         )}
@@ -250,7 +257,7 @@ export function GearPage() {
         )}
       </Card>
       <p className="text-xs text-slate-400 dark:text-slate-500">
-        {engine.ctx.program.gear_tasks?.length ? 'Zadania z terminami pochodzą z planu sezonu, serwis cykliczny – z Twoich rowerów.' : 'Serwis cykliczny powstaje z Twoich rowerów.'}
+        {engine.ctx.program.gear_tasks?.length ? G.footerWithPlan : G.footer}
       </p>
     </div>
   )

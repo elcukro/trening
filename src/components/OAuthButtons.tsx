@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import type { AuthState } from '@/sync/auth'
 import { loginProviders, type LoginProviders } from '@/sync/oauth'
+import { useT } from '@/i18n/react'
 
 /**
  * „Zaloguj się przez Google” i „Zaloguj się przez Stravę” (docs/28) – wspólne dla `/i`, `/m` i pełnej aplikacji.
@@ -8,6 +9,7 @@ import { loginProviders, type LoginProviders } from '@/sync/oauth'
  * Przycisk pojawia się dopiero, gdy dostawca działa (Google włączony w Supabase, funkcja `strava-login` wdrożona).
  */
 export function OAuthButtons({ auth, returnPath, onError, large }: { auth: AuthState; returnPath: string; onError: (msg: string | null) => void; /** rozmiar przycisków `/m` (50 pt, 17 pt tekstu) */ large?: boolean }) {
+  const t = useT()
   const [busy, setBusy] = useState(false)
   const [ready, setReady] = useState<LoginProviders | null>(null)
 
@@ -47,7 +49,7 @@ export function OAuthButtons({ auth, returnPath, onError, large }: { auth: AuthS
           className={`flex w-full items-center justify-center gap-3 border border-[#747775] bg-white px-4 py-2.5 font-medium text-[#1f1f1f] active:bg-[#f2f2f2] disabled:opacity-50 ${size}`}
         >
           <GoogleG />
-          Zaloguj się przez Google
+          {t.login.withGoogle}
         </button>
       )}
       {ready.strava && (
@@ -58,7 +60,7 @@ export function OAuthButtons({ auth, returnPath, onError, large }: { auth: AuthS
           className={`flex w-full items-center justify-center gap-3 bg-[#FC5200] px-4 py-2.5 font-semibold text-white active:bg-[#e04a00] disabled:opacity-50 ${size}`}
         >
           <StravaMark />
-          Zaloguj się przez Stravę
+          {t.login.withStrava}
         </button>
       )}
     </div>

@@ -3,6 +3,8 @@
  * `prefill` = tekst do wpisania w pole (zawodnik dokończy), `send` = wysyłane od razu. Czysty TS, testy w __tests__/coachChips.test.ts.
  */
 import type { DayPhase } from './dayState'
+import { t } from '@/i18n'
+import { num } from '@/lib/format'
 
 export interface CoachChip {
   label: string
@@ -20,39 +22,39 @@ export interface ChipContext {
   tomorrowRide: string | null
 }
 
-const pl = (x: number) => String(Math.round(x * 10) / 10).replace('.', ',')
-
 export function coachChips(c: ChipContext): CoachChip[] {
-  const askWeek: CoachChip = { label: 'Co w tym tygodniu?', send: 'Co mnie czeka w tym tygodniu?' }
-  const lastRide: CoachChip = { label: 'Jak wyszła ostatnia jazda?', send: 'Jak wyszła moja ostatnia jazda?' }
-  const cantTomorrow: CoachChip = { label: 'Jutro nie dam rady', prefill: 'Jutro nie dam rady jechać, bo ' }
-  const tomorrow: CoachChip = c.tomorrowRide ? { label: 'Co jutro?', send: `Co mnie czeka jutro (${c.tomorrowRide})?` } : { label: 'Co jutro?', send: 'Co mnie czeka jutro?' }
-  const form: CoachChip = { label: 'Jak moja forma?', send: 'Jak oceniasz moją formę w ostatnich dwóch tygodniach?' }
-  const weight: CoachChip = { label: 'Jak idzie z wagą?', send: 'Jak idzie z wagą względem celu?' }
-  const moveRide: CoachChip = { label: 'Przenieś jazdę…', prefill: 'Przenieś jazdę z ' }
-  const bolt: CoachChip = { label: 'Wyślij na Bolta', send: 'Wyślij plan na Bolta' }
-  const hurts: CoachChip = { label: 'Coś mnie boli', prefill: 'Boli mnie ' }
+  const L = t().day.chips
+  const askWeek: CoachChip = { ...L.askWeek }
+  const lastRide: CoachChip = { ...L.lastRide }
+  const cantTomorrow: CoachChip = { ...L.cantTomorrow }
+  const tomorrow: CoachChip = { label: L.tomorrowLabel, send: L.tomorrowSend(c.tomorrowRide) }
+  const form: CoachChip = { ...L.form }
+  const weight: CoachChip = { ...L.weight }
+  const moveRide: CoachChip = { ...L.moveRide }
+  const bolt: CoachChip = { ...L.bolt }
+  const hurts: CoachChip = { ...L.hurts }
+  const kg = c.lastWeightKg != null ? num(c.lastWeightKg, 1) : null
   switch (c.phase) {
     case 'morning':
       return [
-        { label: c.lastWeightKg != null ? `Waga ${pl(c.lastWeightKg)}…` : 'Waga…', prefill: c.lastWeightKg != null ? `Waga ${pl(c.lastWeightKg)}, tętno ` : 'Waga ' },
-        { label: 'Spałem słabo, nogi ciężkie', send: 'Spałem słabo, nogi ciężkie' },
-        { label: 'Spałem dobrze, nogi lekkie', send: 'Spałem dobrze, nogi lekkie, motywacja pełna' },
-        { label: 'Jestem chory', prefill: 'Jestem chory: ' },
+        { label: L.weighLabel(kg), prefill: L.weighPrefill(kg) },
+        { ...L.sleptBadly },
+        { ...L.sleptWell },
+        { ...L.sick },
         askWeek,
       ]
     case 'brief':
-      return [{ label: 'Jak się dziś ubrać?', send: 'Jak się dziś ubrać na jazdę?' }, { label: 'Na co uważać?', send: c.rideName ? `Na co uważać dziś w treningu „${c.rideName}”?` : 'Na co uważać dziś w treningu?' }, lastRide, bolt, cantTomorrow]
+      return [{ ...L.clothing }, { label: L.watchOutLabel, send: L.watchOutSend(c.rideName) }, lastRide, bolt, cantTomorrow]
     case 'riding':
       return [lastRide, askWeek, form, cantTomorrow, moveRide]
     case 'after':
-      return [{ label: 'RPE…', prefill: 'RPE ' }, { label: 'Jak wyszło?', send: 'Jak wyszła dzisiejsza jazda?' }, { label: 'Było ciężko', send: 'Było ciężko, nogi padły w drugiej połowie' }, tomorrow, cantTomorrow]
+      return [{ ...L.rpe }, { ...L.howWasIt }, { ...L.wasHard }, tomorrow, cantTomorrow]
     case 'evening':
-      return [tomorrow, cantTomorrow, { label: 'Przenieś jutro na…', prefill: 'Przenieś jutrzejszą jazdę na ' }, form, weight]
+      return [tomorrow, cantTomorrow, { ...L.moveTomorrow }, form, weight]
     case 'rest':
-      return [tomorrow, lastRide, { label: 'Chcę dziś pojechać', send: 'Mam dziś wolne, ale chcę pojechać – co proponujesz?' }, form, weight]
+      return [tomorrow, lastRide, { ...L.wantToRide }, form, weight]
     case 'skipped':
-      return [{ label: 'Odrobić w tym tygodniu?', send: 'Odpuściłem dzisiejszy trening – odrabiać go w tym tygodniu?' }, askWeek, tomorrow, cantTomorrow, hurts]
+      return [{ ...L.makeUp }, askWeek, tomorrow, cantTomorrow, hurts]
     case 'missed':
     case 'future':
       return [askWeek, lastRide, form, cantTomorrow, moveRide]

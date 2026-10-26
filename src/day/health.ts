@@ -1,5 +1,6 @@
 import type { Checkin, HealthField } from '@/db'
 import { num } from '@/lib/format'
+import { t } from '@/i18n'
 
 /**
  * Apple Health w check-inie (docs/27 § 2) – logika bez UI i bez wtyczki: co ze Zdrowia trafia do check-inu,
@@ -87,11 +88,12 @@ export function sleepLabel(min: number): string {
 export function healthLine(d: HealthDay | Checkin | null | undefined, only?: (f: HealthField) => boolean): string {
   if (!d) return ''
   const ok = (f: HealthField) => d[f] != null && (!only || only(f))
+  const L = t().day.health
   return [
-    ok('weight_kg') ? `waga ${num(d.weight_kg as number)} kg` : null,
-    ok('resting_hr') ? `tętno ${Math.round(d.resting_hr as number)}` : null,
-    ok('hrv_ms') ? `HRV ${Math.round(d.hrv_ms as number)} ms` : null,
-    ok('sleep_min') ? `sen ${sleepLabel(d.sleep_min as number)}` : null,
+    ok('weight_kg') ? L.weight(num(d.weight_kg as number)) : null,
+    ok('resting_hr') ? L.restingHr(Math.round(d.resting_hr as number)) : null,
+    ok('hrv_ms') ? L.hrv(Math.round(d.hrv_ms as number)) : null,
+    ok('sleep_min') ? L.sleep(sleepLabel(d.sleep_min as number)) : null,
   ]
     .filter(Boolean)
     .join(' · ')

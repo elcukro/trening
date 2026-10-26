@@ -2,6 +2,7 @@ import { useNavigate } from 'react-router'
 import type { WeekState } from '@/day/weekState'
 import { minutes } from '@/lib/format'
 import { WEEKDAY_SHORT } from '@/lib/labels'
+import { useT } from '@/i18n/react'
 
 const OUTCOME_STYLE: Record<WeekState['days'][number]['outcome'], { bg: string; border: string }> = {
   done: { bg: 'var(--green)', border: 'var(--green)' },
@@ -19,19 +20,20 @@ const OUTCOME_STYLE: Record<WeekState['days'][number]['outcome'], { bg: string; 
  * Zielony = zrobione, pomarańczowy = inaczej niż w planie, czerwona ramka = pominięte, szara = bez jazdy, niebieski = dziś.
  */
 export function WeekStrip({ week, today, compact = false }: { week: WeekState; today: string; compact?: boolean }) {
+  const t = useT()
   const navigate = useNavigate()
   const max = Math.max(60, ...week.days.map((d) => Math.max(d.planned_min, d.done_min)))
   return (
-    <button className="m-card m-press w-full p-4 text-left" onClick={() => navigate('/m/plan')} aria-label="Ten tydzień – otwórz plan">
+    <button className="m-card m-press w-full p-4 text-left" onClick={() => navigate('/m/plan')} aria-label={t.m.week.openPlan}>
       <div className="flex items-baseline justify-between">
-        <span className="m-headline">{compact ? 'Ten tydzień' : 'Bilans tygodnia'}</span>
+        <span className="m-headline">{compact ? t.m.week.thisWeek : t.m.week.balance}</span>
         <span className="m-sub m-num m-dim">
           {week.done_min > 0 ? (
             <>
-              {minutes(week.done_min)} <span className="m-dim-3">z</span> {minutes(week.planned_min)}
+              {minutes(week.done_min)} <span className="m-dim-3">{t.m.week.of}</span> {minutes(week.planned_min)}
             </>
           ) : (
-            <>plan {minutes(week.planned_min)}</>
+            <>{t.m.week.planned(minutes(week.planned_min))}</>
           )}
         </span>
       </div>
@@ -55,8 +57,8 @@ export function WeekStrip({ week, today, compact = false }: { week: WeekState; t
       </div>
       {!compact && (
         <p className="m-foot m-dim mt-2">
-          {week.rides_done} z {week.rides_planned} treningów
-          {week.days.some((d) => d.key) ? ` · klucz: ${week.days.find((d) => d.key)?.name}` : ''}
+          {t.m.week.workoutsDone(week.rides_done, week.rides_planned)}
+          {week.days.some((d) => d.key) ? t.m.week.keySession(week.days.find((d) => d.key)?.name ?? '') : ''}
         </p>
       )}
     </button>

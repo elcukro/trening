@@ -1,4 +1,5 @@
 import { useSyncStatus, useOpenFull } from '@/day/useIos'
+import { useT } from '@/i18n/react'
 import { IconChevron, IconGear } from './Icons'
 
 /**
@@ -8,14 +9,16 @@ import { IconChevron, IconGear } from './Icons'
 export function SyncBanner() {
   const sync = useSyncStatus()
   const openFull = useOpenFull()
+  const t = useT()
+  const tx = t.ios.syncBanner
   if (sync.state === 'idle' || sync.state === 'syncing' || sync.state === 'disabled') return null
 
   const info =
     sync.state === 'unauthenticated'
-      ? { bg: 'var(--red)', title: 'Nie jesteś zalogowany', sub: 'Jazdy ze Stravy, check-iny i zmiany planu nie pobierają się z konta. Dotknij, żeby się zalogować.', to: '/wiecej/ustawienia' }
+      ? { bg: 'var(--red)', title: tx.unauthTitle, sub: tx.unauthSub, to: '/wiecej/ustawienia' }
       : sync.state === 'offline'
-        ? { bg: 'var(--orange)', title: 'Brak sieci', sub: sync.pending > 0 ? `${sync.pending} zapisów czeka w kolejce – pojadą po powrocie zasięgu.` : 'Plan działa offline; nowe dane dociągną się później.', to: null }
-        : { bg: 'var(--orange)', title: 'Synchronizacja się nie udała', sub: sync.error ?? 'Spróbuj ponownie w Więcej → Konto i synchronizacja.', to: '/wiecej/ustawienia' }
+        ? { bg: 'var(--orange)', title: tx.offlineTitle, sub: sync.pending > 0 ? tx.offlinePending(sync.pending) : tx.offlineSub, to: null }
+        : { bg: 'var(--orange)', title: tx.failedTitle, sub: sync.error ?? tx.failedSub, to: '/wiecej/ustawienia' }
 
   const Tag = info.to ? 'button' : 'div'
   return (

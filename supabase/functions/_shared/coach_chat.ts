@@ -5,6 +5,8 @@
 // (zapis do Dexie z outboxem, walidacja przeniesień silnikiem, wysyłka na Bolta); Edge Function tylko rozmawia
 // z modelem i pilnuje limitów. Każde wywołanie modelu to jeden wpis w `ai_calls`.
 
+import { aiLangRule, type Lang } from './i18n.ts'
+
 export type Role = 'user' | 'assistant'
 
 export type Block =
@@ -92,6 +94,12 @@ JAK PISZESZ
 const MAX_MESSAGES = 40
 const MAX_TEXT = 4000
 const MAX_TOTAL = 60_000
+/** Instrukcja systemowa w języku zawodnika: polska instrukcja + dla `en` dopisek, że rozmowa idzie po angielsku. */
+export function coachSystem(lang: Lang): string {
+  const rule = aiLangRule(lang)
+  return rule ? `${COACH_SYSTEM}\n\n${rule}` : COACH_SYSTEM
+}
+
 export const MAX_CONTEXT = 40_000
 
 const str = (v: unknown, max: number): string | null => (typeof v === 'string' ? v.slice(0, max) : null)

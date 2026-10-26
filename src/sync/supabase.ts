@@ -1,5 +1,6 @@
 import { createClient, type SupabaseClient } from '@supabase/supabase-js'
 import { isNative } from '@/native/platform'
+import { getLang } from '@/i18n/core'
 
 const url = import.meta.env.VITE_SUPABASE_URL as string | undefined
 const key = (import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY ?? import.meta.env.VITE_SUPABASE_ANON_KEY) as string | undefined
@@ -19,3 +20,8 @@ export const supabase: SupabaseClient | null =
     : null
 
 export const isSupabaseConfigured = supabase !== null
+
+/** Nagłówek języka dla Edge Functions zwracających tekst dla zawodnika (AI, push, Strava, Wahoo): serwer bierze go przed `profiles.locale`. */
+export function langHeaders(): Record<string, string> {
+  return { 'x-app-lang': getLang() }
+}

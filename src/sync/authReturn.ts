@@ -4,33 +4,32 @@
  * (flow implicit w przeglądarce, bilet i błąd logowania Stravą).
  */
 
+import { t } from '@/i18n'
+
 export type AuthReturn =
   | { kind: 'strava_ticket'; ticket: string }
   /** kod PKCE z Supabase – tylko aplikacja iOS (w przeglądarce flow implicit obsługuje sam klient Supabase) */
   | { kind: 'code'; code: string }
   | { kind: 'error'; message: string }
 
-const STRAVA_ERRORS: Record<string, string> = {
-  not_linked: 'To konto Stravy nie jest połączone z żadnym kontem w aplikacji. Zaloguj się kodem z maila, a potem połącz Stravę w Ustawieniach → Integracje (pełna aplikacja w przeglądarce).',
-  denied: 'Logowanie przez Stravę zostało przerwane.',
-  expired: 'Logowanie przez Stravę trwało za długo – spróbuj jeszcze raz.',
-  bad_state: 'Logowanie przez Stravę się nie powiodło – spróbuj jeszcze raz.',
-  server: 'Strava nie odpowiedziała poprawnie – spróbuj za chwilę albo zaloguj się kodem z maila.',
+function stravaErrors(): Record<string, string> {
+  const s = t().sync.auth.strava
+  return { not_linked: s.notLinked, denied: s.denied, expired: s.expired, bad_state: s.badState, server: s.server }
 }
 
 export function stravaErrorMessage(code: string): string {
-  return STRAVA_ERRORS[code] ?? STRAVA_ERRORS.bad_state!
+  return stravaErrors()[code] ?? t().sync.auth.strava.badState
 }
 
-/** Komunikat błędu Supabase Auth (z adresu powrotu albo z odpowiedzi API) po polsku. */
+/** Komunikat błędu Supabase Auth (z adresu powrotu albo z odpowiedzi API) w języku zawodnika. */
 export function authErrorMessage(desc: string): string {
   // adres spoza private.allowed_emails: rejestracja wyłączona (enable_signup = false) albo trigger check_allowed_email
   if (/Signups not allowed|signup_disabled|Database error saving new user|nie ma dostępu/i.test(desc))
-    return 'Ten adres e-mail nie ma dostępu do aplikacji. Zaloguj się kontem, którego adres jest na liście dozwolonych.'
-  if (/rate limit/i.test(desc)) return 'Za dużo prób – spróbuj za chwilę.'
-  if (/access_denied|cancel/i.test(desc) && !/expired|invalid/i.test(desc)) return 'Logowanie zostało przerwane.'
-  if (/provider is not enabled|Unsupported provider/i.test(desc)) return 'Logowanie przez Google nie jest jeszcze włączone.'
-  if (/expired|invalid/i.test(desc)) return 'Link wygasł lub został już użyty – wyślij nowy.'
+    return t().sync.auth.notAllowedHint
+  if (/rate limit/i.test(desc)) return t().sync.auth.rateLimit
+  if (/access_denied|cancel/i.test(desc) && !/expired|invalid/i.test(desc)) return t().sync.auth.canceled
+  if (/provider is not enabled|Unsupported provider/i.test(desc)) return t().sync.auth.googleDisabled
+  if (/expired|invalid/i.test(desc)) return t().sync.auth.linkExpired
   return desc
 }
 

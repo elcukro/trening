@@ -5,7 +5,8 @@
  * zakresy pilnuje kod (_shared/meal_parse.ts). Zdjęć nie zapisujemy.
  */
 import { CORS, json } from '../_shared/env.ts'
-import { adminClient, userFromRequest } from '../_shared/supabase.ts'
+import { adminClient, requestLang, userFromRequest } from '../_shared/supabase.ts'
+import { strings } from '../_shared/i18n.ts'
 import { underLimit, underUserDailyLimit } from '../_shared/ai_note.ts'
 import { cleanImages, parseReply, SYSTEM, userPrompt } from '../_shared/meal_parse.ts'
 
@@ -38,18 +39,20 @@ Deno.serve(async (req) => {
   const user = await userFromRequest(req)
   if (!user) return json({ error: 'unauthorized' }, 401)
   const body = (await req.json().catch(() => ({}))) as { images?: unknown; note?: string; hint?: { protein_target?: unknown } }
-  const images = cleanImages(body.images)
-  if (!images) return json({ error: 'Wyślij 1–2 zdjęcia (do ok. 1,5 MB każde)' }, 400)
-  if (!Deno.env.get('OPENROUTER_API_KEY')) return json({ error: 'brak klucza' }, 503)
   const admin = adminClient()
+  const lang = await requestLang(req, admin, user.id)
+  const E = strings(lang).errors
+  const images = cleanImages(body.images)
+  if (!images) return json({ error: E.mealImages }, 400)
+  if (!Deno.env.get('OPENROUTER_API_KEY')) return json({ error: E.aiUnavailable }, 503)
   const { data: profile } = await admin.from('profiles').select('diet_enabled').eq('user_id', user.id).maybeSingle()
-  if (!profile?.diet_enabled) return json({ error: 'Jedzenie jest wyłączone na tym koncie' }, 403)
-  if (!(await underLimit(admin))) return json({ error: 'limit miesięczny' }, 429)
-  if (!(await underUserDailyLimit(admin, user.id))) return json({ error: 'limit dzienny – spróbuj jutro albo wpisz posiłek ręcznie' }, 429)
+  if (!profile?.diet_enabled) return json({ error: E.dietOff }, 403)
+  if (!(await underLimit(admin))) return json({ error: E.monthlyLimit }, 429)
+  if (!(await underUserDailyLimit(admin, user.id))) return json({ error: E.dailyLimitMeal }, 429)
   // rezerwacja w ai_calls przed wywołaniem – nieudane próby też liczą się do limitu, a dwa równoległe żądania nie ominą puli
   const { data: call } = await admin.from('ai_calls').insert({ user_id: user.id, activity_id: null }).select('id').single()
   try {
-    const prompt = userPrompt(body.note, body.hint ?? {})
+    const prompt = userPrompt(body.note, body.hint ?? {}, lang)
     let input = 0
     let output = 0
     let meal = null
@@ -61,7 +64,7 @@ Deno.serve(async (req) => {
       meal = parseReply(r.text)
     }
     if (call) await admin.from('ai_calls').update({ input_tokens: input, output_tokens: output }).eq('id', call.id)
-    if (!meal) return json({ error: 'Nie udało się rozpoznać – spróbuj innego zdjęcia' }, 422)
+    if (!meal) return json({ error: E.mealUnrecognized }, 422)
     return json({ meal, model: MODEL })
   } catch (e) {
     return json({ error: e instanceof Error ? e.message : String(e) }, 502)

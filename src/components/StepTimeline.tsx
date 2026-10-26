@@ -2,12 +2,14 @@ import type { ResolvedStep, ResolvedWorkout } from '@/engine/types'
 import { zoneColor, zoneText } from '@/lib/zones'
 import { bpm, rpe, seconds } from '@/lib/format'
 import { INTENSITY_LABEL } from '@/lib/labels'
+import { useT } from '@/i18n/react'
 
 /** Pasek osi czasu: szerokość ∝ czas, kolor = strefa. */
 export function TimelineBar({ steps, className = '' }: { steps: ResolvedStep[]; className?: string }) {
+  const t = useT()
   const total = steps.reduce((a, s) => a + s.duration_s, 0) || 1
   return (
-    <div className={`flex h-6 w-full overflow-hidden rounded-lg ${className}`} role="img" aria-label="Struktura treningu">
+    <div className={`flex h-6 w-full overflow-hidden rounded-lg ${className}`} role="img" aria-label={t.m.ui.workoutStructure}>
       {steps.map((s, i) => (
         <div key={i} className={`${zoneColor(s.zone)} h-full`} style={{ width: `${(s.duration_s / total) * 100}%`, minWidth: s.duration_s > 0 ? 2 : 0 }} title={`${s.name} – ${seconds(s.duration_s)}`} />
       ))}

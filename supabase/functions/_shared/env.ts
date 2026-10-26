@@ -12,6 +12,6 @@ export function json(body: unknown, status = 200, extra: HeadersInit = {}): Resp
 
 export const CORS: Record<string, string> = {
   'access-control-allow-origin': '*',
-  'access-control-allow-headers': 'authorization, content-type, apikey, x-client-info',
+  'access-control-allow-headers': 'authorization, content-type, apikey, x-client-info, x-app-lang',
   'access-control-allow-methods': 'GET, POST, OPTIONS',
 }

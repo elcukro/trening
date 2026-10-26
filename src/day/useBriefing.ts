@@ -2,11 +2,10 @@ import { useEffect, useState } from 'react'
 import { useLiveQuery } from 'dexie-react-hooks'
 import { db } from '@/db'
 import type { DayPlan } from '@/engine/plan'
-import { adviseRide, clothingFor, fuelPlan, summarizeWindow, weatherLabel, type Advice, type ClothingTable, type DayForecast, type FuelPlan, type WindowSummary } from '@/engine/weather'
+import { adviseRide, clothingFor, fuelPlan, summarizeWindow, weatherLabel, type Advice, type DayForecast, type FuelPlan, type WindowSummary } from '@/engine/weather'
 import { DEFAULT_RIDE_HOURS, getLocation, loadForecast, type RideHours } from '@/sync/weather'
-import clothingJson from '../../data/clothing.json'
+import { loadClothing } from '@/data/clothing'
 
-const CLOTHING = clothingJson as ClothingTable
 
 export interface Briefing {
   loading: boolean
@@ -57,7 +56,7 @@ export function useBriefing(day: DayPlan | null, hasIndoorOverride = false): Bri
     summary,
     label: summary ? weatherLabel(summary.code) : null,
     advice: summary ? adviseRide(summary, { hasSweetSpot, indoorAvailable: !!day.fallback_workout && !hasIndoorOverride }) : [],
-    clothing: summary ? clothingFor(summary, CLOTHING) : null,
+    clothing: summary ? clothingFor(summary, loadClothing()) : null,
     fuel: fuelPlan(day.bike.duration_min, day.nutrition.on_bike_carbs_g_per_h, summary?.temp_max_c ?? null),
     stale: forecast !== 'loading' && !!forecast?.stale,
   }

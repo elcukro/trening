@@ -1,3 +1,4 @@
+import { t } from '../i18n'
 import type { NutritionPolicy } from './schema'
 import { mondayOf, type ISODate } from './dates'
 import type { Nutrition, PhaseId, DayType } from './types'
@@ -107,22 +108,20 @@ export function personalizeNutrition(n: Nutrition, policy: NutritionPolicy, inp:
   const wb = policy.weight_based
   if (!wb || !n.energy.startsWith('deficit')) return n
   const d = weightBasedDeficit({ ...inp, maxKcalPerDay: wb.max_kcal_per_day, maxLossPctPerWeek: wb.max_loss_pct_per_week, sharesPerWeek: wb.deficit_shares_per_week, share: n.deficit_share ?? 1 })
-  const kind = n.label.split(':')[0] ?? 'Dzień'
-  if (d.kcal < 100) return { ...n, energy: 'maintenance', deficit_kcal: 0, label: inp.currentKg <= inp.targetKg ? `${kind}: bilans zerowy – masa docelowa osiągnięta` : `${kind}: bilans zerowy – do celu zostało niewiele` }
-  const fmt = (x: number) => x.toLocaleString('pl-PL', { maximumFractionDigits: 2 })
-  const kgLabel = inp.targetKg.toLocaleString('pl-PL', { maximumFractionDigits: 1 })
+  const T = t().engine.nutrition
+  // etykieta programu (już w języku zawodnika) ma postać „Rodzaj dnia: …” – bierzemy część przed dwukropkiem
+  const kind = n.label.split(':')[0] ?? T.dayFallback
+  if (d.kcal < 100) return { ...n, energy: 'maintenance', deficit_kcal: 0, label: inp.currentKg <= inp.targetKg ? T.reached(kind) : T.almostThere(kind) }
   // punkt kontrolny ma datę w etykiecie („do 91 kg na 1.03”), cel końcowy – nie
-  const target = inp.targetDate ? `${kgLabel} kg na ${Number(inp.targetDate.slice(8))}.${inp.targetDate.slice(5, 7)}` : `${kgLabel} kg`
+  const target = T.target(inp.targetKg, inp.targetDate ?? null)
   // tempo dotyczy całego tygodnia (dni lekkie mają większy deficyt niż ten dzień) – mówimy to wprost;
   // przy obciętym deficycie podajemy, ile wymagałby cel w terminie, bez udawania, że się zdąży
-  const week = d.capped
-    ? `cały tydzień ≈ ${fmt(d.kg_per_week)} kg – tyle pozwala limit bezpieczeństwa; ${target} wymagałoby ${fmt(d.need_kg_per_week)} kg/tydz., więc wypadnie później`
-    : `cały tydzień ≈ ${fmt(d.kg_per_week)} kg, do ${target}`
+  const week = d.capped ? T.weekCapped(d.kg_per_week, target, d.need_kg_per_week) : T.week(d.kg_per_week, target)
   return {
     ...n,
     energy: d.kcal >= 400 ? 'deficit_500' : 'deficit_300',
     deficit_kcal: d.kcal,
-    label: `${kind}: deficyt ok. ${d.kcal} kcal (${week})`,
+    label: T.deficit(kind, d.kcal, week),
   }
 }
 

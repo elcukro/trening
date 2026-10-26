@@ -12,13 +12,20 @@ import { DAY_TYPE_COLOR, DAY_TYPE_LABEL, WEEKDAY_LONG } from '@/lib/labels'
 import { Card, List, Row, Screen, Section, Stat } from '../components/Chrome'
 import { SyncBanner } from '../components/SyncBanner'
 import { IconCheck, IconChevron, IconChevronLeft } from '../components/Icons'
+import { useT } from '@/i18n/react'
 
-const WEEKDAY_TITLE: Record<string, string> = { mon: 'Poniedziałek', tue: 'Wtorek', wed: 'Środa', thu: 'Czwartek', fri: 'Piątek', sat: 'Sobota', sun: 'Niedziela' }
+/** Nazwa dnia tygodnia wielką literą (nagłówek wiersza). */
+const weekdayTitle = (wd: string) => {
+  const s = WEEKDAY_LONG[wd] ?? wd
+  return s.charAt(0).toUpperCase() + s.slice(1)
+}
 
 /** Tydzień: siedem wierszy, obciążenie plan vs wykonanie, przełączanie tygodni strzałkami. */
 export function WeekScreen() {
   const params = useParams()
   const navigate = useNavigate()
+  const t = useT()
+  const tx = t.ios.week
   const today = todayISO()
   const monday = mondayOf(params.monday && isValidISODate(params.monday) ? params.monday : today)
   const sunday = addDays(monday, 6)
@@ -46,23 +53,23 @@ export function WeekScreen() {
   function statusOf(date: string) {
     const log = view.logs.find((l) => l.date === date && l.kind === 'bike' && !l.deleted_at)
     const s = log?.status
-    if (s === 'done') return { color: 'var(--green)', label: 'zrobione' }
-    if (s === 'modified') return { color: 'var(--orange)', label: 'inaczej' }
-    if (s === 'skipped') return { color: 'var(--red)', label: 'odpuszczone' }
-    if (acts.some((a) => a.date === date)) return { color: 'var(--green)', label: 'jazda zapisana' }
+    if (s === 'done') return { color: 'var(--green)', label: tx.statusDone }
+    if (s === 'modified') return { color: 'var(--orange)', label: tx.statusModified }
+    if (s === 'skipped') return { color: 'var(--red)', label: tx.statusSkipped }
+    if (acts.some((a) => a.date === date)) return { color: 'var(--green)', label: tx.statusRide }
     return null
   }
 
   return (
     <Screen
-      title="Tydzień"
-      subtitle={`${week > 0 ? `Tydzień ${week} · ` : ''}${fmtRange(monday, sunday)}`}
+      title={t.common.week}
+      subtitle={`${week > 0 ? `${t.common.weekN(week)} · ` : ''}${fmtRange(monday, sunday)}`}
       action={
         <span className="flex items-center">
-          <button className="ios-nav-action" aria-label="Poprzedni tydzień" onClick={() => navigate(`/i/tydzien/${addDays(monday, -7)}`)}>
+          <button className="ios-nav-action" aria-label={tx.prev} onClick={() => navigate(`/i/tydzien/${addDays(monday, -7)}`)}>
             <IconChevronLeft size={20} />
           </button>
-          <button className="ios-nav-action" aria-label="Następny tydzień" onClick={() => navigate(`/i/tydzien/${addDays(monday, 7)}`)}>
+          <button className="ios-nav-action" aria-label={tx.next} onClick={() => navigate(`/i/tydzien/${addDays(monday, 7)}`)}>
             <IconChevron size={20} />
           </button>
         </span>
@@ -72,8 +79,8 @@ export function WeekScreen() {
       <Card className="mb-6">
         <div className="p-4">
           <div className="grid grid-cols-2 gap-4">
-            <Stat value={totals.done} unit="TSS" label={`z ${totals.planned} w planie`} />
-            <Stat value={minutes(totals.doneMin)} label={`z ${minutes(totals.plannedMin)} w planie`} />
+            <Stat value={totals.done} unit="TSS" label={tx.ofPlanned(String(totals.planned))} />
+            <Stat value={minutes(totals.doneMin)} label={tx.ofPlanned(minutes(totals.plannedMin))} />
           </div>
           <div className="mt-3 flex items-center gap-3">
             <div className="h-2 flex-1 overflow-hidden rounded-full" style={{ background: 'var(--fill)' }}>
@@ -84,11 +91,11 @@ export function WeekScreen() {
         </div>
       </Card>
 
-      <Section header="Dni" footer="Dotknij dzień, żeby otworzyć jego ekran.">
+      <Section header={tx.days} footer={tx.daysFooter}>
         <List>
           {view.days.map((d) => {
             const st = statusOf(d.date)
-            const label = d.bike ? d.bike.name : 'Wolne'
+            const label = d.bike ? d.bike.name : tx.rest
             const detail = [d.bike ? minutes(d.bike.duration_min) : null, d.day_type !== 'rest' ? DAY_TYPE_LABEL[d.day_type] : null].filter(Boolean).join(' · ')
             return (
               <Row
@@ -105,7 +112,7 @@ export function WeekScreen() {
                     <span className="truncate">{label}</span>
                   </span>
                 }
-                subtitle={`${WEEKDAY_TITLE[d.weekday] ?? WEEKDAY_LONG[d.weekday]}${detail ? ` · ${detail}` : ''}`}
+                subtitle={`${weekdayTitle(d.weekday)}${detail ? ` · ${detail}` : ''}`}
                 accessory={
                   <span className="flex shrink-0 items-center gap-1">
                     {st && <span style={{ color: st.color }} title={st.label}><IconCheck size={18} /></span>}
@@ -119,7 +126,7 @@ export function WeekScreen() {
       </Section>
 
       {view.days[0]?.week_notes && (
-        <Section header="Uwagi do tygodnia">
+        <Section header={tx.notes}>
           <List>
             <Row wrap title={view.days[0].week_notes} />
           </List>

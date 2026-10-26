@@ -4,6 +4,7 @@
  * „migawkę dnia” (`DaySnapshot`): co było w planie, progi i strefy w bpm obowiązujące tego dnia, plan tygodnia.
  */
 import type { MorningView, WorkoutView } from './email_templates.ts'
+import { fix, strings, type Lang } from './i18n.ts'
 
 export interface ZoneBpmLite {
   id: string
@@ -141,25 +142,27 @@ export function fulfilsPlan(movingS: number, plannedMinutes: number | null | und
   return plannedMinutes ? movingS >= PLAN_FULFIL_RATIO * plannedMinutes * 60 : movingS >= 30 * 60
 }
 
-const dec = (x: number, d = 1) => x.toFixed(d).replace('.', ',')
-const if2 = (x: number) => x.toFixed(2).replace('.', ',')
 const hmLabel = (min: number) => `${Math.floor(min / 60)}:${String(Math.round(min % 60)).padStart(2, '0')} h`
 
-export function buildWorkoutView(ride: RideLite, snap: DaySnapshot | null, opts: { athlete: string; appUrl: string; weekDoneMin?: number | null; rideDateLabel: string; note?: string | null; extras?: RideLite[] }): WorkoutView {
+export function buildWorkoutView(ride: RideLite, snap: DaySnapshot | null, opts: { athlete: string; appUrl: string; weekDoneMin?: number | null; rideDateLabel: string; note?: string | null; extras?: RideLite[]; lang?: Lang }): WorkoutView {
+  const lang = opts.lang ?? 'pl'
+  const V = strings(lang).mail.view
+  const dec = (x: number, d = 1) => fix(x, d, lang)
+  const if2 = (x: number) => fix(x, 2, lang)
   const min = ride.moving_time_s / 60
   const zones = snap?.zones ?? []
   const load = rideLoadLite(ride, snap?.ftp ?? null, zones)
   const planned = snap?.planned ? { name: snap.planned.name, minutes: snap.planned.minutes } : null
 
-  const stats: WorkoutView['stats'] = [min >= 60 ? { label: 'czas jazdy', value: `${Math.floor(min / 60)}:${String(Math.round(min % 60)).padStart(2, '0')}`, unit: 'h' } : { label: 'czas jazdy', value: String(Math.round(min)), unit: 'min' }]
-  stats.push({ label: 'dystans', value: dec(ride.distance_m / 1000), unit: 'km' })
-  if (ride.device_watts && ride.np_w) stats.push({ label: 'moc znormalizowana', value: String(ride.np_w), unit: 'W' })
-  if (ride.device_watts && ride.avg_watts) stats.push({ label: 'średnia moc', value: String(ride.avg_watts), unit: 'W' })
-  if (ride.avg_hr) stats.push({ label: 'średnie tętno', value: String(Math.round(ride.avg_hr)), unit: 'bpm' })
-  if (load) stats.push({ label: load.method === 'power' ? 'TSS (z mocy)' : 'TSS (z tętna)', value: String(load.tss) })
-  if (load) stats.push({ label: 'intensywność (IF)', value: if2(load.if) })
-  if (ride.avg_cadence) stats.push({ label: 'kadencja', value: String(Math.round(ride.avg_cadence)), unit: 'rpm' })
-  if (ride.elevation_m >= 1) stats.push({ label: 'przewyższenie', value: String(Math.round(ride.elevation_m)), unit: 'm' })
+  const stats: WorkoutView['stats'] = [min >= 60 ? { label: V.movingTime, value: `${Math.floor(min / 60)}:${String(Math.round(min % 60)).padStart(2, '0')}`, unit: 'h' } : { label: V.movingTime, value: String(Math.round(min)), unit: 'min' }]
+  stats.push({ label: V.distance, value: dec(ride.distance_m / 1000), unit: 'km' })
+  if (ride.device_watts && ride.np_w) stats.push({ label: V.np, value: String(ride.np_w), unit: 'W' })
+  if (ride.device_watts && ride.avg_watts) stats.push({ label: V.avgPower, value: String(ride.avg_watts), unit: 'W' })
+  if (ride.avg_hr) stats.push({ label: V.avgHr, value: String(Math.round(ride.avg_hr)), unit: 'bpm' })
+  if (load) stats.push({ label: load.method === 'power' ? V.tssPower : V.tssHr, value: String(load.tss) })
+  if (load) stats.push({ label: V.intensity, value: if2(load.if) })
+  if (ride.avg_cadence) stats.push({ label: V.cadence, value: String(Math.round(ride.avg_cadence)), unit: 'rpm' })
+  if (ride.elevation_m >= 1) stats.push({ label: V.elevation, value: String(Math.round(ride.elevation_m)), unit: 'm' })
 
   const shares: WorkoutView['zones'] = []
   if (ride.hr_histogram && zones.length) {
@@ -169,43 +172,43 @@ export function buildWorkoutView(ride: RideLite, snap: DaySnapshot | null, opts:
     }
   }
 
-  let verdict: WorkoutView['verdict'] = { tone: 'ok', text: 'Jazda poza planem – policzona do obciążenia tygodnia' }
+  let verdict: WorkoutView['verdict'] = { tone: 'ok', text: V.unplanned }
   if (planned) {
     const ratio = min / planned.minutes
     verdict =
       ratio >= 0.9 && ratio <= 1.2
-        ? { tone: 'good', text: 'Zrobione zgodnie z planem' }
+        ? { tone: 'good', text: V.asPlanned }
         : ratio < PLAN_PARTIAL_RATIO
-          ? { tone: 'warn', text: `Zaplanowany trening niewykonany – ta jazda to ${Math.round(ratio * 100)} % planu` }
+          ? { tone: 'warn', text: V.notDone(Math.round(ratio * 100)) }
           : ratio < PLAN_FULFIL_RATIO
-            ? { tone: 'warn', text: `Skrócony trening – ${Math.round(ratio * 100)} % zaplanowanego czasu` }
+            ? { tone: 'warn', text: V.shortened(Math.round(ratio * 100)) }
           : ratio < 0.9
-            ? { tone: 'warn', text: `Krócej niż w planie (${Math.round(ratio * 100)} %)` }
-            : { tone: 'ok', text: `Dłużej niż w planie (${Math.round(ratio * 100)} %)` }
+            ? { tone: 'warn', text: V.shorter(Math.round(ratio * 100)) }
+            : { tone: 'ok', text: V.longer(Math.round(ratio * 100)) }
   }
 
   const insights: string[] = []
   const easy = !snap?.planned || snap.planned.day_type === 'easy' || snap.planned.day_type === 'long'
-  if (load && easy) insights.push(load.if <= 0.75 ? `IF ${if2(load.if)} – spokojnie, tak jak ma być na jeździe tlenowej.` : `IF ${if2(load.if)} – jak na spokojną jazdę za mocno; Z2 kończy się ok. 0,75.`)
+  if (load && easy) insights.push(load.if <= 0.75 ? V.ifEasy(if2(load.if)) : V.ifHard(if2(load.if), if2(0.75)))
   // dryf Pw:HR ma sens tylko na równej jeździe – na interwałach i teście połówki jazdy różnią się strukturą, nie zmęczeniem
   const steady = !ride.device_watts || !ride.np_w || !ride.avg_watts || ride.np_w / ride.avg_watts <= 1.08
   if (ride.decoupling_pct != null && easy && steady) {
     const d = ride.decoupling_pct
     insights.push(
       d < 5
-        ? `Dryf tętna względem mocy ${dec(d)} % – baza tlenowa trzyma (poniżej 5 %).`
+        ? V.driftLow(dec(d))
         : d < 10
-          ? `Dryf tętna względem mocy ${dec(d)} % – w drugiej połowie tętno uciekało; zjedz i napij się wcześniej, a tempo trzymaj równiej.`
-          : `Dryf tętna względem mocy ${dec(d)} % – duży. Zmęczenie, upał albo za mało jedzenia; ta intensywność to jeszcze nie Twoje Z2 na tak długo.`,
+          ? V.driftMid(dec(d))
+          : V.driftHigh(dec(d)),
     )
   }
   if (ride.avg_cadence && snap?.cadence_floor && Math.round(ride.avg_cadence) < snap.cadence_floor) {
-    insights.push(`Średnia kadencja ${Math.round(ride.avg_cadence)} rpm – poniżej progu ${snap.cadence_floor} rpm.`)
+    insights.push(V.lowCadence(Math.round(ride.avg_cadence), snap.cadence_floor))
   }
 
   const week =
     snap && snap.week_planned_min > 0 && opts.weekDoneMin != null
-      ? { label: 'Ten tydzień', done: hmLabel(opts.weekDoneMin), planned: hmLabel(snap.week_planned_min), pct: (opts.weekDoneMin / snap.week_planned_min) * 100 }
+      ? { label: V.thisWeek, done: hmLabel(opts.weekDoneMin), planned: hmLabel(snap.week_planned_min), pct: (opts.weekDoneMin / snap.week_planned_min) * 100 }
       : null
 
   // wieczorne „Dzień w liczbach”: wszystkie jazdy dnia, pierwsza to ta opisana wyżej
@@ -220,7 +223,7 @@ export function buildWorkoutView(ride: RideLite, snap: DaySnapshot | null, opts:
         return { rides: rows, total_min: rows.reduce((s, r) => s + r.minutes, 0), total_tss: tssKnown ? rows.reduce((s, r) => s + (r.tss ?? 0), 0) : null }
       })()
     : null
-  if (day && day.rides.length > 1) insights.push(`${day.rides.length} jazdy jednego dnia – druga liczy się do obciążenia; jeśli to był dzień akcentu, reszta dnia miała być lekka.`)
+  if (day && day.rides.length > 1) insights.push(V.manyRides(day.rides.length))
 
   return { athlete: opts.athlete, appUrl: `${opts.appUrl}/i/dzien/${ride.date}`, dateLabel: opts.rideDateLabel, name: ride.name, planned, verdict, stats, zones: shares, insights, week, next: snap?.next ?? null, note: opts.note ?? null, day }
 }

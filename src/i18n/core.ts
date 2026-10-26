@@ -53,6 +53,7 @@ function urlLang(): Lang | null {
 // Testy (Node) zawsze startują po polsku – złote wyniki silnika są po polsku.
 let current: Lang = typeof window === 'undefined' ? 'pl' : (urlLang() ?? stored() ?? systemLang())
 const listeners = new Set<() => void>()
+if (typeof document !== 'undefined') document.documentElement.lang = current
 
 export function getLang(): Lang {
   return current
@@ -65,9 +66,9 @@ export function setLang(lang: Lang): void {
   } catch {
     /* tryb prywatny – język i tak jest w profilu */
   }
+  if (typeof document !== 'undefined') document.documentElement.lang = next
   if (next === current) return
   current = next
-  if (typeof document !== 'undefined') document.documentElement.lang = next
   for (const l of listeners) l()
 }
 

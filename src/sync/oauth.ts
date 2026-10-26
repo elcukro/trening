@@ -1,8 +1,9 @@
+import { t } from '@/i18n'
 import { isNative } from '@/native/platform'
 import { openAuthSession } from '@/native/webAuth'
 import { b64url, challengeFor, STATE_TTL_MS } from '../../supabase/functions/_shared/strava_login'
 import { authErrorMessage, parseAuthReturn, splitUrl, withoutAuthParams } from './authReturn'
-import { SUPABASE_KEY, SUPABASE_URL, supabase } from './supabase'
+import { langHeaders, SUPABASE_KEY, SUPABASE_URL, supabase } from './supabase'
 
 /**
  * Logowanie przez Google (Supabase Auth) i Stravę (Edge Function `strava-login`) – docs/28.
@@ -55,7 +56,7 @@ function returnUrl(path: string): string {
 }
 
 export async function signInWithGoogle(path: string): Promise<OAuthResult> {
-  if (!supabase) return { error: 'Brak konfiguracji Supabase.' }
+  if (!supabase) return { error: t().sync.noBackend }
   const { data, error } = await supabase.auth.signInWithOAuth({
     provider: 'google',
     options: { redirectTo: returnUrl(path), skipBrowserRedirect: isNative(), queryParams: { prompt: 'select_account' } },
@@ -67,7 +68,7 @@ export async function signInWithGoogle(path: string): Promise<OAuthResult> {
 }
 
 export async function signInWithStrava(path: string): Promise<OAuthResult> {
-  if (!supabase) return { error: 'Brak konfiguracji Supabase.' }
+  if (!supabase) return { error: t().sync.noBackend }
   const verifier = b64url(crypto.getRandomValues(new Uint8Array(32)))
   const url = `${SUPABASE_URL}/functions/v1/strava-login/start?${new URLSearchParams({ return: returnUrl(path), challenge: await challengeFor(verifier) })}`
   if (isNative()) {
@@ -79,7 +80,7 @@ export async function signInWithStrava(path: string): Promise<OAuthResult> {
   try {
     localStorage.setItem(VERIFIER_KEY, JSON.stringify({ v: verifier, exp: Date.now() + STATE_TTL_MS }))
   } catch {
-    return { error: 'Przeglądarka blokuje pamięć strony (prywatne okno?) – zaloguj się kodem z maila.' }
+    return { error: t().sync.auth.storageBlocked }
   }
   window.location.assign(url)
   return { error: null, redirecting: true }
@@ -96,16 +97,16 @@ export async function completeAuthReturn(href: string, verifier?: string): Promi
     return { error: error ? authErrorMessage(error.message) : null }
   }
   verifier ??= takeVerifier() ?? undefined
-  if (!verifier) return { error: 'Logowanie przez Stravę zaczęło się w innym oknie – spróbuj jeszcze raz.' }
+  if (!verifier) return { error: t().sync.auth.stravaOtherWindow }
   const res = await fetch(`${SUPABASE_URL}/functions/v1/strava-login`, {
     method: 'POST',
-    headers: { 'content-type': 'application/json', apikey: SUPABASE_KEY! },
+    headers: { 'content-type': 'application/json', apikey: SUPABASE_KEY!, ...langHeaders() },
     body: JSON.stringify({ action: 'redeem', ticket: r.ticket, verifier }),
   }).catch(() => null)
   const body = res ? ((await res.json().catch(() => ({}))) as { token_hash?: string; error?: string }) : {}
   if (!body.token_hash) {
     const back = parseAuthReturn({ search: '', hash: `#strava_error=${body.error ?? 'server'}` })
-    return { error: back?.kind === 'error' ? back.message : 'Logowanie przez Stravę się nie powiodło.' }
+    return { error: back?.kind === 'error' ? back.message : t().sync.auth.stravaFailed }
   }
   const { error } = await supabase.auth.verifyOtp({ token_hash: body.token_hash, type: 'magiclink' })
   return { error: error ? authErrorMessage(error.message) : null }

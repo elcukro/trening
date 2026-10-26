@@ -1,3 +1,4 @@
+import { t as tr } from '../i18n'
 import { addDays, diffDays, mondayOf, type ISODate } from './dates'
 import type { CalendarDay } from './types'
 
@@ -65,8 +66,8 @@ export function weightTrend(points: WeightPoint[]): { kg_per_week: number; pct_p
   const kg = cur - prev
   const pct = (kg / prev) * 100
   let warning: string | null = null
-  if (pct < -1) warning = 'R10: spadek szybszy niż 1% masy na tydzień – jeśli utrzyma się drugi tydzień, dodaj 200–300 kcal.'
-  else if (kg > 0.3) warning = 'Masa rośnie – sprawdź deficyt w dni lekkie.'
+  if (pct < -1) warning = tr().engine.progress.fastLoss
+  else if (kg > 0.3) warning = tr().engine.progress.gaining
   return { kg_per_week: kg, pct_per_week: pct, warning }
 }
 

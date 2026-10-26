@@ -1,5 +1,6 @@
 import { z } from 'zod'
 import { WEEKDAYS, diffDays, type ISODate, type Weekday } from './dates'
+import { intlLocale, t as msg } from '@/i18n'
 
 /**
  * Onboarding (docs/31, etapy 1–2 z docs/30): kim jest zawodnik i jaki ma cel – w formie gotowej dla przyszłego
@@ -238,7 +239,8 @@ export function healthScreen(a: Partial<HealthAnswers> | undefined): { level: He
 
 export type Check = { id: string; level: 'info' | 'warn'; text: string }
 
-const fmtH = (h: number) => String(Math.round(h * 10) / 10).replace('.', ',')
+/** 6,5 – liczba w języku zawodnika (przecinek / kropka) */
+const fmtH = (h: number) => (Math.round(h * 10) / 10).toLocaleString(intlLocale(), { maximumFractionDigits: 1 })
 
 /**
  * Ostrzeżenia spójności liczone kodem (model może je potem opowiedzieć). Nie blokują zapisu – podsumowanie
@@ -246,33 +248,34 @@ const fmtH = (h: number) => String(Math.round(h * 10) / 10).replace('.', ',')
  */
 export function checks(d: Draft, today: ISODate): Check[] {
   const out: Check[] = []
+  const L = msg().onboarding.checks
   const t = d.time
   if (t?.days?.length && t.hours_per_week) {
     const cap = t.days.reduce((s, x) => s + ((isWeekend(x) ? t.weekend_max_min : t.weekday_max_min) ?? 0), 0) / 60
-    if (cap > 0 && cap < t.hours_per_week) out.push({ id: 'time_cap', level: 'warn', text: `W wybrane dni zmieścisz najwyżej ${fmtH(cap)} h, a chcesz ${fmtH(t.hours_per_week)} h – plan przyjmie ${fmtH(cap)} h.` })
+    if (cap > 0 && cap < t.hours_per_week) out.push({ id: 'time_cap', level: 'warn', text: L.timeCap(fmtH(cap), fmtH(t.hours_per_week)) })
   }
   const now = d.current?.hours_4w
   if (t?.hours_per_week && now != null && t.hours_per_week > Math.max(now * 1.5, now + 2)) {
-    out.push({ id: 'ramp', level: 'info', text: `Ostatnio jeździsz ok. ${fmtH(now)} h tygodniowo – plan zacznie bliżej tej liczby i dojdzie do ${fmtH(t.hours_per_week)} h stopniowo.` })
+    out.push({ id: 'ramp', level: 'info', text: L.ramp(fmtH(now), fmtH(t.hours_per_week)) })
   }
   const g = d.goal
   const date = g && 'date' in g ? g.date : null
   if (date) {
     const days = diffDays(date, today)
-    if (days < 0) out.push({ id: 'goal_past', level: 'warn', text: 'Data celu już minęła.' })
-    else if (days < 28) out.push({ id: 'goal_soon', level: 'warn', text: 'Do celu zostały mniej niż 4 tygodnie – plan skupi się na świeżości, nie na budowaniu formy.' })
+    if (days < 0) out.push({ id: 'goal_past', level: 'warn', text: L.goalPast })
+    else if (days < 28) out.push({ id: 'goal_soon', level: 'warn', text: L.goalSoon })
   }
   if (g?.type === 'weight' && g.target_kg && g.date && d.body?.weight_kg) {
     const weeks = Math.max(diffDays(g.date, today) / 7, 0.1)
     const rate = (d.body.weight_kg - g.target_kg) / weeks
     // ok. 0,7 % masy tygodniowo to rozsądna górna granica przy rosnącym obciążeniu (docs/13 § 29.09.2026)
-    if (rate > d.body.weight_kg * 0.007) out.push({ id: 'weight_rate', level: 'warn', text: `To ${fmtH(rate)} kg tygodniowo – za szybko przy treningu. Rozsądnie: do ${fmtH(d.body.weight_kg * 0.007)} kg/tydz.` })
-    if (g.target_kg >= d.body.weight_kg) out.push({ id: 'weight_up', level: 'info', text: 'Cel masy nie jest niższy od obecnej – plan nie doliczy deficytu.' })
+    if (rate > d.body.weight_kg * 0.007) out.push({ id: 'weight_rate', level: 'warn', text: L.weightRate(fmtH(rate), fmtH(d.body.weight_kg * 0.007)) })
+    if (g.target_kg >= d.body.weight_kg) out.push({ id: 'weight_up', level: 'info', text: L.weightUp })
   }
   if (d.measure?.level === 'power' && d.gear && !(d.gear.devices?.length)) {
-    out.push({ id: 'power_no_device', level: 'info', text: 'Masz miernik mocy, ale bez komputera albo zegarka – plan pokażemy w aplikacji.' })
+    out.push({ id: 'power_no_device', level: 'info', text: L.powerNoDevice })
   }
-  if (healthScreen(d.health).level === 'doctor') out.push({ id: 'health_doctor', level: 'warn', text: 'Najpierw porozmawiaj z lekarzem. Do tego czasu plan będzie tylko spokojny, bez akcentów i testów.' })
+  if (healthScreen(d.health).level === 'doctor') out.push({ id: 'health_doctor', level: 'warn', text: L.healthDoctor })
   return out
 }
 

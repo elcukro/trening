@@ -1,5 +1,6 @@
 import type { Goal } from './schema'
 import { addDays, type ISODate } from './dates'
+import { t as tr } from '../i18n'
 
 /**
  * Punkt wyjścia (pkt 0 planu usprawnień, docs/14): zestaw mierników z datą pierwszego pomiaru i bieżącą wartością.
@@ -22,20 +23,38 @@ export interface BaselineDef {
   goal?: number
 }
 
+/** Etykieta i podpowiedź czytane w chwili dostępu – w języku zawodnika (docs/34). */
+function metricDef(id: BaselineMetric, unit: string, decimals: number, higherIsBetter: boolean | null, goal?: number): BaselineDef {
+  const d: BaselineDef = {
+    id,
+    get label() {
+      return tr().engine.baseline[id].label
+    },
+    unit,
+    decimals,
+    higherIsBetter,
+    get hint() {
+      return tr().engine.baseline[id].hint
+    },
+  }
+  if (goal != null) d.goal = goal
+  return d
+}
+
 export const BASELINE_DEFS: BaselineDef[] = [
-  { id: 'ftp_w', label: 'FTP', unit: 'W', decimals: 0, higherIsBetter: true, hint: 'ostatni test (albo szacunek z ustawień)', goal: 240 },
-  { id: 'mmp20_w', label: 'Najlepsze 20 min (moc)', unit: 'W', decimals: 0, higherIsBetter: true, hint: 'z jazd z miernikiem, ostatnie 28 dni' },
-  { id: 'mmp60_w', label: 'Najlepsze 60 min (moc)', unit: 'W', decimals: 0, higherIsBetter: true, hint: 'z jazd z miernikiem, ostatnie 28 dni' },
-  { id: 'best20_kmh', label: 'Najlepsze 20 min (prędkość)', unit: 'km/h', decimals: 1, higherIsBetter: true, hint: 'z jazd ze Stravy, ostatnie 28 dni', goal: 30 },
-  { id: 'best60_kmh', label: 'Najlepsze 60 min (prędkość)', unit: 'km/h', decimals: 1, higherIsBetter: true, hint: 'z jazd ze Stravy, ostatnie 28 dni', goal: 30 },
-  { id: 'ref_speed_kmh', label: 'Jazda odniesienia – prędkość', unit: 'km/h', decimals: 1, higherIsBetter: true, hint: '20 min płasko, równo, na chwytach – wpisz ręcznie' },
-  { id: 'ref_power_w', label: 'Jazda odniesienia – moc', unit: 'W', decimals: 0, higherIsBetter: null, hint: 'średnia moc tej samej jazdy (do estymacji CdA)' },
-  { id: 'lthr_bpm', label: 'LTHR', unit: 'bpm', decimals: 0, higherIsBetter: null, hint: 'ostatni test (albo ustawienia)' },
-  { id: 'hr_max_bpm', label: 'HRmax', unit: 'bpm', decimals: 0, higherIsBetter: null, hint: 'najwyższe tętno z jazd (albo ustawienia)' },
-  { id: 'decoupling_pct', label: 'Rozprzężenie Pw:HR (Z2)', unit: '%', decimals: 1, higherIsBetter: false, hint: 'ostatnia jazda ≥ 40 min z mocą i tętnem; < 5 % = dobra baza' },
-  { id: 'cadence_rpm', label: 'Kadencja', unit: 'rpm', decimals: 0, higherIsBetter: true, hint: 'średnia w ruchu, ostatnie 28 dni', goal: 78 },
-  { id: 'resting_hr', label: 'Tętno spoczynkowe', unit: 'bpm', decimals: 0, higherIsBetter: false, hint: 'średnia z 7 dni check-inu' },
-  { id: 'weight_kg', label: 'Masa', unit: 'kg', decimals: 1, higherIsBetter: false, hint: 'średnia z 7 dni check-inu', goal: 102 },
+  metricDef('ftp_w', 'W', 0, true, 240),
+  metricDef('mmp20_w', 'W', 0, true),
+  metricDef('mmp60_w', 'W', 0, true),
+  metricDef('best20_kmh', 'km/h', 1, true, 30),
+  metricDef('best60_kmh', 'km/h', 1, true, 30),
+  metricDef('ref_speed_kmh', 'km/h', 1, true),
+  metricDef('ref_power_w', 'W', 0, null),
+  metricDef('lthr_bpm', 'bpm', 0, null),
+  metricDef('hr_max_bpm', 'bpm', 0, null),
+  metricDef('decoupling_pct', '%', 1, false),
+  metricDef('cadence_rpm', 'rpm', 0, true, 78),
+  metricDef('resting_hr', 'bpm', 0, false),
+  metricDef('weight_kg', 'kg', 1, false, 102),
 ]
 
 export interface BaselineEntryLike {

@@ -3,45 +3,62 @@
     "id": "chain_wear",
     "every_days": 30,
     "title": "Kontrola zużycia łańcucha",
-    "details": "Miarka do łańcucha: przy 0,5 % wymień łańcuch (0,75 % przy łańcuchach 11s i mniej), zanim zje kasetę. Przy okazji wyczyść i nasmaruj."
+    "details": "Miarka do łańcucha: przy 0,5 % wymień łańcuch (0,75 % przy łańcuchach 11s i mniej), zanim zje kasetę. Przy okazji wyczyść i nasmaruj.",
+    "title_en": "Chain wear check",
+    "details_en": "Chain checker: replace the chain at 0.5% (0.75% for 11-speed and narrower chains) before it wears out the cassette. Clean and lube it while you're at it."
   },
   {
     "id": "tyres",
     "every_days": 30,
     "title": "Opony: bieżnik, przecięcia, ciśnienie",
-    "details": "Obejrzyj bieżnik i boki, wyjmij wbite kamyki i szkło. Ciśnienie dobierz do masy i szerokości opony."
+    "details": "Obejrzyj bieżnik i boki, wyjmij wbite kamyki i szkło. Ciśnienie dobierz do masy i szerokości opony.",
+    "title_en": "Tyres: tread, cuts, pressure",
+    "details_en": "Check the tread and sidewalls, remove embedded stones and glass. Set the pressure to suit your weight and the tyre width."
   },
   {
     "id": "pads_disc",
     "brakes": "disc",
     "every_days": 60,
     "title": "Klocki i tarcze hamulcowe",
-    "details": "Wymień klocki przy okładzinie poniżej 1 mm (razem z płytką poniżej ok. 3 mm). Sprawdź grubość tarczy – minimum jest wybite na tarczy."
+    "details": "Wymień klocki przy okładzinie poniżej 1 mm (razem z płytką poniżej ok. 3 mm). Sprawdź grubość tarczy – minimum jest wybite na tarczy.",
+    "title_en": "Disc brake pads and rotors",
+    "details_en": "Replace the pads when the lining is below 1 mm (below about 3 mm including the backing plate). Check rotor thickness – the minimum is stamped on the rotor."
   },
   {
     "id": "pads_rim",
     "brakes": "rim",
     "every_days": 60,
     "title": "Klocki i ścianki obręczy",
-    "details": "Wymień klocki, gdy znikną rowki. Obręcz: wskaźnik zużycia ścianki albo wyraźnie wklęsła powierzchnia – do wymiany."
+    "details": "Wymień klocki, gdy znikną rowki. Obręcz: wskaźnik zużycia ścianki albo wyraźnie wklęsła powierzchnia – do wymiany.",
+    "title_en": "Brake pads and rim braking surfaces",
+    "details_en": "Replace the pads when the grooves are gone. Rim: a wear indicator or a clearly concave braking surface means it needs replacing."
   },
   {
     "id": "sealant",
-    "kinds": ["gravel", "mtb"],
+    "kinds": [
+      "gravel",
+      "mtb"
+    ],
     "every_days": 90,
     "title": "Mleko tubeless",
-    "details": "Dotyczy kół bezdętkowych: uzupełnij mleko (ok. 30–60 ml na koło, zależnie od szerokości). Na dętkach – oznacz „Nie dotyczy”."
+    "details": "Dotyczy kół bezdętkowych: uzupełnij mleko (ok. 30–60 ml na koło, zależnie od szerokości). Na dętkach – oznacz „Nie dotyczy”.",
+    "title_en": "Tubeless sealant",
+    "details_en": "For tubeless wheels: top up the sealant (about 30–60 ml per wheel, depending on the width). With inner tubes – mark it “Not applicable”."
   },
   {
     "id": "bolts",
     "every_days": 90,
     "title": "Śruby i luzy",
-    "details": "Kluczem dynamometrycznym: mostek, kierownica, sztyca, siodło, bloki. Luz sterów i piast, bicie kół."
+    "details": "Kluczem dynamometrycznym: mostek, kierownica, sztyca, siodło, bloki. Luz sterów i piast, bicie kół.",
+    "title_en": "Bolts and play",
+    "details_en": "With a torque wrench: stem, handlebar, seatpost, saddle, cleats. Check headset and hub play and wheel true."
   },
   {
     "id": "annual_service",
     "every_days": 365,
     "title": "Przegląd roczny",
-    "details": "Linki i pancerze (albo odpowietrzenie hydrauliki), łożyska suportu i sterów, centrowanie kół, owijka."
+    "details": "Linki i pancerze (albo odpowietrzenie hydrauliki), łożyska suportu i sterów, centrowanie kół, owijka.",
+    "title_en": "Annual service",
+    "details_en": "Cables and housing (or bleed the hydraulics), bottom bracket and headset bearings, wheel truing, bar tape."
   }
 ]

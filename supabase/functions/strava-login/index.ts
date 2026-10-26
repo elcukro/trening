@@ -10,6 +10,7 @@ import { APP_URL, CORS, env, json } from '../_shared/env.ts'
 import { sign, verify } from '../_shared/crypto.ts'
 import { adminClient } from '../_shared/supabase.ts'
 import { exchangeCode, saveTokens, userIdForAthlete } from '../_shared/strava.ts'
+import { langFromRequest, strings } from '../_shared/i18n.ts'
 import {
   allowedReturn,
   parseState,
@@ -41,7 +42,7 @@ Deno.serve(async (req) => {
   if (req.method === 'GET' && url.pathname.endsWith('/start')) {
     const ret = allowedReturn(url.searchParams.get('return'), returnOrigins(APP_URL, Deno.env.get('LOGIN_RETURN_ORIGINS')))
     const ch = url.searchParams.get('challenge')
-    if (!ret || !validChallenge(ch)) return new Response('Nieprawidłowy adres powrotu albo wyzwanie.', { status: 400 })
+    if (!ret || !validChallenge(ch)) return new Response(strings(langFromRequest(req)).errors.badReturn, { status: 400, headers: { 'content-type': 'text/plain; charset=utf-8' } })
     const state: LoginState = { p: 'strava-login', ret, ch, exp: Date.now() + STATE_TTL_MS }
     const p = new URLSearchParams({
       client_id: env('STRAVA_CLIENT_ID'),

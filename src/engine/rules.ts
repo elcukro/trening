@@ -3,6 +3,7 @@ import type { CalendarDay, DayFlag, PlanOverride } from './types'
 import { addDays, compareISO, diffDays, type ISODate } from './dates'
 import { nutritionForDay } from './nutrition'
 import { hrvAlarm } from './readiness'
+import { t } from '../i18n'
 
 /**
  * Reguły adaptacji R1–R16 działające na gotowym kalendarzu.
@@ -88,7 +89,7 @@ function indoorReplacement(program: Program, day: CalendarDay): CalendarDay['bik
   const w = program.bike_workouts[id]
   if (!w) return day.bike
   const duration = id === 'INDOOR_4x4' ? w.duration_min : day.day_type === 'long' ? 90 : Math.min(day.bike.duration_min, 60)
-  return { workout_id: id, name: `${w.name} (pod dachem)`, duration_min: duration, bike: program.bikes.indoor, fallback_workout_id: null }
+  return { workout_id: id, name: t().engine.rules.indoorName(w.name), duration_min: duration, bike: program.bikes.indoor, fallback_workout_id: null }
 }
 
 // ---------------------------------------------------------------- nadpisania
@@ -191,7 +192,7 @@ export function applyOverrides(days: CalendarDay[], overrides: PlanOverride[], p
             d.day_type = 'rest'
           } else {
             const z1 = program.bike_workouts.Z1_RECOVERY
-            d.bike = z1 ? { workout_id: 'Z1_RECOVERY', name: z1.name, duration_min: Math.min(45, d.bike?.duration_min ?? 45), bike: 'dowolny, bardzo luźno', fallback_workout_id: null } : null
+            d.bike = z1 ? { workout_id: 'Z1_RECOVERY', name: z1.name, duration_min: Math.min(45, d.bike?.duration_min ?? 45), bike: t().engine.rules.recoveryBike, fallback_workout_id: null } : null
             d.day_type = 'easy'
           }
           break
@@ -274,14 +275,14 @@ export function warningsFor(date: ISODate, window: CalendarDay[], ctx: RuleConte
     out.push({
       rule: 'R1',
       severity: 'info',
-      message: `Wczorajszy akcent (${yesterday.bike?.name}) nie został wykonany. Możesz go przenieść na dziś zamiast ${day.bike!.name}.`,
-      actions: [{ kind: 'move', date: yesterday.date, label: 'Przenieś akcent na dziś', payload: { to: date, what: 'bike' } }],
+      message: t().engine.rules.r1MissedYesterday(yesterday.bike?.name ?? '', day.bike!.name),
+      actions: [{ kind: 'move', date: yesterday.date, label: t().engine.rules.r1MoveToToday, payload: { to: date, what: 'bike' } }],
     })
   }
   // przeniesienie tylko na dzień z lekką jazdą – nigdy na dzień wolny ani tuż przed kolejnym akcentem
   if (isKeyDay(day) && compareISO(date, ctx.today) < 0 && wasSkipped(ctx, date)) {
     if (canTakeAccent(tomorrow, at(addDays(date, 2)))) {
-      out.push({ rule: 'R1', severity: 'info', message: `Akcent nie został wykonany. Przenieś go na jutro (zamiast ${tomorrow.bike!.name}) albo odpuść – nigdy dwóch akcentów dzień po dniu.`, actions: [{ kind: 'move', date, label: 'Przenieś na jutro', payload: { to: tomorrow.date, what: 'bike' } }] })
+      out.push({ rule: 'R1', severity: 'info', message: t().engine.rules.r1MissedToday(tomorrow.bike!.name), actions: [{ kind: 'move', date, label: t().engine.rules.r1MoveToTomorrow, payload: { to: tomorrow.date, what: 'bike' } }] })
     }
   }
 
@@ -291,8 +292,8 @@ export function warningsFor(date: ISODate, window: CalendarDay[], ctx: RuleConte
     out.push({
       rule: 'R2',
       severity: 'info',
-      message: `Wczorajsza długa jazda (${yesterday.bike?.name}) nie doszła do skutku. Zrób ją dziś zamiast ${day.bike.name}.`,
-      actions: [{ kind: 'move', date: yesterday.date, label: 'Przenieś długą jazdę na dziś', payload: { to: date, what: 'bike' } }],
+      message: t().engine.rules.r2MissedYesterday(yesterday.bike?.name ?? '', day.bike.name),
+      actions: [{ kind: 'move', date: yesterday.date, label: t().engine.rules.r2MoveToToday, payload: { to: date, what: 'bike' } }],
     })
   }
 
@@ -303,30 +304,27 @@ export function warningsFor(date: ISODate, window: CalendarDay[], ctx: RuleConte
   const hrAlarm = restingHrAlarm(ctx.checkins, date)
   const hrvLow = hrvAlarm(ctx.checkins, date)
   if ((score !== null && score <= 6) || hrAlarm || hrvLow) {
-    const why = hrAlarm
-      ? 'Tętno spoczynkowe jest podwyższone drugi dzień z rzędu'
-      : hrvLow
-        ? 'HRV jest poniżej Twojej normy drugi dzień z rzędu'
-        : `Suma ocen z check-inu to ${score} na 15`
+    const T = t().engine.rules
+    const why = hrAlarm ? T.r6RestingHr : hrvLow ? T.r6Hrv : T.r6Score(score ?? 0)
     if (isKeyDay(day)) {
       out.push({
         rule: 'R6',
         severity: 'warn',
-        message: `${why}. Obniż dzień: akcent na Z2 60 min.`,
-        actions: [{ kind: 'downgrade', date, label: 'Obniż dzisiejszy trening', payload: {} }],
+        message: T.r6Downgrade(why),
+        actions: [{ kind: 'downgrade', date, label: T.r6DowngradeAction, payload: {} }],
       })
     } else {
-      out.push({ rule: 'R6', severity: 'info', message: `${why}. Dziś i tak jest lekko – jedź spokojnie albo odpocznij.` })
+      out.push({ rule: 'R6', severity: 'info', message: T.r6Easy(why) })
     }
   }
   if (todayCheckin?.sick) {
     out.push({
       rule: 'R5',
       severity: 'warn',
-      message: 'Zaznaczyłeś chorobę. Gorączka lub objawy poniżej szyi to zero treningu. Sam katar: tylko Z1 do 45 min.',
+      message: t().engine.rules.r5Sick,
       actions: [
-        { kind: 'sick', date, label: 'Gorączka – dzień wolny', payload: { level: 'fever' } },
-        { kind: 'sick', date, label: 'Katar – tylko Z1 45 min', payload: { level: 'cold' } },
+        { kind: 'sick', date, label: t().engine.rules.r5Fever, payload: { level: 'fever' } },
+        { kind: 'sick', date, label: t().engine.rules.r5Cold, payload: { level: 'cold' } },
       ],
     })
   }
@@ -340,7 +338,7 @@ export function warningsFor(date: ISODate, window: CalendarDay[], ctx: RuleConte
   // R13 – upał
   const temp = ctx.weather?.temp_c
   if (day.bike && ((temp != null && temp > 28) || day.flags.includes('heat'))) {
-    out.push({ rule: 'R13', severity: 'info', message: 'Upał: cele tętna w Z2–SS niżej o 3–5 uderzeń, 750 ml płynu z elektrolitami na godzinę. Przy VO2max skróć do 4 powtórzeń.' })
+    out.push({ rule: 'R13', severity: 'info', message: t().engine.rules.r13Heat })
   }
 
   // R4 – warunki zimowe
@@ -348,8 +346,8 @@ export function warningsFor(date: ISODate, window: CalendarDay[], ctx: RuleConte
     out.push({
       rule: 'R4',
       severity: 'warn',
-      message: 'Gołoledź albo mróz poniżej −5 °C. Przenieś trening pod dach.',
-      actions: [{ kind: 'indoor', date, label: 'Wersja pod dachem', payload: {} }],
+      message: t().engine.rules.r4Ice,
+      actions: [{ kind: 'indoor', date, label: t().engine.rules.r4IndoorAction, payload: {} }],
     })
   }
 
@@ -372,12 +370,12 @@ export function isFreeDay(day: CalendarDay): boolean {
 export function validateMove(from: ISODate, to: ISODate, window: CalendarDay[], opts: { today?: ISODate } = {}): { ok: boolean; reason?: string; warning?: string } {
   const F = window.find((d) => d.date === from)
   const T = window.find((d) => d.date === to)
-  if (!F?.bike || NON_MOVABLE.has(F.bike.workout_id)) return { ok: false, reason: 'Ten dzień nie ma jazdy do przeniesienia.' }
-  if (!T) return { ok: false, reason: 'Cel jest poza planem.' }
-  if (from === to) return { ok: false, reason: 'To ten sam dzień.' }
-  if (from.slice(0, 7) !== to.slice(0, 7)) return { ok: false, reason: 'Przenoś tylko w obrębie jednego miesiąca.' }
-  if (!isFreeDay(T)) return { ok: false, reason: 'Celem może być tylko dzień wolny (bez jazdy).' }
-  if (opts.today && compareISO(to, opts.today) < 0) return { ok: false, reason: 'Nie przenoś treningu w przeszłość.' }
+  if (!F?.bike || NON_MOVABLE.has(F.bike.workout_id)) return { ok: false, reason: t().engine.rules.move.noRide }
+  if (!T) return { ok: false, reason: t().engine.rules.move.outsidePlan }
+  if (from === to) return { ok: false, reason: t().engine.rules.move.sameDay }
+  if (from.slice(0, 7) !== to.slice(0, 7)) return { ok: false, reason: t().engine.rules.move.sameMonth }
+  if (!isFreeDay(T)) return { ok: false, reason: t().engine.rules.move.restDayOnly }
+  if (opts.today && compareISO(to, opts.today) < 0) return { ok: false, reason: t().engine.rules.move.past }
 
   const moved = sessionFlags(F)
   const after = window.map((d) =>
@@ -388,17 +386,17 @@ export function validateMove(from: ISODate, to: ISODate, window: CalendarDay[], 
         : d,
   )
   for (let i = 1; i < after.length; i++) {
-    if (isKeyDay(after[i]!) && isKeyDay(after[i - 1]!)) return { ok: false, reason: 'Po przeniesieniu dwa akcenty wypadłyby dzień po dniu.' }
+    if (isKeyDay(after[i]!) && isKeyDay(after[i - 1]!)) return { ok: false, reason: t().engine.rules.move.twoKeys }
   }
-  const warning = opts.today && compareISO(from, opts.today) < 0 ? 'To jednostka z przeszłości – R2 mówi, żeby jej nie odrabiać. Przenoś tylko, jeśli świadomie zmieniasz układ tygodnia.' : undefined
+  const warning = opts.today && compareISO(from, opts.today) < 0 ? t().engine.rules.move.pastWarning : undefined
   return { ok: true, warning }
 }
 
 export function validateSwap(a: ISODate, b: ISODate, window: CalendarDay[]): { ok: boolean; reason?: string } {
   const A = window.find((d) => d.date === a)
   const B = window.find((d) => d.date === b)
-  if (!A || !B) return { ok: false, reason: 'Zamiana działa tylko w obrębie jednego tygodnia.' }
-  if (A.week !== B.week) return { ok: false, reason: 'Dni muszą być w tym samym tygodniu.' }
+  if (!A || !B) return { ok: false, reason: t().engine.rules.swap.outsidePlan }
+  if (A.week !== B.week) return { ok: false, reason: t().engine.rules.swap.sameWeek }
   const after = window.map((d) =>
     d.date === a
       ? { ...d, bike: B.bike, day_type: B.day_type, flags: withSessionFlags(d, sessionFlags(B)) }
@@ -407,7 +405,7 @@ export function validateSwap(a: ISODate, b: ISODate, window: CalendarDay[]): { o
         : d,
   )
   for (let i = 1; i < after.length; i++) {
-    if (isKeyDay(after[i]!) && isKeyDay(after[i - 1]!)) return { ok: false, reason: 'Po zamianie dwa akcenty wypadłyby dzień po dniu.' }
+    if (isKeyDay(after[i]!) && isKeyDay(after[i - 1]!)) return { ok: false, reason: t().engine.rules.swap.twoKeys }
   }
   return { ok: true }
 }

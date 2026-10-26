@@ -12,7 +12,7 @@ declare const self: ServiceWorkerGlobalScope & { __WB_MANIFEST: { url: string; r
 
 precacheAndRoute(self.__WB_MANIFEST)
 cleanupOutdatedCaches()
-registerRoute(new NavigationRoute(createHandlerBoundToURL('index.html'), { denylist: [/^\/functions\//, /^\/pomoc\.html$/] }))
+registerRoute(new NavigationRoute(createHandlerBoundToURL('index.html'), { denylist: [/^\/functions\//, /^\/(pomoc|help)\.html$/] }))
 
 interface PushPayload {
   title?: string
@@ -28,7 +28,8 @@ self.addEventListener('push', (event) => {
   } catch {
     payload = { body: event.data?.text() }
   }
-  const title = payload.title ?? 'Trening'
+  // tytuł i treść przychodzą z serwera w języku zawodnika (docs/34 § 6); zapas to nazwa aplikacji
+  const title = payload.title ?? 'Bicycle Coach'
   event.waitUntil(
     self.registration.showNotification(title, {
       body: payload.body ?? '',

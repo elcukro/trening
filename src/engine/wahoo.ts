@@ -1,3 +1,4 @@
+import { t } from '../i18n'
 import type { BikeWorkout, PowerZone, StepBlock } from './schema'
 import { powerFraction, totalSeconds } from './zones'
 
@@ -134,7 +135,7 @@ export function planBlocks(workout: BikeWorkout, durationMin: number): StepBlock
       const rest = Math.max(0, total - insertSec)
       const before = Math.round(rest / 2 / 60) * 60
       const after = Math.max(0, rest - before)
-      return [{ ...first, duration_s: before }, workout.insert, { ...first, name: `${first.name} (c.d.)`, duration_s: after }]
+      return [{ ...first, duration_s: before }, workout.insert, { ...first, name: t().engine.plan.continued(first.name), duration_s: after }]
     }
     return [{ ...first, duration_s: total }]
   }
@@ -165,7 +166,7 @@ export function buildWahooPlan(workout: BikeWorkout, opts: BuildPlanOptions): Wa
   const header: WahooPlan['header'] = {
     name: (opts.name ?? workout.name).slice(0, 80),
     version: '1.0.0',
-    description: (opts.lthr && !(opts.usePowerTargets && opts.ftp) ? `Cele tętna są w nazwach interwałów (ELEMNT nie obsługuje celów HR w planach). ${workout.description}` : workout.description).slice(0, 500),
+    description: (opts.lthr && !(opts.usePowerTargets && opts.ftp) ? `${t().engine.wahoo.hrInNames} ${workout.description}` : workout.description).slice(0, 500),
     workout_type_family: WORKOUT_TYPE_FAMILY_CYCLING,
     workout_type_location: isIndoor(workout.id) ? LOCATION_INDOOR : LOCATION_OUTDOOR,
   }

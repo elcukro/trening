@@ -1,6 +1,8 @@
 import type { ReactNode } from 'react'
 import { IconCheck, IconChevronLeft } from '@/ios/components/Icons'
 import { haptic } from '@/native'
+import { useT } from '@/i18n/react'
+import { fmtDate } from '@/lib/dates'
 
 /**
  * Kontrolki onboardingu: wybór dotknięciem zamiast klawiatury (docs/24 § 6). Liczby z listy systemowej iOS
@@ -78,7 +80,9 @@ export function Options<T extends string>({ label, options, value, onChange }: {
  * Wiersz z wartością z listy: cały wiersz jest przezroczystym `<select>` (iOS otwiera koło wyboru), widać etykietę,
  * wartość i chevron. `null` = „—” (pole opcjonalne niewypełnione).
  */
-export function PickRow<T extends number | string>({ label, value, options, format, onChange, placeholder = 'wybierz', optional }: { label: string; value: T | null | undefined; options: readonly T[]; format: (v: T) => string; onChange: (v: T | null) => void; placeholder?: string; optional?: boolean }) {
+export function PickRow<T extends number | string>({ label, value, options, format, onChange, placeholder: ph, optional }: { label: string; value: T | null | undefined; options: readonly T[]; format: (v: T) => string; onChange: (v: T | null) => void; placeholder?: string; optional?: boolean }) {
+  const t = useT()
+  const placeholder = ph ?? t.onboarding.controls.choose
   const list = value != null && !options.includes(value) ? [value, ...options] : options
   return (
     <label className="m-row ob-pick">
@@ -96,7 +100,7 @@ export function PickRow<T extends number | string>({ label, value, options, form
           onChange(hit ?? null)
         }}
       >
-        {(optional || value == null) && <option value="">{optional ? '— nie wiem —' : placeholder}</option>}
+        {(optional || value == null) && <option value="">{optional ? t.onboarding.controls.dontKnowOption : placeholder}</option>}
         {list.map((v) => (
           <option key={String(v)} value={String(v)}>
             {format(v)}
@@ -109,10 +113,11 @@ export function PickRow<T extends number | string>({ label, value, options, form
 
 /** Data z kalendarza systemowego (bez klawiatury). */
 export function DateRow({ label, value, onChange, min, max, optional }: { label: string; value: string | null | undefined; onChange: (v: string | null) => void; min?: string; max?: string; optional?: boolean }) {
+  const t = useT()
   return (
     <label className="m-row ob-pick">
       <span className="flex-1">{label}</span>
-      <span className={value ? 'm-num' : 'm-dim-3'}>{value ? value.split('-').toReversed().join('.') : optional ? 'bez daty' : 'wybierz'}</span>
+      <span className={value ? 'm-num' : 'm-dim-3'}>{value ? fmtDate(value) : optional ? t.onboarding.controls.noDate : t.onboarding.controls.choose}</span>
       <span className="m-dim-3 rotate-180" aria-hidden>
         <IconChevronLeft size={16} />
       </span>
@@ -133,11 +138,12 @@ export function DateRow({ label, value, onChange, min, max, optional }: { label:
 
 /** Tak / Nie dla pytania przesiewowego. */
 export function YesNo({ label, value, onChange }: { label: string; value: boolean | undefined; onChange: (v: boolean) => void }) {
+  const t = useT()
   return (
     <div className="ob-yesno" role="radiogroup" aria-label={label}>
       {[
-        { v: false, t: 'Nie' },
-        { v: true, t: 'Tak' },
+        { v: false, t: t.common.no },
+        { v: true, t: t.common.yes },
       ].map((o) => (
         <button
           key={o.t}

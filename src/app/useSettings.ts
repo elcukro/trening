@@ -8,6 +8,7 @@ import type { Program } from '@/engine/schema'
 import { useAuth } from '@/sync/auth'
 import { useSyncRunner } from '@/sync/useSync'
 import { useLang } from '@/i18n/react'
+import { t as tNow } from '@/i18n'
 import type { SyncStatus } from '@/sync/sync'
 import { changedKeys, withFieldStamps } from '@/sync/profileMerge'
 import type { Settings } from '@/engine/schema'
@@ -143,7 +144,7 @@ export function useEngine(): Engine {
       return { ctx: { program, settings, tests, current_weight_kg: lastWeigh }, weeks: layoutWeeks(program, settings), settingsError: null }
     } catch (e) {
       const safe = { ...settings, trip_start: program.default_settings.trip_start }
-      const msg = e instanceof TripDateError ? e.message : 'Nieprawidłowe ustawienia – użyto domyślnej daty wyjazdu.'
+      const msg = e instanceof TripDateError ? e.message : tNow().classic.settingsInvalid
       return { ctx: { program, settings: safe, tests, current_weight_kg: lastWeigh }, weeks: layoutWeeks(program, safe), settingsError: msg }
     }
   }, [program, settings, tests, lastWeigh])

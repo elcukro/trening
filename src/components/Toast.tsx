@@ -1,6 +1,8 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState, type PointerEvent as ReactPointerEvent, type ReactNode } from 'react'
 import { IS_IOS_APP, haptic } from '@/native'
 import { friendlyError } from '@/lib/errors'
+import { t as tr } from '@/i18n'
+import { useT } from '@/i18n/react'
 import './hud.css'
 
 /**
@@ -169,9 +171,9 @@ export function ToastProvider({ children }: { children: ReactNode }) {
       try {
         const result = await Promise.race([
           fn(),
-          new Promise<never>((_, reject) => setTimeout(() => reject(new Error('Przekroczono czas oczekiwania (60 s).')), 60_000)),
+          new Promise<never>((_, reject) => setTimeout(() => reject(new Error('Timed out after 60 s')), 60_000)),
         ])
-        const message = done ? done(result) : 'Gotowe'
+        const message = done ? done(result) : tr().common.done
         const act = action?.(result)
         if (shown || message || act) {
           replace(id, message, 'success', undefined, act)
@@ -180,8 +182,8 @@ export function ToastProvider({ children }: { children: ReactNode }) {
         return result
       } catch (e) {
         const f = friendlyError(e)
-        const title = opts?.errorTitle ?? 'Nie udało się'
-        const retry = f.retry ? { label: 'Ponów', onClick: () => void runRef.current?.(pendingMessage, fn, done, action, opts) } : undefined
+        const title = opts?.errorTitle ?? tr().m.toast.failed
+        const retry = f.retry ? { label: tr().errors.retry, onClick: () => void runRef.current?.(pendingMessage, fn, done, action, opts) } : undefined
         if (ios) replace(id, title, 'error', f.message, retry)
         else replace(id, title, 'error', f.detail ? `${f.message} (${f.detail})` : f.message, retry)
         haptic.error()
@@ -202,7 +204,7 @@ export function ToastProvider({ children }: { children: ReactNode }) {
   return (
     <Ctx.Provider value={api}>
       {style === 'web' && busy > 0 && (
-        <div className="safe-top fixed inset-x-0 top-0 z-50" role="progressbar" aria-label="Trwa operacja">
+        <div className="safe-top fixed inset-x-0 top-0 z-50" role="progressbar" aria-label={tr().m.toast.inProgress}>
           <div className="h-1 w-full overflow-hidden bg-sky-100 dark:bg-sky-950">
             <div className="h-full w-1/3 animate-[toastbar_1.1s_ease-in-out_infinite] bg-sky-500" />
           </div>
@@ -356,6 +358,7 @@ const STYLE: Record<ToastKind, string> = {
 }
 
 function ToastRow({ toast, onDismiss }: { toast: Toast; onDismiss: () => void }) {
+  const t = useT()
   const [open, setOpen] = useState(false)
   return (
     <div className={`pointer-events-auto w-full max-w-md rounded-xl px-4 py-3 shadow-lg ${STYLE[toast.kind]}`} role={toast.kind === 'error' ? 'alert' : 'status'}>
@@ -371,7 +374,7 @@ function ToastRow({ toast, onDismiss }: { toast: Toast; onDismiss: () => void })
           {toast.message}
           {toast.detail && (
             <button onClick={() => setOpen((v) => !v)} className="ml-2 text-xs underline opacity-90">
-              {open ? 'ukryj' : 'szczegóły'}
+              {open ? t.m.toast.hideDetails : t.m.toast.details}
             </button>
           )}
           {open && toast.detail && <p className="mt-1 break-words text-xs font-normal opacity-90">{toast.detail}</p>}
@@ -387,7 +390,7 @@ function ToastRow({ toast, onDismiss }: { toast: Toast; onDismiss: () => void })
             {toast.action.label}
           </button>
         )}
-        <button onClick={onDismiss} aria-label="Zamknij" className="-my-2 -mr-2 min-h-11 min-w-11 shrink-0 text-lg leading-none opacity-80">
+        <button onClick={onDismiss} aria-label={t.common.close} className="-my-2 -mr-2 min-h-11 min-w-11 shrink-0 text-lg leading-none opacity-80">
           ×
         </button>
       </div>

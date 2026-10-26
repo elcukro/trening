@@ -1,135 +1,180 @@
 {
  "system": "Jeden kolor worka = jedna kategoria, zawsze w tym samym miejscu. Im rzadziej czegoś potrzebujesz, tym głębiej leży.",
+ "system_en": "One bag colour = one category, always in the same place. The less often you need something, the deeper it goes.",
  "bags": [
   {
    "id": "seatpack",
    "name": "Podsiodłówka Ortlieb",
-   "content": "Na dno: śpiwór w worku kompresyjnym (biwak) lub ubranie zapasowe; potem worek „wieczór” (bielizna, skarpety, koszulka, lekkie spodnie); najbliżej rolki: kosmetyczka i ręcznik."
+   "content": "Na dno: śpiwór w worku kompresyjnym (biwak) lub ubranie zapasowe; potem worek „wieczór” (bielizna, skarpety, koszulka, lekkie spodnie); najbliżej rolki: kosmetyczka i ręcznik.",
+   "name_en": "Ortlieb seat pack",
+   "content_en": "At the bottom: sleeping bag in a compression sack (bivouac) or spare clothes; then the “evening” bag (underwear, socks, T-shirt, light trousers); closest to the roll closure: wash bag and towel."
   },
   {
    "id": "framepack",
    "name": "Torba na ramę (wisząca)",
-   "content": "Na dnie rolka z narzędziami i dętką; wyżej powerbank i elektronika w małym worku; na górze jedzenie na dzień."
+   "content": "Na dnie rolka z narzędziami i dętką; wyżej powerbank i elektronika w małym worku; na górze jedzenie na dzień.",
+   "name_en": "Frame bag (hanging)",
+   "content_en": "At the bottom: tool roll and inner tube; above them the power bank and electronics in a small bag; on top: food for the day."
   },
   {
    "id": "toptube",
    "name": "Mała torba na górną rurę",
-   "content": "Telefon, żele i batony, portfel, klucze, krem z filtrem."
+   "content": "Telefon, żele i batony, portfel, klucze, krem z filtrem.",
+   "name_en": "Small top-tube bag",
+   "content_en": "Phone, gels and bars, wallet, keys, sunscreen."
   }
  ],
  "items": [
   {
    "cat": "Organizacja",
+   "cat_en": "Organisation",
    "name": "Worki Ortlieb PS10 1,5 l × 2 (różne kolory)",
+   "name_en": "Ortlieb PS10 1.5 l dry bags × 2 (different colours)",
    "price_pln": 59,
    "url": "https://e-velomania.pl/worek-ortlieb-dry-bag-ps10-1.5l-czarny"
   },
   {
    "cat": "Organizacja",
+   "cat_en": "Organisation",
    "name": "Exped Fold Drybag UL XS 3 l",
+   "name_en": "Exped Fold Drybag UL XS 3 l",
    "price_pln": 50,
    "url": "https://cragstore.pl/worek-wodoodporny-exped-drybag-ul-xs"
   },
   {
    "cat": "Organizacja",
+   "cat_en": "Organisation",
    "name": "Sea to Summit Ultra-Sil Garment Mesh Bag S (wilgotne ubrania)",
+   "name_en": "Sea to Summit Ultra-Sil Garment Mesh Bag S (damp clothes)",
    "price_pln": 82,
    "url": "https://www.wypad.com.pl/pl/p/Worek-bagazowy-Sea-To-Summit-Ultra-Sil-Garment-Mesh-Bag-Small-Blue-Atoll/9402"
   },
   {
    "cat": "Organizacja",
+   "cat_en": "Organisation",
    "name": "Sea to Summit Ultra-Sil eVent Compression XS 6 l (śpiwór)",
+   "name_en": "Sea to Summit Ultra-Sil eVent Compression XS 6 l (sleeping bag)",
    "price_pln": 70,
    "url": "https://www.campingshop.pl/worek-kompresyjny-ultra-sil-event-dry-6l-sea-to-summit",
    "only": "biwak"
   },
   {
    "cat": "Organizacja",
+   "cat_en": "Organisation",
    "name": "Paski Voile 2 szt. (mokre buty, kurtka na zewnątrz)",
+   "name_en": "Voile straps × 2 (wet shoes, jacket on the outside)",
    "price_pln": 60,
    "url": "https://www.splitboards.eu/english/touring-equipment/voile-straps/sortiment/1363/voile-strap-nano-9-23cm"
   },
   {
    "cat": "Organizacja",
+   "cat_en": "Organisation",
    "name": "Składany plecak Sea to Summit Ultra-Sil 20 l (sklep, miasto)",
+   "name_en": "Sea to Summit Ultra-Sil 20 l packable backpack (shop, town)",
    "price_pln": 80,
    "url": "https://www.campingshop.pl/plecak-turystyczny-ultra-sil-daypack-20l-sea-to-summit"
   },
   {
    "cat": "Kosmetyczka",
+   "cat_en": "Wash bag",
    "name": "Matador FlatPak Waterproof Toiletry Case",
+   "name_en": "Matador FlatPak Waterproof Toiletry Case",
    "price_pln": 98,
    "url": "https://www.campingshop.pl/kosmetyczka-turystyczna-flatpak-waterproof-toiletry-case-matador"
   },
   {
    "cat": "Kosmetyczka",
+   "cat_en": "Wash bag",
    "name": "Buteleczki GoToob+ S 53 ml × 3 (krem z filtrem, krem na siodło, płyn do prania)",
+   "name_en": "GoToob+ S 53 ml bottles × 3 (sunscreen, chamois cream, laundry liquid)",
    "price_pln": 66,
    "url": "https://www.campingshop.pl/zestaw-pojemnikow-na-plyny-gotoob-s-3-pack-redorangeclear-humangear"
   },
   {
    "cat": "Kosmetyczka",
+   "cat_en": "Wash bag",
    "name": "Szampon w kostce, pasta w tabletkach, składana szczoteczka, mini dezodorant",
+   "name_en": "Shampoo bar, toothpaste tablets, folding toothbrush, mini deodorant",
    "price_pln": null,
    "url": null
   },
   {
    "cat": "Kosmetyczka",
+   "cat_en": "Wash bag",
    "name": "Ręcznik PackTowl Personal Face",
+   "name_en": "PackTowl Personal Face towel",
    "price_pln": 53,
    "url": "https://taternik-sklep.pl/recznik-szybkoschnacy-packtowl-personal-face-midnight"
   },
   {
    "cat": "Narzędzia",
+   "cat_en": "Tools",
    "name": "Rolka Lezyne Roll Caddy: dętka ×2, łyżki, multitool z skuwaczem, łatki, spinka 11s, trytytki, taśma",
+   "name_en": "Lezyne Roll Caddy tool roll: inner tube ×2, tyre levers, multitool with chain tool, patches, 11s quick link, cable ties, tape",
    "price_pln": 80,
    "url": "https://www.centrumrowerowe.pl/torba-podsiodlowa-lezyne-roll-caddy-pd32019/"
   },
   {
    "cat": "Narzędzia",
+   "cat_en": "Tools",
    "name": "Zapasowy hak przerzutki (Checkpoint), zapasowe klocki, pompka / CO2, mleko do opon (jeśli tubeless)",
+   "name_en": "Spare derailleur hanger (Checkpoint), spare brake pads, pump / CO2, tyre sealant (if tubeless)",
    "price_pln": null,
    "url": null
   },
   {
    "cat": "Ubranie – Alpy",
+   "cat_en": "Clothing – Alps",
    "name": "Kurtka przeciwdeszczowa, kamizelka wiatrowa, rękawki i nogawki, długie rękawiczki na zjazdy, czapka pod kask, buff",
+   "name_en": "Rain jacket, wind gilet, arm and leg warmers, long-finger gloves for descents, cap under the helmet, buff",
    "price_pln": null,
    "url": null
   },
   {
    "cat": "Ubranie – Alpy",
+   "cat_en": "Clothing – Alps",
    "name": "2 komplety stroju kolarskiego, krem na siodło, okulary z jasnymi szkłami",
+   "name_en": "2 sets of cycling kit, chamois cream, glasses with clear lenses",
    "price_pln": null,
    "url": null
   },
   {
    "cat": "Wieczór",
+   "cat_en": "Evening",
    "name": "Lekkie spodnie, koszulka, bielizna, skarpety, klapki/lekkie buty",
+   "name_en": "Light trousers, T-shirt, underwear, socks, flip-flops/light shoes",
    "price_pln": null,
    "url": null
   },
   {
    "cat": "Elektronika",
+   "cat_en": "Electronics",
    "name": "Wahoo Bolt + ładowarka, telefon, powerbank 10 000 mAh, lampki przód/tył, kable, pas tętna",
+   "name_en": "Wahoo Bolt + charger, phone, 10,000 mAh power bank, front/rear lights, cables, heart-rate strap",
    "price_pln": null,
    "url": null
   },
   {
    "cat": "Jedzenie",
+   "cat_en": "Food",
    "name": "Żele/batony na 1. dzień, elektrolity (tabletki), bidony ×2",
+   "name_en": "Gels/bars for day 1, electrolytes (tablets), bottles ×2",
    "price_pln": null,
    "url": null
   },
   {
    "cat": "Dokumenty",
+   "cat_en": "Documents",
    "name": "Dowód, karta EKUZ, ubezpieczenie z ratownictwem w górach, gotówka EUR/CHF, karta",
+   "name_en": "ID card, EHIC card, insurance with mountain rescue cover, EUR/CHF cash, bank card",
    "price_pln": null,
    "url": null
   },
   {
    "cat": "Biwak",
+   "cat_en": "Bivouac",
    "name": "Śpiwór, mata, namiot/bivy, czołówka, sztućce, zapalniczka",
+   "name_en": "Sleeping bag, mat, tent/bivy, head torch, cutlery, lighter",
    "price_pln": null,
    "url": null,
    "only": "biwak"

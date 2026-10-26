@@ -1,6 +1,7 @@
 // Fakty tygodnia do niedzielnego listu trenera (docs/19 § List tygodnia). Czysty TS – kod liczy, model opowiada;
 // każda liczba w liście musi być w tych faktach (numbersOk z ride_facts.ts). Testy: src/engine/__tests__/week_facts.test.ts.
 import { fulfilsPlan, rideLoadLite, type DaySnapshot, type RideLite } from './email_views.ts'
+import { fix, strings, weekRange, type Lang } from './i18n.ts'
 
 export interface WeekRideIn extends RideLite {
   note?: string | null
@@ -206,26 +207,29 @@ export function wordCount(t: string): number {
   return t.split(/\s+/).filter(Boolean).length
 }
 
-const pl = (x: number, d = 1) => x.toFixed(d).replace('.', ',')
+const signed = (x: number, s: string) => `${x > 0 ? '+' : ''}${s}`
 
-/** List z reguł – gdy model niedostępny albo szkic nie przeszedł weryfikacji liczb. */
-export function ruleLetter(f: WeekFacts): string {
+/** List z reguł – gdy model niedostępny albo szkic nie przeszedł weryfikacji liczb. Teksty w `strings(lang).letter`. */
+export function ruleLetter(f: WeekFacts, lang: Lang = 'pl'): string {
+  const L = strings(lang).letter
+  const pl = (x: number, d = 1) => fix(x, d, lang)
   const t = f.totals
+  const week = lang === 'pl' ? f.week.label : weekRange(f.week.monday, lang)
   const p1: string[] = []
-  p1.push(t.planned_min > 0 ? `W tygodniu ${f.week.label} zrobiłeś ${hm(t.done_min)} z ${hm(t.planned_min)} planu${t.pct != null ? ` (${t.pct} %)` : ''}, ${t.rides} ${t.rides === 1 ? 'jazdę' : t.rides < 5 ? 'jazdy' : 'jazd'}, ${t.km} km.` : `W tygodniu ${f.week.label} zrobiłeś ${hm(t.done_min)} w ${t.rides} jazdach, ${t.km} km.`)
-  if (t.key_planned) p1.push(t.key_done === t.key_planned ? 'Treningi kluczowe wykonane.' : `Z treningów kluczowych wykonane ${t.key_done} z ${t.key_planned}.`)
-  if (t.missed) p1.push(`${t.missed === 1 ? 'Jeden trening wypadł' : `${t.missed} treningi wypadły`} bez oznaczenia – jeśli to decyzja, oznacz dzień jako pominięty.`)
-  if (f.previous_week && f.derived.minutes_change_pct != null) p1.push(`Względem poprzedniego tygodnia objętość ${f.derived.minutes_change_pct >= 0 ? 'wzrosła' : 'spadła'} o ${Math.abs(f.derived.minutes_change_pct)} %.`)
+  p1.push(t.planned_min > 0 ? L.done(week, hm(t.done_min), hm(t.planned_min), t.pct, t.rides, t.km) : L.doneNoPlan(week, hm(t.done_min), t.rides, t.km))
+  if (t.key_planned) p1.push(t.key_done === t.key_planned ? L.keyAll : L.keySome(t.key_done, t.key_planned))
+  if (t.missed) p1.push(L.missed(t.missed))
+  if (f.previous_week && f.derived.minutes_change_pct != null) p1.push(L.volume(f.derived.minutes_change_pct >= 0, Math.abs(f.derived.minutes_change_pct)))
   const p2: string[] = []
-  if (f.body.weight_last != null) p2.push(`Masa ${pl(f.body.weight_last)} kg${f.derived.weight_change_kg != null ? ` (${f.derived.weight_change_kg > 0 ? '+' : ''}${pl(f.derived.weight_change_kg)} kg)` : ''}.`)
-  if (f.body.rhr_avg != null) p2.push(`Tętno spoczynkowe średnio ${pl(f.body.rhr_avg)} bpm${f.derived.rhr_change_bpm != null ? `, ${f.derived.rhr_change_bpm > 0 ? '+' : ''}${pl(f.derived.rhr_change_bpm)} względem poprzedniego tygodnia` : ''}.`)
-  if (f.body.legs_avg != null) p2.push(`Nogi średnio ${pl(f.body.legs_avg)}/5.`)
-  if (f.body.checkins === 0) p2.push('Bez check-inów w tym tygodniu – nie widzę masy ani samopoczucia.')
-  for (const fl of f.flags) p2.push(`Uwaga: ${fl}.`)
+  if (f.body.weight_last != null) p2.push(L.weight(pl(f.body.weight_last), f.derived.weight_change_kg != null ? signed(f.derived.weight_change_kg, pl(f.derived.weight_change_kg)) : null))
+  if (f.body.rhr_avg != null) p2.push(L.rhr(pl(f.body.rhr_avg), f.derived.rhr_change_bpm != null ? signed(f.derived.rhr_change_bpm, pl(f.derived.rhr_change_bpm)) : null))
+  if (f.body.legs_avg != null) p2.push(L.legs(pl(f.body.legs_avg)))
+  if (f.body.checkins === 0) p2.push(L.noCheckins)
+  for (const fl of f.flags) p2.push(L.flag(L.flags[fl] ?? fl))
   const p3: string[] = []
   if (f.next_week) {
-    p3.push(`Następny tydzień: ${f.next_week.days.length} ${f.next_week.days.length === 1 ? 'trening' : f.next_week.days.length < 5 ? 'treningi' : 'treningów'}, ${hm(f.next_week.total_min)}${f.next_week.key ? `, najważniejszy: ${f.next_week.key}` : ''}.`)
-    if (f.next_week.has_test) p3.push('W planie jest test – ostatnie dni przed nim lekko, na świeżo.')
+    p3.push(L.next(f.next_week.days.length, hm(f.next_week.total_min), f.next_week.key))
+    if (f.next_week.has_test) p3.push(L.nextTest)
   }
   return [p1.join(' '), p2.join(' '), p3.join(' ')].filter(Boolean).join('\n\n')
 }

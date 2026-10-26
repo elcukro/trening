@@ -8,12 +8,14 @@ import { pmcSeries, rampRate, weekTss } from '@/engine/pmc'
 import { Card, CardSection, CardTitle, Inset, Metric, Row } from '@/components/ui'
 import { num } from '@/lib/format'
 import { fmtDayMonth } from '@/lib/dates'
+import { useT } from '@/i18n/react'
 
 const PAST_DAYS = 56
 const FUTURE_DAYS = 84
 
 /** Forma i zmęczenie (PMC): CTL/ATL/TSB z faktycznego TSS w przeszłości i planowanego w przyszłości. */
 export function PmcCard({ engine }: { engine: Engine }) {
+  const tp = useT().progress.pmc
   const { actual, today } = useDailyLoad(PAST_DAYS + 42)
   const days = useMemo(() => buildCalendar(engine.ctx), [engine.ctx])
   const series = useMemo(() => {
@@ -42,11 +44,11 @@ export function PmcCard({ engine }: { engine: Engine }) {
 
   return (
     <Card>
-      <CardTitle icon="📊" right={now ? <Metric>forma {now.tsb > 0 ? '+' : ''}{num(now.tsb, 0)}</Metric> : undefined}>
-        Forma i zmęczenie
+      <CardTitle icon="📊" right={now ? <Metric>{tp.metric(`${now.tsb > 0 ? '+' : ''}${num(now.tsb, 0)}`)}</Metric> : undefined}>
+        {tp.title}
       </CardTitle>
       {!hasData ? (
-        <p className="text-sm text-slate-500 dark:text-slate-400">Wykres formy liczy się z TSS jazd (moc, tętno albo RPE). Po pierwszych jazdach z pasem HR lub miernikiem pojawi się tu CTL (forma), ATL (zmęczenie) i TSB (świeżość) – z prognozą z planu na 12 tygodni.</p>
+        <p className="text-sm text-slate-500 dark:text-slate-400">{tp.empty}</p>
       ) : (
         <div className="h-48">
           <ResponsiveContainer>
@@ -55,13 +57,13 @@ export function PmcCard({ engine }: { engine: Engine }) {
               <XAxis dataKey="label" tick={{ fontSize: 10 }} minTickGap={28} />
               <YAxis tick={{ fontSize: 10 }} />
               <Tooltip
-                formatter={(v, name) => [num(Number(v), 0), name === 'ctl' ? 'forma (CTL)' : name === 'atl' ? 'zmęczenie (ATL)' : name === 'tsb' ? 'świeżość (TSB)' : 'TSS']}
+                formatter={(v, name) => [num(Number(v), 0), name === 'ctl' ? tp.ctlName : name === 'atl' ? tp.atlName : name === 'tsb' ? tp.tsbName : 'TSS']}
                 labelFormatter={(l) => String(l)}
               />
               {deloads.map((d) => (
                 <ReferenceArea key={d.from} x1={fmtDayMonth(d.from)} x2={fmtDayMonth(d.to)} fill="#10b981" fillOpacity={0.08} />
               ))}
-              <ReferenceLine x={fmtDayMonth(today)} stroke="#64748b" strokeDasharray="3 3" label={{ value: 'dziś', fontSize: 10, position: 'insideTopRight' }} />
+              <ReferenceLine x={fmtDayMonth(today)} stroke="#64748b" strokeDasharray="3 3" label={{ value: tp.today, fontSize: 10, position: 'insideTopRight' }} />
               <Area type="monotone" dataKey="load" name="load" fill="#f97316" fillOpacity={0.18} stroke="none" isAnimationActive={false} />
               <Line type="monotone" dataKey="ctl" name="ctl" stroke="#0ea5e9" strokeWidth={2} dot={false} isAnimationActive={false} />
               <Line type="monotone" dataKey="atl" name="atl" stroke="#a855f7" strokeWidth={1.5} dot={false} isAnimationActive={false} />
@@ -72,11 +74,11 @@ export function PmcCard({ engine }: { engine: Engine }) {
       )}
       {now && hasData && (
         <div className="mt-2 divide-y divide-slate-100 tabular-nums dark:divide-slate-700/80">
-          <Row label="Forma (CTL, 42 dni)">{num(now.ctl, 0)}</Row>
-          <Row label="Zmęczenie (ATL, 7 dni)">{num(now.atl, 0)}</Row>
-          <Row label="Świeżość (TSB)">{now.tsb > 0 ? '+' : ''}{num(now.tsb, 0)}{now.tsb < -30 ? ' – mocno zmęczony' : now.tsb > 15 ? ' – wypoczęty' : ''}</Row>
-          {ramp && <Row label="Przyrost CTL / tydz.">{ramp.per_week > 0 ? '+' : ''}{num(ramp.per_week, 1)}</Row>}
-          {peak && <Row label="Szczyt formy wg planu">{num(peak.ctl, 0)} ({fmtDayMonth(peak.date)})</Row>}
+          <Row label={tp.ctl}>{num(now.ctl, 0)}</Row>
+          <Row label={tp.atl}>{num(now.atl, 0)}</Row>
+          <Row label={tp.tsb}>{now.tsb > 0 ? '+' : ''}{num(now.tsb, 0)}{now.tsb < -30 ? tp.tired : now.tsb > 15 ? tp.rested : ''}</Row>
+          {ramp && <Row label={tp.ramp}>{ramp.per_week > 0 ? '+' : ''}{num(ramp.per_week, 1)}</Row>}
+          {peak && <Row label={tp.peak}>{num(peak.ctl, 0)} ({fmtDayMonth(peak.date)})</Row>}
         </div>
       )}
       {ramp?.warning && (
@@ -86,7 +88,9 @@ export function PmcCard({ engine }: { engine: Engine }) {
       )}
       <CardSection>
         <p className="text-xs text-slate-500 tabular-nums dark:text-slate-400">
-          Ten tydzień: <b>{week.done}</b> z {week.planned} TSS planowanych. Przyszłość na wykresie to plan z silnika – zielone pasy to tygodnie rozładowania.
+          {tp.weekA}
+          <b>{week.done}</b>
+          {tp.weekB(week.planned)}
         </p>
       </CardSection>
     </Card>

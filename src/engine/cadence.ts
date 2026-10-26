@@ -1,3 +1,4 @@
+import { t as tr } from '../i18n'
 import type { RideSamples } from './analysis'
 import { addDays, mondayOf, type ISODate } from './dates'
 import type { CadencePolicy, HrZone, PowerZone } from './schema'
@@ -101,6 +102,5 @@ export function lowCadenceWarning(trend: CadenceWeek[], policy: CadencePolicy): 
   const withData = trend.filter((w) => w.avg_rpm != null)
   const last2 = withData.slice(-2)
   if (last2.length < 2 || !last2.every((w) => (w.avg_rpm as number) < policy.floor_rpm)) return null
-  const tip = policy.tip ? `; ${policy.tip}` : ''
-  return `Średnia kadencja poniżej ${policy.floor_rpm} rpm drugi tydzień z rzędu (${last2.map((w) => w.avg_rpm).join(' i ')}). Na płaskim celuj w ${policy.goal_rpm}–90 rpm: lżejszy bieg, „okrągłe” pedałowanie${tip}.`
+  return tr().engine.cadence.low(policy.floor_rpm, last2.map((w) => w.avg_rpm), policy.goal_rpm, policy.tip ?? null)
 }

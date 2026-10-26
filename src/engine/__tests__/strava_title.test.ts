@@ -37,6 +37,7 @@ describe('isDefaultTitle', () => {
     expect(isDefaultTitle('Indoor Cycling', null)).toBe(true)
     expect(isDefaultTitle('Baza tlenowa Z2', 'Baza tlenowa Z2')).toBe(true)
     expect(isDefaultTitle('Baza tlenowa Z2 (pod dachem)', null, ['Baza tlenowa Z2'])).toBe(true)
+    expect(isDefaultTitle('Endurance Z2 (indoors)', null, ['Endurance Z2'])).toBe(true)
     expect(isDefaultTitle('Sweet spot 2×15 min', null, ['Sweet spot 2×15 min'])).toBe(true)
   })
   it('zostawia własne tytuły zawodnika', () => {
@@ -56,7 +57,7 @@ describe('parseDraft i checkDraft', () => {
     const bad = checkDraft({ title: 'Z2 · 999 W', description: 'Ładna jazda.' }, facts)
     expect(bad.ok).toBe(false)
     expect(bad.problems.join()).toMatch(/999/)
-    expect(checkDraft({ title: 'Z2 · Notatki: Kolarski Trener AI', description: 'Ok.' }, facts).ok).toBe(false)
+    expect(checkDraft({ title: 'Z2 · Notatki: Bicycle Coach', description: 'Ok.' }, facts).ok).toBe(false)
     expect(checkDraft({ title: 'x'.repeat(61), description: 'Ok.' }, facts).ok).toBe(false)
     expect(checkDraft({ title: 'Z2 spokojnie', description: 'Raz. Dwa. Trzy. Cztery.' }, facts).ok).toBe(false)
   })

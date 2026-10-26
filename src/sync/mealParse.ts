@@ -1,4 +1,5 @@
-import { supabase } from './supabase'
+import { t, UserError } from '@/i18n'
+import { langHeaders, supabase } from './supabase'
 
 export interface ParsedMeal {
   kind: 'dish' | 'label'
@@ -28,15 +29,16 @@ export async function shrinkPhoto(file: Blob, maxPx = 1024, quality = 0.8): Prom
 /** Zdjęcia posiłku albo etykiety → podgląd (Edge Function `meal-parse`). Zapis robi arkusz po korekcie. */
 /** `signal` – „Anuluj” w arkuszu posiłku przerywa czekanie (docs/27 § 6). */
 export async function parseMealPhotos(images: string[], note: string, hint: { protein_target?: number }, signal?: AbortSignal): Promise<ParsedMeal> {
-  if (!supabase) throw new Error('Bez konta rozpoznawanie nie działa')
-  const { data, error } = await supabase.functions.invoke<{ meal?: ParsedMeal; error?: string }>('meal-parse', { body: { images, note, hint }, signal })
+  if (!supabase) throw new UserError(t().sync.parse.noAccount)
+  const { data, error } = await supabase.functions.invoke<{ meal?: ParsedMeal; error?: string }>('meal-parse', { body: { images, note, hint }, headers: langHeaders(), signal })
   if (error) {
     // treść błędu funkcji (limit, wyłączone konto) jest w odpowiedzi, a nie w `error.message`
     const ctx = (error as { context?: Response }).context
     const msg = ctx ? await ctx.json().then((b: { error?: string }) => b.error).catch(() => null) : null
-    throw new Error(msg ?? error.message)
+    // treść z serwera to zdanie dla zawodnika (limit, wyłączone konto) – pokazujemy ją wprost
+    throw msg ? new UserError(msg) : new Error(error.message)
   }
-  if (!data?.meal) throw new Error(data?.error ?? 'brak odpowiedzi')
+  if (!data?.meal) throw new Error(data?.error ?? t().sync.noReply)
   return data.meal
 }
 

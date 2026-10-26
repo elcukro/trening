@@ -8,7 +8,8 @@
  *  POST {mode:'cron', secret}              – pg_cron co 30 min: to samo co 'completed' (2 dni) dla kont z Wahoo
  */
 import { CORS, env, json } from '../_shared/env.ts'
-import { adminClient, userFromRequest } from '../_shared/supabase.ts'
+import { adminClient, userFromRequest, requestLang } from '../_shared/supabase.ts'
+import { strings } from '../_shared/i18n.ts'
 import { accessTokenFor, cleanupOrphans, diagnose, getWorkout, pushDay, removeDay, type PlanIndex, type PushItem, type PushResult } from '../_shared/wahoo.ts'
 import { processWahooRides } from '../_shared/ride_pipeline.ts'
 import { backfillWahoo, syncCompleted } from '../_shared/wahoo_sync.ts'
@@ -115,9 +116,11 @@ Deno.serve(async (req) => {
   const results: PushResult[] = []
   const planIndex: PlanIndex = { map: null } // lista planów z Wahoo pobierana najwyżej raz
   let rateLimited = false
+  let skipped: string | undefined // komunikat „pominięte” w języku zawodnika, liczony dopiero przy pierwszym 429
   for (const [index, item] of items.entries()) {
     if (rateLimited) {
-      results.push({ date: item.date, status: 'error', error: 'pominięte – limit zapytań Wahoo' })
+      skipped ??= strings(await requestLang(req, admin, user.id)).errors.wahooRateSkipped
+      results.push({ date: item.date, status: 'error', error: skipped })
       continue
     }
     let result: PushResult

@@ -3,6 +3,7 @@
  * Czysty TS (bez sieci) – testowany Vitestem. Wywołanie modelu jest w `ai_note.ts`.
  */
 import type { RideFacts } from './ride_facts.ts'
+import { fix, strings, type Lang } from './i18n.ts'
 
 /**
  * Stała część promptu – ta sama dla każdej jazdy, więc trafia do pamięci podręcznej modelu (cache) i kosztuje ułamek.
@@ -116,32 +117,32 @@ export function wordCount(text: string): number {
   return text.split(/\s+/).filter(Boolean).length
 }
 
-const pl = (x: number, d = 1) => x.toFixed(d).replace('.', ',')
-
 /** Notatka z reguł – gdy model niedostępny, limit wyczerpany albo notatka nie przeszła weryfikacji liczb. */
-export function ruleNote(f: RideFacts): string {
+export function ruleNote(f: RideFacts, lang: Lang = 'pl'): string {
+  const N = strings(lang).note
+  const pl = (x: number, d = 1) => fix(x, d, lang)
   const s: string[] = []
   const easy = f.plan ? ['easy', 'long'].includes(f.plan.day_type) : true
   if (f.test) {
     const b = f.test.blocks_w
     const even = Math.max(...b) - Math.min(...b) <= 0.06 * f.test.best20_w
-    s.push(`Test zrobiony: najlepsze 20 minut to ${f.test.best20_w} W, czyli FTP ok. ${f.test.ftp_est} W.`)
-    s.push(even ? `Rozłożenie sił bardzo równe (${b.join('/')} W).` : `Bloki 5-minutowe: ${b.join('/')} W – następnym razem spróbuj równiej od startu.`)
+    s.push(N.test(f.test.best20_w, f.test.ftp_est))
+    s.push(even ? N.testEven(b.join('/')) : N.testUneven(b.join('/')))
   } else if (f.efforts && f.efforts.detected.length) {
     const d = f.efforts.detected
     const inT = d.filter((e) => e.in_target).length
-    if (f.efforts.target_w) s.push(`${inT} z ${d.length} interwałów w zakresie ${f.efforts.target_w[0]}–${f.efforts.target_w[1]} W${f.efforts.planned_reps ? ` (plan: ${f.efforts.planned_reps})` : ''}.`)
-    if (f.efforts.fade_pct != null) s.push(f.efforts.fade_pct >= -3 ? 'Ostatni interwał nie słabszy od pierwszego – dobrze rozłożone siły.' : `Ostatni interwał o ${Math.abs(f.efforts.fade_pct)} % słabszy od pierwszego – następnym razem pierwszy spokojniej.`)
+    if (f.efforts.target_w) s.push(N.intervals(inT, d.length, f.efforts.target_w[0], f.efforts.target_w[1], f.efforts.planned_reps ? String(f.efforts.planned_reps) : null))
+    if (f.efforts.fade_pct != null) s.push(f.efforts.fade_pct >= -3 ? N.fadeOk : N.fade(Math.abs(f.efforts.fade_pct)))
   } else if (easy && f.ride.if != null) {
-    s.push(f.ride.if <= 0.75 ? `Spokojnie, tak jak trzeba: IF ${pl(f.ride.if, 2)} przez ${f.ride.minutes} min.` : `Jak na spokojną jazdę za mocno: IF ${pl(f.ride.if, 2)} – Z2 kończy się ok. 0,75.`)
+    s.push(f.ride.if <= 0.75 ? N.easyOk(pl(f.ride.if, 2), f.ride.minutes) : N.easyHard(pl(f.ride.if, 2), pl(0.75, 2)))
   } else {
-    s.push(`${f.ride.minutes} min jazdy, ${pl(f.ride.km)} km.`)
+    s.push(N.plain(f.ride.minutes, pl(f.ride.km)))
   }
   if (s.length < 3 && f.ride.decoupling_pct != null && !f.test && easy && !f.efforts?.detected.length && (f.ride.variability == null || f.ride.variability <= 1.08)) {
     const dcp = f.ride.decoupling_pct
-    s.push(dcp < 5 ? `Dryf tętna ${pl(dcp)} % – baza tlenowa trzyma.` : `Dryf tętna ${pl(dcp)} % – w drugiej połowie tętno uciekało, zjedz i napij się wcześniej.`)
+    s.push(dcp < 5 ? N.driftOk(pl(dcp)) : N.driftHigh(pl(dcp)))
   }
   const rec = f.records.find((r) => r.previous_best != null)
-  if (s.length < 3 && rec) s.push(`Najlepsze ${rec.seconds >= 60 ? `${rec.seconds / 60} min` : `${rec.seconds} s`} od 90 dni: ${rec.watts} W.`)
+  if (s.length < 3 && rec) s.push(N.record(rec.seconds >= 60 ? N.minutes(rec.seconds / 60) : N.seconds(rec.seconds), rec.watts))
   return s.slice(0, 3).join(' ')
 }

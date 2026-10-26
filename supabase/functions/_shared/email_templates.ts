@@ -7,6 +7,14 @@
  * (Gmail i Apple Mail tną <style> w <head> różnie – wszystko, co ważne, jest inline).
  */
 
+import { fix, strings, type Lang } from './i18n.ts'
+
+/** Opcje wysyłki: link rezygnacji i język zawodnika (domyślnie polski). */
+export interface EmailOpts {
+  unsubscribeUrl?: string | null
+  lang?: Lang
+}
+
 export interface EmailOut {
   subject: string
   html: string
@@ -122,9 +130,10 @@ function hm(min: number): string {
   return h > 0 ? `${h} h${m ? ` ${m} min` : ''}` : `${m} min`
 }
 
-function shell(preheader: string, inner: string, appUrl: string, unsubscribeUrl?: string | null): string {
+function shell(preheader: string, inner: string, appUrl: string, unsubscribeUrl: string | null | undefined, lang: Lang): string {
+  const S = strings(lang)
   return `<!DOCTYPE html>
-<html lang="pl"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="color-scheme" content="light only"><title>Trening</title></head>
+<html lang="${S.htmlLang}"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="color-scheme" content="light only"><title>${esc(S.appName)}</title></head>
 <body bgcolor="${C.bg}" style="margin:0;padding:0;background-color:${C.bg};">
 <div style="display:none;max-height:0;overflow:hidden;opacity:0;color:${C.bg};">${esc(preheader)}&#8199;&#65279;&#847;&#8199;&#65279;&#847;&#8199;&#65279;&#847;</div>
 <table role="presentation" width="100%" cellpadding="0" cellspacing="0" bgcolor="${C.bg}" style="background-color:${C.bg};">
@@ -132,7 +141,7 @@ function shell(preheader: string, inner: string, appUrl: string, unsubscribeUrl?
 <table role="presentation" width="600" cellpadding="0" cellspacing="0" style="width:100%;max-width:600px;font-family:${FONT};color:${C.ink};">
 ${inner}
 <tr><td style="padding:20px 8px 0;font-size:12px;line-height:18px;color:${C.mute};text-align:center;">
-Trening · <a href="${esc(appUrl)}" style="color:${C.mute};">otwórz aplikację</a>${unsubscribeUrl ? ` · <a href="${esc(unsubscribeUrl)}" style="color:${C.mute};">wyłącz te maile</a>` : ''}
+${esc(S.appName)} · <a href="${esc(appUrl)}" style="color:${C.mute};">${esc(S.mail.footerOpenApp)}</a>${unsubscribeUrl ? ` · <a href="${esc(unsubscribeUrl)}" style="color:${C.mute};">${esc(S.mail.footerUnsubscribe)}</a>` : ''}
 </td></tr>
 </table></td></tr></table></body></html>`
 }
@@ -150,7 +159,7 @@ function button(label: string, href: string): string {
 }
 
 /** Dziesięć przycisków RPE w tabeli (klient poczty nie zna flexa); zapisana ocena jest wypełniona kolorem. */
-function rpeRow(r: NonNullable<WorkoutView['rpe']>, legend = '1–3 lekko · 4–6 średnio · 7–8 ciężko · 9–10 na granicy. Jedno kliknięcie zapisuje ocenę w dzienniku.'): string {
+function rpeRow(r: NonNullable<WorkoutView['rpe']>, legend: string): string {
   const cells = r.links
     .map((l) => {
       const on = r.current === l.value
@@ -178,11 +187,14 @@ function zoneDot(zone: string): string {
 
 // ---------------------------------------------------------------- poranna odprawa
 
-export function morningEmail(v: MorningView, opts: { unsubscribeUrl?: string | null } = {}): EmailOut {
+export function morningEmail(v: MorningView, opts: EmailOpts = {}): EmailOut {
+  const lang = opts.lang ?? 'pl'
+  const S = strings(lang).mail
+  const M = S.morning
   const w = v.workout
-  const title = w ? w.name : 'Dzień wolny'
-  const subject = w ? `Dziś: ${w.name} · ${hm(w.minutes)}` : 'Dziś odpoczynek'
-  const preheader = [w ? `${hm(w.minutes)}${w.key ? ', dzień kluczowy' : ''}` : null, v.nutrition.label, v.countdown].filter(Boolean).join(' · ')
+  const title = w ? w.name : M.restTitle
+  const subject = w ? M.subject(w.name, hm(w.minutes)) : M.subjectRest
+  const preheader = [w ? `${hm(w.minutes)}${w.key ? `, ${M.keyDay}` : ''}` : null, v.nutrition.label, v.countdown].filter(Boolean).join(' · ')
 
   const head = card(
     `${eyebrow(v.dateLabel)}
@@ -191,19 +203,19 @@ export function morningEmail(v: MorningView, opts: { unsubscribeUrl?: string | n
 ${
   w
     ? `<table role="presentation" cellpadding="0" cellspacing="0" style="margin-top:16px;"><tr>
-<td style="padding-right:24px;"><div style="font-size:22px;font-weight:700;">${esc(hm(w.minutes))}</div><div style="font-size:12px;color:${C.mute};">czas</div></td>
-${w.key ? `<td style="padding-right:24px;"><div style="font-size:22px;font-weight:700;color:${C.warn};">★</div><div style="font-size:12px;color:${C.mute};">dzień kluczowy</div></td>` : ''}
-<td><div style="font-size:15px;font-weight:600;line-height:22px;">${esc(w.bike)}</div><div style="font-size:12px;color:${C.mute};">rower</div></td>
+<td style="padding-right:24px;"><div style="font-size:22px;font-weight:700;">${esc(hm(w.minutes))}</div><div style="font-size:12px;color:${C.mute};">${esc(M.duration)}</div></td>
+${w.key ? `<td style="padding-right:24px;"><div style="font-size:22px;font-weight:700;color:${C.warn};">★</div><div style="font-size:12px;color:${C.mute};">${esc(M.keyDay)}</div></td>` : ''}
+<td><div style="font-size:15px;font-weight:600;line-height:22px;">${esc(w.bike)}</div><div style="font-size:12px;color:${C.mute};">${esc(M.bike)}</div></td>
 </tr></table>
 <div style="margin-top:16px;">${timeline((w.timeline ?? w.steps).map((s) => ({ zone: s.zone, weight: s.minutes })))}</div>`
     : ''
 }
-${button('Otwórz dzisiejszy plan', v.appUrl)}`,
+${button(M.openPlan, v.appUrl)}`,
   )
 
   const steps = w
     ? card(
-        `${eyebrow('Kroki')}
+        `${eyebrow(M.steps)}
 <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="margin-top:10px;">
 ${w.steps
   .map(
@@ -222,45 +234,49 @@ ${w.steps
 
 
   const food = card(
-    `${eyebrow('Jedzenie')}
+    `${eyebrow(M.food)}
 <div style="margin-top:6px;font-size:15px;line-height:22px;font-weight:600;">${esc(v.nutrition.label)}</div>
 <table role="presentation" cellpadding="0" cellspacing="0" style="margin-top:10px;font-size:14px;line-height:22px;color:${C.soft};">
-${v.nutrition.carbs ? `<tr><td style="padding-right:12px;color:${C.mute};">na rowerze</td><td>${esc(v.nutrition.carbs)}</td></tr>` : ''}
-${v.nutrition.protein ? `<tr><td style="padding-right:12px;color:${C.mute};">białko</td><td>${esc(v.nutrition.protein)}</td></tr>` : ''}
-${v.nutrition.after ? `<tr><td style="padding-right:12px;color:${C.mute};">po treningu</td><td>${esc(v.nutrition.after)}</td></tr>` : ''}
+${v.nutrition.carbs ? `<tr><td style="padding-right:12px;color:${C.mute};">${esc(M.onBike)}</td><td>${esc(v.nutrition.carbs)}</td></tr>` : ''}
+${v.nutrition.protein ? `<tr><td style="padding-right:12px;color:${C.mute};">${esc(M.protein)}</td><td>${esc(v.nutrition.protein)}</td></tr>` : ''}
+${v.nutrition.after ? `<tr><td style="padding-right:12px;color:${C.mute};">${esc(M.afterRide)}</td><td>${esc(v.nutrition.after)}</td></tr>` : ''}
 </table>`,
   )
 
-  const legs = v.legs && v.legs.links.length ? card(`${eyebrow(v.legs.current != null ? `Nogi dziś: ${v.legs.current}/5` : 'Jak nogi dziś?')}${rpeRow(v.legs, '1 ciężkie · 3 zwyczajne · 5 lekkie. Jedno kliknięcie zapisuje w porannym check-inie; wagę i tętno dopisz w aplikacji.')}`) : ''
+  const legs = v.legs && v.legs.links.length ? card(`${eyebrow(v.legs.current != null ? M.legsToday(v.legs.current) : M.legsAsk)}${rpeRow(v.legs, M.legsLegend)}`) : ''
 
   const notes = v.notes?.length
-    ? card(`${eyebrow('Pamiętaj', C.warn)}<ul style="margin:8px 0 0;padding-left:18px;font-size:14px;line-height:22px;">${v.notes.map((n) => `<li>${esc(n)}</li>`).join('')}</ul>`, '18px 24px')
+    ? card(`${eyebrow(M.remember, C.warn)}<ul style="margin:8px 0 0;padding-left:18px;font-size:14px;line-height:22px;">${v.notes.map((n) => `<li>${esc(n)}</li>`).join('')}</ul>`, '18px 24px')
     : ''
 
   const text = [
     `${v.dateLabel} – ${title}`,
     v.weekLabel + (v.countdown ? ` · ${v.countdown}` : ''),
     '',
-    ...(w ? [`${hm(w.minutes)} · ${w.bike}${w.key ? ' · dzień kluczowy' : ''}`, ...w.steps.map((s) => `- ${s.name}${s.repeat ? ` ${s.repeat}` : ''}: ${hm(s.minutes)} ${[s.watts, s.hr].filter(Boolean).join(' / ')}`), ''] : []),
+    ...(w ? [`${hm(w.minutes)} · ${w.bike}${w.key ? ` · ${M.keyDay}` : ''}`, ...w.steps.map((s) => `- ${s.name}${s.repeat ? ` ${s.repeat}` : ''}: ${hm(s.minutes)} ${[s.watts, s.hr].filter(Boolean).join(' / ')}`), ''] : []),
 
-    `Jedzenie: ${v.nutrition.label}`,
+    M.foodLine(v.nutrition.label),
     ...(v.notes ?? []).map((n) => `! ${n}`),
-    ...(v.legs && v.legs.links.length ? ['', v.legs.current != null ? `Nogi dziś: ${v.legs.current}/5` : 'Jak nogi dziś? Kliknij 1–5:', ...v.legs.links.map((l) => `${l.value}: ${l.href}`)] : []),
+    ...(v.legs && v.legs.links.length ? ['', v.legs.current != null ? M.legsToday(v.legs.current) : M.legsAskText, ...v.legs.links.map((l) => `${l.value}: ${l.href}`)] : []),
     '',
     v.appUrl,
   ].join('\n')
 
-  return { subject, preheader, text, html: shell(preheader, head + notes + legs + steps + food, v.appUrl, opts.unsubscribeUrl) }
+  return { subject, preheader, text, html: shell(preheader, head + notes + legs + steps + food, v.appUrl, opts.unsubscribeUrl, lang) }
 }
 
 // ---------------------------------------------------------------- po treningu
 
-export function workoutEmail(v: WorkoutView, opts: { unsubscribeUrl?: string | null } = {}): EmailOut {
+export function workoutEmail(v: WorkoutView, opts: EmailOpts = {}): EmailOut {
+  const lang = opts.lang ?? 'pl'
+  const S = strings(lang).mail
+  const W = S.workout
+  const km1 = (km: number) => fix(km, 1, lang)
   const tone = v.verdict.tone === 'good' ? C.good : v.verdict.tone === 'warn' ? C.warn : C.accent
   const toneBg = v.verdict.tone === 'good' ? '#ecfdf5' : v.verdict.tone === 'warn' ? '#fffbeb' : '#f0f9ff'
   const subject = v.day
-    ? `Dzień w liczbach: ${v.day.rides.length} jazdy · ${hm(v.day.total_min)}${v.day.total_tss != null ? ` · TSS ${v.day.total_tss}` : ''}`
-    : `Zrobione: ${v.name} · ${v.stats[0]?.value ?? ''}${v.stats[0]?.unit ? ` ${v.stats[0].unit}` : ''}`
+    ? `${W.subjectDay(S.rides(v.day.rides.length), hm(v.day.total_min))}${v.day.total_tss != null ? ` · TSS ${v.day.total_tss}` : ''}`
+    : W.subjectDone(v.name, `${v.stats[0]?.value ?? ''}${v.stats[0]?.unit ? ` ${v.stats[0].unit}` : ''}`)
   const preheader = v.note ?? `${v.verdict.text}${v.insights[0] ? ` · ${v.insights[0]}` : ''}`
 
   const grid = (() => {
@@ -278,35 +294,35 @@ export function workoutEmail(v: WorkoutView, opts: { unsubscribeUrl?: string | n
   })()
 
   const head = card(
-    `${eyebrow(`${v.dateLabel} · ${v.day ? 'dzień w liczbach' : 'trening wykonany'}`, C.good)}
+    `${eyebrow(`${v.dateLabel} · ${v.day ? W.eyebrowDay : W.eyebrowDone}`, C.good)}
 <div style="margin-top:6px;font-size:26px;line-height:32px;font-weight:700;">${esc(v.name)}</div>
-${v.planned ? `<div style="margin-top:4px;font-size:14px;color:${C.soft};">w planie: ${esc(v.planned.name)}, ${esc(hm(v.planned.minutes))}</div>` : ''}
+${v.planned ? `<div style="margin-top:4px;font-size:14px;color:${C.soft};">${esc(W.planned(v.planned.name, hm(v.planned.minutes)))}</div>` : ''}
 <table role="presentation" cellpadding="0" cellspacing="0" style="margin-top:14px;"><tr><td bgcolor="${toneBg}" style="background-color:${toneBg};border-radius:10px;padding:8px 12px;font-size:14px;font-weight:600;color:${tone};">${esc(v.verdict.text)}</td></tr></table>
 ${grid}`,
   )
 
   const day = v.day
     ? card(
-        `${eyebrow('Jazdy dnia')}
+        `${eyebrow(W.ridesOfDay)}
 <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="margin-top:10px;font-size:13px;line-height:22px;">
 ${v.day.rides
   .map(
     (r) =>
-      `<tr><td style="padding:4px 0;border-top:1px solid ${C.line};"><b>${esc(r.name)}</b><br><span style="color:${C.soft};">${esc(hm(r.minutes))} · ${esc(r.km.toFixed(1).replace('.', ','))} km${r.watts != null ? ` · ${r.watts} W` : ''}${r.hr != null ? ` · ${Math.round(r.hr)} bpm` : ''}</span></td><td align="right" valign="top" style="padding:4px 0;border-top:1px solid ${C.line};font-weight:600;white-space:nowrap;">${r.tss != null ? `TSS ${r.tss}` : ''}</td></tr>`,
+      `<tr><td style="padding:4px 0;border-top:1px solid ${C.line};"><b>${esc(r.name)}</b><br><span style="color:${C.soft};">${esc(hm(r.minutes))} · ${esc(km1(r.km))} km${r.watts != null ? ` · ${r.watts} W` : ''}${r.hr != null ? ` · ${Math.round(r.hr)} bpm` : ''}</span></td><td align="right" valign="top" style="padding:4px 0;border-top:1px solid ${C.line};font-weight:600;white-space:nowrap;">${r.tss != null ? `TSS ${r.tss}` : ''}</td></tr>`,
   )
   .join('')}
-<tr><td style="padding:6px 0 0;border-top:2px solid ${C.line};font-weight:700;">Razem ${esc(hm(v.day.total_min))}</td><td align="right" style="padding:6px 0 0;border-top:2px solid ${C.line};font-weight:700;white-space:nowrap;">${v.day.total_tss != null ? `TSS ${v.day.total_tss}` : ''}</td></tr>
+<tr><td style="padding:6px 0 0;border-top:2px solid ${C.line};font-weight:700;">${esc(S.total)} ${esc(hm(v.day.total_min))}</td><td align="right" style="padding:6px 0 0;border-top:2px solid ${C.line};font-weight:700;white-space:nowrap;">${v.day.total_tss != null ? `TSS ${v.day.total_tss}` : ''}</td></tr>
 </table>`,
       )
     : ''
 
   const note = v.note
-    ? card(`${eyebrow('Notatka trenera', C.accent)}<div style="margin-top:8px;font-size:16px;line-height:25px;color:${C.ink};">${esc(v.note)}</div>`, '20px 24px')
+    ? card(`${eyebrow(W.coachNote, C.accent)}<div style="margin-top:8px;font-size:16px;line-height:25px;color:${C.ink};">${esc(v.note)}</div>`, '20px 24px')
     : ''
 
   const zones = v.zones.length
     ? card(
-        `${eyebrow('Czas w strefach tętna')}
+        `${eyebrow(W.hrZones)}
 <div style="margin-top:12px;">${timeline(v.zones.map((z) => ({ zone: z.zone, weight: z.pct })))}</div>
 <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="margin-top:10px;font-size:13px;line-height:22px;">
 ${v.zones
@@ -317,28 +333,28 @@ ${v.zones
       )
     : ''
 
-  const rpe = v.rpe && v.rpe.links.length ? card(`${eyebrow(v.rpe.current != null ? `Twoja ocena: RPE ${v.rpe.current}` : 'Jak ciężko było? (RPE)')}${rpeRow(v.rpe)}`) : ''
+  const rpe = v.rpe && v.rpe.links.length ? card(`${eyebrow(v.rpe.current != null ? W.rpeCurrent(v.rpe.current) : W.rpeAsk)}${rpeRow(v.rpe, S.rpeLegend)}`) : ''
 
   const insights = v.insights.length
-    ? card(`${eyebrow('Co widać w danych')}<ul style="margin:8px 0 0;padding-left:18px;font-size:14px;line-height:22px;color:${C.ink};">${v.insights.map((n) => `<li style="margin-bottom:4px;">${esc(n)}</li>`).join('')}</ul>`)
+    ? card(`${eyebrow(W.insights)}<ul style="margin:8px 0 0;padding-left:18px;font-size:14px;line-height:22px;color:${C.ink};">${v.insights.map((n) => `<li style="margin-bottom:4px;">${esc(n)}</li>`).join('')}</ul>`)
     : ''
 
   const week = v.week
     ? card(
         `${eyebrow(v.week.label)}
 <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="margin-top:10px;"><tr>
-<td style="font-size:20px;font-weight:700;">${esc(v.week.done)} <span style="font-size:14px;font-weight:500;color:${C.soft};">z ${esc(v.week.planned)}</span></td>
+<td style="font-size:20px;font-weight:700;">${esc(v.week.done)} <span style="font-size:14px;font-weight:500;color:${C.soft};">${esc(S.outOf(v.week.planned))}</span></td>
 <td align="right" style="font-size:14px;font-weight:600;color:${C.soft};">${Math.round(v.week.pct)} %</td></tr></table>
 <table role="presentation" width="100%" cellpadding="0" cellspacing="0" bgcolor="${C.line}" style="margin-top:8px;background-color:${C.line};border-radius:6px;"><tr><td width="${Math.min(100, Math.max(2, Math.round(v.week.pct)))}%" height="8" bgcolor="${C.accent}" style="background-color:${C.accent};height:8px;border-radius:6px;font-size:1px;line-height:8px;">&nbsp;</td><td height="8" style="font-size:1px;line-height:8px;">&nbsp;</td></tr></table>
-${v.next ? `<div style="margin-top:16px;font-size:14px;line-height:20px;color:${C.soft};">Następny: <b style="color:${C.ink};">${esc(v.next.name)}</b> · ${esc(v.next.dateLabel)} · ${esc(hm(v.next.minutes))}</div>` : ''}
-${button('Zobacz w aplikacji', v.appUrl)}`,
+${v.next ? `<div style="margin-top:16px;font-size:14px;line-height:20px;color:${C.soft};">${esc(W.next)}: <b style="color:${C.ink};">${esc(v.next.name)}</b> · ${esc(v.next.dateLabel)} · ${esc(hm(v.next.minutes))}</div>` : ''}
+${button(S.seeInApp, v.appUrl)}`,
       )
-    : card(button('Zobacz w aplikacji', v.appUrl), '8px 24px 24px')
+    : card(button(S.seeInApp, v.appUrl), '8px 24px 24px')
 
   const text = [
-    `${v.dateLabel} – ${v.day ? 'dzień w liczbach' : 'zrobione'}: ${v.name}`,
+    `${v.dateLabel} – ${v.day ? W.eyebrowDay : W.textDone}: ${v.name}`,
     v.verdict.text,
-    ...(v.day ? ['', ...v.day.rides.map((r) => `${r.name}: ${hm(r.minutes)}, ${r.km.toFixed(1).replace('.', ',')} km${r.tss != null ? `, TSS ${r.tss}` : ''}`), `Razem: ${hm(v.day.total_min)}${v.day.total_tss != null ? `, TSS ${v.day.total_tss}` : ''}`] : []),
+    ...(v.day ? ['', ...v.day.rides.map((r) => `${r.name}: ${hm(r.minutes)}, ${km1(r.km)} km${r.tss != null ? `, TSS ${r.tss}` : ''}`), `${S.total}: ${hm(v.day.total_min)}${v.day.total_tss != null ? `, TSS ${v.day.total_tss}` : ''}`] : []),
     ...(v.note ? ['', v.note] : []),
     '',
     ...v.stats.map((s) => `${s.label}: ${s.value}${s.unit ? ` ${s.unit}` : ''}`),
@@ -346,14 +362,14 @@ ${button('Zobacz w aplikacji', v.appUrl)}`,
     ...v.zones.filter((z) => z.pct >= 1).map((z) => `${z.label}: ${Math.round(z.pct)} %`),
     '',
     ...v.insights.map((i) => `- ${i}`),
-    ...(v.rpe && v.rpe.links.length ? ['', v.rpe.current != null ? `Twoja ocena: RPE ${v.rpe.current}` : 'Jak ciężko było? Kliknij RPE:', ...v.rpe.links.map((l) => `${l.value}: ${l.href}`)] : []),
-    ...(v.week ? ['', `${v.week.label}: ${v.week.done} z ${v.week.planned}`] : []),
-    ...(v.next ? [`Następny: ${v.next.name} (${v.next.dateLabel}, ${hm(v.next.minutes)})`] : []),
+    ...(v.rpe && v.rpe.links.length ? ['', v.rpe.current != null ? W.rpeCurrent(v.rpe.current) : W.rpeAskText, ...v.rpe.links.map((l) => `${l.value}: ${l.href}`)] : []),
+    ...(v.week ? ['', `${v.week.label}: ${S.of(v.week.done, v.week.planned)}`] : []),
+    ...(v.next ? [`${W.next}: ${v.next.name} (${v.next.dateLabel}, ${hm(v.next.minutes)})`] : []),
     '',
     v.appUrl,
   ].join('\n')
 
-  return { subject, preheader, text, html: shell(preheader, head + day + note + rpe + zones + insights + week, v.appUrl, opts.unsubscribeUrl) }
+  return { subject, preheader, text, html: shell(preheader, head + day + note + rpe + zones + insights + week, v.appUrl, opts.unsubscribeUrl, lang) }
 }
 
 // ---------------------------------------------------------------- list tygodnia
@@ -372,40 +388,44 @@ export interface WeeklyView {
   next: { label: string; days: { weekday: string; name: string; minutes: number; key: boolean }[] } | null
 }
 
-const OUTCOME: Record<WeeklyView['days'][number]['outcome'], { label: string; color: string }> = {
-  done: { label: 'zrobione', color: C.good },
-  modified: { label: 'inaczej', color: C.warn },
-  skipped: { label: 'odpuszczone', color: C.mute },
-  missed: { label: 'bez jazdy', color: '#dc2626' },
-  extra: { label: 'poza planem', color: C.accent },
-  free: { label: 'wolne', color: C.mute },
+const OUTCOME_COLOR: Record<WeeklyView['days'][number]['outcome'], string> = {
+  done: C.good,
+  modified: C.warn,
+  skipped: C.mute,
+  missed: '#dc2626',
+  extra: C.accent,
+  free: C.mute,
 }
 
-export function weeklyEmail(v: WeeklyView, opts: { unsubscribeUrl?: string | null } = {}): EmailOut {
-  const subject = `Tydzień ${v.weekLabel}: ${v.totals.done}${v.totals.planned ? ` z ${v.totals.planned}` : ''}${v.totals.pct != null ? ` · ${v.totals.pct} %` : ''}${v.totals.tss != null ? ` · TSS ${v.totals.tss}` : ''}`
+export function weeklyEmail(v: WeeklyView, opts: EmailOpts = {}): EmailOut {
+  const lang = opts.lang ?? 'pl'
+  const S = strings(lang).mail
+  const K = S.weekly
+  const doneOf = v.totals.planned ? S.of(v.totals.done, v.totals.planned) : v.totals.done
+  const subject = `${K.subject(v.weekLabel)}: ${doneOf}${v.totals.pct != null ? ` · ${v.totals.pct} %` : ''}${v.totals.tss != null ? ` · TSS ${v.totals.tss}` : ''}`
   const preheader = v.letter[0]?.slice(0, 140) ?? subject
   const head = card(
-    `${eyebrow(`List trenera · tydzień ${v.weekLabel}`)}
-<div style="margin-top:6px;font-size:22px;line-height:28px;font-weight:700;">${esc(v.athlete ? `${v.athlete}, ` : '')}tak minął tydzień</div>
+    `${eyebrow(K.eyebrow(v.weekLabel))}
+<div style="margin-top:6px;font-size:22px;line-height:28px;font-weight:700;">${esc(K.title(v.athlete))}</div>
 ${v.letter.map((p) => `<p style="margin:14px 0 0;font-size:15px;line-height:23px;color:${C.ink};">${esc(p)}</p>`).join('')}`,
   )
   const days = card(
-    `${eyebrow('Dzień po dniu')}
+    `${eyebrow(K.byDay)}
 <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="margin-top:10px;font-size:14px;line-height:20px;">
 ${v.days
   .map((d) => {
-    const o = OUTCOME[d.outcome]
+    const o = { label: K.outcome[d.outcome], color: OUTCOME_COLOR[d.outcome] }
     return `<tr><td style="padding:6px 0;border-bottom:1px solid ${C.line};color:${C.soft};width:64px;text-transform:capitalize;">${esc(d.weekday.slice(0, 3))}</td><td style="padding:6px 0;border-bottom:1px solid ${C.line};"><div style="font-weight:${d.planned ? 600 : 400};color:${d.planned ? C.ink : C.mute};">${esc(d.planned ?? '—')}</div>${d.summary ? `<div style="color:${C.soft};">${esc(d.summary)}</div>` : ''}</td><td align="right" style="padding:6px 0;border-bottom:1px solid ${C.line};white-space:nowrap;"><span style="display:inline-block;padding:2px 8px;border-radius:999px;font-size:12px;font-weight:600;color:#ffffff;background-color:${o.color};" bgcolor="${o.color}">${o.label}</span></td></tr>`
   })
   .join('')}
 </table>
-<div style="margin-top:12px;font-size:14px;color:${C.soft};">Razem <b style="color:${C.ink};">${esc(v.totals.done)}</b>${v.totals.planned ? ` z ${esc(v.totals.planned)}` : ''} · ${v.totals.rides} ${v.totals.rides === 1 ? 'jazda' : v.totals.rides < 5 ? 'jazdy' : 'jazd'} · ${v.totals.km} km${v.totals.tss != null ? ` · TSS ${v.totals.tss}` : ''}</div>`,
+<div style="margin-top:12px;font-size:14px;color:${C.soft};">${esc(S.total)} <b style="color:${C.ink};">${esc(v.totals.done)}</b>${v.totals.planned ? ` ${esc(S.outOf(v.totals.planned))}` : ''} · ${esc(S.rides(v.totals.rides))} · ${v.totals.km} km${v.totals.tss != null ? ` · TSS ${v.totals.tss}` : ''}</div>`,
   )
   const body = v.body.length
     ? card(
-        `${eyebrow('Ciało')}
+        `${eyebrow(K.body)}
 <table role="presentation" cellpadding="0" cellspacing="0" style="margin-top:10px;font-size:14px;line-height:22px;color:${C.soft};">
-${v.body.map((b) => `<tr>${b.weight ? `<td style="padding-right:12px;color:${C.mute};">masa</td><td>${esc(b.weight)}</td>` : ''}${b.rhr ? `<td style="padding-right:12px;color:${C.mute};">tętno spoczynkowe</td><td>${esc(b.rhr)}</td>` : ''}${b.legs ? `<td style="padding-right:12px;color:${C.mute};">nogi</td><td>${esc(b.legs)}</td>` : ''}</tr>`).join('')}
+${v.body.map((b) => `<tr>${b.weight ? `<td style="padding-right:12px;color:${C.mute};">${esc(K.weight)}</td><td>${esc(b.weight)}</td>` : ''}${b.rhr ? `<td style="padding-right:12px;color:${C.mute};">${esc(K.restingHr)}</td><td>${esc(b.rhr)}</td>` : ''}${b.legs ? `<td style="padding-right:12px;color:${C.mute};">${esc(K.legs)}</td><td>${esc(b.legs)}</td>` : ''}</tr>`).join('')}
 </table>`,
       )
     : ''
@@ -415,18 +435,18 @@ ${v.body.map((b) => `<tr>${b.weight ? `<td style="padding-right:12px;color:${C.m
 <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="margin-top:10px;font-size:14px;line-height:20px;">
 ${v.next.days.map((d) => `<tr><td style="padding:4px 0;color:${C.soft};width:64px;text-transform:capitalize;">${esc(d.weekday.slice(0, 3))}</td><td style="padding:4px 0;font-weight:${d.key ? 700 : 500};">${d.key ? '★ ' : ''}${esc(d.name)}</td><td align="right" style="padding:4px 0;color:${C.soft};">${esc(hm(d.minutes))}</td></tr>`).join('')}
 </table>
-${button('Zobacz raport tygodnia', v.reportUrl)}`,
+${button(K.seeReport, v.reportUrl)}`,
       )
-    : card(button('Zobacz raport tygodnia', v.reportUrl), '8px 24px 24px')
+    : card(button(K.seeReport, v.reportUrl), '8px 24px 24px')
   const text = [
-    `Tydzień ${v.weekLabel}`,
+    K.subject(v.weekLabel),
     '',
     ...v.letter.flatMap((p) => [p, '']),
-    ...v.days.map((d) => `${d.weekday}: ${d.planned ?? '—'} – ${OUTCOME[d.outcome].label}${d.summary ? ` (${d.summary})` : ''}`),
-    `Razem: ${v.totals.done}${v.totals.planned ? ` z ${v.totals.planned}` : ''}, ${v.totals.rides} jazd, ${v.totals.km} km${v.totals.tss != null ? `, TSS ${v.totals.tss}` : ''}`,
+    ...v.days.map((d) => `${d.weekday}: ${d.planned ?? '—'} – ${K.outcome[d.outcome]}${d.summary ? ` (${d.summary})` : ''}`),
+    `${S.total}: ${doneOf}, ${S.rides(v.totals.rides)}, ${v.totals.km} km${v.totals.tss != null ? `, TSS ${v.totals.tss}` : ''}`,
     ...(v.next ? ['', v.next.label, ...v.next.days.map((d) => `- ${d.weekday}: ${d.name} (${hm(d.minutes)})`)] : []),
     '',
     v.reportUrl,
   ].join('\n')
-  return { subject, preheader, text, html: shell(preheader, head + days + body + next, v.appUrl, opts.unsubscribeUrl) }
+  return { subject, preheader, text, html: shell(preheader, head + days + body + next, v.appUrl, opts.unsubscribeUrl, lang) }
 }

@@ -13,15 +13,22 @@ import { Badge, Button, Card, CardSection, CardTitle, Empty, Inset, PageTitle, R
 import { hours, minutes, num } from '@/lib/format'
 import { addMonths, fmtDayMonth, fmtMonth, fmtRange, monthEnd, monthStart, todayISO } from '@/lib/dates'
 import { WEEKDAY_SHORT } from '@/lib/labels'
+import { useT } from '@/i18n/react'
+import type { Messages } from '@/i18n'
 
-const OUTCOME: Record<DayOutcome, { label: string; cls: string }> = {
-  done: { label: 'wykonane', cls: 'bg-emerald-500 text-white' },
-  modified: { label: 'zmienione', cls: 'bg-amber-500 text-white' },
-  skipped: { label: 'pominięte', cls: 'bg-red-500 text-white' },
-  missed: { label: 'brak wpisu', cls: 'bg-slate-400 text-white' },
-  extra: { label: 'dodatkowa', cls: 'bg-sky-500 text-white' },
-  upcoming: { label: 'przed nami', cls: 'bg-slate-200 text-slate-700 dark:bg-slate-700 dark:text-slate-200' },
-  rest: { label: '', cls: '' },
+const OUTCOME_CLS: Record<DayOutcome, string> = {
+  done: 'bg-emerald-500 text-white',
+  modified: 'bg-amber-500 text-white',
+  skipped: 'bg-red-500 text-white',
+  missed: 'bg-slate-400 text-white',
+  extra: 'bg-sky-500 text-white',
+  upcoming: 'bg-slate-200 text-slate-700 dark:bg-slate-700 dark:text-slate-200',
+  rest: '',
+}
+
+/** Etykieta wyniku dnia w bieżącym języku (dzień wolny bez etykiety). */
+function outcomeLabel(tr: Messages['progress']['report'], o: DayOutcome): string {
+  return o === 'rest' ? '' : tr.outcome[o]
 }
 
 /** Przegląd tygodnia (`/postep/tydzien/:monday`) albo miesiąca (`/postep/miesiac/:YYYY-MM`) – pkt 5 planu. */
@@ -37,6 +44,7 @@ export function ReportPage({ kind }: { kind: 'week' | 'month' }) {
 
 function Report({ kind, from, to, today }: { kind: 'week' | 'month'; from: ISODate; to: ISODate; today: ISODate }) {
   const navigate = useNavigate()
+  const tr = useT().progress.report
   const view = useRangeView(from, to)
   const nextView = useRangeView(addDays(to, 1), addDays(to, 7))
   const { actual } = useDailyLoad(kind === 'week' ? 60 : 130)
@@ -72,7 +80,7 @@ function Report({ kind, from, to, today }: { kind: 'week' | 'month'; from: ISODa
   const cadThis = cadTrend.at(-1)?.avg_rpm ?? null
   const nextKey = nextView.days.find((d) => d.day_type === 'key' && d.bike)
   const weekNo = view.days[0]?.week
-  const title = kind === 'week' ? `Przegląd tygodnia${weekNo != null ? ` ${weekNo}` : ''}` : `Przegląd miesiąca`
+  const title = kind === 'week' ? tr.weekTitle(weekNo ?? null) : tr.monthTitle
   const sub = kind === 'week' ? fmtRange(from, to) : fmtMonth(from)
   const go = (delta: number) => navigate(kind === 'week' ? `/postep/tydzien/${addDays(from, 7 * delta)}` : `/postep/miesiac/${addMonths(from, delta).slice(0, 7)}`)
   const inFuture = from > today
@@ -80,32 +88,32 @@ function Report({ kind, from, to, today }: { kind: 'week' | 'month'; from: ISODa
   return (
     <div className="space-y-3">
       <nav className="flex items-center gap-2">
-        <Button variant="ghost" onClick={() => go(-1)} className="w-11 px-0 text-xl" ariaLabel={kind === 'week' ? 'Poprzedni tydzień' : 'Poprzedni miesiąc'}>
+        <Button variant="ghost" onClick={() => go(-1)} className="w-11 px-0 text-xl" ariaLabel={kind === 'week' ? tr.prevWeek : tr.prevMonth}>
           ‹
         </Button>
         <div className="min-w-0 flex-1">
           <PageTitle sub={sub}>{title}</PageTitle>
         </div>
-        <Button variant="ghost" onClick={() => go(1)} className="w-11 px-0 text-xl" ariaLabel={kind === 'week' ? 'Następny tydzień' : 'Następny miesiąc'}>
+        <Button variant="ghost" onClick={() => go(1)} className="w-11 px-0 text-xl" ariaLabel={kind === 'week' ? tr.nextWeek : tr.nextMonth}>
           ›
         </Button>
       </nav>
-      {view.days.length === 0 && <Empty>Ten okres jest poza planem.</Empty>}
-      {inFuture && view.days.length > 0 && <Inset tone="info">Ten okres dopiero się zacznie – poniżej sam plan.</Inset>}
+      {view.days.length === 0 && <Empty>{tr.outOfPlan}</Empty>}
+      {inFuture && view.days.length > 0 && <Inset tone="info">{tr.future}</Inset>}
 
       <div className="space-y-3 lg:grid lg:grid-cols-2 lg:items-start lg:gap-6 lg:space-y-0">
         <div className="min-w-0 space-y-3 lg:space-y-4">
           <Card>
-            <CardTitle icon="📋">Podsumowanie</CardTitle>
+            <CardTitle icon="📋">{tr.summary}</CardTitle>
             <div className="grid grid-cols-3 gap-2 text-center">
-              <Stat value={`${hours(report.done_min)}`} label={`z ${hours(report.planned_min)} planowanych`} />
-              <Stat value={`${report.done_tss} TSS`} label={`z ${report.planned_tss} planowanych`} />
-              <Stat value={`${report.bike_done}/${report.bike_planned}`} label={`jazd${report.extra_rides ? ` (+${report.extra_rides} dodatk.)` : ''}`} />
+              <Stat value={`${hours(report.done_min)}`} label={tr.ofPlanned(hours(report.planned_min))} />
+              <Stat value={`${report.done_tss} TSS`} label={tr.ofPlanned(report.planned_tss)} />
+              <Stat value={`${report.bike_done}/${report.bike_planned}`} label={tr.ridesLabel(report.extra_rides)} />
             </div>
             <div className="mt-2 divide-y divide-slate-100 tabular-nums dark:divide-slate-700/80">
-              <Row label="Zgodność z planem (kroki w celu)">{report.score != null ? `${report.score} %` : 'brak analiz'}</Row>
-              <Row label="Kadencja (śr.)">{cadThis != null ? `${cadThis} rpm` : '—'}</Row>
-              <Row label="Masa (śr. 7 dni)">
+              <Row label={tr.compliance}>{report.score != null ? `${report.score} %` : tr.noAnalyses}</Row>
+              <Row label={tr.cadenceAvg}>{cadThis != null ? `${cadThis} rpm` : '—'}</Row>
+              <Row label={tr.weightAvg}>
                 {weight.end != null ? `${num(weight.end)} kg` : '—'}
                 {weight.delta != null ? ` (${weight.delta > 0 ? '+' : ''}${num(weight.delta)} kg)` : ''}
               </Row>
@@ -117,7 +125,7 @@ function Report({ kind, from, to, today }: { kind: 'week' | 'month'; from: ISODa
             )}
             {zoneHist && lthr ? (
               <CardSection>
-                <p className="mb-1 text-xs font-medium text-slate-500 dark:text-slate-400">Czas w strefach (Strava, LTHR {lthr})</p>
+                <p className="mb-1 text-xs font-medium text-slate-500 dark:text-slate-400">{tr.zones(lthr)}</p>
                 <ZoneBar histogram={zoneHist} zones={program.hr_zones_lthr_fraction} lthr={lthr} />
               </CardSection>
             ) : null}
@@ -125,20 +133,20 @@ function Report({ kind, from, to, today }: { kind: 'week' | 'month'; from: ISODa
 
           {report.issues.length > 0 && (
             <Card tone="warn">
-              <CardTitle icon="⚠️">Co poszło nie tak</CardTitle>
+              <CardTitle icon="⚠️">{tr.issuesTitle}</CardTitle>
               <ul className="space-y-1 text-sm">
                 {report.issues.map((d) => (
                   <li key={d.date} className="flex flex-wrap items-baseline gap-x-2">
                     <span className="tabular-nums text-slate-500 dark:text-slate-400">{fmtDayMonth(d.date)}</span>
                     {d.bike !== 'done' && d.bike !== 'rest' && d.bike !== 'upcoming' && d.bike !== 'extra' && (
                       <span>
-                        🚴 {d.bike_name}{d.key ? ' (klucz)' : ''} – {OUTCOME[d.bike].label}
+                        🚴 {d.bike_name}{d.key ? tr.keySuffix : ''} – {outcomeLabel(tr, d.bike)}
                       </span>
                     )}
                   </li>
                 ))}
               </ul>
-              <p className="mt-2 text-xs text-slate-600 dark:text-slate-300">Opuszczona jednostka przepada – nie nadrabiaj jej w kolejnym tygodniu (R2). Brak wpisu? Odhacz w dniu treningu, żeby raport i forma były prawdziwe.</p>
+              <p className="mt-2 text-xs text-slate-600 dark:text-slate-300">{tr.issuesNote}</p>
             </Card>
           )}
         </div>
@@ -146,7 +154,7 @@ function Report({ kind, from, to, today }: { kind: 'week' | 'month'; from: ISODa
         <div className="min-w-0 space-y-3 lg:space-y-4">
           {kind === 'week' ? (
             <Card>
-              <CardTitle icon="🗓️">Dzień po dniu</CardTitle>
+              <CardTitle icon="🗓️">{tr.dayByDay}</CardTitle>
               <ul className="divide-y divide-slate-100 dark:divide-slate-700/80">
                 {report.days.map((d) => (
                   <DayRow key={d.date} d={d} />
@@ -155,7 +163,7 @@ function Report({ kind, from, to, today }: { kind: 'week' | 'month'; from: ISODa
             </Card>
           ) : (
             <Card>
-              <CardTitle icon="🗓️">Tygodnie</CardTitle>
+              <CardTitle icon="🗓️">{tr.weeks}</CardTitle>
               <ul className="divide-y divide-slate-100 text-sm dark:divide-slate-700/80">
                 {weeksIn(from, to).map((m) => {
                   const wk = report.days.filter((d) => d.date >= m && d.date <= addDays(m, 6))
@@ -167,10 +175,10 @@ function Report({ kind, from, to, today }: { kind: 'week' | 'month'; from: ISODa
                     <li key={m} className="py-1.5">
                       <Link to={`/postep/tydzien/${m}`} className="flex items-baseline justify-between gap-2 hover:text-sky-700 dark:hover:text-sky-300">
                         <span>
-                          Tydzień {wk[0]?.day?.week ?? '–'} <span className="text-xs text-slate-500 dark:text-slate-400">{fmtRange(m, addDays(m, 6))}</span>
+                          {tr.weekRow(wk[0]?.day?.week ?? '–')} <span className="text-xs text-slate-500 dark:text-slate-400">{fmtRange(m, addDays(m, 6))}</span>
                         </span>
                         <span className="shrink-0 tabular-nums">
-                          {rides}/{planned} jazd · {done}/{plan} TSS
+                          {tr.weekStats(rides, planned, done, plan)}
                         </span>
                       </Link>
                     </li>
@@ -182,13 +190,13 @@ function Report({ kind, from, to, today }: { kind: 'week' | 'month'; from: ISODa
 
           {kind === 'week' && nextView.days.length > 0 && (
             <Card tone="accent">
-              <CardTitle icon="➡️">Przyszły tydzień</CardTitle>
+              <CardTitle icon="➡️">{tr.nextWeekTitle}</CardTitle>
               {nextKey ? (
                 <p className="text-sm">
-                  Trening kluczowy: <b>{nextKey.bike!.name}</b> ({WEEKDAY_SHORT[nextKey.weekday]} {fmtDayMonth(nextKey.date)}, {minutes(nextKey.bike!.duration_min)}). Zaplanuj go tak, żeby dzień wcześniej nogi były świeże.
+                  {tr.nextKey} <b>{nextKey.bike!.name}</b> {tr.nextKeyDetail(`${WEEKDAY_SHORT[nextKey.weekday]} ${fmtDayMonth(nextKey.date)}`, minutes(nextKey.bike!.duration_min))}
                 </p>
               ) : (
-                <p className="text-sm">Bez treningu kluczowego – tydzień lżejszy.</p>
+                <p className="text-sm">{tr.noKey}</p>
               )}
               <ul className="mt-2 flex flex-wrap gap-1 text-xs">
                 {nextView.days.map((d) => (
@@ -198,13 +206,13 @@ function Report({ kind, from, to, today }: { kind: 'week' | 'month'; from: ISODa
                 ))}
               </ul>
               <Link to={`/tydzien/${addDays(to, 1)}`} className="mt-2 inline-block text-sm font-semibold text-sky-700 hover:underline dark:text-sky-300">
-                Otwórz tydzień →
+                {tr.openWeek}
               </Link>
             </Card>
           )}
           {kind === 'week' && (
             <Link to={`/postep/miesiac/${from.slice(0, 7)}`} className="block text-center text-sm font-semibold text-sky-700 hover:underline dark:text-sky-300">
-              Przegląd miesiąca →
+              {tr.monthReview}
             </Link>
           )}
         </div>
@@ -214,14 +222,15 @@ function Report({ kind, from, to, today }: { kind: 'week' | 'month'; from: ISODa
 }
 
 function DayRow({ d }: { d: ReportDay }) {
-  const o = OUTCOME[d.bike]
+  const tr = useT().progress.report
+  const o = { label: outcomeLabel(tr, d.bike), cls: OUTCOME_CLS[d.bike] }
   return (
     <li className={`grid grid-cols-[2.5rem_minmax(0,1fr)_auto] items-center gap-x-2 py-1.5 text-sm ${d.key ? 'border-l-4 border-l-red-500 pl-2' : ''}`}>
       <span className="text-xs font-semibold uppercase text-slate-500 tabular-nums dark:text-slate-400">
         {d.day ? WEEKDAY_SHORT[d.day.weekday] : ''} {d.date.slice(8)}
       </span>
       <span className="min-w-0">
-        <span className="block truncate">{d.bike_name ? `🚴 ${d.bike_name}` : d.bike === 'extra' ? '🚴 jazda poza planem' : '🛋️ wolne'}</span>
+        <span className="block truncate">{d.bike_name ? `🚴 ${d.bike_name}` : d.bike === 'extra' ? `🚴 ${tr.offPlanRide}` : `🛋️ ${tr.rest}`}</span>
       </span>
       <span className="flex flex-col items-end gap-0.5 text-xs tabular-nums">
         {o.label && <Badge color={o.cls}>{o.label}</Badge>}

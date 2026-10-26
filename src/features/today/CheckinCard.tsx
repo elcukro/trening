@@ -5,6 +5,8 @@ import { upsertCheckin } from '@/db/repo'
 import { Actions, Button, Card, CardTitle, Field, Input } from '@/components/ui'
 import { useToast } from '@/components/Toast'
 import { num } from '@/lib/format'
+import { t as tNow } from '@/i18n'
+import { useT } from '@/i18n/react'
 
 function Scale({ label, value, onChange }: { label: string; value: number | null; onChange: (v: number) => void }) {
   return (
@@ -30,6 +32,8 @@ function Scale({ label, value, onChange }: { label: string; value: number | null
 
 export function CheckinCard({ date }: { date: string }) {
   const toast = useToast()
+  const t = useT()
+  const C = t.classic.checkin
   const checkin = useLiveQuery(() => db.checkins.where('date').equals(date).first(), [date])
   const [open, setOpen] = useState(false)
   const [weight, setWeight] = useState('')
@@ -50,7 +54,7 @@ export function CheckinCard({ date }: { date: string }) {
       })
       setOpen(false)
     }
-    await toast.run('Zapisuję check-in…', doSave, () => 'Check-in zapisany')
+    await toast.run(C.saving, doSave, () => tNow().classic.checkin.saved)
   }
 
   if (done && !open) {
@@ -63,14 +67,14 @@ export function CheckinCard({ date }: { date: string }) {
               ☀️
             </span>
             <span className="min-w-0">
-              Check-in: {checkin.weight_kg != null && <b className="tabular-nums">{num(checkin.weight_kg)} kg</b>}
-              {checkin.resting_hr != null && <> · tętno sp. <b className="tabular-nums">{checkin.resting_hr}</b></>}
-              {checkin.sleep != null && <> · sen/nogi/motywacja <b className="tabular-nums">{checkin.sleep}/{checkin.legs}/{checkin.motivation}</b></>}
-              {score > 0 && score <= 6 && <span className="ml-1 text-amber-700 dark:text-amber-300">(słaby dzień – R6 w Etapie 5)</span>}
+              {C.summaryLabel} {checkin.weight_kg != null && <b className="tabular-nums">{num(checkin.weight_kg)} kg</b>}
+              {checkin.resting_hr != null && <> · {C.restingShort} <b className="tabular-nums">{checkin.resting_hr}</b></>}
+              {checkin.sleep != null && <> · {C.scoresShort} <b className="tabular-nums">{checkin.sleep}/{checkin.legs}/{checkin.motivation}</b></>}
+              {score > 0 && score <= 6 && <span className="ml-1 text-amber-700 dark:text-amber-300">{C.weakDay}</span>}
             </span>
           </span>
           <Button variant="ghost" size="sm" onClick={() => setOpen(true)}>
-            Edytuj
+            {t.common.edit}
           </Button>
         </div>
       </Card>
@@ -84,33 +88,33 @@ export function CheckinCard({ date }: { date: string }) {
         className="flex min-h-12 w-full items-center justify-center gap-2 rounded-2xl border border-dashed border-slate-300 px-4 py-2 text-sm font-medium text-slate-600 transition-colors hover:border-sky-400 hover:bg-sky-50 hover:text-sky-800 dark:border-slate-600 dark:text-slate-300 dark:hover:border-sky-500 dark:hover:bg-slate-800 dark:hover:text-sky-200"
       >
         <span aria-hidden>☀️</span>
-        <span>Poranny check-in (20 s): waga, tętno, sen, nogi, motywacja</span>
+        <span>{C.prompt}</span>
       </button>
     )
   }
 
   return (
     <Card>
-      <CardTitle icon="☀️">Poranny check-in</CardTitle>
+      <CardTitle icon="☀️">{C.title}</CardTitle>
       <div className="grid grid-cols-2 gap-3">
-        <Field label="Waga (kg)" hint="co drugi dzień wystarczy – pole możesz zostawić puste">
-          <Input inputMode="decimal" placeholder={checkin?.weight_kg != null ? String(checkin.weight_kg) : 'np. 104,5'} value={weight} onChange={(e) => setWeight(e.target.value)} />
+        <Field label={C.weight} hint={C.weightHint}>
+          <Input inputMode="decimal" placeholder={checkin?.weight_kg != null ? String(checkin.weight_kg) : C.eg(num(82.5))} value={weight} onChange={(e) => setWeight(e.target.value)} />
         </Field>
-        <Field label="Tętno spoczynkowe">
-          <Input inputMode="numeric" placeholder={checkin?.resting_hr != null ? String(checkin.resting_hr) : 'np. 52'} value={rhr} onChange={(e) => setRhr(e.target.value)} />
+        <Field label={C.restingHr}>
+          <Input inputMode="numeric" placeholder={checkin?.resting_hr != null ? String(checkin.resting_hr) : C.eg('52')} value={rhr} onChange={(e) => setRhr(e.target.value)} />
         </Field>
       </div>
       <div className="mt-2">
-        <Scale label="Sen" value={draft.sleep ?? checkin?.sleep ?? null} onChange={(v) => setDraft((d) => ({ ...d, sleep: v }))} />
-        <Scale label="Nogi" value={draft.legs ?? checkin?.legs ?? null} onChange={(v) => setDraft((d) => ({ ...d, legs: v }))} />
-        <Scale label="Motywacja" value={draft.motivation ?? checkin?.motivation ?? null} onChange={(v) => setDraft((d) => ({ ...d, motivation: v }))} />
+        <Scale label={C.sleep} value={draft.sleep ?? checkin?.sleep ?? null} onChange={(v) => setDraft((d) => ({ ...d, sleep: v }))} />
+        <Scale label={C.legs} value={draft.legs ?? checkin?.legs ?? null} onChange={(v) => setDraft((d) => ({ ...d, legs: v }))} />
+        <Scale label={C.motivation} value={draft.motivation ?? checkin?.motivation ?? null} onChange={(v) => setDraft((d) => ({ ...d, motivation: v }))} />
       </div>
       <Actions className="mt-3">
         <Button onClick={save} className="flex-1">
-          Zapisz
+          {t.common.save}
         </Button>
         <Button variant="secondary" onClick={() => setOpen(false)}>
-          Anuluj
+          {t.common.cancel}
         </Button>
       </Actions>
     </Card>

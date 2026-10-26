@@ -1,3 +1,4 @@
+import { t as tr } from '../i18n'
 import type { Program, Settings, WeekTemplate } from './schema'
 import type { LayoutWeek, PhaseId, WeekType } from './types'
 import { addDays, diffDays, mondayOf, type ISODate } from './dates'
@@ -122,7 +123,7 @@ export function layoutWeeks(program: Program, settings: Pick<Settings, 'program_
   }
   if (phaseIIIWeeks < 1) {
     throw new TripDateError(
-      `Data wyjazdu ${settings.trip_start} jest za wcześnie – nie mieszczą się fazy III–V.`,
+      tr().engine.layout.tripTooEarly(settings.trip_start),
       earliestTripStart(settings.program_start),
     )
   }
