@@ -1,6 +1,9 @@
+import { getLang, t, UserError } from '@/i18n'
+
 /**
- * Błąd akcji po ludzku (docs/27 § 6): co się stało i co zrobić, po polsku, bez kodów. Komunikaty z naszego kodu są
- * już po polsku i zostają; techniczne (fetch, Supabase, HTTP) zamieniamy na zdanie z radą, a oryginał idzie do `detail`.
+ * Błąd akcji po ludzku (docs/27 § 6, docs/34): co się stało i co zrobić, w języku zawodnika, bez kodów. `UserError`
+ * z naszego kodu jest już zdaniem dla zawodnika i zostaje; techniczne (fetch, Supabase, HTTP) zamieniamy na zdanie
+ * z radą, a oryginał idzie do `detail`.
  */
 export interface FriendlyError {
   /** jedno–dwa zdania dla zawodnika */
@@ -22,11 +25,14 @@ const POLISH = /[ąćęłńóśźż]|\b(nie|brak|się|jest|na|wymaga)\b/i
 
 export function friendlyError(e: unknown, online = typeof navigator === 'undefined' || navigator.onLine !== false): FriendlyError {
   const raw = (e instanceof Error ? e.message : typeof e === 'string' ? e : '').trim()
-  if (!online || NETWORK.test(raw)) return { message: 'Brak połączenia z internetem. Sprawdź sieć i spróbuj ponownie.', retry: true, detail: raw || undefined }
-  if (TIMEOUT.test(raw)) return { message: 'Serwer długo nie odpowiada. Spróbuj ponownie za chwilę.', retry: true, detail: raw }
-  if (AUTH.test(raw)) return { message: 'Sesja wygasła. Zaloguj się ponownie – dane na telefonie zostają.', retry: false, detail: raw }
-  if (RATE.test(raw)) return { message: 'Za dużo prób naraz. Odczekaj kilka minut i spróbuj ponownie.', retry: false, detail: raw }
-  if (SERVER.test(raw)) return { message: 'Serwer ma chwilowy problem. Spróbuj ponownie za kilka minut.', retry: true, detail: raw }
-  if (raw && POLISH.test(raw) && !ENGLISH.test(raw)) return { message: raw, retry: false }
-  return { message: 'Coś poszło nie tak. Spróbuj ponownie za chwilę.', retry: true, detail: raw || undefined }
+  const m = t().errors
+  if (!online || NETWORK.test(raw)) return { message: m.offline, retry: true, detail: raw || undefined }
+  if (e instanceof UserError && raw) return { message: raw, retry: false }
+  if (TIMEOUT.test(raw)) return { message: m.timeout, retry: true, detail: raw }
+  if (AUTH.test(raw)) return { message: m.session, retry: false, detail: raw }
+  if (RATE.test(raw)) return { message: m.rateLimit, retry: false, detail: raw }
+  if (SERVER.test(raw)) return { message: m.server, retry: true, detail: raw }
+  // zwykły `Error` z polskim zdaniem (stary kod, komunikaty z serwera) – pokazujemy tylko po polsku
+  if (raw && getLang() === 'pl' && POLISH.test(raw) && !ENGLISH.test(raw)) return { message: raw, retry: false }
+  return { message: m.unknown, retry: true, detail: raw || undefined }
 }

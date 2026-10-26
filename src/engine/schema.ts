@@ -102,7 +102,10 @@ export const SettingsSchema = z.object({
   /** karta Jedzenie i zdjęcia posiłków – beta, domyślnie wyłączona */
   diet_enabled: z.boolean().nullable().optional(),
   units: z.string(),
+  /** wybór języka (docs/34): `system` | `pl` | `en`; stare zapisy mają `pl` */
   language: z.string(),
+  /** język, w którym aplikacja ostatnio się wyświetlała – dla serwera (maile, push, AI); ustawia go aplikacja */
+  locale: z.enum(['pl', 'en']).optional(),
 })
 
 export const WeekSummarySchema = z.object({
@@ -267,6 +270,11 @@ export const ProgramSchema = z.object({
    * Należą do programu – ustalenia jednego zawodnika nie mogą trafić do drugiego.
    */
   coach_notes: z.array(z.string()).optional(),
+  /**
+   * Tłumaczenia tekstów programu (docs/34 § 5): `{ en: { "<tekst polski>": "<tekst angielski>" } }`. Generator wpisuje
+   * tylko teksty tego programu; `localizeProgram` podmienia je przy wczytaniu. Brak wpisu = tekst polski.
+   */
+  translations: z.record(z.string(), z.record(z.string(), z.string())).optional(),
 
   default_settings: SettingsSchema,
   hr_zones_lthr_fraction: z.array(HrZoneSchema),

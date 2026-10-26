@@ -1,0 +1,45 @@
+import { enCount } from '../core'
+import type pl from '../pl/common'
+
+const en: typeof pl = {
+  appName: 'Bicycle Coach',
+  save: 'Save',
+  saving: 'Saving…',
+  saved: 'Saved',
+  cancel: 'Cancel',
+  close: 'Close',
+  back: 'Back',
+  done: 'Done',
+  next: 'Next',
+  edit: 'Edit',
+  delete: 'Delete',
+  undo: 'Undo',
+  retry: 'Retry',
+  change: 'Change',
+  yes: 'Yes',
+  no: 'No',
+  ok: 'OK',
+  loading: 'Loading…',
+  sending: 'Sending…',
+  none: 'none',
+  today: 'Today',
+  tomorrow: 'Tomorrow',
+  yesterday: 'Yesterday',
+  week: 'Week',
+  weekN: (n: number) => `Week ${n}`,
+  days: (n: number) => enCount(n, 'day', 'days'),
+  rides: (n: number) => enCount(n, 'ride', 'rides'),
+  workouts: (n: number) => enCount(n, 'workout', 'workouts'),
+  weeks: (n: number) => enCount(n, 'week', 'weeks'),
+  hoursShort: 'h',
+  minutesShort: 'min',
+  language: {
+    title: 'Language',
+    system: (current: string) => `System language (${current})`,
+    pl: 'Polski',
+    en: 'English',
+    hint: 'Language of the app, emails, notifications and coach replies.',
+  },
+}
+
+export default en

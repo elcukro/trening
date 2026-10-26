@@ -19,7 +19,8 @@ import { useEmailSnapshots } from '@/sync/emailSnapshots'
 import { MovedBanner } from './MovedBanner'
 import { iosPathFor, isNavigateMessage, mobilePathFor } from './pushNav'
 import { usePushKeepalive } from '@/sync/usePush'
-import { SettingsGate, SettingsProvider, useEngine } from '@/app/useSettings'
+import { SettingsGate, SettingsProvider, useEngine, useSettings } from '@/app/useSettings'
+import { LangProvider, useLang } from '@/i18n/react'
 import { todayISO } from '@/lib/dates'
 import { addDays, diffDays } from '@/engine/dates'
 import { days as daysLabel } from '@/lib/format'
@@ -270,6 +271,19 @@ function WaitingScreen({ waiting, sync }: { waiting: 'settings' | 'session' | 'p
   )
 }
 
+/** Język z ustawień konta (`system` | `pl` | `en`, docs/34); zmiana przemontowuje ekrany. */
+function LangFromSettings({ children }: { children: ReactNode }) {
+  const { settings, ready, update } = useSettings()
+  const lang = useLang()
+  const { session } = useAuth()
+  // tylko zalogowane konto: zapis bez konta założyłby lokalny wiersz ustawień i ominął czekanie na profil po logowaniu
+  // serwer (maile, push, AI) pisze w języku, w którym aplikacja ostatnio się wyświetlała
+  useEffect(() => {
+    if (ready && session && settings.locale !== lang) void update({ locale: lang })
+  }, [ready, session, settings.locale, lang, update])
+  return <LangProvider choice={settings.language}>{children}</LangProvider>
+}
+
 export function App() {
   return (
     <ErrorBoundary>
@@ -277,6 +291,7 @@ export function App() {
       <Intro />
       <ToastProvider>
         <SettingsProvider>
+        <LangFromSettings>
         <MovedBanner />
         <BrowserRouter>
           <PushNavigator />
@@ -319,6 +334,7 @@ export function App() {
           </Routes>
           </SettingsGate>
         </BrowserRouter>
+        </LangFromSettings>
         </SettingsProvider>
       </ToastProvider>
     </ErrorBoundary>
