@@ -1,7 +1,7 @@
 import type { SupabaseClient } from 'npm:@supabase/supabase-js@2'
 import { env } from './env.ts'
 import { decrypt, encrypt } from './crypto.ts'
-import { resample, rideMetrics, type RawStreams } from './metrics.ts'
+import { hrHistogram, resample, rideMetrics, type RawStreams } from './metrics.ts'
 
 export const STRAVA_API = 'https://www.strava.com/api/v3'
 export const RIDE_TYPES = new Set(['Ride', 'GravelRide', 'VirtualRide', 'MountainBikeRide', 'EBikeRide', 'EMountainBikeRide', 'Handcycle', 'Velomobile'])
@@ -113,21 +113,6 @@ export interface StravaActivity {
 }
 
 type Streams = RawStreams
-
-/** Histogram: sekundy na każdą wartość bpm (indeks = bpm). */
-export function hrHistogram(streams: Streams | null): number[] | null {
-  const hr = streams?.heartrate?.data as (number | null)[] | undefined
-  const time = streams?.time?.data as number[] | undefined
-  if (!hr || !time || hr.length !== time.length || hr.length < 2) return null
-  const hist: number[] = []
-  for (let i = 1; i < hr.length; i++) {
-    const dt = Math.min(30, Math.max(0, time[i]! - time[i - 1]!))
-    const bpm = Math.round(hr[i] ?? 0)
-    if (bpm <= 0 || bpm > 250) continue
-    hist[bpm] = (hist[bpm] ?? 0) + dt
-  }
-  return Array.from(hist, (v) => v ?? 0)
-}
 
 export async function fetchActivity(token: string, id: number, withStreams = true): Promise<{ activity: StravaActivity; streams: Streams | null } | null> {
   const activity = await stravaGet<StravaActivity>(token, `/activities/${id}`)

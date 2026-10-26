@@ -6,6 +6,7 @@
 import { CORS, json } from '../_shared/env.ts'
 import { adminClient, userFromRequest } from '../_shared/supabase.ts'
 import { callClaudeChat, underLimit, underUserDailyLimit } from '../_shared/ai_note.ts'
+import { assertAiSafe } from '../_shared/provenance.ts'
 import { COACH_SYSTEM, sanitizeContext, sanitizeMessages, splitAssistant, TOOLS, withContext, type Block } from '../_shared/coach_chat.ts'
 
 Deno.serve(async (req) => {
@@ -16,6 +17,12 @@ Deno.serve(async (req) => {
   const body = (await req.json().catch(() => ({}))) as { messages?: unknown; context?: unknown }
   const messages = sanitizeMessages(body.messages)
   if (!messages.length) return json({ error: 'empty' }, 400)
+  // kontekst buduje aplikacja – serwer i tak odrzuca dane Stravy (polityka API § 5.3, docs/33 § 4)
+  try {
+    assertAiSafe(body.context)
+  } catch (e) {
+    return json({ error: e instanceof Error ? e.message : String(e) }, 422)
+  }
   const admin = adminClient()
   if (!Deno.env.get('ANTHROPIC_API_KEY')) return json({ error: 'brak klucza' }, 503)
   if (!(await underLimit(admin))) return json({ error: 'limit miesięczny' }, 429)

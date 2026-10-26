@@ -8,7 +8,9 @@ import { sign, verify } from './crypto.ts'
 import { morningEmail, weeklyEmail, workoutEmail, type EmailOut, type MorningView, type WeeklyView } from './email_templates.ts'
 import { hm, mondayOf as mondayOfWeek, ruleLetter, weekFacts, weekPrompt, WEEK_SYSTEM, wordCount, type WeekFacts } from './week_facts.ts'
 import { numbersOk } from './ride_facts.ts'
-import { callClaude, underLimit } from './ai_note.ts'
+import { callClaude, loadRide, loadRidesRange, underLimit, type RideRef } from './ai_note.ts'
+import { assertAiSafe } from './provenance.ts'
+import { fromStrava, fromWahoo, twinOf, type RideRow } from './rides.ts'
 import { buildWorkoutView, fulfilsPlan, type DaySnapshot, type RideLite } from './email_views.ts'
 
 const FROM = 'Trening <trening@felsztukier.pl>'
@@ -176,25 +178,37 @@ function rideLite(a: Row): RideLite {
 
 async function weekDoneMin(admin: SupabaseClient, userId: string, date: string): Promise<number> {
   const monday = mondayOf(date)
-  const { data: week } = await admin.from('strava_activities').select('moving_time_s').eq('user_id', userId).eq('is_ride', true).is('deleted_at', null).gte('date', monday).lte('date', addDays(monday, 6))
-  return (week ?? []).reduce((s, r) => s + Number(r.moving_time_s) / 60, 0)
+  const week = await loadRidesRange(admin, userId, monday, addDays(monday, 6), false)
+  return week.reduce((s, r) => s + r.moving_time_s / 60, 0)
 }
+
+/** Jazdy dnia z obu tabel osobno (bez scalania) – do szukania bliźniaka jazdy w drugim źródle. */
+async function dayRidesBoth(admin: SupabaseClient, userId: string, date: string): Promise<RideRow[]> {
+  const [{ data: s }, { data: w }] = await Promise.all([
+    admin.from('strava_activities').select('*').eq('user_id', userId).eq('date', date).is('deleted_at', null),
+    admin.from('wahoo_workouts').select('*').eq('user_id', userId).eq('date', date).is('deleted_at', null),
+  ])
+  return [...(s ?? []).map(fromStrava), ...(w ?? []).map(fromWahoo)]
+}
+
+/** Klucz maila po jeździe: Strava – samo id (jak dotąd), Wahoo – `wahoo:<id>`. */
+export const workoutRef = (r: Pick<RideRow, 'source' | 'id'>): string => (r.source === 'strava' ? String(r.id) : `wahoo:${r.id}`)
 
 async function currentRpe(admin: SupabaseClient, userId: string, date: string): Promise<number | null> {
   const { data } = await admin.from('session_logs').select('rpe').eq('user_id', userId).eq('date', date).eq('kind', 'bike').is('deleted_at', null).order('updated_at', { ascending: false }).limit(1).maybeSingle()
   return (data?.rpe as number | null) ?? null
 }
 
-async function sendWorkoutMail(admin: SupabaseClient, userId: string, kindRef: string, name: string, a: Row, snap: DaySnapshot | null, extras: Row[]): Promise<string> {
+async function sendWorkoutMail(admin: SupabaseClient, userId: string, kindRef: string, name: string, a: RideRow, snap: DaySnapshot | null, extras: RideRow[]): Promise<string> {
   const view = buildWorkoutView(rideLite(a), snap, {
     athlete: name,
     appUrl: APP_URL,
-    weekDoneMin: await weekDoneMin(admin, userId, a.date as string),
-    rideDateLabel: snap?.dateLabel ?? (a.date as string),
-    note: (a.note as string | null) ?? null,
+    weekDoneMin: await weekDoneMin(admin, userId, a.date),
+    rideDateLabel: snap?.dateLabel ?? a.date,
+    note: a.note,
     extras: extras.map(rideLite),
   })
-  view.rpe = { links: await rpeLinks(userId, a.date as string), current: await currentRpe(admin, userId, a.date as string) }
+  view.rpe = { links: await rpeLinks(userId, a.date), current: await currentRpe(admin, userId, a.date) }
   const to = await emailOf(admin, userId)
   if (!to) return 'brak adresu'
   const unsub = await unsubscribeUrl(userId, 'workout')
@@ -204,22 +218,28 @@ async function sendWorkoutMail(admin: SupabaseClient, userId: string, kindRef: s
 }
 
 /**
- * Mail zaraz po imporcie – tylko dla jazdy, która wypełnia zaplanowany trening (≥ 80 % czasu; bez planu ≥ 30 min).
+ * Mail zaraz po zapisie jazdy – tylko dla jazdy, która wypełnia zaplanowany trening (≥ 80 % czasu; bez planu ≥ 30 min).
  * Krótszy dojazd przed treningiem albo druga jazda dnia trafiają do wieczornego „Dzień w liczbach” (`runEvening`).
+ * Jazda bywa w Wahoo i w Stravie – mail idzie raz: gdy był już o bliźniaku, drugi się nie wysyła (docs/33).
  */
-export async function sendWorkout(admin: SupabaseClient, userId: string, activityId: number | string): Promise<string> {
+export async function sendWorkout(admin: SupabaseClient, userId: string, ref: RideRef): Promise<string> {
   const { data: profile } = await admin.from('profiles').select('email_workout, name').eq('user_id', userId).maybeSingle()
   if (!profile?.email_workout) return 'wyłączone'
-  const { data: a } = await admin.from('strava_activities').select('*').eq('user_id', userId).eq('id', activityId).maybeSingle()
-  if (!a || !a.is_ride || a.deleted_at) return 'nie jazda'
+  const a = await loadRide(admin, userId, ref)
+  if (!a) return 'nie jazda'
   const today = warsawNow().date
-  if ((a.date as string) < addDays(today, -2)) return 'stara jazda'
-  if (Number(a.moving_time_s) < 15 * 60) return 'krótka jazda'
-  const snap = await snapshot(admin, userId, a.date as string)
-  if (!fulfilsPlan(Number(a.moving_time_s), snap?.planned?.minutes ?? null)) return 'czeka na wieczorne podsumowanie'
-  const ref = String(activityId)
-  if (!(await reserve(admin, userId, 'workout', ref))) return 'już wysłane'
-  return sendWorkoutMail(admin, userId, ref, (profile.name as string) ?? '', a, snap, [])
+  if (a.date < addDays(today, -2)) return 'stara jazda'
+  if (a.moving_time_s < 15 * 60) return 'krótka jazda'
+  const snap = await snapshot(admin, userId, a.date)
+  if (!fulfilsPlan(a.moving_time_s, snap?.planned?.minutes ?? null)) return 'czeka na wieczorne podsumowanie'
+  const twin = twinOf(a, await dayRidesBoth(admin, userId, a.date))
+  if (twin) {
+    const { data: sent } = await admin.from('email_log').select('ref').eq('user_id', userId).eq('kind', 'workout').eq('ref', workoutRef(twin)).maybeSingle()
+    if (sent) return 'mail był o tej jeździe z drugiego źródła'
+  }
+  const ref0 = workoutRef(a)
+  if (!(await reserve(admin, userId, 'workout', ref0))) return 'już wysłane'
+  return sendWorkoutMail(admin, userId, ref0, (profile.name as string) ?? '', a, snap, [])
 }
 
 /** Godzina (Europe/Warsaw) wieczornego „Dzień w liczbach”. */
@@ -233,16 +253,19 @@ export const EVENING_HOUR = 21
 export async function sendEvening(admin: SupabaseClient, userId: string, date: string): Promise<string> {
   const { data: profile } = await admin.from('profiles').select('email_workout, name').eq('user_id', userId).maybeSingle()
   if (!profile?.email_workout) return 'wyłączone'
-  const { data: rows } = await admin.from('strava_activities').select('*').eq('user_id', userId).eq('is_ride', true).is('deleted_at', null).eq('date', date).order('start_at')
-  const rides = (rows ?? []).filter((r) => Number(r.moving_time_s) >= 15 * 60)
+  const rides = (await loadRidesRange(admin, userId, date, date, false)).filter((r) => r.moving_time_s >= 15 * 60)
   if (!rides.length) return 'bez jazd'
-  const { data: sent } = await admin.from('email_log').select('ref').eq('user_id', userId).eq('kind', 'workout').in('ref', rides.map((r) => String(r.id)))
-  const sentIds = new Set((sent ?? []).map((s) => String(s.ref)))
-  if (rides.every((r) => sentIds.has(String(r.id)))) return 'wszystko już wysłane'
+  // mail po treningu mógł iść o bliźniaku z drugiego źródła – sprawdzamy oba klucze
+  const all = await dayRidesBoth(admin, userId, date)
+  const refsOf = (r: RideRow) => [workoutRef(r), ...all.filter((o) => o.source !== r.source && twinOf(r, [o])).map(workoutRef)]
+  const { data: sent } = await admin.from('email_log').select('ref').eq('user_id', userId).eq('kind', 'workout').in('ref', rides.flatMap(refsOf))
+  const sentRefs = new Set((sent ?? []).map((s) => String(s.ref)))
+  const wasSent = (r: RideRow) => refsOf(r).some((k) => sentRefs.has(k))
+  if (rides.every(wasSent)) return 'wszystko już wysłane'
   const ref = `day:${date}`
   if (!(await reserve(admin, userId, 'workout', ref))) return 'już wysłane'
   const snap = await snapshot(admin, userId, date)
-  const primary = rides.find((r) => sentIds.has(String(r.id))) ?? rides.toSorted((x, y) => Number(y.moving_time_s) - Number(x.moving_time_s))[0]!
+  const primary = rides.find(wasSent) ?? rides.toSorted((x, y) => y.moving_time_s - x.moving_time_s)[0]!
   const extras = rides.filter((r) => r !== primary)
   return sendWorkoutMail(admin, userId, ref, (profile.name as string) ?? '', primary, snap, extras)
 }
@@ -302,15 +325,17 @@ export async function gatherWeek(admin: SupabaseClient, userId: string, monday: 
   const prevMonday = addDays(monday, -7)
   const sunday = addDays(monday, 6)
   const nextSunday = addDays(monday, 13)
-  const [{ data: rides }, { data: snaps }, { data: logs }, { data: cis }] = await Promise.all([
-    admin.from('strava_activities').select('*').eq('user_id', userId).eq('is_ride', true).is('deleted_at', null).gte('date', prevMonday).lte('date', sunday).order('start_at'),
+  const [rides, { data: snaps }, { data: logs }, { data: cis }] = await Promise.all([
+    // tylko Wahoo – list pisze model, a dane Stravy nie mogą trafić do AI (docs/33)
+    loadRidesRange(admin, userId, prevMonday, sunday, true),
     admin.from('email_days').select('date, payload').eq('user_id', userId).gte('date', monday).lte('date', nextSunday),
-    admin.from('session_logs').select('date, status, rpe').eq('user_id', userId).eq('kind', 'bike').is('deleted_at', null).gte('date', monday).lte('date', sunday).order('updated_at'),
+    // logi zbudowane z jazd Stravy pomijamy (ich status i metryki pochodzą ze Stravy)
+    admin.from('session_logs').select('date, status, rpe, source').eq('user_id', userId).eq('kind', 'bike').is('deleted_at', null).neq('source', 'strava').gte('date', monday).lte('date', sunday).order('updated_at'),
     admin.from('checkins').select('date, weight_kg, resting_hr, sleep, legs, motivation, sick').eq('user_id', userId).is('deleted_at', null).gte('date', prevMonday).lte('date', sunday).order('date'),
   ])
   const snapshots: Record<string, DaySnapshot | null> = {}
   for (const r of snaps ?? []) snapshots[r.date as string] = r.payload as DaySnapshot
-  const all = (rides ?? []).map((a) => ({ ...rideLite(a), note: (a.note as string | null) ?? null }))
+  const all = rides.map((a) => ({ ...rideLite(a), note: a.note_source === 'ai' || a.note_source === 'rules' ? a.note : null }))
   const num = (v: unknown) => (v == null ? null : Number(v))
   const ci = (cis ?? []).map((c) => ({ date: c.date as string, weight_kg: num(c.weight_kg), resting_hr: num(c.resting_hr), sleep: num(c.sleep), legs: num(c.legs), motivation: num(c.motivation), sick: (c.sick as boolean | null) ?? null }))
   return weekFacts({
@@ -324,12 +349,19 @@ export async function gatherWeek(admin: SupabaseClient, userId: string, monday: 
   })
 }
 
+/** Zdanie o jazdach, których list nie omawia (są tylko na Stravie, a ich danych nie przekazujemy AI). */
+export function stravaOnlyLine(n: number): string {
+  const what = n === 1 ? '1 jazda jest' : n < 5 ? `${n} jazdy są` : `${n} jazd jest`
+  return `${what} tylko na Stravie – list ich nie omawia, ale widzisz je w aplikacji.`
+}
+
 /** List: model z jedną poprawką (liczby tylko z faktów, 90–240 słów), inaczej list z reguł. */
 export async function writeLetter(admin: SupabaseClient, userId: string, facts: WeekFacts): Promise<{ letter: string; source: 'ai' | 'rules'; detail: string }> {
   let detail = ''
   try {
     if (!Deno.env.get('ANTHROPIC_API_KEY')) throw new Error('brak klucza')
     if (!(await underLimit(admin))) throw new Error('limit miesięczny')
+    assertAiSafe(facts)
     const system = `${WEEK_SYSTEM}\n\nUSTALENIA O TYM ZAWODNIKU\n${facts.athlete.coach_notes.map((n) => `- ${n}`).join('\n') || '- brak'}`
     let user = weekPrompt(facts)
     for (let attempt = 0; attempt < 2; attempt++) {
@@ -357,7 +389,11 @@ export async function sendWeekly(admin: SupabaseClient, userId: string, monday: 
   if (!opts.force && !(await reserve(admin, userId, 'weekly', monday))) return 'już wysłane'
   const to = await emailOf(admin, userId)
   if (!to) return 'brak adresu'
-  const { letter, source, detail } = await writeLetter(admin, userId, facts)
+  const ai = await writeLetter(admin, userId, facts)
+  const { source, detail } = ai
+  // jazdy tylko ze Stravy nie idą do modelu – kod dopisuje o nich zdanie poza tekstem listu
+  const stravaOnly = (await loadRidesRange(admin, userId, monday, addDays(monday, 6), false)).filter((r) => r.source === 'strava').length
+  const letter = stravaOnly ? `${ai.letter}\n\n${stravaOnlyLine(stravaOnly)}` : ai.letter
   const unsub = opts.force ? null : await unsubscribeUrl(userId, 'weekly')
   const r = await resend(to, weeklyEmail(weeklyView(facts, letter, (profile?.name as string) ?? ''), { unsubscribeUrl: unsub }), unsub, opts.subjectPrefix ?? '')
   if (!opts.force) await finish(admin, userId, 'weekly', monday, r)

@@ -215,3 +215,18 @@ export function rideMetrics(s: Samples | null, deviceWatts: boolean): RideMetric
     avg_cadence_moving: cadN ? Math.round(cadSum / cadN) : null,
   }
 }
+
+/** Histogram: sekundy na każdą wartość bpm (indeks = bpm). */
+export function hrHistogram(streams: RawStreams | null): number[] | null {
+  const hr = streams?.heartrate?.data as (number | null)[] | undefined
+  const time = streams?.time?.data as number[] | undefined
+  if (!hr || !time || hr.length !== time.length || hr.length < 2) return null
+  const hist: number[] = []
+  for (let i = 1; i < hr.length; i++) {
+    const dt = Math.min(30, Math.max(0, time[i]! - time[i - 1]!))
+    const bpm = Math.round(hr[i] ?? 0)
+    if (bpm <= 0 || bpm > 250) continue
+    hist[bpm] = (hist[bpm] ?? 0) + dt
+  }
+  return Array.from(hist, (v) => v ?? 0)
+}

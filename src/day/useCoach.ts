@@ -4,7 +4,8 @@
  */
 import { useCallback, useMemo } from 'react'
 import { useLiveQuery } from 'dexie-react-hooks'
-import { db, type Checkin, type PlanOverrideRow, type SessionLog, type StravaActivity, type WahooPushRow } from '@/db'
+import { db, type Checkin, type PlanOverrideRow, type SessionLog, type WahooPushRow } from '@/db'
+import { fromWahoo, type RideRow } from '../../supabase/functions/_shared/rides'
 import { addOverride, upsertCheckin, upsertSessionLog } from '@/db/repo'
 import { rideLoad } from '@/engine/analysis'
 import { addDays, type ISODate } from '@/engine/dates'
@@ -21,7 +22,8 @@ export function useCoach(d: IosDay, date: ISODate): { context: () => CoachContex
   const to = addDays(today, 8)
   const checkins = useLiveQuery(async () => (await db.checkins.where('date').between(from, to, true, true).toArray()).filter((c) => !c.deleted_at), [from, to], [] as Checkin[])
   const logs = useLiveQuery(async () => (await db.session_logs.where('date').between(from, to, true, true).toArray()).filter((l) => !l.deleted_at), [from, to], [] as SessionLog[])
-  const activities = useLiveQuery(async () => (await db.strava_activities.where('date').between(from, to, true, true).toArray()).filter((a) => !a.deleted_at && a.is_ride), [from, to], [] as StravaActivity[])
+  // tylko Wahoo – dane Stravy nie trafiają do AI (docs/33)
+  const rides = useLiveQuery(async () => (await db.wahoo_workouts.where('date').between(from, to, true, true).toArray()).filter((w) => !w.deleted_at).map((w) => fromWahoo(w as unknown as Record<string, unknown>)), [from, to], [] as RideRow[])
   const overrides = useLiveQuery(async () => (await db.plan_overrides.where('date').between(from, to, true, true).toArray()).filter((o) => !o.deleted_at), [from, to], [] as PlanOverrideRow[])
   const pushes = useLiveQuery(async () => (await db.wahoo_pushes.where('date').between(today, to, true, true).toArray()).filter((p) => !p.deleted_at && (p.status === 'created' || p.status === 'updated')), [today, to], [] as WahooPushRow[])
 
@@ -29,20 +31,20 @@ export function useCoach(d: IosDay, date: ISODate): { context: () => CoachContex
   const { settings, program } = ctx
 
   const context = useCallback((): CoachContext => {
-    const rpeOf = (a: StravaActivity) => logs.find((l) => l.date === a.date && l.kind === 'bike')?.rpe ?? undefined
+    const rpeOf = (a: RideRow) => logs.find((l) => l.date === a.date && l.kind === 'bike')?.rpe ?? undefined
     return buildCoachContext({
       today,
       date,
       window: d.view.window,
       checkins,
       logs,
-      activities,
+      rides,
       overrides,
       boltDates: pushes.map((p) => p.date),
       athlete: { ftp: d.ftp, lthr: d.lthr, goal: program.goal.label, coach_notes: program.coach_notes ?? [], weight_goal_kg: settings.body_weight_target_kg ?? null },
       loadOf: (a) => rideLoad({ moving_s: a.moving_time_s, device_watts: a.device_watts, np_w: a.np_w, avg_watts: a.avg_watts, ftp: d.ftp, hr_histogram: a.hr_histogram, zones: program.hr_zones_lthr_fraction, lthr: d.lthr, rpe: rpeOf(a) }),
     })
-  }, [today, date, d.view.window, d.ftp, d.lthr, checkins, logs, activities, overrides, pushes, program, settings.body_weight_target_kg])
+  }, [today, date, d.view.window, d.ftp, d.lthr, checkins, logs, rides, overrides, pushes, program, settings.body_weight_target_kg])
 
   const deps = useMemo<CoachToolDeps>(
     () => ({

@@ -2,11 +2,16 @@
  * wahoo-push – wysyłka zaplanowanych treningów na Bolta.
  * POST {items: PushItem[]} z JWT użytkownika. Plan JSON buduje aplikacja (silnik planu jest jeden,
  * w `src/engine/wahoo.ts`), tutaj zostaje tylko OAuth i rozmowa z Wahoo.
+ * Wykonane treningi (docs/33 § 7) – źródło danych dla AI:
+ *  POST {mode:'completed', days?} + JWT   – jazdy z ostatnich dni → wahoo_workouts → FIT → notatka → mail
+ *  POST {mode:'backfill', days?} + JWT     – historia (do 400 dni), FIT dla 90 dni, bez notatek i maili
+ *  POST {mode:'cron', secret}              – pg_cron co 30 min: to samo co 'completed' (2 dni) dla kont z Wahoo
  */
-import { CORS, json } from '../_shared/env.ts'
+import { CORS, env, json } from '../_shared/env.ts'
 import { adminClient, userFromRequest } from '../_shared/supabase.ts'
-import { accessTokenFor, cleanupOrphans, diagnose, getWorkout, listWorkoutsDetailed, pushDay, removeDay, type PlanIndex, type PushItem, type PushResult } from '../_shared/wahoo.ts'
-import { completedInRange, warsawDate } from '../_shared/wahoo_summary.ts'
+import { accessTokenFor, cleanupOrphans, diagnose, getWorkout, pushDay, removeDay, type PlanIndex, type PushItem, type PushResult } from '../_shared/wahoo.ts'
+import { processWahooRides } from '../_shared/ride_pipeline.ts'
+import { backfillWahoo, syncCompleted } from '../_shared/wahoo_sync.ts'
 
 const MAX_ITEMS = 10
 
@@ -16,11 +21,29 @@ Deno.serve(async (req) => {
   const user = await userFromRequest(req)
   if (!user) return json({ error: 'unauthorized' }, 401)
 
-  const body = (await req.json().catch(() => ({}))) as { items?: PushItem[]; mode?: 'update' | 'replace' | 'diagnose' | 'cleanup' | 'completed'; remove?: string[]; days?: number }
+  const body = (await req.json().catch(() => ({}))) as { items?: PushItem[]; mode?: 'update' | 'replace' | 'diagnose' | 'cleanup' | 'completed' | 'backfill' | 'cron'; remove?: string[]; days?: number; secret?: string }
+  if (body.mode === 'cron') {
+    if (!body.secret || body.secret !== env('PUSH_CRON_SECRET')) return json({ error: 'unauthorized' }, 401)
+    const admin = adminClient()
+    const { data: linked } = await admin.from('integration_tokens').select('user_id').eq('provider', 'wahoo')
+    const out: Record<string, unknown> = {}
+    for (const { user_id } of linked ?? []) {
+      try {
+        const r = await syncCompleted(admin, user_id as string, 2)
+        out[user_id as string] = r ? { completed: r.completed, steps: await processWahooRides(admin, user_id as string, r.todo) } : 'brak tokenu'
+      } catch (e) {
+        out[user_id as string] = `błąd: ${e instanceof Error ? e.message : e}`
+        // 429 = limit Wahoo – kolejne konta poczekają do następnego przebiegu
+        if (String(e).includes('429')) break
+      }
+    }
+    console.log('wahoo cron', JSON.stringify(out))
+    return json({ ok: true, users: out })
+  }
   const items = (body.items ?? []).slice(0, MAX_ITEMS)
   // porządkowanie nie potrzebuje listy treningów do wysłania
   const remove = (body.remove ?? []).filter((d) => /^\d{4}-\d{2}-\d{2}$/.test(d)).slice(0, 14)
-  if (items.length === 0 && remove.length === 0 && body.mode !== 'cleanup' && body.mode !== 'completed') return json({ error: 'no_items' }, 400)
+  if (items.length === 0 && remove.length === 0 && body.mode !== 'cleanup' && body.mode !== 'completed' && body.mode !== 'backfill') return json({ error: 'no_items' }, 400)
 
   const admin = adminClient()
   const token0 = await accessTokenFor(admin, user.id).catch((e) => {
@@ -29,18 +52,18 @@ Deno.serve(async (req) => {
   if (!token0) return json({ error: 'not_connected' }, 400)
   const token = token0
 
-  // Bolt w obie strony: wykonane treningi (workout_summary) z ostatnich dni → wahoo_workouts (trigger zbuduje log dnia)
+  // Bolt w obie strony: wykonane treningi (workout_summary) z ostatnich dni → wahoo_workouts (trigger zbuduje log dnia),
+  // a świeże jazdy dostają plik FIT, notatkę trenera i mail (docs/33)
   if (body.mode === 'completed') {
     const days = Math.min(30, Math.max(1, body.days ?? 7))
-    const to = warsawDate(new Date().toISOString())
-    const from = warsawDate(new Date(Date.now() - days * 86400000).toISOString())
-    const list = await listWorkoutsDetailed(token, 2)
-    const rows = completedInRange(list, from, to)
-    for (const r of rows) {
-      const { error } = await admin.from('wahoo_workouts').upsert({ ...r, user_id: user.id, deleted_at: null, updated_at: new Date().toISOString() }, { onConflict: 'id' })
-      if (error) throw new Error(`wahoo_workouts: ${error.message}`)
-    }
-    return json({ ok: true, scanned: list.length, completed: rows.length, from, to, dates: rows.map((r) => r.date) })
+    const r = await syncCompleted(admin, user.id, days, token)
+    if (!r) return json({ error: 'not_connected' }, 400)
+    const steps = await processWahooRides(admin, user.id, r.todo)
+    return json({ ok: true, scanned: r.scanned, completed: r.completed, from: r.from, to: r.to, dates: r.dates, steps })
+  }
+  if (body.mode === 'backfill') {
+    const r = await backfillWahoo(admin, user.id, { days: Math.min(400, Math.max(7, body.days ?? 400)), fitDays: 90, maxPages: 12 })
+    return json({ ok: true, ...r })
   }
 
   // porządkowanie: kasuje treningi tej aplikacji, których nie ma w naszej bazie (duplikaty na liczniku)

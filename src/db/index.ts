@@ -48,6 +48,8 @@ export interface SessionLog extends SyncedRow {
   avg_speed_kmh?: number | null
   bike?: string | null
   strava_activity_id?: number | null
+  /** skąd metryki dnia (docs/33 § 4): log z jazd Stravy nie trafia do AI i znika po 7 dniach razem z jazdą */
+  source?: 'strava' | 'wahoo' | 'manual' | null
   notes?: string | null
 }
 
@@ -125,6 +127,8 @@ export interface StravaActivity extends SyncedRow {
   /** notatka trenera po jeździe (docs/20) – AI albo z reguł; pisze serwer po imporcie */
   note?: string | null
   note_source?: 'ai' | 'rules' | null
+  /** kiedy pobrane ze Stravy – po 7 dniach wiersz znika (polityka API § 6.2, docs/33 § 5) */
+  fetched_at?: string | null
 }
 
 /** Stan wysyłki dnia na Bolta (tylko odczyt – zapisuje funkcja wahoo-push). */
@@ -153,6 +157,19 @@ export interface WahooWorkout extends SyncedRow {
   avg_cadence?: number | null
   avg_speed_kmh?: number | null
   ascent_m?: number | null
+  /** z pliku FIT (docs/33 § 7) */
+  moving_time_s?: number | null
+  max_hr?: number | null
+  hr_histogram?: number[] | null
+  mmp_w?: Record<string, number | null> | null
+  best_speed_kmh?: Record<string, number | null> | null
+  decoupling_pct?: number | null
+  device_watts?: boolean | null
+  has_streams?: boolean | null
+  summary?: Record<string, unknown> | null
+  /** notatka trenera po jeździe – z AI tylko na danych Wahoo (docs/33) */
+  note?: string | null
+  note_source?: 'ai' | 'rules' | null
 }
 
 /** Punkt wyjścia: pomiar miernika z datą (pierwszy zapis = baseline, kolejne = odczyty). */

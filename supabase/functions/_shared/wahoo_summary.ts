@@ -6,6 +6,8 @@
 
 export interface WahooSummary {
   id?: number
+  /** plik FIT z jazdy (docs/33 § 7) */
+  file?: { url?: string | null } | null
   duration_active_accum?: number | string | null
   duration_total_accum?: number | string | null
   distance_accum?: number | string | null
@@ -35,6 +37,7 @@ export interface WahooWorkoutRow {
   starts: string
   name: string | null
   minutes_active: number
+  moving_time_s: number
   distance_km: number | null
   avg_hr: number | null
   avg_power: number | null
@@ -71,6 +74,7 @@ export function summaryToRow(w: WahooWorkoutRaw): WahooWorkoutRow | null {
     starts: w.starts,
     name: w.name ?? null,
     minutes_active: Math.round(active / 60),
+    moving_time_s: Math.round(active),
     distance_km: dist == null ? null : Math.round(dist / 100) / 10,
     avg_hr: r(n(s.heart_rate_avg)),
     avg_power: r(n(s.power_avg)),
@@ -90,4 +94,10 @@ export function completedInRange(list: WahooWorkoutRaw[], from: string, to: stri
     if (row && row.date >= from && row.date <= to) out.push(row)
   }
   return out
+}
+
+/** Adres pliku FIT z podsumowania (pole `file.url`), gdy Wahoo go podał. */
+export function fitUrl(s: WahooSummary | null | undefined): string | null {
+  const u = s?.file?.url
+  return typeof u === 'string' && /^https:\/\//.test(u) ? u : null
 }

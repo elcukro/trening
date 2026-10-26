@@ -8,6 +8,8 @@ import { env } from './env.ts'
 import { fulfilsPlan, isShortenedPlan, type DaySnapshot } from './email_views.ts'
 import { historyContext, numbersOk, rideFacts, type HistRide, type History, type RideFacts, type RideRowLite, type StoredSamples } from './ride_facts.ts'
 import { COACH_HANDBOOK, promptFacts, ruleNote, userMessage, wordCount } from './ride_note_prompt.ts'
+import { assertAiSafe, isAiSource } from './provenance.ts'
+import { fromStrava, fromWahoo, mergeRides, sameRide, type RideRow, type RideSource } from './rides.ts'
 import { accessTokenFor, stravaScope, updateActivity } from './strava.ts'
 import { checkDraft, isDefaultTitle, parseDraft, ruleDraft, titlePrompt, withSignature, type TitleDraft } from './strava_title.ts'
 
@@ -30,27 +32,69 @@ function mondayOf(iso: string): string {
 
 const num = (x: unknown) => (x == null ? null : Number(x))
 
-/** Fakty o jeździe z bazy: jazda, próbki, migawka planu, historia. */
-export async function gatherFacts(admin: SupabaseClient, userId: string, activityId: number | string): Promise<{ facts: RideFacts; ride: Record<string, unknown> } | null> {
-  const { data: a } = await admin.from('strava_activities').select('*').eq('user_id', userId).eq('id', activityId).maybeSingle()
-  if (!a || !a.is_ride || a.deleted_at) return null
-  const date = a.date as string
-  const [{ data: st }, { data: snapRow }, { data: allRows }, { data: ci }, { data: log }, { data: days }, { data: tests }] = await Promise.all([
-    admin.from('strava_streams').select('dt, samples').eq('activity_id', activityId).maybeSingle(),
+/** Jazda w bazie: źródło i identyfikator w tabeli źródła (docs/33 § 4). */
+export interface RideRef {
+  source: RideSource
+  id: number | string
+}
+
+const RIDE_TABLE = { wahoo: 'wahoo_workouts', strava: 'strava_activities' } as const
+const STREAM_TABLE = { wahoo: ['wahoo_streams', 'workout_id'], strava: ['strava_streams', 'activity_id'] } as const
+const HIST_COLS = {
+  wahoo: 'id, date, starts, name, minutes_active, moving_time_s, distance_km, ascent_m, mmp_w, np_w, avg_power, avg_hr, max_hr, avg_cadence, device_watts, decoupling_pct, hr_histogram, note, note_source, note_facts, summary',
+  strava: 'id, date, start_at, name, moving_time_s, elapsed_time_s, distance_m, elevation_m, mmp_w, np_w, avg_watts, avg_hr, max_hr, avg_cadence, device_watts, decoupling_pct, hr_histogram, note, note_source, note_facts',
+} as const
+
+export async function loadRide(admin: SupabaseClient, userId: string, ref: RideRef): Promise<RideRow | null> {
+  const { data } = await admin.from(RIDE_TABLE[ref.source]).select('*').eq('user_id', userId).eq('id', ref.id).maybeSingle()
+  if (!data || data.deleted_at) return null
+  if (ref.source === 'strava' && !data.is_ride) return null
+  return ref.source === 'wahoo' ? fromWahoo(data) : fromStrava(data)
+}
+
+/**
+ * Jazdy konta z zakresu dat (`from` null = od początku). Dla AI (`aiOnly`) wyłącznie Wahoo – historia ze Stravy, nawet
+ * policzona przez nas, nie może trafić do modelu (polityka § 5.3). Bez AI (notatka z reguł, mail, widoki) – obie tabele
+ * scalone, kopia z Wahoo wygrywa.
+ */
+export async function loadRidesRange(admin: SupabaseClient, userId: string, from: string | null, to: string, aiOnly: boolean): Promise<RideRow[]> {
+  let w = admin.from('wahoo_workouts').select(HIST_COLS.wahoo).eq('user_id', userId).is('deleted_at', null).lte('date', to)
+  let st = admin.from('strava_activities').select(HIST_COLS.strava).eq('user_id', userId).eq('is_ride', true).is('deleted_at', null).lte('date', to)
+  if (from) {
+    w = w.gte('date', from)
+    st = st.gte('date', from)
+  }
+  const [{ data: wr }, s] = await Promise.all([w.order('date'), aiOnly ? Promise.resolve({ data: [] as Record<string, unknown>[] }) : st.order('date')])
+  return mergeRides((wr ?? []).map((r) => fromWahoo(r as Record<string, unknown>)), ((s.data ?? []) as Record<string, unknown>[]).map(fromStrava))
+}
+
+export const loadRideHistory = (admin: SupabaseClient, userId: string, upTo: string, aiOnly: boolean): Promise<RideRow[]> => loadRidesRange(admin, userId, null, upTo, aiOnly)
+
+/** Fakty o jeździe z bazy: jazda, próbki, migawka planu, historia. Dla jazdy z Wahoo – tylko dane spoza Stravy. */
+export async function gatherFacts(admin: SupabaseClient, userId: string, ref: RideRef): Promise<{ facts: RideFacts; ride: RideRow } | null> {
+  const a = await loadRide(admin, userId, ref)
+  if (!a) return null
+  const date = a.date
+  const aiOnly = isAiSource(ref.source)
+  const [streamTable, streamKey] = STREAM_TABLE[ref.source]
+  const [{ data: st }, { data: snapRow }, allRows, { data: ci }, { data: log }, { data: days }, { data: tests }] = await Promise.all([
+    admin.from(streamTable).select('dt, samples').eq(streamKey, ref.id).maybeSingle(),
     admin.from('email_days').select('payload').eq('user_id', userId).eq('date', date).maybeSingle(),
     // cała historia jazd do tej daty (bez próbek) – kontekst historyczny, rekordy, forma
-    admin.from('strava_activities').select('id, date, moving_time_s, distance_m, elevation_m, mmp_w, np_w, avg_watts, avg_hr, device_watts, decoupling_pct, note_facts').eq('user_id', userId).eq('is_ride', true).is('deleted_at', null).lte('date', date).order('date'),
+    loadRideHistory(admin, userId, date, aiOnly),
     admin.from('checkins').select('sleep, legs, motivation, resting_hr').eq('user_id', userId).eq('date', date).is('deleted_at', null).maybeSingle(),
+    // RPE wpisuje zawodnik (aplikacja, mail, czat) – to jego dane, także gdy log dnia zbudowano z jazdy Stravy
     admin.from('session_logs').select('rpe').eq('user_id', userId).eq('date', date).eq('kind', 'bike').is('deleted_at', null).maybeSingle(),
     admin.from('email_days').select('date, payload').eq('user_id', userId).gte('date', addDays(date, -180)).lt('date', date).order('date', { ascending: false }),
     admin.from('test_results').select('date, ftp_w').eq('user_id', userId).is('deleted_at', null).not('ftp_w', 'is', null).lte('date', date).order('date'),
   ])
   const snap = (snapRow?.payload as DaySnapshot | undefined) ?? null
-  const others = (allRows ?? []).filter((o) => String(o.id) !== String(activityId) && (o.date as string) >= addDays(date, -90))
+  const isSelf = (o: RideRow) => o.key === a.key || (o.source !== a.source && sameRide(o, a))
+  const others = allRows.filter((o) => !isSelf(o) && o.date >= addDays(date, -90))
 
   const mmp90: Record<string, number | null> = {}
   for (const o of others) {
-    for (const [k, v] of Object.entries((o.mmp_w as Record<string, number | null> | null) ?? {})) {
+    for (const [k, v] of Object.entries(o.mmp_w ?? {})) {
       if (v != null && (mmp90[k] == null || v > (mmp90[k] as number))) mmp90[k] = v
     }
   }
@@ -62,22 +106,25 @@ export async function gatherFacts(admin: SupabaseClient, userId: string, activit
   for (const d of days ?? []) {
     const pl = d.payload as DaySnapshot
     weekPlanned[mondayOf(d.date as string)] = pl.week_planned_min
-    if (wid && pl.context?.workout_id === wid && pl.planned && (allRows ?? []).some((o) => o.date === d.date && Number(o.moving_time_s) >= pl.planned!.minutes * 30)) sameWorkoutDates.push(d.date as string)
+    if (wid && pl.context?.workout_id === wid && pl.planned && allRows.some((o) => o.date === d.date && o.moving_time_s >= pl.planned!.minutes * 30)) sameWorkoutDates.push(d.date as string)
   }
 
+  const workAvg = (o: RideRow) => {
+    const w = (o.note_facts as RideFacts | null)?.efforts?.detected ?? []
+    return w.length ? Math.round(w.reduce((s, e) => s + e.avg_w, 0) / w.length) : null
+  }
   let previous_same: History['previous_same'] = null
   if (wid) {
     for (const d of days ?? []) {
       if ((d.payload as DaySnapshot).context?.workout_id !== wid) continue
-      const prev = others.filter((o) => o.date === d.date).sort((x, y) => Number(y.moving_time_s) - Number(x.moving_time_s))[0]
+      const prev = others.filter((o) => o.date === d.date).sort((x, y) => y.moving_time_s - x.moving_time_s)[0]
       if (!prev) continue
-      const pf = prev.note_facts as RideFacts | null
-      const work = pf?.efforts?.detected ?? []
+      const work = (prev.note_facts as RideFacts | null)?.efforts?.detected ?? []
       previous_same = {
         date: d.date as string,
-        np_w: num(prev.np_w),
-        avg_hr: num(prev.avg_hr),
-        work_avg_w: work.length ? Math.round(work.reduce((s, e) => s + e.avg_w, 0) / work.length) : null,
+        np_w: prev.np_w,
+        avg_hr: prev.avg_hr,
+        work_avg_w: workAvg(prev),
         work_avg_hr: work.length && work.every((e) => e.avg_hr != null) ? Math.round(work.reduce((s, e) => s + (e.avg_hr ?? 0), 0) / work.length) : null,
       }
       break
@@ -85,45 +132,42 @@ export async function gatherFacts(admin: SupabaseClient, userId: string, activit
   }
 
   const monday = mondayOf(date)
-  const inWeek = [...others, a].filter((o) => (o.date as string) >= monday && (o.date as string) <= addDays(monday, 6))
-  const week = snap ? { done_min: Math.round(inWeek.reduce((s, o) => s + Number(o.moving_time_s) / 60, 0)), planned_min: snap.week_planned_min, rides: inWeek.length } : null
+  const inWeek = [...others, a].filter((o) => o.date >= monday && o.date <= addDays(monday, 6))
+  const week = snap ? { done_min: Math.round(inWeek.reduce((s, o) => s + o.moving_time_s / 60, 0)), planned_min: snap.week_planned_min, rides: inWeek.length } : null
 
   const ride: RideRowLite = {
     id: a.id,
     date,
     name: a.name,
-    moving_time_s: Number(a.moving_time_s),
-    elapsed_time_s: Number(a.elapsed_time_s ?? a.moving_time_s),
-    distance_m: Number(a.distance_m ?? 0),
-    elevation_m: Number(a.elevation_m ?? 0),
-    avg_hr: num(a.avg_hr),
-    max_hr: num(a.max_hr),
-    avg_cadence: num(a.avg_cadence),
-    avg_watts: num(a.avg_watts),
-    np_w: num(a.np_w),
-    device_watts: a.device_watts ?? null,
-    decoupling_pct: num(a.decoupling_pct),
-    mmp_w: (a.mmp_w as Record<string, number | null> | null) ?? null,
+    moving_time_s: a.moving_time_s,
+    elapsed_time_s: a.elapsed_time_s,
+    distance_m: a.distance_m,
+    elevation_m: a.elevation_m,
+    avg_hr: a.avg_hr,
+    max_hr: a.max_hr,
+    avg_cadence: a.avg_cadence,
+    avg_watts: a.avg_watts,
+    np_w: a.np_w,
+    device_watts: a.device_watts,
+    decoupling_pct: a.decoupling_pct,
+    mmp_w: a.mmp_w,
   }
   const samples: StoredSamples | null = st ? { dt: Number(st.dt), ...(st.samples as Omit<StoredSamples, 'dt'>) } : null
-  const toHist = (o: Record<string, unknown>): HistRide => ({
-    id: o.id as number,
-    date: o.date as string,
-    moving_time_s: Number(o.moving_time_s),
-    distance_m: Number(o.distance_m ?? 0),
-    elevation_m: Number(o.elevation_m ?? 0),
-    np_w: num(o.np_w),
-    avg_watts: num(o.avg_watts),
-    avg_hr: num(o.avg_hr),
-    device_watts: (o.device_watts as boolean | null) ?? null,
-    decoupling_pct: num(o.decoupling_pct),
-    work_avg_w: (() => {
-      const w = (o.note_facts as RideFacts | null)?.efforts?.detected ?? []
-      return w.length ? Math.round(w.reduce((s, e) => s + e.avg_w, 0) / w.length) : null
-    })(),
+  const toHist = (o: RideRow): HistRide => ({
+    id: o.id,
+    date: o.date,
+    moving_time_s: o.moving_time_s,
+    distance_m: o.distance_m,
+    elevation_m: o.elevation_m,
+    np_w: o.np_w,
+    avg_watts: o.avg_watts,
+    avg_hr: o.avg_hr,
+    device_watts: o.device_watts,
+    decoupling_pct: o.decoupling_pct,
+    work_avg_w: workAvg(o),
   })
   const context = historyContext({
-    rides: (allRows ?? []).map(toHist),
+    rides: [...allRows.filter((o) => !isSelf(o)), a].sort((x, y) => x.date.localeCompare(y.date)).map(toHist),
     current: toHist(a),
     ftp: snap?.ftp ?? null,
     lthr: snap?.lthr ?? null,
@@ -134,8 +178,8 @@ export async function gatherFacts(admin: SupabaseClient, userId: string, activit
   // Czy ta jazda to zaplanowany trening dnia? Tak, gdy wypełnia plan (≥ 80 %) albo jest skróconym treningiem: ≥ 50 % planu
   // i najdłuższa jazda tego dnia (21.10.2026 – 43 z 60 min Z2 trafiło do notatki jako „44 minuty poza planem”).
   // Krótsze jazdy (dojazd, rozjazd) idą bez porównania z planem.
-  const movingS = Number(a.moving_time_s)
-  const longestToday = !(allRows ?? []).some((o) => o.date === date && String(o.id) !== String(activityId) && Number(o.moving_time_s) > movingS)
+  const movingS = a.moving_time_s
+  const longestToday = !allRows.some((o) => o.date === date && !isSelf(o) && o.moving_time_s > movingS)
   const isPlanned = !!snap?.planned && (fulfilsPlan(movingS, snap.planned.minutes) || (longestToday && isShortenedPlan(movingS, snap.planned.minutes)))
   const snapForFacts = snap?.planned && !isPlanned ? { ...snap, planned: null, context: null } : snap
   const facts = rideFacts(ride, samples, snapForFacts, {
@@ -216,13 +260,18 @@ export interface NoteResult {
   facts: RideFacts
 }
 
-/** Notatka dla jazdy: model (z jedną poprawką, gdy zmyśli liczbę) albo reguły; zapis przy jeździe. */
-export async function writeNote(admin: SupabaseClient, userId: string, activityId: number | string, opts: { force?: boolean; model?: string; dryRun?: boolean; ftpBefore?: number } = {}): Promise<NoteResult | null> {
+/**
+ * Notatka dla jazdy: model (z jedną poprawką, gdy zmyśli liczbę) albo reguły; zapis przy jeździe.
+ * **Model tylko dla jazd z Wahoo** (docs/33): jazda ze Stravy dostaje zawsze notatkę z reguł – polityka API Stravy
+ * § 5.3/5.10 zakazuje przekazywania jej danych (także pochodnych) do AI.
+ */
+export async function writeNote(admin: SupabaseClient, userId: string, ref: RideRef, opts: { force?: boolean; model?: string; dryRun?: boolean; ftpBefore?: number } = {}): Promise<NoteResult | null> {
+  const table = RIDE_TABLE[ref.source]
   if (!opts.force) {
-    const { data: done } = await admin.from('strava_activities').select('note').eq('user_id', userId).eq('id', activityId).maybeSingle()
+    const { data: done } = await admin.from(table).select('note').eq('user_id', userId).eq('id', ref.id).maybeSingle()
     if (done?.note) return null
   }
-  const g = await gatherFacts(admin, userId, activityId)
+  const g = await gatherFacts(admin, userId, ref)
   if (!g) return null
   const { facts } = g
   // korekta FTP sprzed testu (tryb oceny): gdy wynik testu wpisano do profilu przed napisaniem notatki
@@ -236,13 +285,15 @@ export async function writeNote(admin: SupabaseClient, userId: string, activityI
   let source: 'ai' | 'rules' = 'rules'
   let detail = ''
   try {
+    if (!isAiSource(ref.source)) throw new Error('jazda ze Stravy – notatka z reguł (polityka API § 5.3)')
     if (!Deno.env.get('ANTHROPIC_API_KEY')) throw new Error('brak klucza')
     if (!(await underLimit(admin))) throw new Error('limit miesięczny')
+    assertAiSafe(promptFacts(facts))
     let user = userMessage(facts)
     // trzy podejścia: pierwsza wersja, poprawka z listą błędów, jeszcze jedna – dopiero potem notatka z reguł
     for (let attempt = 0; attempt < 3; attempt++) {
       const r = await callClaude(system, user, opts.model ?? MODEL)
-      await admin.from('ai_calls').insert({ user_id: userId, activity_id: activityId, input_tokens: r.usage.input_tokens ?? 0, output_tokens: r.usage.output_tokens ?? 0, cache_read_tokens: r.usage.cache_read_input_tokens ?? 0, cache_write_tokens: r.usage.cache_creation_input_tokens ?? 0 })
+      await admin.from('ai_calls').insert({ user_id: userId, activity_id: Number(ref.id), input_tokens: r.usage.input_tokens ?? 0, output_tokens: r.usage.output_tokens ?? 0, cache_read_tokens: r.usage.cache_read_input_tokens ?? 0, cache_write_tokens: r.usage.cache_creation_input_tokens ?? 0 })
       const check = numbersOk(r.text, promptFacts(facts))
       const words = wordCount(r.text)
       if (r.text && check.ok && words >= 60 && words <= 160) {
@@ -261,9 +312,12 @@ export async function writeNote(admin: SupabaseClient, userId: string, activityI
   }
   if (!note) note = ruleNote(facts)
   if (opts.dryRun) return { note, source, detail, facts }
-  await admin.from('strava_activities').update({ note, note_source: source, note_at: new Date().toISOString(), note_facts: facts, updated_at: new Date().toISOString() }).eq('user_id', userId).eq('id', activityId)
+  await admin.from(table).update({ note, note_source: source, note_at: new Date().toISOString(), note_facts: facts, updated_at: new Date().toISOString() }).eq('user_id', userId).eq('id', ref.id)
   return { note, source, detail, facts }
 }
+
+/** Zapis na Stravę wyłączony, dopóki Strava nie potwierdzi, że wolno (docs/33 § 6): sekret `STRAVA_WRITE_ENABLED=1`. */
+export const stravaWriteEnabled = (): boolean => Deno.env.get('STRAVA_WRITE_ENABLED') === '1'
 
 export interface TitleResult {
   title: string
@@ -278,14 +332,21 @@ export interface TitleResult {
  * Zwraca null, gdy pominięto. Podpis „Notatki: Kolarski Trener AI” dopisuje kod.
  */
 export async function writeStravaTitle(admin: SupabaseClient, userId: string, activityId: number | string, opts: { model?: string; dryRun?: boolean } = {}): Promise<TitleResult | null> {
+  if (!stravaWriteEnabled() && !opts.dryRun) return null
   const [{ data: profile }, scope] = await Promise.all([admin.from('profiles').select('strava_write').eq('user_id', userId).maybeSingle(), stravaScope(admin, userId)])
   if (!profile?.strava_write) return null
   if (!scope.includes('activity:write')) return { title: '', description: '', source: 'rules', detail: 'brak zgody activity:write – połącz Stravę ponownie' }
   const { data: a } = await admin.from('strava_activities').select('name, note, title_set_at, date').eq('user_id', userId).eq('id', activityId).maybeSingle()
   if (!a || a.title_set_at) return null
-  const g = await gatherFacts(admin, userId, activityId)
+  const stravaRide = await loadRide(admin, userId, { source: 'strava', id: activityId })
+  if (!stravaRide) return null
+  // tekst modelu tylko z faktów kopii z Wahoo – Strava służy wyłącznie do wskazania jazdy i sprawdzenia tytułu
+  const { data: twins } = await admin.from('wahoo_workouts').select('*').eq('user_id', userId).eq('date', a.date as string).is('deleted_at', null)
+  const twin = (twins ?? []).map((r) => fromWahoo(r)).find((w) => sameRide(w, stravaRide)) ?? null
+  const g = await gatherFacts(admin, userId, twin ? { source: 'wahoo', id: twin.id } : { source: 'strava', id: activityId })
   if (!g) return null
   const { facts } = g
+  const twinNote = twin?.note ?? null
   const { data: pushed } = await admin.from('wahoo_pushes').select('name').eq('user_id', userId).eq('date', a.date as string)
   if (!isDefaultTitle(a.name as string, facts.plan?.name, (pushed ?? []).map((p) => p.name as string).filter(Boolean))) {
     return { title: '', description: '', source: 'rules', detail: `własny tytuł zawodnika zostaje: ${a.name}` }
@@ -294,10 +355,12 @@ export async function writeStravaTitle(admin: SupabaseClient, userId: string, ac
   let source: 'ai' | 'rules' = 'rules'
   let detail = ''
   try {
+    if (!twin) throw new Error('brak kopii z Wahoo – tytuł z reguł (polityka API § 5.3)')
     if (!Deno.env.get('ANTHROPIC_API_KEY')) throw new Error('brak klucza')
     if (!(await underLimit(admin))) throw new Error('limit miesięczny')
+    assertAiSafe(promptFacts(facts))
     const system = `${COACH_HANDBOOK}\n\nUSTALENIA O TYM ZAWODNIKU\n${facts.athlete.coach_notes.map((n) => `- ${n}`).join('\n') || '- brak'}`
-    let user = titlePrompt(facts, (a.note as string | null) ?? null)
+    let user = titlePrompt(facts, twinNote)
     for (let attempt = 0; attempt < 2; attempt++) {
       const r = await callClaude(system, user, opts.model ?? MODEL)
       await admin.from('ai_calls').insert({ user_id: userId, activity_id: activityId, input_tokens: r.usage.input_tokens ?? 0, output_tokens: r.usage.output_tokens ?? 0, cache_read_tokens: r.usage.cache_read_input_tokens ?? 0, cache_write_tokens: r.usage.cache_creation_input_tokens ?? 0 })
@@ -310,7 +373,7 @@ export async function writeStravaTitle(admin: SupabaseClient, userId: string, ac
         break
       }
       detail = `${check.problems.join('; ')} | szkic: ${r.text.slice(0, 300)}`
-      user = `${titlePrompt(facts, (a.note as string | null) ?? null)}\n\nPoprzednia wersja była odrzucona (${check.problems.join('; ')}). Napisz jeszcze raz, dokładnie w dwóch liniach „Tytuł:” i „Opis:”.`
+      user = `${titlePrompt(facts, twinNote)}\n\nPoprzednia wersja była odrzucona (${check.problems.join('; ')}). Napisz jeszcze raz, dokładnie w dwóch liniach „Tytuł:” i „Opis:”.`
     }
   } catch (e) {
     detail = e instanceof Error ? e.message : String(e)

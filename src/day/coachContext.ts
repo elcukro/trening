@@ -2,13 +2,19 @@
  * Kontekst rozmowy „Zapytaj trenera” (docs/23): zwięzły JSON z planu, jazd, check-inów i ustaleń o zawodniku,
  * który aplikacja wysyła z każdą wiadomością do Edge Function `coach-chat`. Czysty TS – testy w __tests__/coachContext.test.ts.
  * Kod liczy fakty (także sygnały luzowania), model je tylko czyta.
+ *
+ * **Bez danych Stravy** (docs/33, polityka API Stravy § 5.3/5.10): jazdy tylko z Wahoo (`aiSafe`), logi dnia
+ * zbudowane z jazd Stravy bez statusu i metryk (zostaje RPE, które wpisał zawodnik). Serwer sprawdza to drugi raz
+ * (`assertAiSafe` w `coach-chat`).
  */
 import type { CalendarDay } from '@/engine/types'
 import type { ISODate } from '@/engine/dates'
 import { addDays } from '@/engine/dates'
 import { restingHrAlarm } from '@/engine/rules'
 import { hrvAlarm } from '@/engine/readiness'
-import type { Checkin, PlanOverrideRow, SessionLog, StravaActivity } from '@/db'
+import type { Checkin, PlanOverrideRow, SessionLog } from '@/db'
+import { aiSafe } from '../../supabase/functions/_shared/provenance'
+import type { RideRow } from '../../supabase/functions/_shared/rides'
 import { WEEKDAY_LONG } from '@/lib/labels'
 
 export interface CoachContextInput {
@@ -19,11 +25,12 @@ export interface CoachContextInput {
   window: CalendarDay[]
   checkins: Checkin[]
   logs: SessionLog[]
-  activities: StravaActivity[]
+  /** jazdy z dowolnego źródła – do kontekstu trafiają tylko te z Wahoo */
+  rides: RideRow[]
   overrides: PlanOverrideRow[]
   athlete: { ftp: number | null; lthr: number | null; goal: string; coach_notes: string[]; weight_goal_kg: number | null }
   /** TSS/IF jazdy liczone w aplikacji (moc → tętno → RPE) */
-  loadOf?: (a: StravaActivity) => { tss: number; if: number } | null
+  loadOf?: (a: RideRow) => { tss: number; if: number } | null
   /** stan planu na Bolcie – daty już wysłane */
   boltDates?: ISODate[]
 }
@@ -48,6 +55,7 @@ export interface CoachContext {
   rides: { date: ISODate; name: string | null; minutes: number; km: number; elevation_m: number; avg_w: number | null; np_w: number | null; avg_hr: number | null; tss: number | null; if: number | null; decoupling_pct: number | null; note: string | null }[]
   /** `hrv_ms` i `sleep_min` z Apple Health (docs/27 § 2), `from_health` – które pola przyszły ze Zdrowia */
   checkins: { date: ISODate; weight_kg: number | null; resting_hr: number | null; sleep: number | null; legs: number | null; motivation: number | null; sick: boolean; notes: string | null; hrv_ms?: number | null; sleep_min?: number | null; from_health?: string[] }[]
+  /** `status: 'rpe_only'` – log zbudowany z jazdy Stravy: zostaje tylko RPE zawodnika */
   logs: { date: ISODate; kind: string; status: string; rpe: number | null; notes: string | null }[]
   overrides: { date: ISODate; kind: string; payload: Record<string, unknown> }[]
   /** gotowe sygnały z kryteriów luzowania – model ma o nich mówić wprost */
@@ -65,8 +73,11 @@ export function buildCoachContext(inp: CoachContextInput): CoachContext {
   const inRange = (d: string) => d >= from && d <= to
   const checkins = inp.checkins.filter((c) => !c.deleted_at && inRange(c.date)).toSorted((a, b) => (a.date < b.date ? -1 : 1))
   // tylko logi jazd – dawne logi siłowni (`kind: 'gym'`) zostają w historii, trener ich nie dostaje
-  const logs = inp.logs.filter((l) => !l.deleted_at && l.kind === 'bike' && inRange(l.date))
-  const acts = inp.activities.filter((a) => !a.deleted_at && a.is_ride && inRange(a.date)).toSorted((a, b) => (a.date < b.date ? -1 : 1))
+  const bikeLogs = inp.logs.filter((l) => !l.deleted_at && l.kind === 'bike' && inRange(l.date))
+  // log ze Stravy: status i metryki pochodzą ze Stravy – do AI nie idą
+  const logs = bikeLogs.filter((l) => l.source !== 'strava')
+  const rpeOnly = bikeLogs.filter((l) => l.source === 'strava' && l.rpe != null)
+  const acts = aiSafe(inp.rides.filter((a) => inRange(a.date))).toSorted((a, b) => (a.date < b.date ? -1 : 1))
   const bolt = new Set(inp.boltDates ?? [])
 
   const days: CoachContext['days'] = inp.window
@@ -120,10 +131,10 @@ export function buildCoachContext(inp: CoachContextInput): CoachContext {
       const load = inp.loadOf?.(a) ?? null
       return {
         date: a.date,
-        name: a.name ?? null,
+        name: a.name,
         minutes: Math.round(a.moving_time_s / 60),
-        km: r1((a.distance_m ?? 0) / 1000),
-        elevation_m: Math.round(a.elevation_m ?? 0),
+        km: r1(a.distance_m / 1000),
+        elevation_m: Math.round(a.elevation_m),
         avg_w: a.device_watts ? num(a.avg_watts) : null,
         np_w: a.device_watts ? num(a.np_w) : null,
         avg_hr: num(a.avg_hr),
@@ -146,7 +157,10 @@ export function buildCoachContext(inp: CoachContextInput): CoachContext {
       ...(c.sleep_min != null ? { sleep_min: c.sleep_min } : {}),
       ...(c.field_sources && Object.keys(c.field_sources).length ? { from_health: Object.keys(c.field_sources) } : {}),
     })),
-    logs: logs.map((l) => ({ date: l.date, kind: l.kind, status: l.status, rpe: l.rpe ?? null, notes: l.notes ?? null })),
+    logs: [
+      ...logs.map((l) => ({ date: l.date, kind: l.kind, status: l.status, rpe: l.rpe ?? null, notes: l.notes ?? null })),
+      ...rpeOnly.map((l) => ({ date: l.date, kind: l.kind, status: 'rpe_only', rpe: l.rpe ?? null, notes: null })),
+    ].toSorted((a, b) => (a.date < b.date ? -1 : 1)),
     overrides: inp.overrides.filter((o) => !o.deleted_at && o.date >= from).map((o) => ({ date: o.date, kind: o.kind, payload: o.payload })),
     flags,
   }

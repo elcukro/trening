@@ -7,8 +7,7 @@ import { json } from '../_shared/env.ts'
 import { timingSafeEqual, webhookPathSecret, webhookVerifyToken } from '../_shared/crypto.ts'
 import { adminClient } from '../_shared/supabase.ts'
 import { accessTokenFor, activityExists, athleteAuthorized, importActivity, markDeleted, userIdForAthlete } from '../_shared/strava.ts'
-import { sendWorkout } from '../_shared/email_send.ts'
-import { writeNote, writeStravaTitle } from '../_shared/ai_note.ts'
+import { afterStravaImport } from '../_shared/ride_pipeline.ts'
 
 interface StravaEvent {
   object_type: 'activity' | 'athlete'
@@ -54,16 +53,10 @@ async function handle(ev: StravaEvent): Promise<void> {
   }
   const ok = await importActivity(admin, userId, ev.object_id)
   console.log('webhook:', ev.aspect_type, ev.object_id, ok ? 'zaimportowana' : 'pominięta')
-  // podsumowanie mailem zaraz po wgraniu nowej jazdy (docs/19) – tylko przy „create”, jeden mail na jazdę
+  // po nowej jeździe: kopia z Wahoo (notatka AI, mail) albo – bez niej – notatka z reguł i mail z danych Stravy (docs/33)
   if (ok && ev.aspect_type === 'create') {
-    // najpierw notatka trenera (docs/20) – mail po treningu ją zawiera
-    const n = await writeNote(admin, userId, ev.object_id).catch((e) => ({ detail: `błąd: ${e instanceof Error ? e.message : e}` }))
-    console.log('webhook: notatka', ev.object_id, n && 'detail' in n ? n.detail : 'pominięta')
-    // tytuł i opis na Stravie (docs/20) – tylko domyślne tytuły, tylko z przełącznikiem w profilu
-    const t = await writeStravaTitle(admin, userId, ev.object_id).catch((e) => ({ detail: `błąd: ${e instanceof Error ? e.message : e}` }))
-    console.log('webhook: tytuł na Stravie', ev.object_id, t && 'detail' in t ? `${'title' in t && t.title ? t.title + ' | ' : ''}${t.detail}` : 'pominięty')
-    const res = await sendWorkout(admin, userId, ev.object_id).catch((e) => `błąd: ${e instanceof Error ? e.message : e}`)
-    console.log('webhook: mail po treningu', ev.object_id, res)
+    const log = await afterStravaImport(admin, userId, ev.object_id).catch((e) => [`błąd: ${e instanceof Error ? e.message : e}`])
+    console.log('webhook: po imporcie', ev.object_id, log.join(' · '))
   }
 }
 
