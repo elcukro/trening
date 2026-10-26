@@ -15,6 +15,7 @@ export function Switch({ on, label, onChange, disabled }: { on: boolean; label: 
 }
 
 // wzrost z listy, data urodzenia z kalendarza – zamiast klawiatury – na iOS klawiatura w arkuszu chowała pola (26.10.2026)
+const validBirth = (v: string) => /^\d{4}-\d{2}-\d{2}$/.test(v) && v >= '1920-01-01' && v <= '2015-12-31'
 const HEIGHTS = Array.from({ length: 81 }, (_, i) => String(140 + i))
 
 /**
@@ -52,8 +53,9 @@ function NumbersSheetLoaded({ onClose }: { onClose: () => void }) {
       }
       await engine.settingsApi.update({
         height_cm: intIn(height, 120, 230, settings.height_cm),
-        birth_date: /^\d{4}-\d{2}-\d{2}$/.test(born) ? born : null,
-        birth_year: /^\d{4}-\d{2}-\d{2}$/.test(born) ? Number(born.slice(0, 4)) : null,
+        // iOS przy pustym polu podsuwa dzisiejszą datę – poza zakresem 1920–2015 zostaje poprzednia wartość
+        birth_date: validBirth(born) ? born : (settings.birth_date ?? null),
+        birth_year: validBirth(born) ? Number(born.slice(0, 4)) : (settings.birth_year ?? null),
         ftp_w_estimate: Number.isFinite(f) && f > 0 ? Math.round(f) : settings.ftp_w_estimate,
         lthr_bpm: lthr.trim() && Number.isFinite(l) && l > 0 ? Math.round(l) : null,
         power_meter: power,

@@ -100,8 +100,8 @@ function fromForm(f: Form, base: Settings): { settings: Settings; errors: FieldE
     gym_enabled: f.gym_enabled,
     volume_scale: Math.round(req('volume_scale', f.volume_scale, 0.7, 1) * 100) / 100,
     height_cm: intOrNull(opt('height_cm', f.height_cm, 120, 230)),
-    birth_date: f.birth_date && isValidISODate(f.birth_date) ? f.birth_date : null,
-    birth_year: f.birth_date && isValidISODate(f.birth_date) ? Number(f.birth_date.slice(0, 4)) : null,
+    birth_date: f.birth_date && isValidISODate(f.birth_date) && f.birth_date >= '1920-01-01' && f.birth_date <= '2015-12-31' ? f.birth_date : null,
+    birth_year: f.birth_date && isValidISODate(f.birth_date) && f.birth_date >= '1920-01-01' && f.birth_date <= '2015-12-31' ? Number(f.birth_date.slice(0, 4)) : null,
   }
   return { settings, errors }
 }
