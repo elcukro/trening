@@ -111,7 +111,25 @@ export function Sheet({ title, onClose, children, action }: { title: string; onC
     // pasek zakładek znika na czas arkusza – przy otwartej klawiaturze wjeżdżał na pola (18.10.2026)
     document.body.classList.add('m-sheet-open')
     panel.current?.focus()
+    // z klawiaturą arkusz kurczy się do obszaru nad nią, ale WebKit nie przewija treści do pola – pole w drugim
+    // rzędzie (np. wzrost w „Progach”) chowało się pod krawędzią (26.10.2026); przewijamy je sami po zmianie viewportu
+    const vv = window.visualViewport
+    let pending: HTMLElement | null = null
+    const reveal = () => {
+      if (pending && document.activeElement === pending) pending.scrollIntoView({ block: 'center', behavior: 'smooth' })
+    }
+    const onFocusIn = (e: FocusEvent) => {
+      const t = e.target as HTMLElement | null
+      if (!t || (t.tagName !== 'INPUT' && t.tagName !== 'TEXTAREA')) return
+      pending = t
+      window.setTimeout(reveal, 350)
+    }
+    const el = panel.current
+    el?.addEventListener('focusin', onFocusIn)
+    vv?.addEventListener('resize', reveal)
     return () => {
+      el?.removeEventListener('focusin', onFocusIn)
+      vv?.removeEventListener('resize', reveal)
       document.removeEventListener('keydown', onKey)
       document.body.style.overflow = prev
       document.body.classList.remove('m-sheet-open')
