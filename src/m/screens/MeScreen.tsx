@@ -20,6 +20,7 @@ import { Group, Row, Screen } from '../components/Chrome'
 import { LocationSheet, NumbersSheet, Switch } from '../components/SettingsSheets'
 import { ART } from '../art'
 import { IS_IOS_APP } from '@/native'
+import { confirmAction } from '@/native'
 
 const SYNC_FOOTER: Record<string, string> = {
   // aplikacja iOS nie odsyła do „pełnej aplikacji” (docs/26 § 3 pkt 9)
@@ -85,9 +86,10 @@ export function MeScreen() {
       void wahoo.status().then((x) => alive && setWh(x)).catch(() => alive && setWh('error'))
     }
     void pushStatus().then((x) => alive && setPush(x)).catch(() => undefined)
+    // pomiar okna (useViewport) tylko w buildzie deweloperskim – w aplikacji to szum (docs/27 § 3.1)
     const read = () => setDiag(document.documentElement.dataset.mViewport ?? '')
-    read()
-    const id = window.setInterval(read, 1000)
+    if (import.meta.env.DEV) read()
+    const id = import.meta.env.DEV ? window.setInterval(read, 1000) : 0
     return () => {
       alive = false
       window.clearInterval(id)
@@ -183,7 +185,9 @@ export function MeScreen() {
           <Row
             title={<span style={{ color: 'var(--red)' }}>Wyloguj</span>}
             chevron={false}
-            onClick={() =>
+            onClick={async () => {
+              // 26.10.2026 przypadkowe dotknięcie po przewinięciu wylogowało konto – akcja nieodwracalna pyta najpierw
+              if (!(await confirmAction({ title: 'Wylogować się?', message: 'Dane na tym telefonie zostają.', action: 'Wyloguj' }))) return
               void toast.run(
                 'Wylogowuję…',
                 async () => {
@@ -192,7 +196,7 @@ export function MeScreen() {
                 },
                 () => 'Wylogowano',
               )
-            }
+            }}
           />
         )}
       </Group>
@@ -203,7 +207,7 @@ export function MeScreen() {
         {!IS_IOS_APP && <Row title="Otwórz pełną aplikację" sub="Kalendarz, wykresy, biblioteka, sprzęt, kopia, integracje" onClick={() => openFull('/')} />}
         {!IS_IOS_APP && <Row title="Wróć do poprzedniego wyglądu" sub="Uproszczony interfejs (/i) zostaje jako zapas" onClick={() => void ui.set('ios').then(() => navigate('/i'))} />}
       </Group>
-      <p className="m-foot m-dim-3 m-num px-1">
+      <p className="m-foot m-dim m-num px-1">
         Program {engine.ctx.program.version} · cel FTP {snap.goal.ftp} W{diag ? ` · okno ${diag}` : ''}
       </p>
 
@@ -223,7 +227,7 @@ function Tile({ art, value, unit, label, sub, color, small, onClick }: { art: st
         {unit && <span className="m-foot m-dim ml-1 font-semibold">{unit}</span>}
       </div>
       <div className="m-foot mt-1 leading-tight">{label}</div>
-      <div className="m-foot m-dim-3 leading-tight">{sub}</div>
+      <div className="m-foot m-dim leading-tight">{sub}</div>
     </>
   )
   if (onClick)

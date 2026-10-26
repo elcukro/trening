@@ -4,3 +4,5 @@
  */
 export { IS_IOS_APP, isNative, platform } from './platform'
 export { hideSplash, initShell } from './shell'
+export { haptic } from './haptics'
+export { confirmAction } from './confirm'

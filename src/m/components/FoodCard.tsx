@@ -37,7 +37,7 @@ export function FoodCard({ food, label, onAdd, onOpen, onProfile }: { food: Meal
       </p>
       {b && b.deficit_kcal === 0 && <p className="m-foot m-dim mt-1">{label}</p>}
       {!b && (
-        <button className="m-foot mt-1 text-left" style={{ color: 'var(--accent)' }} onClick={onProfile}>
+        <button className="m-foot m-hit mt-1 text-left" style={{ color: 'var(--accent)' }} onClick={onProfile}>
           Uzupełnij wzrost i datę urodzenia, żeby zobaczyć budżet dnia
         </button>
       )}

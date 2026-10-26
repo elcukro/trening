@@ -76,7 +76,7 @@ export function TodayScreen() {
         <div className="m-list p-3" style={{ background: 'rgb(255 204 0 / 0.18)' }}>
           <p className="m-sub">{warn[0]!.message}</p>
           {warn[0]!.actions?.[0] && (
-            <button className="m-headline mt-1" style={{ color: 'var(--accent)' }} onClick={() => void d.view.applyAction(warn[0]!.actions![0]!)}>
+            <button className="m-headline m-hit mt-1" style={{ color: 'var(--accent)' }} onClick={() => void d.view.applyAction(warn[0]!.actions![0]!)}>
               {warn[0]!.actions[0].label}
             </button>
           )}
@@ -337,7 +337,7 @@ function NoteExcerpt({ text }: { text: string }) {
     <p className="m-sub mt-3">
       {open || !more ? text : short}
       {more && (
-        <button className="m-headline ml-1" style={{ color: 'var(--accent)' }} onClick={() => setOpen((v) => !v)}>
+        <button className="m-headline m-hit ml-1" style={{ color: 'var(--accent)' }} onClick={() => setOpen((v) => !v)}>
           {open ? 'mniej' : 'więcej'}
         </button>
       )}

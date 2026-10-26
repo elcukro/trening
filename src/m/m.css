@@ -72,6 +72,8 @@ html:has(.m) body {
   flex: 1 1 auto;
   min-height: 0;
   overflow-y: auto;
+  /* ekran przesuwany gestem „wstecz” (useEdgeBack) nie może dać poziomego przewijania */
+  overflow-x: hidden;
   -webkit-overflow-scrolling: touch;
   overscroll-behavior-y: contain;
 }
@@ -118,6 +120,23 @@ html:has(.m) body {
 }
 .m-dim-3 {
   color: var(--label-3);
+}
+/*
+ * Obszar dotyku ≥ 44 pt bez zmiany wyglądu (HIG, docs/27 § 3.1): niewidoczne pole wokół małych przycisków – chipów,
+ * przycisków tekstowych („więcej”, „Inne zdjęcie”) i ✕ na miniaturach. Element musi mieć `position` inne niż static.
+ */
+.m-hit {
+  position: relative;
+}
+.m-chip::after,
+.m-hit::after {
+  content: '';
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: max(100%, 44px);
+  height: max(100%, 44px);
+  transform: translate(-50%, -50%);
 }
 .m-num {
   font-variant-numeric: tabular-nums;
@@ -234,7 +253,8 @@ button.m-row:active {
   font-size: 17px;
   font-weight: 600;
   letter-spacing: -0.3px;
-  background: var(--day);
+  /* ciemniejszy odcień koloru dnia pod biały tekst (dayColor → --day-fill) */
+  background: var(--day-fill, var(--day));
   color: #fff;
   transition: transform 0.12s ease, opacity 0.12s ease;
 }
@@ -323,6 +343,10 @@ button.m-row:active {
 .m-fab:active {
   transform: scale(0.94);
 }
+.m-screen {
+  min-height: 100%;
+  background: var(--bg);
+}
 .m-pb-tab {
   padding-bottom: calc(64px + 12px + env(safe-area-inset-bottom, 0px) + 24px);
 }
@@ -369,6 +393,18 @@ body.m-sheet-open .m-tabbar {
   border-radius: 3px;
   background: var(--label-3);
 }
+/* zamykanie arkusza (Sheet → SHEET_OUT_MS): w dół od miejsca, w którym go puszczono */
+.m-sheet[data-closing] {
+  transition: transform 0.22s cubic-bezier(0.32, 0.72, 0, 1) !important;
+  transform: translateY(110%) !important;
+}
+.m-backdrop[data-closing] {
+  transition: opacity 0.22s ease;
+  opacity: 0 !important;
+}
+.m-screen[style*='translate3d'] {
+  box-shadow: -8px 0 24px rgb(0 0 0 / 0.12);
+}
 @keyframes m-up {
   from {
     transform: translateY(100%);
@@ -396,7 +432,8 @@ body.m-sheet-open .m-tabbar {
   width: 12px;
   height: 12px;
   border-radius: 50%;
-  border: 2px solid var(--label-3);
+  /* „jeszcze nie” – obwódka w --label-2, bo --label-3 (~1,9:1) ginęła na białej karcie */
+  border: 2px solid var(--label-2);
   background: transparent;
 }
 .m-dot[data-done='true'] {
@@ -416,6 +453,10 @@ body.m-sheet-open .m-tabbar {
   .m-sheet,
   .m-backdrop {
     animation: none;
+  }
+  .m-sheet[data-closing],
+  .m-backdrop[data-closing] {
+    transition: none !important;
   }
 }
 
@@ -467,6 +508,7 @@ body.m-sheet-open .m-tabbar {
   margin-bottom: 8px;
 }
 .m-chip {
+  position: relative;
   padding: 6px 12px;
   border-radius: 999px;
   background: var(--card);

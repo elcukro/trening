@@ -130,7 +130,7 @@ export function RideScreen() {
           </div>
         </Group>
       )}
-      <button className="m-foot m-dim px-1 text-left" onClick={() => navigate(back)}>
+      <button className="m-foot m-dim m-hit px-1 text-left" onClick={() => navigate(back)}>
         Odprawa (pogoda, ubiór, jedzenie) jest na karcie dnia.
       </button>
     </Screen>

@@ -1,4 +1,5 @@
 import { useCallback, useRef, useState, type PointerEvent as RPointerEvent, type MouseEvent as RMouseEvent } from 'react'
+import { haptic, isNative } from '@/native'
 
 /**
  * Przytrzymanie (420 ms) bez ruchu palca – menu dnia w Planie (docs/24 § 4). Zwykłe dotknięcie zostaje dotknięciem.
@@ -22,11 +23,16 @@ export function useLongPress(onLongPress: () => void, ms = 420) {
       if (e.pointerType === 'mouse' && e.button !== 0) return
       fired.current = false
       start.current = { x: e.clientX, y: e.clientY }
-      setHeld(true)
+      // „wciśnięcie” dopiero po chwili – dotyk, który zaczyna przewijanie, nie zmniejsza wiersza (docs/27 § 3.3)
+      const show = window.setTimeout(() => {
+        if (start.current) setHeld(true)
+      }, 150)
       timer.current = window.setTimeout(() => {
+        window.clearTimeout(show)
         fired.current = true
         setHeld(false)
-        if (navigator.vibrate) navigator.vibrate(10)
+        if (isNative()) haptic.medium()
+        else if (navigator.vibrate) navigator.vibrate(10)
         onLongPress()
       }, ms)
     },

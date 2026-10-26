@@ -5,6 +5,32 @@ Stan: plan z 26.10.2026, po etapie 0 (powłoka Capacitora działa na telefonie, 
 interfejsu `/m`. Założenia bez zmian: jeden kod ekranów dla webu i iOS, wtyczki tylko w `src/native/`, silnik
 (`src/engine/`) czysty TS, aplikacja tylko kolarska (bez siłowni), jasny motyw i grafiki 3D zostają (decyzje docs/24).
 
+## Stan wdrożenia
+
+**Etap 1a – szlify HIG (26.10.2026), sprawdzone w symulatorze na koncie zawodnika:**
+
+- `src/native/haptics.ts` (`haptic.selection/light/medium/success/warning/error`, `@capacitor/haptics`) – wybór RPE
+  i skali check-inu, przełączniki, podniesienie dnia w Planie (`useLongPress`), sukces/błąd każdego `toast.run`. Na webie
+  nic (Safari na iOS nie ma `navigator.vibrate`).
+- `src/native/confirm.ts` (`confirmAction`, `@capacitor/action-sheet`; na webie `window.confirm`) – „Wylogować się?”,
+  „Wyczyścić rozmowę z trenerem?”, „Odrzucić zmiany?”.
+- **Wstecz:** `Screen` wraca `navigate(-1)`, gdy jest historia (Ja → dzień testu → Wstecz = Ja); adres z `back` tylko
+  awaryjnie i bez nowego wpisu. **Gest od lewej krawędzi** (`src/m/useEdgeBack.ts`): ekran jedzie za palcem z cieniem,
+  po 35 % szerokości albo szybkim ruchu wraca; w aplikacji iOS i PWA z ekranu początkowego (w Safari gest należy do
+  przeglądarki); nie działa w arkuszach i czacie.
+- **Arkusze** (`Sheet` w `Chrome.tsx`): przeciąganie w dół za uchwyt i nagłówek (za treść, gdy jest u góry), zamknięcie
+  po 30 % wysokości lub szybkim ruchu, animacja zamykania 0,22 s, `dirty` → „Odrzucić zmiany?” przy tle, ✕, Esc i geście
+  (check-in, Progi, posiłek); tytuł skracany wielokropkiem.
+- **Komunikaty** nad arkuszami (`z-[60]`), „Cofnij” i ✕ w komunikacie ≥ 44 pt.
+- **Dotyk ≥ 44 pt:** RPE dwa rzędy po 5; klasa `.m-hit` i `.m-chip::after` – niewidoczne pole 44×44 wokół przycisków
+  tekstowych, chipów i ✕ na miniaturach; „Wyślij” w Planie 44 pt.
+- **Kontrast:** `dayColor().fill` → `--day-fill` pod biały tekst (zielony #1a7f37 5,1:1, pomarańczowy #b35c00 4,7:1,
+  czerwony #d70015 5,4:1, szary #636366 6:1); dane w `--label-2` zamiast `--label-3` (podpisy kafelków Ja, dni tygodnia,
+  % stref, stopka, obwódka kropek osi dnia).
+- Stopka Ja bez pomiaru okna (tylko `import.meta.env.DEV`); tytuł paska `aria-hidden` (VoiceOver czyta raz).
+
+Zostaje z § 3.1: nic. Z § 3.2/3.3 – etap 1b i osobne zadania (Dynamic Type, VoiceOver, przejścia między ekranami).
+
 ## 1. Co daje natywna aplikacja, czego PWA nie umie
 
 Kolejność według wartości dla zawodnika i kosztu. „Konto płatne” = wymaga Apple Developer Program (99 USD/rok).

@@ -1,4 +1,5 @@
 import { createContext, useCallback, useContext, useMemo, useRef, useState, type ReactNode } from 'react'
+import { haptic } from '@/native'
 
 /**
  * Informacja zwrotna dla akcji sieciowych: pasek postępu u góry i komunikat u dołu.
@@ -93,10 +94,12 @@ export function ToastProvider({ children }: { children: ReactNode }) {
           new Promise<never>((_, reject) => setTimeout(() => reject(new Error('Przekroczono czas oczekiwania (60 s). Sprawdź połączenie i spróbuj ponownie.')), 60_000)),
         ])
         replace(id, done ? done(result) : 'Gotowe', 'success', undefined, action?.(result))
+        haptic.success()
         return result
       } catch (e) {
         const msg = e instanceof Error ? e.message : String(e)
         replace(id, 'Nie udało się', 'error', msg)
+        haptic.error()
         return null
       } finally {
         setBusy((n) => n - 1)
@@ -117,7 +120,8 @@ export function ToastProvider({ children }: { children: ReactNode }) {
         </div>
       )}
       {children}
-      <div className="pointer-events-none fixed inset-x-0 bottom-0 z-40 flex flex-col items-center gap-2 px-4 pb-[calc(5rem+env(safe-area-inset-bottom,0px))]" aria-live="polite">
+      {/* nad arkuszami /m (z-50/51) – komunikat z arkusza nie może chować się pod nim (docs/27 § 3.1) */}
+      <div className="pointer-events-none fixed inset-x-0 bottom-0 z-[60] flex flex-col items-center gap-2 px-4 pb-[calc(5rem+env(safe-area-inset-bottom,0px))]" aria-live="polite">
         {toasts.map((t) => (
           <ToastRow key={t.id} toast={t} onDismiss={() => dismiss(t.id)} />
         ))}
@@ -160,12 +164,12 @@ function ToastRow({ toast, onDismiss }: { toast: Toast; onDismiss: () => void })
               toast.action?.onClick()
               onDismiss()
             }}
-            className="min-h-8 shrink-0 rounded-lg bg-white/20 px-2.5 text-xs font-semibold hover:bg-white/30"
+            className="-my-2 min-h-11 shrink-0 rounded-lg bg-white/20 px-3 text-sm font-semibold active:bg-white/30"
           >
             {toast.action.label}
           </button>
         )}
-        <button onClick={onDismiss} aria-label="Zamknij" className="shrink-0 px-1 text-lg leading-none opacity-80">
+        <button onClick={onDismiss} aria-label="Zamknij" className="-my-2 -mr-2 min-h-11 min-w-11 shrink-0 text-lg leading-none opacity-80">
           ×
         </button>
       </div>

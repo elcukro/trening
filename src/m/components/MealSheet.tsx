@@ -66,6 +66,9 @@ export function MealSheet({ date, meal, proteinTarget, onClose }: { date: string
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [draft, setDraft] = useState<Draft | null>(meal ? fromRow(meal) : null)
+  // nowy posiłek: zmiana = zdjęcie, opis albo rozpoznany szkic; istniejący: szkic inny niż zapisany
+  const [initial] = useState(() => JSON.stringify(meal ? fromRow(meal) : null))
+  const dirty = photos.length > 0 || note.trim() !== '' || JSON.stringify(draft) !== initial
 
   async function addPhoto(files: FileList | null) {
     const f = files?.[0]
@@ -134,7 +137,7 @@ export function MealSheet({ date, meal, proteinTarget, onClose }: { date: string
   )
 
   return (
-    <Sheet title={meal ? 'Posiłek' : 'Dodaj posiłek'} onClose={onClose} action={saveBtn || undefined}>
+    <Sheet title={meal ? 'Posiłek' : 'Dodaj posiłek'} onClose={onClose} dirty={dirty && !busy} action={saveBtn || undefined}>
       <div className="flex flex-col gap-4">
         {!draft && (
           <>
@@ -145,7 +148,7 @@ export function MealSheet({ date, meal, proteinTarget, onClose }: { date: string
                 {photos.map((p, i) => (
                   <div key={i} className="relative">
                     <img src={p} alt={`Zdjęcie ${i + 1}`} className="aspect-square w-full rounded-2xl object-cover" />
-                    <button className="absolute right-2 top-2 h-8 w-8 rounded-full bg-black/60 text-white" onClick={() => setPhotos((x) => x.filter((_, j) => j !== i))} aria-label="Usuń zdjęcie">
+                    <button className="m-hit absolute right-2 top-2 h-8 w-8 rounded-full bg-black/60 text-white" onClick={() => setPhotos((x) => x.filter((_, j) => j !== i))} aria-label="Usuń zdjęcie">
                       ✕
                     </button>
                   </div>
@@ -236,7 +239,7 @@ export function MealSheet({ date, meal, proteinTarget, onClose }: { date: string
                 Usuń posiłek
               </Btn>
             ) : (
-              <button className="m-sub px-1 text-left" style={{ color: 'var(--accent)' }} onClick={() => setDraft(null)}>
+              <button className="m-sub m-hit px-1 text-left" style={{ color: 'var(--accent)' }} onClick={() => setDraft(null)}>
                 Inne zdjęcie
               </button>
             )}

@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import type { Checkin } from '@/db'
 import { Btn, Sheet } from './Chrome'
+import { haptic } from '@/native'
 
 const SCALES = [
   { key: 'sleep', label: 'Sen', low: 'fatalny', high: 'świetny' },
@@ -20,6 +21,9 @@ export function CheckinSheet({ checkin, lastWeight, onClose, onSave }: { checkin
   const [rhr, setRhr] = useState(checkin?.resting_hr != null ? String(checkin.resting_hr) : '')
   const [scale, setScale] = useState<Record<ScaleKey, number | null>>({ sleep: checkin?.sleep ?? null, legs: checkin?.legs ?? null, motivation: checkin?.motivation ?? null })
   const [busy, setBusy] = useState(false)
+  // stan z otwarcia – zamknięcie bez zapisu pyta tylko wtedy, gdy coś się zmieniło
+  const [initial] = useState(() => JSON.stringify({ weight, rhr, scale }))
+  const dirty = JSON.stringify({ weight, rhr, scale }) !== initial
   const nothing = !numOrNull(weight) && !numOrNull(rhr) && !scale.sleep && !scale.legs && !scale.motivation
 
   async function save() {
@@ -33,7 +37,7 @@ export function CheckinSheet({ checkin, lastWeight, onClose, onSave }: { checkin
   }
 
   return (
-    <Sheet title="Check-in" onClose={onClose} action={<button className="m-nav-btn font-semibold disabled:opacity-40" onClick={() => void save()} disabled={busy || nothing}>Zapisz</button>}>
+    <Sheet title="Check-in" onClose={onClose} dirty={dirty && !busy} action={<button className="m-nav-btn font-semibold disabled:opacity-40" onClick={() => void save()} disabled={busy || nothing}>Zapisz</button>}>
       <div className="flex flex-col gap-4">
         <div className="grid grid-cols-2 gap-3">
           <label className="m-list p-3">
@@ -57,7 +61,10 @@ export function CheckinSheet({ checkin, lastWeight, onClose, onSave }: { checkin
             </div>
             <div className="grid grid-cols-5 gap-2" role="radiogroup" aria-label={s.label}>
               {[1, 2, 3, 4, 5].map((v) => (
-                <button key={v} role="radio" aria-checked={scale[s.key] === v} onClick={() => setScale((x) => ({ ...x, [s.key]: v }))} className="m-num min-h-12 rounded-xl text-[17px] font-semibold" style={scale[s.key] === v ? { background: 'var(--accent)', color: '#fff' } : { background: 'var(--fill)', color: 'var(--label)' }}>
+                <button key={v} role="radio" aria-checked={scale[s.key] === v} onClick={() => {
+                  haptic.selection()
+                  setScale((x) => ({ ...x, [s.key]: v }))
+                }} className="m-num min-h-12 rounded-xl text-[17px] font-semibold" style={scale[s.key] === v ? { background: 'var(--accent)', color: '#fff' } : { background: 'var(--fill)', color: 'var(--label)' }}>
                   {v}
                 </button>
               ))}

@@ -120,7 +120,7 @@ export function SummaryScreen() {
                 <span className={`h-2.5 w-2.5 rounded-full ${zoneColor(z.id)}`} />
                 <span className="m-dim flex-1">{z.id}</span>
                 <span className="m-num">{minutes(Math.round(z.seconds / 60))}</span>
-                <span className="m-num m-dim-3 w-10 text-right">{Math.round(z.pct)} %</span>
+                <span className="m-num m-dim w-10 text-right">{Math.round(z.pct)} %</span>
               </div>
             ))}
           </div>

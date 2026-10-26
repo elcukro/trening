@@ -172,7 +172,7 @@ function WeekPanel({ monday, today, current, onHold, onPush }: { monday: ISODate
         <div className="m-card flex items-center gap-3 p-3" style={{ background: 'rgb(255 149 0 / 0.12)' }}>
           <img src={ART.bolt} alt="" width={32} height={32} className="h-8 w-8 object-contain" />
           <span className="m-sub min-w-0 flex-1">Na Bolcie jest stara wersja: {stale.map((d) => WEEKDAY_SHORT[d.weekday]).join(', ')}</span>
-          <Btn soft onClick={onPush} className="shrink-0 !min-h-10 !px-3 text-[15px]">
+          <Btn soft onClick={onPush} className="shrink-0 !min-h-11 !px-3 text-[15px]">
             Wyślij
           </Btn>
         </div>

@@ -2,6 +2,7 @@ import type { DayPlan } from '@/engine/plan'
 import type { ResolvedWorkout } from '@/engine/types'
 import { mainTarget } from '@/day/summary'
 import { zoneColor } from '@/lib/zones'
+import { haptic } from '@/native'
 
 /** Kolor oceny jazdy (rideVerdict.tone): dobrze zielony, tak sobie pomarańczowy, źle czerwony. */
 export const TONE_COLOR: Record<'good' | 'ok' | 'warn', string> = { good: 'var(--green)', ok: 'var(--orange)', warn: 'var(--red)' }
@@ -43,13 +44,24 @@ export function StructureBar({ workout, height = 10 }: { workout: ResolvedWorkou
 }
 
 /** RPE 1–10 jednym dotknięciem – zapis natychmiastowy, bez „Zapisz”. */
-export function RpeRow({ value, onPick, color = 'var(--day)' }: { value: number | null | undefined; onPick: (rpe: number) => void; color?: string }) {
+export function RpeRow({ value, onPick, color = 'var(--day-fill, var(--day))' }: { value: number | null | undefined; onPick: (rpe: number) => void; color?: string }) {
   return (
     <div>
       <p className="m-foot m-dim mb-2">{value != null ? `RPE ${value} – zmień jednym dotknięciem` : 'Jak ciężko było? RPE 1–10'}</p>
-      <div className="grid grid-cols-10 gap-1" role="radiogroup" aria-label="RPE">
+      {/* dwa rzędy po 5 – przy 10 w rzędzie przyciski miały ~31 pt szerokości (HIG: ≥ 44 pt, docs/27 § 3.1) */}
+      <div className="grid grid-cols-5 gap-2" role="radiogroup" aria-label="RPE">
         {Array.from({ length: 10 }, (_, i) => i + 1).map((v) => (
-          <button key={v} role="radio" aria-checked={value === v} onClick={() => onPick(v)} className="m-num min-h-10 rounded-lg text-[15px] font-semibold" style={value === v ? { background: color, color: '#fff' } : { background: 'var(--fill)', color: 'var(--label)' }}>
+          <button
+            key={v}
+            role="radio"
+            aria-checked={value === v}
+            onClick={() => {
+              haptic.selection()
+              onPick(v)
+            }}
+            className="m-num min-h-11 rounded-lg text-[17px] font-semibold"
+            style={value === v ? { background: color, color: '#fff' } : { background: 'var(--fill)', color: 'var(--label)' }}
+          >
             {v}
           </button>
         ))}

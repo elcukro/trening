@@ -48,7 +48,7 @@ export function WeekStrip({ week, today, compact = false }: { week: WeekState; t
       </div>
       <div className="mt-1 flex gap-1.5">
         {week.days.map((d) => (
-          <span key={d.date} className="m-foot flex-1 text-center" style={{ color: d.date === today ? 'var(--accent)' : 'var(--label-3)', fontWeight: d.date === today ? 700 : 500 }}>
+          <span key={d.date} className="m-foot flex-1 text-center" style={{ color: d.date === today ? 'var(--accent)' : 'var(--label-2)', fontWeight: d.date === today ? 700 : 500 }}>
             {WEEKDAY_SHORT[d.weekday]}
           </span>
         ))}

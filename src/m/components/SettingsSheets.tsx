@@ -4,11 +4,15 @@ import { geocode, setLocation, type WeatherLocation } from '@/sync/weather'
 import { useToast } from '@/components/Toast'
 import { fmtDate } from '@/lib/dates'
 import { Btn, Sheet } from './Chrome'
+import { haptic } from '@/native'
 
 /** Przełącznik w stylu systemowym. */
 export function Switch({ on, label, onChange, disabled }: { on: boolean; label: string; onChange: (v: boolean) => void; disabled?: boolean }) {
   return (
-    <button role="switch" aria-checked={on} aria-label={label} disabled={disabled} onClick={() => onChange(!on)} className="relative h-8 w-[52px] shrink-0 rounded-full transition-colors disabled:opacity-40" style={{ background: on ? 'var(--green)' : 'var(--fill-2)' }}>
+    <button role="switch" aria-checked={on} aria-label={label} disabled={disabled} onClick={() => {
+        haptic.light()
+        onChange(!on)
+      }} className="relative h-8 w-[52px] shrink-0 rounded-full transition-colors disabled:opacity-40" style={{ background: on ? 'var(--green)' : 'var(--fill-2)' }}>
       <span className="absolute top-0.5 h-7 w-7 rounded-full bg-white shadow transition-all" style={{ left: on ? 22 : 2 }} />
     </button>
   )
@@ -58,6 +62,8 @@ function NumbersSheetLoaded({ onClose }: { onClose: () => void }) {
   // bez pełnej daty, a z samym rokiem – kalendarz startuje od 1 stycznia tego roku
   const [born, setBorn] = useState(settings.birth_date ?? (settings.birth_year != null ? `${settings.birth_year}-01-01` : ''))
   const [busy, setBusy] = useState(false)
+  const [initial] = useState(() => JSON.stringify({ ftp, lthr, power, height, born }))
+  const dirty = JSON.stringify({ ftp, lthr, power, height, born }) !== initial
 
   async function save() {
     setBusy(true)
@@ -85,7 +91,7 @@ function NumbersSheetLoaded({ onClose }: { onClose: () => void }) {
   }
 
   return (
-    <Sheet title="Progi i miernik" onClose={onClose} action={<button className="m-nav-btn font-semibold disabled:opacity-40" onClick={() => void save()} disabled={busy}>Zapisz</button>}>
+    <Sheet title="Progi i miernik" onClose={onClose} dirty={dirty && !busy} action={<button className="m-nav-btn font-semibold disabled:opacity-40" onClick={() => void save()} disabled={busy}>Zapisz</button>}>
       <div className="flex flex-col gap-4">
         <div className="grid grid-cols-2 gap-3">
           <label className="m-list p-3">

@@ -1,6 +1,8 @@
-import { useEffect, useRef, useState, type ReactNode } from 'react'
+import { useCallback, useEffect, useLayoutEffect, useRef, useState, type ReactNode } from 'react'
 import { NavLink, useNavigate } from 'react-router'
 import { IconChevronLeft, IconClose } from '@/ios/components/Icons'
+import { useEdgeBack } from '../useEdgeBack'
+import { confirmAction } from '@/native'
 
 /* ------------------------------------------------------------------ ekran z dużym tytułem */
 
@@ -8,10 +10,24 @@ import { IconChevronLeft, IconClose } from '@/ios/components/Icons'
  * Ekran mobilnego v2: duży tytuł, który po przewinięciu zwija się do środka paska (jak w natywnym iOS).
  * `day` ustawia kolor dnia (`--day`) dla kart i przycisków na tym ekranie.
  */
-export function Screen({ title, subtitle, back, action, day, children }: { title: string; subtitle?: ReactNode; back?: string | (() => void); action?: ReactNode; day?: { color: string; soft: string }; children: ReactNode }) {
+export function Screen({ title, subtitle, back, action, day, children }: { title: string; subtitle?: ReactNode; back?: string | (() => void); action?: ReactNode; day?: { color: string; soft: string; fill?: string }; children: ReactNode }) {
   const [scrolled, setScrolled] = useState(false)
   const navigate = useNavigate()
   const sentinel = useRef<HTMLDivElement>(null)
+  const root = useRef<HTMLDivElement>(null)
+  /**
+   * Wstecz = poprzedni ekran z historii (z Ja, „Jutro” czy innego tygodnia wraca tam, skąd przyszliśmy – docs/27 § 3.1).
+   * Adres w `back` tylko wtedy, gdy historii nie ma (wejście z powiadomienia, odświeżenie) – bez dokładania wpisu.
+   */
+  const goBack = back
+    ? () => {
+        if (typeof back === 'function') return back()
+        const idx = (window.history.state as { idx?: number } | null)?.idx ?? 0
+        if (idx > 0) navigate(-1)
+        else navigate(back, { replace: true })
+      }
+    : null
+  useEdgeBack(root, goBack)
 
   useEffect(() => {
     const el = sentinel.current
@@ -23,17 +39,18 @@ export function Screen({ title, subtitle, back, action, day, children }: { title
   }, [])
 
   return (
-    <div className="m-pb-tab" style={day ? ({ '--day': day.color, '--day-soft': day.soft } as React.CSSProperties) : undefined}>
+    <div ref={root} className="m-pb-tab m-screen" style={day ? ({ '--day': day.color, '--day-soft': day.soft, '--day-fill': day.fill ?? day.color } as React.CSSProperties) : undefined}>
       <div className="m-nav" data-scrolled={scrolled}>
         <div className="m-nav-inner">
           {back ? (
-            <button className="m-nav-btn" onClick={() => (typeof back === 'string' ? navigate(back) : back())} aria-label="Wróć">
+            <button className="m-nav-btn" onClick={() => goBack?.()} aria-label="Wróć">
               <IconChevronLeft size={22} />
             </button>
           ) : (
             <span className="w-2" />
           )}
-          <span className="m-nav-title">{title}</span>
+          {/* tytuł w pasku powtarza h1 – VoiceOver czyta go raz (docs/27 § 3.3) */}
+          <span className="m-nav-title" aria-hidden>{title}</span>
           <span className="ml-auto">{action}</span>
         </div>
       </div>
@@ -99,12 +116,50 @@ export function Btn({ children, onClick, soft, disabled, className = '', type = 
 
 /* ------------------------------------------------------------------ arkusz */
 
-export function Sheet({ title, onClose, children, action }: { title: string; onClose: () => void; children: ReactNode; action?: ReactNode }) {
+/** Czas animacji zamykania arkusza (ms) – zgodny z `.m-sheet[data-closing]` w m.css. */
+const SHEET_OUT_MS = 220
+
+/** Arkusz wraca na miejsce po zbyt krótkim przeciągnięciu albo po „Anuluj” przy niezapisanych zmianach. */
+function snapBack(panel: HTMLElement | null, backdrop: HTMLElement | null) {
+  if (!panel) return
+  panel.style.transition = 'transform 0.25s cubic-bezier(0.32, 0.72, 0, 1)'
+  panel.style.transform = ''
+  if (backdrop) backdrop.style.opacity = ''
+}
+
+/**
+ * Arkusz od dołu jak systemowy (docs/27 § 3.1): ściąga się go palcem w dół (za uchwyt i nagłówek zawsze, za treść,
+ * gdy jest przewinięta na górę), zamyka się z animacją, a przy niezapisanych zmianach (`dirty`) pyta „Odrzucić
+ * zmiany?” – tło, ✕, Esc i gest nie gubią już wpisanego check-inu ani posiłku. Zapis zamyka arkusz sam (`onClose`).
+ */
+export function Sheet({ title, onClose, children, action, dirty = false }: { title: string; onClose: () => void; children: ReactNode; action?: ReactNode; dirty?: boolean }) {
   const panel = useRef<HTMLDivElement>(null)
   const body = useRef<HTMLDivElement>(null)
+  const backdrop = useRef<HTMLDivElement>(null)
+  const [closing, setClosing] = useState(false)
+  const state = useRef({ dirty, onClose, closing: false })
+  useLayoutEffect(() => {
+    state.current.dirty = dirty
+    state.current.onClose = onClose
+  })
+
+  /** Zamknięcie z gestu, tła, ✕ albo Esc: przy zmianach najpierw pytanie, potem animacja i `onClose`. */
+  const requestClose = useCallback(async () => {
+    const st = state.current
+    if (st.closing) return
+    if (st.dirty && !(await confirmAction({ title: 'Odrzucić zmiany?', action: 'Odrzuć zmiany' }))) {
+      snapBack(panel.current, backdrop.current)
+      return
+    }
+    st.closing = true
+    setClosing(true)
+    const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches
+    window.setTimeout(() => state.current.onClose(), reduce ? 0 : SHEET_OUT_MS)
+  }, [])
+
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') onClose()
+      if (e.key === 'Escape') void requestClose()
     }
     document.addEventListener('keydown', onKey)
     const prev = document.body.style.overflow
@@ -134,27 +189,72 @@ export function Sheet({ title, onClose, children, action }: { title: string; onC
     const el = panel.current
     el?.addEventListener('focusin', onFocusIn)
     vv?.addEventListener('resize', reveal)
+
+    // przeciąganie w dół: za uchwyt/nagłówek zawsze, za treść tylko od jej górnej krawędzi
+    let drag: { y: number; t: number; fromBody: boolean } | null = null
+    let dy = 0
+    const onStart = (e: TouchEvent) => {
+      const t = e.touches[0]
+      const target = e.target as HTMLElement | null
+      if (!t || !target || e.touches.length > 1 || target.closest('input, textarea, select')) return
+      const inBody = !!body.current?.contains(target)
+      if (inBody && (body.current?.scrollTop ?? 0) > 0) return
+      drag = { y: t.clientY, t: performance.now(), fromBody: inBody }
+      dy = 0
+    }
+    const onMove = (e: TouchEvent) => {
+      const t = e.touches[0]
+      if (!drag || !t || !el) return
+      const d = t.clientY - drag.y
+      // treść przewija się w górę normalnie; gest zaczyna się dopiero przy ruchu w dół od samej góry
+      if (drag.fromBody && (d <= 0 || (body.current?.scrollTop ?? 0) > 0)) {
+        if (d < -4) drag = null
+        return
+      }
+      e.preventDefault()
+      dy = Math.max(0, d)
+      el.style.transition = 'none'
+      el.style.transform = `translate3d(0, ${dy}px, 0)`
+      if (backdrop.current) backdrop.current.style.opacity = String(Math.max(0.2, 1 - dy / (el.offsetHeight || 1)))
+    }
+    const onEnd = () => {
+      if (!drag || !el) return
+      const speed = dy / Math.max(1, performance.now() - drag.t)
+      drag = null
+      if (dy < 4) return
+      if (dy > Math.min(160, el.offsetHeight * 0.3) || (speed > 0.5 && dy > 40)) void requestClose()
+      else snapBack(el, backdrop.current)
+    }
+    el?.addEventListener('touchstart', onStart, { passive: true })
+    el?.addEventListener('touchmove', onMove, { passive: false })
+    el?.addEventListener('touchend', onEnd)
+    el?.addEventListener('touchcancel', onEnd)
     return () => {
       el?.removeEventListener('focusin', onFocusIn)
+      el?.removeEventListener('touchstart', onStart)
+      el?.removeEventListener('touchmove', onMove)
+      el?.removeEventListener('touchend', onEnd)
+      el?.removeEventListener('touchcancel', onEnd)
       vv?.removeEventListener('resize', reveal)
       document.removeEventListener('keydown', onKey)
       document.body.style.overflow = prev
       document.body.classList.remove('m-sheet-open')
     }
-  }, [onClose])
+  }, [requestClose])
 
   return (
     <>
-      <div className="m-backdrop" onClick={onClose} />
+      <div ref={backdrop} className="m-backdrop" data-closing={closing || undefined} onClick={() => void requestClose()} />
       {/* gospodarz dopasowany do visualViewport (jak .m-chat): z klawiaturą arkusz siedzi nad nią, nie pod nią */}
       <div className="m-sheet-host">
-        <div ref={panel} tabIndex={-1} className="m-sheet focus:outline-none" role="dialog" aria-modal="true" aria-label={title}>
-          <div className="m-grabber" />
+        <div ref={panel} tabIndex={-1} className="m-sheet focus:outline-none" data-closing={closing || undefined} role="dialog" aria-modal="true" aria-label={title}>
+          <div className="m-grabber" aria-hidden />
           <div className="relative flex items-center justify-between px-2 py-1">
-            <button className="m-nav-btn" onClick={onClose} aria-label="Zamknij">
+            <button className="m-nav-btn" onClick={() => void requestClose()} aria-label="Zamknij">
               <IconClose size={20} />
             </button>
-            <span className="m-headline absolute left-1/2 -translate-x-1/2">{title}</span>
+            {/* długi tytuł skracany wielokropkiem między przyciskami, nie pod nimi */}
+            <span className="m-headline absolute left-1/2 max-w-[calc(100%-7rem)] -translate-x-1/2 truncate">{title}</span>
             <span className="min-w-11">{action}</span>
           </div>
           <div ref={body} className="min-h-0 flex-1 overflow-y-auto overscroll-contain px-4 pt-2 pb-6">{children}</div>

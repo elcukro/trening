@@ -10,6 +10,7 @@ import { fmtDayMonth, todayISO } from '@/lib/dates'
 import { IconCheck, IconClose } from '@/ios/components/Icons'
 import { useDayPhase } from '../useDayPhase'
 import { ART } from '../art'
+import { confirmAction } from '@/native'
 
 const MAX_ROUNDS = 4
 const TOOL_LABEL: Record<string, string> = { save_checkin: 'zapis check-inu', set_rpe: 'zapis RPE', mark_skipped: 'oznaczenie pominięcia', move_ride: 'przeniesienie jazdy', push_wahoo: 'wysyłka na Bolta' }
@@ -126,6 +127,8 @@ export function CoachSheet({ prefill, onClose }: { prefill?: string; onClose: ()
   )
 
   const reset = async () => {
+    // rozmowy nie da się odzyskać – najpierw pytanie (docs/27 § 3.1)
+    if (!(await confirmAction({ title: 'Wyczyścić rozmowę z trenerem?', message: 'Historii nie da się przywrócić. Zapisane dane (check-iny, RPE, przeniesienia) zostają.', action: 'Wyczyść' }))) return
     await clearThread()
     setMessages([])
     setError(null)

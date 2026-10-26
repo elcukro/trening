@@ -18,7 +18,9 @@
     "data:generate": "python3 data/reference_generator.py && python3 data/ftp300_generator.py"
   },
   "dependencies": {
+    "@capacitor/action-sheet": "^8.1.1",
     "@capacitor/core": "^8.5.3",
+    "@capacitor/haptics": "^8.0.2",
     "@capacitor/ios": "^8.5.3",
     "@capacitor/keyboard": "^8.0.6",
     "@capacitor/splash-screen": "^8.0.2",
