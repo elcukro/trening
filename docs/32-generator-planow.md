@@ -166,9 +166,8 @@ Rozważane były trzy drogi:
 - **Tabela `plans`** (migracja `20261026210000_plans.sql`, Dexie v11, `SYNC_TABLES` + `USER_SCOPED_ID_TABLES`): jeden
   aktywny wiersz na konto, `id = 'current'`; kolumny `inputs` (`PlanInputs`), `extras` (masa, HRmax, najdłuższa jazda),
   `generator_version`, `program_start`, `generated_for` („dziś” użyte przy generowaniu), `source`
-  (`onboarding` / `change` / `coach`). LWW przez `lww_guard`, RLS „all own”. **Migracja nie jest jeszcze wgrana na
-  produkcję** – `supabase db push` dopiero po zgodzie użytkownika; do tego czasu wiersz żyje lokalnie (Dexie) i czeka
-  w outboxie.
+  (`onboarding` / `change` / `coach`). LWW przez `lww_guard`, RLS „all own”. Migracja wgrana na produkcję 26.10.2026 (`supabase db push` za zgodą
+  użytkownika; w worktree link do projektu trzeba skopiować z `supabase/.temp` głównego checkoutu).
 - **Regeneracja w aplikacji** (`src/data/generated.ts`): `generatedProgram(row)` liczy program deterministycznie
   z wiersza (pamięć podręczna po `updated_at`), `resolveProgram(programId, row)` daje program dla identyfikatora
   z profilu: `generated` → z wiersza, inaczej plik z `data/`. `generated` bez wiersza spada na program domyślny.
