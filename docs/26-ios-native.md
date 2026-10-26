@@ -4,6 +4,9 @@ Stan: analiza 26.10.2026; **etap 0 (powłoka) zrobiony 26.10.2026** – patrz �
 powłoce iOS (Capacitor), z natywnymi wtyczkami tam, gdzie PWA nie sięga. Silnik (`src/engine/`), synchronizacja (Dexie +
 Supabase), Edge Functions i wersja webowa zostają bez zmian – aplikacja iOS to trzeci „cel builda”, nie nowy projekt.
 
+**Siłownia jest poza zakresem aplikacji iOS** – 26.10.2026 usunięta z całej aplikacji (web `/`, `/i`, `/m` i oba programy;
+`docs/13` § Zmiana 26.10.2026). Nie ma czego przenosić: trybu siłowni, timera przerwy, ćwiczeń ani sesji A/B/C.
+
 ## Stan wdrożenia
 
 **Etap 0 – powłoka (26.10.2026), działa w symulatorze (iPhone 16e, iOS 26.1, build Debug):**
@@ -26,7 +29,7 @@ Supabase), Edge Functions i wersja webowa zostają bez zmian – aplikacja iOS t
   bez menu linku po przytrzymaniu, bez przybliżania dwukrotnym dotknięciem, bez odbicia dokumentu (`ios.scrollEnabled: false`).
 - Teksty w Ja (§ 3 pkt 9) w buildzie iOS: bez „Otwórz pełną aplikację” i „Wróć do poprzedniego wyglądu”, bez wiersza
   Powiadomienia (Web Push nie działa w WKWebView – APNs w etapie 3), Strava/Wahoo „łączenie na trening.felsztukier.pl”
-  (bez przejścia), „Nie jesteś zalogowany” wraca do ekranu logowania. Wejść do siłowni w `/m` nie ma (decyzja w § 9 pkt 3).
+  (bez przejścia), „Nie jesteś zalogowany” wraca do ekranu logowania. Siłowni w `/m` nie ma (usunięta z aplikacji 26.10.2026, § 9 pkt 3).
 - Sprawdzone w symulatorze: start z lokalnego bundla prosto do logowania `/m`, „Zobacz tylko plan, bez konta” → Dziś,
   zakładki Dziś/Plan/Ja, arkusz „Progi i miernik”, czat Trenera z klawiaturą, długie przytrzymanie tekstu bez menu.
 
@@ -60,13 +63,13 @@ build Release i rozmiar aplikacji.
 | Strava / Wahoo – połączenie | `window.location.assign(OAuth)` w **pełnej aplikacji** (`IntegrationsSection`) | ekran w `/m` + `ASWebAuthenticationSession` (`@capacitor/browser` lub wtyczka auth) i powrót przez własny schemat / Universal Link; Edge Functions `strava-oauth`/`wahoo-oauth` dostają adres powrotu aplikacji | M |
 | Ustawienia konta, maile, powiadomienia, program, kopia | tylko pełna aplikacja (`/wiecej/ustawienia`) | **przenieść do `/m` → Ja** (arkusze) – w aplikacji nie ma „Otwórz pełną aplikację” | M |
 | Powiadomienia push | Web Push (VAPID) przez `src/sw.ts`, Edge Function `push-send` | **APNs** (`@capacitor/push-notifications`); `push-send` wysyła też na tokeny APNs (klucz `.p8` – sekret ustawia użytkownik); tabela `push_subscriptions` z kolumną `kind` | M |
-| Timer przerwy (siłownia) | `navigator.vibrate` (iOS nie obsługuje) + powiadomienie z SW | **nie dotyczy** – siłowni nie ma w aplikacji iOS (decyzja 26.10.2026) | — |
+| ~~Timer przerwy (siłownia)~~ | usunięty z aplikacji 26.10.2026 | **nie dotyczy** – siłowni nie ma w aplikacji (web i iOS) | — |
 | Zdjęcie posiłku / etykiety | `<input type=file capture>` + zmniejszanie w canvas | `@capacitor/camera` (aparat lub biblioteka, od razu JPEG ≤ 1024 px) | S |
 | Długie przytrzymanie, przeciąganie | pointer events | bez zmian + haptyka przy „podniesieniu” | S |
 | Pogoda | miejscowość wpisana ręcznie (kv) | opcjonalnie **Core Location** „przy użyciu” zamiast wpisywania | S |
 | Wysyłka planów na Wahoo | automat raz dziennie **przy otwarciu aplikacji** (`useWahoo`) | bez zmian; opcjonalnie `BGAppRefreshTask` (iOS nie gwarantuje pory) | S |
 | Instrukcja | `public/pomoc.html` poza routerem | ekran w aplikacji (ten sam HTML w WKWebView lub komponent) – bez wyjścia do Safari | S |
-| Pełna aplikacja (kalendarz z przenoszeniem, Postęp z wykresami, Biblioteka, tryb siłowni, Sprzęt, Wyjazd, raporty) | tylko `/` | **v1: bez nich** (zostają w webie na komputerze); do `/m` w kolejnych etapach – najpierw Postęp. **Trybu siłowni nie przenosimy** (decyzja 26.10.2026: aplikacja iOS tylko kolarska, bez wejść do siłowni; kod siłowni w webie zostaje – używa go program FTP300) | L |
+| Pełna aplikacja (kalendarz z przenoszeniem, Postęp z wykresami, Biblioteka, Sprzęt, Wyjazd, raporty) | tylko `/` | **v1: bez nich** (zostają w webie na komputerze); do `/m` w kolejnych etapach – najpierw Postęp. Trybu siłowni nie ma co przenosić – usunięty z całej aplikacji 26.10.2026 | L |
 
 S ≈ do pół dnia, M ≈ 1 dzień, L ≈ kilka dni.
 
@@ -91,7 +94,7 @@ punktowe. Do zrobienia:
    ciemnym systemie trzeba wymusić jasny wygląd (`UIUserInterfaceStyle = Light`), żeby nie mieszać pasków.
 9. **Teksty i komunikaty**: żadnych odwołań do „przeglądarki”, „pełnej aplikacji”, „dodaj do ekranu początkowego”,
    „odśwież stronę”; przycisk „Wróć do poprzedniego wyglądu” (`ui_mode`) znika.
-10. **Linki zewnętrzne** (Strava, YouTube przy ćwiczeniach): `SFSafariViewController` (`@capacitor/browser`), nie wyjście
+10. **Linki zewnętrzne** (Strava, Wahoo, pomoc): `SFSafariViewController` (`@capacitor/browser`), nie wyjście
     z aplikacji.
 
 ## 4. Nowe możliwości iOS (niedostępne dla PWA)
@@ -113,7 +116,7 @@ Kolejność według wartości dla zawodnika:
 6. **Szybkie akcje ikony** (przytrzymanie): „Dodaj posiłek”, „Check-in”, „Trener”.
 7. **App Intents / Siri / Skróty**: „Co mam dziś?”, „Zapisz wagę 103,4”, „Dodaj posiłek” – także na Watchu przez Siri.
 8. **Udostępnianie do aplikacji** (Share Extension): zdjęcie z Rolki → posiłek.
-9. **Live Activity** w czasie siłowni (seria, przerwa) na Dynamic Island – później.
+9. ~~**Live Activity** w czasie siłowni (seria, przerwa) na Dynamic Island~~ – odpada (siłownia usunięta 26.10.2026).
 10. **Apple Watch** – osobny projekt, poza zakresem.
 
 ## 5. Elementy do przebudowy pod wytyczne App Store
@@ -159,9 +162,9 @@ Plan prac zakłada, że punkty z § 5 robimy od razu (są też dobre same w sobi
 | **0. Powłoka** | Capacitor + `ios/`, build `VITE_TARGET=ios` prosto do `/m`, ikona i ekran startowy, wyłączenie zachowań przeglądarki, test w symulatorze i na telefonie (Xcode, konto darmowe lub płatne) | 1 dzień |
 | **1. Parytet `/m`** | logowanie + Universal Links, Strava/Wahoo przez `ASWebAuthenticationSession`, ustawienia konta/maili/powiadomień/programu w Ja, instrukcja w aplikacji, aparat natywny, haptyka, gest wstecz, zamykanie arkuszy gestem | 2–3 dni |
 | **2. Wymogi App Store** | usuwanie konta (Edge Function + UI), polityka prywatności, ekran zgody na AI, informacja „nie porada medyczna”, opisy uprawnień, konto demo | 1–2 dni |
-| **3. Natywne funkcje** | APNs (zamiast Web Push w aplikacji), lokalne powiadomienia (przerwa, check-in), HealthKit odczyt (masa, tętno spocz., HRV, sen) → check-in, zapis posiłków do Zdrowia, sesja w Keychain | 2–3 dni |
+| **3. Natywne funkcje** | APNs (zamiast Web Push w aplikacji), lokalne powiadomienia (check-in), HealthKit odczyt (masa, tętno spocz., HRV, sen) → check-in, zapis posiłków do Zdrowia, sesja w Keychain | 2–3 dni |
 | **4. Wyróżniki** | widżet Dziś, szybkie akcje, skaner kodów + Open Food Facts, OCR etykiety na urządzeniu, App Intents | 3–4 dni |
-| **5. Brakujące ekrany** | Postęp w `/m` (dziś tylko w pełnej aplikacji), potem kalendarz miesiąca; tryb siłowni **nie** (decyzja 26.10.2026) | 2–4 dni |
+| **5. Brakujące ekrany** | Postęp w `/m` (dziś tylko w pełnej aplikacji), potem kalendarz miesiąca; siłowni nie ma (usunięta z aplikacji 26.10.2026) | 2–4 dni |
 | **6. Dystrybucja** | App Store Connect, TestFlight; ewentualnie zgłoszenie do recenzji | 0,5 dnia + czas Apple |
 
 Etapy 0–3 dają aplikację lepszą od PWA na co dzień; 4–5 robią z niej coś, czego PWA nie umie.
@@ -193,6 +196,6 @@ Etapy 0–3 dają aplikację lepszą od PWA na co dzień; 4–5 robią z niej co
 2. **Cel dystrybucji**: tylko TestFlight dla dwóch kont, czy docelowo App Store? Od tego zależy, czy etap 2 jest
    obowiązkowy przed pierwszą instalacją (rekomendacja: zrobić i tak).
 3. ~~**Zakres v1**~~ – **rozstrzygnięte 26.10.2026**: siłownia znika z aplikacji iOS całkowicie (aplikacja tylko kolarska),
-   Postęp zostaje i wchodzi w późniejszym etapie (5). Czy siłownia zniknie też z webu – nie zdecydowano (używa jej program FTP300).
+   Postęp zostaje i wchodzi w późniejszym etapie (5). Tego samego dnia siłownia zniknęła też z webu i z obu programów (`PROGRAM_VERSION` 2026.10.26-1).
 4. **Identyfikator aplikacji i nazwa**: np. `pl.felsztukier.trening`, nazwa „Trening” (nazwa w App Store musi być unikalna –
    ewentualnie „Trening – Kolarski Trener”).

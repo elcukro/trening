@@ -24,7 +24,7 @@ export default defineConfig({
       manifest: {
         name: 'Trening',
         short_name: 'Trening',
-        description: 'Osobisty asystent treningowy: rower, siłownia, żywienie.',
+        description: 'Osobisty asystent treningowy: rower i żywienie.',
         lang: 'pl',
         start_url: '/',
         scope: '/',

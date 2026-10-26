@@ -12,11 +12,10 @@ export const ART = {
   heart: '/m/art/heart.png',
   test: '/m/art/test.png',
   rest: '/m/art/rest.png',
-  gym: '/m/art/gym.png',
   ride_key: '/m/art/ride-key.png',
 } as const
 
-/** Ikona typu dnia: Z2/lekko – gravel, akcent – błyskawica, długa – droga przez wzgórze, test – stoper, siłownia – hantel, wolne – kawa. */
+/** Ikona typu dnia: Z2/lekko – gravel, akcent – błyskawica, długa – droga przez wzgórze, test – stoper, wolne – kawa. */
 export function dayArt(dayType: DayType | null | undefined, test = false): string {
   if (test) return ART.test
   switch (dayType) {
@@ -27,8 +26,6 @@ export function dayArt(dayType: DayType | null | undefined, test = false): strin
     case 'long':
     case 'trip':
       return '/m/art/ride-long.png'
-    case 'gym':
-      return ART.gym
     default:
       return ART.rest
   }

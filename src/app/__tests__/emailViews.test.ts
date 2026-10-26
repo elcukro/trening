@@ -10,22 +10,21 @@ import { zoneDistribution } from '@/engine/zones'
 import { rideLoad } from '@/engine/analysis'
 
 const program = parseProgram(programJson)
-const settings = { ...program.default_settings, lthr_bpm: 150, ftp_w_estimate: 200, power_meter: true, gym_enabled: true }
+const settings = { ...program.default_settings, lthr_bpm: 150, ftp_w_estimate: 200, power_meter: true }
 const ctx = { program, settings }
 const days = buildCalendar(ctx)
 const plan = (d: string) => enrichDay(days.find((x) => x.date === d)!, ctx)
 
 describe('maile', () => {
   it('poranna odprawa: temat, kroki z powtórzeniami zwiniętymi, pełna oś czasu', () => {
-    const day = plan('2027-03-03') // THR 4×6 + Sesja A
+    const day = plan('2027-03-03') // THR 4×6
     const v = morningView(day, program, { athlete: 'Luke', appUrl: 'https://x.test' })
     expect(v.workout!.steps.filter((s) => s.repeat === '×4')).toHaveLength(2) // interwał i przerwa – po jednym wierszu
     expect(v.workout!.timeline!.length).toBeGreaterThan(v.workout!.steps.length)
-    expect(v.gym?.items.length).toBeGreaterThan(0)
     const m = morningEmail(v)
-    expect(m.subject).toMatch(/^Dziś: Próg pod górę 4×6 min · 1 h \d+ min \+ siłownia$/)
+    expect(m.subject).toMatch(/^Dziś: Próg pod górę 4×6 min · 1 h \d+ min$/)
     expect(m.html).toContain('https://x.test/i/dzien/2027-03-03')
-    expect(m.text).toContain('Siłownia:')
+    expect(m.text).not.toContain('Siłownia:')
     expect(m.html).not.toContain('Jak nogi dziś?')
     v.legs = { links: [1, 2, 3, 4, 5].map((n) => ({ value: n, href: `https://f.test/email-send?legs=t${n}` })), current: null }
     const withLegs = morningEmail(v)
@@ -118,7 +117,7 @@ describe('migawka dnia i zgodność z silnikiem', () => {
     expect(wed.next?.name).toBeTruthy()
     expect(wed.zones).toHaveLength(program.hr_zones_lthr_fraction.length)
     expect(wed.morning?.workout?.name).toBe('Próg pod górę 4×6 min')
-    const rest = window.find((d) => !d.bike && !d.gym)!
+    const rest = window.find((d) => !d.bike)!
     expect(snapshotFor(rest, window, program, { athlete: 'Luke', appUrl: 'https://x.test' }).morning).toBeNull()
   })
 

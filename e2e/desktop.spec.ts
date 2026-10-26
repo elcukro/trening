@@ -1,12 +1,9 @@
 import { expect, test } from '@playwright/test'
-import { enableGym } from './helpers'
 
 test.describe('wersja na komputer (≥ 1024 px)', () => {
   test.use({ viewport: { width: 1440, height: 900 }, isMobile: false, hasTouch: false })
 
   test('boczna nawigacja zamiast dolnego paska, Dziś w dwóch kolumnach', async ({ page }) => {
-    // faza III: dzień z jazdą i siłownią naraz (w fazach I–II akcent i siłownia są w różne dni)
-    await enableGym(page, '2027-03-03')
     await page.goto('/?today=2027-03-03')
     const side = page.getByRole('navigation', { name: 'Nawigacja główna' }).filter({ has: page.getByText('Alpy 2027') })
     await expect(side).toBeVisible()
@@ -20,10 +17,10 @@ test.describe('wersja na komputer (≥ 1024 px)', () => {
     // treść wykorzystuje szerokość ekranu (ponad 1024 px razem z nawigacją)
     const main = await page.getByRole('main').boundingBox()
     expect(main && main.width > 1000).toBe(true)
-    // rower i siłownia obok siebie: karta siłowni nie jest pod kartą roweru
+    // rower i żywienie obok siebie: karta żywienia nie jest pod kartą roweru
     const bike = await page.getByRole('heading', { name: 'Próg pod górę 4×6 min' }).boundingBox()
-    const gym = await page.getByRole('heading', { name: 'Sesja A – Siła nóg (ciężka)' }).boundingBox()
-    expect(bike && gym && gym.x > bike.x + 200).toBe(true)
+    const food = await page.getByRole('heading', { name: 'Żywienie' }).boundingBox()
+    expect(bike && food && food.x > bike.x + 200).toBe(true)
     await page.screenshot({ path: 'test-results/desktop-today.png', fullPage: true })
   })
 

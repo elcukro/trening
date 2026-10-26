@@ -7,14 +7,12 @@ import { CalendarPage } from '@/features/calendar/CalendarPage'
 import { SeasonPage } from '@/features/season/SeasonPage'
 import { LibraryPage } from '@/features/library/LibraryPage'
 import { WorkoutPage } from '@/features/library/WorkoutPage'
-import { ExercisePage } from '@/features/library/ExercisePage'
 import { ZonesPage } from '@/features/library/ZonesPage'
 import { RulesPage } from '@/features/library/RulesPage'
 import { SettingsPage } from '@/features/settings/SettingsPage'
 import { MorePage } from '@/features/more/MorePage'
 import { GearPage } from '@/features/gear/GearPage'
 import { TripPage } from '@/features/trip/TripPage'
-import { GymModePage } from '@/features/gym/GymModePage'
 import { ToastProvider } from '@/components/Toast'
 import { useWahooAutoPush } from '@/sync/useWahoo'
 import { useEmailSnapshots } from '@/sync/emailSnapshots'
@@ -294,7 +292,6 @@ export function App() {
               <Route path="postep/miesiac/:month" element={<Suspense fallback={<p className="py-8 text-center text-sm text-slate-500">Ładowanie…</p>}><ReportPage kind="month" /></Suspense>} />
               <Route path="biblioteka" element={<LibraryPage />} />
               <Route path="biblioteka/trening/:id" element={<WorkoutPage />} />
-              <Route path="biblioteka/cwiczenie/:id" element={<ExercisePage />} />
               <Route path="biblioteka/strefy" element={<ZonesPage />} />
               <Route path="biblioteka/zasady" element={<RulesPage />} />
               <Route path="wiecej" element={<MorePage />} />
@@ -304,7 +301,6 @@ export function App() {
               <Route path="wiecej/ustawienia" element={<SettingsPage />} />
               <Route path="*" element={<Navigate to="/" replace />} />
             </Route>
-            <Route path="silownia/:date" element={<GymModePage />} />
             <Route path="i/*" element={<Suspense fallback={null}><IosApp /></Suspense>} />
             <Route path="m/*" element={<Suspense fallback={null}><MobileApp /></Suspense>} />
             </>

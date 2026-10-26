@@ -16,6 +16,8 @@ supabase db push
 ```
 `db push` wykona `supabase/migrations/20260911103853_init.sql`: tabele, RLS, trigger blokujący obce e-maile, mechanizm „ostatni zapis wygrywa”. Sprawdź w **Table Editor**, że są tabele `profiles`, `checkins`, `session_logs`, `set_logs`, `test_results` itd.
 
+**Siłownia (od 26.10.2026 nieużywana):** tabela `set_logs`, wiersze `session_logs` z `kind = 'gym'` oraz kolumny `profiles.gym_enabled` i `profiles.gym_days` zostały w bazie tylko jako historia – żaden ekran ich nie używa i nic nowego tam nie trafia (siłownia usunięta, `docs/13` § Zmiana 26.10.2026). Czekają na migrację porządkową, która je usunie (TODO).
+
 ## 3. Dozwolony e-mail (SQL Editor w dashboardzie)
 Jednorazowo, w **SQL Editor** (adres nie jest w repozytorium celowo):
 ```sql
@@ -47,7 +49,7 @@ Vercel – **Settings → Environment Variables**: te same dwie zmienne (Product
 ## 6. Pierwsze logowanie i test synchronizacji – zrobione 11.09.2026 (sesja + profil w bazie); rejestracja nowych użytkowników wyłączona przez `config push` (`enable_signup = false`)
 1. Aplikacja → **Więcej → Ustawienia → Konto**: wpisz e-mail, „Wyślij link logowania”, otwórz link z maila.
 2. Stan powinien pokazać „Zsynchronizowano”. Dotychczasowe dane lokalne (ustawienia, check-iny, logi) wypchną się automatycznie – identyfikatory UUID są generowane na telefonie, więc nie ma duplikatów.
-3. Scenariusz 15 ze specyfikacji: tryb samolotowy → zapisz kilka serii w trybie siłowni → wyłącz tryb samolotowy → w **Table Editor → set_logs** pojawią się wiersze, po jednym na serię. Ponowna synchronizacja nic nie dubluje (upsert po `id`).
+3. ~~Scenariusz 15 ze specyfikacji: tryb samolotowy → zapisz kilka serii w trybie siłowni → wyłącz tryb samolotowy → w **Table Editor → set_logs** pojawią się wiersze, po jednym na serię.~~ Trybu siłowni nie ma od 26.10.2026 – ten sam test robi się teraz check-inem albo logiem jazdy (Table Editor → `checkins` / `session_logs`). Ponowna synchronizacja nic nie dubluje (upsert po `id`).
 
 ## 7. Sekrety integracji (Etapy 3–4 – jeszcze nie teraz)
 Klucze Strava i Wahoo trafią wyłącznie do sekretów Edge Functions:

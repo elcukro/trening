@@ -1,9 +1,9 @@
-import type { GymSession, Program, Settings } from './schema'
+import type { Program, Settings } from './schema'
 import type { ISODate, Weekday } from './dates'
 
 export type PhaseId = 'PREP' | 'I' | 'II' | 'III' | 'IV' | 'V' | 'TAPER'
 export type WeekType = 'prep' | 'build' | 'deload' | 'test' | 'taper'
-export type DayType = 'rest' | 'gym' | 'easy' | 'long' | 'key' | 'trip'
+export type DayType = 'rest' | 'easy' | 'long' | 'key' | 'trip'
 export type DayFlag = 'test' | 'deload' | 'mountain_weekend' | 'back_to_back' | 'heat'
 export type EnergyKind =
   | 'maintenance'
@@ -42,7 +42,6 @@ export interface CalendarDay {
   week_type: WeekType
   day_type: DayType
   bike: BikeDay | null
-  gym: GymSession | null
   nutrition: Nutrition
   flags: DayFlag[]
   week_notes?: string

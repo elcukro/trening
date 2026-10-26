@@ -1,4 +1,4 @@
-import type { Bikes, GymSession, Program, Settings, WeekSummary, WeekTemplate } from './schema'
+import type { Bikes, Settings, WeekSummary, WeekTemplate } from './schema'
 import type { CalendarDay, DayFlag, DayType, EngineContext, LayoutWeek, PhaseId } from './types'
 import { addDays, compareISO, WEEKDAYS, weekdayOf, type ISODate, type Weekday } from './dates'
 import { layoutWeeks } from './layout'
@@ -40,20 +40,6 @@ export function bikeSuggestion(bikes: Bikes, phase: PhaseId, workoutId: string):
   return bikes.by_workout?.[workoutId] ?? bikes.by_phase?.[phase] ?? bikes.default
 }
 
-/** Sesja siłowa na dany dzień: slot „wed” → dzień z gym_days (A/C), slot „fri” → Sesja B. */
-export function gymFor(program: Program, template: number, weekday: Weekday, gymDays: Settings['gym_days']): GymSession | null {
-  const slots = program.gym_prescriptions[String(template)]
-  if (!slots) return null
-  for (const [slot, session] of Object.entries(slots)) {
-    let day: Weekday
-    if (slot === 'fri') day = gymDays.B
-    else if (session.session === 'A') day = gymDays.A
-    else if (session.session === 'C') day = gymDays.C
-    else day = 'wed'
-    if (day === weekday) return session
-  }
-  return null
-}
 
 export function buildDay(ctx: EngineContext, lw: LayoutWeek, weekday: Weekday, date: ISODate): CalendarDay {
   const { program, settings } = ctx
@@ -74,13 +60,13 @@ export function buildDay(ctx: EngineContext, lw: LayoutWeek, weekday: Weekday, d
   if (!w) throw new Error(`Nieznany trening ${wid} (tydzień ${lw.template}, ${weekday})`)
   let dur = durRaw ?? w.duration_min
   dur = scaleDuration(wid, dur, settings.volume_scale)
-  const gym = settings.gym_enabled ? gymFor(program, lw.template, weekday, settings.gym_days) : null
+
   const key = isKeyWorkout(wid, w.key)
   let fallback: string | null = phase === 'II' && /^(SS_|THR_)/.test(wid) ? 'INDOOR_4x4' : null
   if (wid === 'FTP_TEST' && phase === 'II') fallback = 'WATTBIKE_TEST'
 
   let dayType: DayType
-  if (wid === 'REST' || wid === 'TRAVEL_REST') dayType = gym ? 'gym' : 'rest'
+  if (wid === 'REST' || wid === 'TRAVEL_REST') dayType = 'rest'
   else if (wid === 'TRIP') dayType = 'trip'
   else dayType = key ? 'key' : dur >= 120 ? 'long' : 'easy'
 
@@ -103,7 +89,7 @@ export function buildDay(ctx: EngineContext, lw: LayoutWeek, weekday: Weekday, d
       wid === 'REST'
         ? null
         : { workout_id: wid, name: w.name, duration_min: dur, bike: bikeSuggestion(program.bikes, phase, wid), fallback_workout_id: fallback },
-    gym: gym ? { session: gym.session, name: gym.name, est_min: gym.est_min, items: gym.items } : null,
+
     nutrition: nutritionFor(program.nutrition, phase, dayType, bikeMin, key, flags.some((f) => f === 'test' || f === 'mountain_weekend' || f === 'back_to_back')),
     flags,
   }
@@ -165,11 +151,11 @@ export function seasonSummary(ctx: EngineContext, days = buildCalendar(ctx)): We
   for (const d of days) {
     let w = weeks.get(d.week)
     if (!w) {
-      w = { week: d.week, phase: d.phase, type: d.week_type, start: d.date, end: d.date, bike_min: 0, gym: [], key: [], sat: null, sun: null }
+      w = { week: d.week, phase: d.phase, type: d.week_type, start: d.date, end: d.date, bike_min: 0, key: [], sat: null, sun: null }
       weeks.set(d.week, w)
     }
     if (d.bike && d.bike.workout_id !== 'TRIP' && d.bike.workout_id !== 'TRAVEL_REST') w.bike_min += d.bike.duration_min
-    if (d.gym) w.gym.push(`${d.gym.session}(${d.weekday})`)
+
     if ((d.weekday === 'wed' || d.weekday === 'thu') && d.bike && d.day_type === 'key') w.key.push(d.bike.workout_id)
     if (d.weekday === 'sat' && d.bike) w.sat = `${d.bike.workout_id} ${d.bike.duration_min}′`
     if (d.weekday === 'sun' && d.bike) w.sun = `${d.bike.workout_id} ${d.bike.duration_min}′`

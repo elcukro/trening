@@ -6,7 +6,7 @@ import { FULL_ESCAPE, useUiMode } from '@/day/useIos'
 import type { Feature } from '@/engine/schema'
 
 const ITEMS: { to: string; icon: string; label: string; sub: string; feature?: Feature; external?: boolean }[] = [
-  { to: '/kalendarz', icon: '🗓️', label: 'Kalendarz', sub: 'Miesiąc w siatce: jazdy, siłownia, znaczniki, wykonanie' },
+  { to: '/kalendarz', icon: '🗓️', label: 'Kalendarz', sub: 'Miesiąc w siatce: jazdy, znaczniki, wykonanie' },
   { to: '/wiecej/sezon', icon: '🗺️', label: 'Sezon', sub: 'Fazy, tabela tygodni, wydarzenia' },
   { to: '/wiecej/sprzet', icon: '🔧', label: 'Sprzęt', sub: 'Twoje rowery, serwis, dziennik' },
   { to: '/wiecej/wyjazd', icon: '🎒', label: 'Wyjazd', sub: 'Checklista, torby, strategia na przełęcz', feature: 'trip' },

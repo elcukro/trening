@@ -13,7 +13,7 @@ import { useBriefing } from '@/day/useBriefing'
 import { rideVerdict, type DayStep } from '@/day/dayState'
 import { mainTarget, structureLabel } from '@/day/summary'
 import { Btn, Card, List, Pill, Row, RowIcon, Screen, Section, Stat } from '../components/Chrome'
-import { IconBike, IconBolt, IconCheck, IconChevron, IconFlag, IconGym, IconHeart, IconRest, IconSun, IconTarget, IconTimer, IconWatch } from '../components/Icons'
+import { IconBike, IconBolt, IconCheck, IconChevron, IconFlag, IconHeart, IconRest, IconSun, IconTarget, IconTimer, IconWatch } from '../components/Icons'
 import { SyncBanner } from '../components/SyncBanner'
 import { CheckinSheet } from '../components/CheckinSheet'
 import { AfterSheet } from '../components/AfterSheet'
@@ -83,33 +83,7 @@ function HeroRide({ day, status, hasActivity, onOpen }: { day: DayPlan; status: 
   )
 }
 
-function HeroGym({ day, status, onOpen }: { day: DayPlan; status: string | undefined; onOpen: () => void }) {
-  const g = day.gym!
-  return (
-    <Card onClick={onOpen} className="mb-4">
-      <div className="p-4">
-        <div className="mb-3 flex items-center gap-2">
-          <RowIcon color="var(--purple)">
-            <IconGym size={18} />
-          </RowIcon>
-          <Pill>Siłownia</Pill>
-          <span className="ml-auto flex items-center gap-2">
-            <StatusPill status={status} hasActivity={false} />
-            <span className="ios-dim-3">
-              <IconChevron size={18} />
-            </span>
-          </span>
-        </div>
-        <h2 className="ios-title2">{g.name}</h2>
-        <p className="ios-num mt-0.5 text-[15px] tracking-[-0.2px]" style={{ color: 'var(--label-2)' }}>
-          około {g.est_min} min · {g.items.length} ćwiczeń
-        </p>
-      </div>
-    </Card>
-  )
-}
-
-function HeroRest({ day }: { day: DayPlan }) {
+function HeroRest() {
   return (
     <Card className="mb-4">
       <div className="p-4">
@@ -120,7 +94,7 @@ function HeroRest({ day }: { day: DayPlan }) {
           <Pill>Wolne</Pill>
         </div>
         <h2 className="ios-title2">Dzień wolny</h2>
-        <p className="ios-subhead ios-dim mt-1">{day.gym ? 'Bez roweru – tylko siłownia.' : 'Odpoczynek jest częścią planu. Spacer, sen, kilka minut rozciągania zginaczy bioder.'}</p>
+        <p className="ios-subhead ios-dim mt-1">Odpoczynek jest częścią planu. Spacer, sen, kilka minut rozciągania zginaczy bioder.</p>
       </div>
     </Card>
   )
@@ -253,7 +227,7 @@ export function DayScreen() {
       case 'bolt':
         return void send()
       case 'train':
-        return day!.bike ? navigate(`/i/trening/${date}`) : navigate(`/silownia/${date}`)
+        return navigate(`/i/trening/${date}`)
       case 'log':
         return setSheet('after')
     }
@@ -264,7 +238,7 @@ export function DayScreen() {
   const nextLabel: Record<string, string> = {
     checkin: 'Zrób check-in',
     bolt: 'Wyślij na Bolta',
-    train: day.bike ? 'Pokaż trening' : 'Otwórz tryb siłowni',
+    train: 'Pokaż trening',
     log: 'Jak poszło?',
   }
 
@@ -276,12 +250,9 @@ export function DayScreen() {
       <SyncBanner />
       {day.bike && day.workout ? (
         <HeroRide day={day} status={rideStatus} hasActivity={d.activities.length > 0} onOpen={() => navigate(`/i/trening/${date}`)} />
-      ) : day.gym ? (
-        <HeroGym day={day} status={d.gymLog?.status} onOpen={() => navigate(`/silownia/${date}`)} />
       ) : (
-        <HeroRest day={day} />
+        <HeroRest />
       )}
-      {day.bike && day.gym && <HeroGym day={day} status={d.gymLog?.status} onOpen={() => navigate(`/silownia/${date}`)} />}
 
       {next ? (
         <div className="mb-8 px-4">
@@ -350,8 +321,7 @@ export function DayScreen() {
       <Section header="Dzisiaj">
         <List>
           {d.flow.steps.map((s) => {
-            const gymStep = s.key === 'train' && !day.bike && !!day.gym
-            const meta = gymStep ? { color: 'var(--purple)', icon: IconGym } : STEP_ICON[s.key]!
+            const meta = STEP_ICON[s.key]!
             const Icon = meta.icon
             return (
               <Row
@@ -437,7 +407,7 @@ export function DayScreen() {
       {sheet === 'checkin' && <CheckinSheet checkin={d.checkin} weighDue={d.weighDue} lastWeight={d.lastWeight} onClose={() => setSheet(null)} onSave={d.saveCheckin} />}
       {sheet === 'after' && (
         <AfterSheet
-          log={day.bike ? d.rideLog : d.gymLog}
+          log={d.rideLog}
           suggested={score != null && score < 70 ? 'modified' : 'done'}
           onClose={() => setSheet(null)}
           onSave={async (status, extra) => {

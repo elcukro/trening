@@ -10,7 +10,7 @@ export type DayOutcome = 'done' | 'modified' | 'skipped' | 'missed' | 'extra' | 
 export interface WeekDayState {
   date: ISODate
   weekday: CalendarDay['weekday']
-  /** minuty z planu (jazda albo siłownia) */
+  /** minuty jazdy z planu */
   planned_min: number
   /** minuty z jazd (Strava) */
   done_min: number
@@ -43,18 +43,18 @@ export function weekState(inp: WeekStateInput): WeekState {
     .map<WeekDayState>((d) => {
       const acts = inp.activities.filter((a) => a.date === d.date)
       const done_min = Math.round(acts.reduce((s, a) => s + a.moving_time_s / 60, 0))
-      const kind = d.bike ? 'bike' : 'gym'
-      const log = inp.logs.find((l) => l.date === d.date && l.kind === kind)
-      const planned_min = d.bike?.duration_min ?? d.gym?.est_min ?? 0
+      // dawne logi siłowni (`kind: 'gym'`) zostają w historii, ale nie liczą się do wyniku dnia
+      const log = d.bike ? inp.logs.find((l) => l.date === d.date && l.kind === 'bike') : undefined
+      const planned_min = d.bike?.duration_min ?? 0
       let outcome: DayOutcome
       if (log?.status === 'skipped') outcome = 'skipped'
       else if (log?.status === 'done' || log?.status === 'modified') outcome = log.status
-      else if (!d.bike && !d.gym) outcome = acts.length ? 'extra' : 'free'
+      else if (!d.bike) outcome = acts.length ? 'extra' : 'free'
       else if (acts.length) outcome = 'done'
       else if (d.date > inp.today) outcome = 'planned'
       else if (d.date === inp.today) outcome = 'today'
       else outcome = 'missed'
-      return { date: d.date, weekday: d.weekday, planned_min, done_min, outcome, key: d.day_type === 'key' || d.flags.includes('test'), on_bolt: bolt.has(d.date), name: d.bike?.name ?? d.gym?.name ?? null }
+      return { date: d.date, weekday: d.weekday, planned_min, done_min, outcome, key: d.day_type === 'key' || d.flags.includes('test'), on_bolt: bolt.has(d.date), name: d.bike?.name ?? null }
     })
   return {
     days,

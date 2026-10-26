@@ -9,8 +9,6 @@ export function dayColor(dayType: DayType | null | undefined, test = false): { c
     case 'easy':
     case 'long':
       return { color: 'var(--green)', soft: 'rgb(47 179 83 / 0.14)' }
-    case 'gym':
-      return { color: 'var(--indigo)', soft: 'rgb(88 86 214 / 0.14)' }
     case 'trip':
       return { color: 'var(--accent)', soft: 'var(--accent-soft)' }
     default:

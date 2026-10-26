@@ -46,14 +46,13 @@ describe('golden file: calendar-ftp300.json', () => {
     expect(w[6]!.bike).toBeNull()
   })
 
-  it('jedna siłownia w tygodniu, w sobotę', () => {
-    for (let week = 0; week <= 36; week++) {
-      const gymDays = days.filter((d) => d.week === week && d.gym)
-      expect(gymDays.length, `tydzień ${week}`).toBeLessThanOrEqual(1)
-      if (gymDays[0]) expect(gymDays[0].weekday, `tydzień ${week}`).toBe('sat')
+  it('bez siłowni (26.10.2026): sobota to sama spokojna jazda', () => {
+    expect(days.some((d) => 'gym' in d)).toBe(false)
+    for (let week = 1; week <= 39; week++) {
+      const sat = days.find((d) => d.week === week && d.weekday === 'sat')!
+      expect(sat.bike?.workout_id, `tydzień ${week}`).toBe('Z2')
+      expect(sat.day_type, `tydzień ${week}`).toBe('easy')
     }
-    // od tygodnia 37 siłownia wypada (szczyt i taper)
-    expect(days.filter((d) => d.week >= 37 && d.gym)).toHaveLength(0)
   })
 
   it('testy FTP zamykają każdą fazę: tygodnie 0, 11, 21, 27 i 39', () => {

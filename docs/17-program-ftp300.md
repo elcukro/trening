@@ -6,7 +6,7 @@ wbudowany na sztywno; teraz każde konto ma swój (`settings.program_id`).
 ## Zawodnik i cel
 
 FTP 235 W przy 73 kg (3,2 W/kg), LTHR 170, HR max 193 (obserwowane 185), masa docelowa 67 kg.
-Cel: **FTP 300 W i wyższe VO2max**, horyzont lato 2027. Pięć jazd i jedna siłownia w tygodniu,
+Cel: **FTP 300 W i wyższe VO2max**, horyzont lato 2027. Pięć jazd w tygodniu (do 26.10.2026 także jedna siłownia),
 długa jazda w poniedziałek, trenażer ERG w domu.
 
 **FTP 235 W nie jest potwierdzone.** Z 20 jazd (26.08–24.09, 30,5 h, 14 z miernikiem) najlepsze
@@ -21,8 +21,8 @@ Uwaga: 3 z 20 jazd to przejazdy użytkowe (45–49 W, kadencja 47–48) – zawy
 
 ## Struktura
 
-Tydzień: **pn długa 3–4 h · wt wolne · śr akcent · czw Z2 · pt akcent · sob Z2 + siłownia · nd wolne**.
-Siłownia po spokojnej sobocie, niedziela wolna, więc na poniedziałkową długą wchodzi ze świeżymi nogami.
+Tydzień: **pn długa 3–4 h · wt wolne · śr akcent · czw Z2 · pt akcent · sob Z2 · nd wolne** (sobotnia siłownia
+usunięta 26.10.2026 – patrz niżej). Spokojna sobota i wolna niedziela, więc na poniedziałkową długą wchodzi ze świeżymi nogami.
 
 | faza | tygodnie | treść |
 |---|---|---|
@@ -31,7 +31,7 @@ Siłownia po spokojnej sobocie, niedziela wolna, więc na poniedziałkową dług
 | II | 12–21 | interwały progowe + sweet spot, test w 21 |
 | III | 22–27 | blok VO2max (3 min), objętość w dół, test w 27 |
 | IV | 28–35 | próg na nowym FTP, największa objętość (10 h/tydz.) |
-| V | 36–38 | ostatni blok VO2max, bez siłowni |
+| V | 36–38 | ostatni blok VO2max |
 | TAPER | 39 | taper i test końcowy |
 
 Rozładowanie co 4–5 tygodni (5, 9, 15, 19, 25, 31, 35). Testy FTP w tygodniach 0, 11, 21, 27 i 39.
@@ -52,10 +52,11 @@ tylko piątkowe rozjeżdżenie i niedzielny test.
 - `WeekTemplate.mon` – poniedziałek był w silniku zaszyty jako dzień wolny. Teraz szablon może go użyć;
   brak pola = wolne, więc program alpejski się nie zmienia.
 - `program.bike_default` – opis roweru zamiast reguły fazowej z `bikeSuggestion`.
-- `GymDaysSchema` przyjmuje dowolny dzień tygodnia (program alpejski: wed/fri, ten: jedna sesja w sobotę).
+- ~~`GymDaysSchema` przyjmuje dowolny dzień tygodnia (program alpejski: wed/fri, ten: jedna sesja w sobotę).~~
+  Nieaktualne od 26.10.2026 – siłownia i `gym_days` usunięte.
 - Wybór programu: Ustawienia → „Program treningowy”. Przełączenie przebudowuje kalendarz; daty i progi
   zostają z ustawień użytkownika.
-- Golden: `src/engine/__tests__/golden_ftp300.test.ts` (dzień po dniu + układ, siłownia, testy, kadencja, progresja obciążenia).
+- Golden: `src/engine/__tests__/golden_ftp300.test.ts` (dzień po dniu + układ, sobota bez siłowni, testy, kadencja, progresja obciążenia).
 - Generowanie: `npm run data:generate` uruchamia **oba** generatory.
 
 ## Ustalenia jednego zawodnika nie wyciekają na drugiego
@@ -86,8 +87,8 @@ a zmiana w SQL Editorze dostaje znacznik z triggera – wystarczy `update public
 Ferdynand zapytał, czy Z2 jest potrzebne, i zaproponował sweet spot w sobotę zamiast Z2. Jego jazdy ze Stravy
 (sierpień–wrzesień) mają NP 165–205 W przy FTP 235 – czyli IF 0,70–0,87: tempa ma dużo, spokojnej objętości mało.
 Z2 zostaje (baza pod +28 % FTP i regeneracja między akcentami), ale w tygodniach z jednym akcentem (1–4)
-piątkowe Z2 75 min to **`Z2_SS_2x10`**: Z2 z dwiema wstawkami SS po 10 min. Nie sobota – tam jest siłownia nóg
-i dzień później długa. Trening nie jest akcentem (`key: False`), więc reguły R1/R15 i żywienie traktują piątek
+piątkowe Z2 75 min to **`Z2_SS_2x10`**: Z2 z dwiema wstawkami SS po 10 min. Nie sobota – tam była wtedy siłownia nóg
+(do 26.10.2026) i dzień później długa. Trening nie jest akcentem (`key: False`), więc reguły R1/R15 i żywienie traktują piątek
 jak spokojny dzień. Od tygodnia 6 piątek to pełny akcent SS. Czwartek i sobota – naprawdę Z2 (ok. 130–170 W).
 
 ## Znane ograniczenia
@@ -103,5 +104,17 @@ jak spokojny dzień. Od tygodnia 6 piątek to pełny akcent SS. Czwartek i sobot
 - ~~Sprzęt i wyjazd globalne~~ – rozwiązane w docs/18 (krok 3: Wyjazd tylko w programie alpejskim;
   krok 4: rowery i serwis per konto).
 - ~~Karta „Punkt wyjścia” wokół celu prędkościowego~~ – rozwiązane w docs/18, krok 1 (`program.goal`).
-- Ustawienia → Siłownia pozwala wybrać dzień Sesji A tylko z wtorku i środy (pod program alpejski);
-  dla tego programu dzień siłowni pochodzi z domyślnych ustawień programu.
+- ~~Ustawienia → Siłownia pozwala wybrać dzień Sesji A tylko z wtorku i środy (pod program alpejski);
+  dla tego programu dzień siłowni pochodzi z domyślnych ustawień programu.~~ – nieaktualne od 26.10.2026 (siłownia usunięta).
+
+## Zmiana 26.10.2026 – bez siłowni (`PROGRAM_VERSION` 2026.10.26-1)
+
+Siłownia zniknęła z całej aplikacji i z obu programów (decyzja i szczegóły: `docs/13` § Zmiana 26.10.2026).
+W tym programie oznacza to:
+- **Sobota to sama jazda Z2** – 36 sobotnich sesji siłowni usuniętych z `calendar-ftp300.json`; jazda, typ dnia, żywienie
+  i znaczniki bez zmian. Notatka tygodnia 14.06.2027 straciła „Siłownia wypada”. Żaden dzień nie stał się nowym dniem wolnym.
+- Z `rules.text` wypadły **R3** (pominięta sesja siłowa), **R7** (rower ma pierwszeństwo), **R8** (progresja ciężarów)
+  i **R9** (48 h ochrony); pozostałe reguły straciły wzmianki o siłowni, numeracja bez zmian.
+- Z programu zniknęły `exercises`, `gym_prescriptions`, `gym_prescription_stages`, `gym_day_options`, `gym_stage`/`gym_week`
+  w szablonach tygodni, ustawienia `gym_days`/`gym_enabled` i parametr `gym_catchup`.
+- `PROGRAM_VERSION` 2026.10.26-1 (było 2026.09.26-2).

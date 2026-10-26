@@ -5,11 +5,9 @@ const BASE: DayFlowInput = {
   date: '2026-09-23',
   today: '2026-09-23',
   ride: { name: 'Baza tlenowa Z2', minutes: 60, pushable: true },
-  gym: null,
   checkedIn: false,
   boltReady: false,
   rideLog: 'none',
-  gymLog: 'none',
   hasActivity: false,
 }
 
@@ -49,10 +47,9 @@ describe('dayFlow', () => {
     expect(f.steps.map((s) => s.key)).toEqual(['checkin', 'train', 'log'])
   })
 
-  it('dzień siłowni prowadzi przez sesję, a status bierze z logu siłowni', () => {
-    const f = dayFlow({ ...BASE, ride: null, gym: { name: 'Sesja A' }, gymLog: 'done' })
-    expect(f.steps.map((s) => s.key)).toEqual(['checkin', 'train', 'log'])
-    expect(f.steps.find((s) => s.key === 'train')?.title).toBe('Sesja A')
+  it('dzień bez jazdy: tylko check-in, bez kroku treningu', () => {
+    const f = dayFlow({ ...BASE, ride: null })
+    expect(f.steps.map((s) => s.key)).toEqual(['checkin'])
     expect(f.next?.key).toBe('checkin')
   })
 
@@ -118,12 +115,10 @@ describe('dayPhase (karta stanu dnia w /m)', () => {
     expect(dayPhase({ ...P, date: '2026-09-20', rideLog: 'done' })).toBe('after')
     expect(dayPhase({ ...P, date: '2026-09-30' })).toBe('future')
   })
-  it('dzień wolny: check-in, potem odpoczynek; siłownia liczy się przez log', () => {
+  it('dzień wolny: check-in, potem odpoczynek', () => {
     expect(dayPhase({ ...P, ride: null })).toBe('morning')
     expect(dayPhase({ ...P, ride: null, checkedIn: true })).toBe('rest')
     expect(dayPhase({ ...P, ride: null, date: '2026-09-20' })).toBe('rest')
-    expect(dayPhase({ ...P, ride: null, gym: { name: 'Sesja A' }, checkedIn: true, hour: 10 })).toBe('brief')
-    expect(dayPhase({ ...P, ride: null, gym: { name: 'Sesja A' }, checkedIn: true, gymLog: 'done', hour: 10 })).toBe('after')
-    expect(dayPhase({ ...P, ride: null, gym: { name: 'Sesja A' }, gymLog: 'skipped' })).toBe('skipped')
+    expect(dayPhase({ ...P, ride: null, checkedIn: true, rideLog: 'skipped' })).toBe('rest')
   })
 })

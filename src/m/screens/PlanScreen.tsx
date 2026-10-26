@@ -95,18 +95,17 @@ export function PlanScreen() {
         )
         break
       case 'skip': {
-        const kind = h.day.bike ? 'bike' : 'gym'
         await toast.run(
           'Oznaczam jako pominięte…',
           async () => {
-            await upsertSessionLog(date, kind, { planned_workout_id: (h.day.bike ? h.day.bike.workout_id : h.day.gym?.session) ?? null, status: 'skipped', rpe: null })
-            return addOverride(date, 'skip', { what: h.day.bike && h.day.gym ? 'both' : kind })
+            await upsertSessionLog(date, 'bike', { planned_workout_id: h.day.bike?.workout_id ?? null, status: 'skipped', rpe: null })
+            return addOverride(date, 'skip', { what: 'bike' })
           },
           () => 'Trening pominięty',
           (row) =>
             undoBtn(async () => {
               await removeOverride(row.id)
-              await upsertSessionLog(date, kind, { status: 'planned' })
+              await upsertSessionLog(date, 'bike', { status: 'planned' })
             }),
         )
         break
@@ -116,9 +115,8 @@ export function PlanScreen() {
           'Cofam zmiany…',
           async () => {
             for (const id of a.ids) await removeOverride(id)
-            const kind = h.day.bike ? 'bike' : 'gym'
-            const log = (await db.session_logs.where('[date+kind]').equals([date, kind]).toArray()).find((l) => !l.deleted_at)
-            if (log?.status === 'skipped') await upsertSessionLog(date, kind, { status: 'planned' })
+            const log = (await db.session_logs.where('[date+kind]').equals([date, 'bike']).toArray()).find((l) => !l.deleted_at)
+            if (log?.status === 'skipped') await upsertSessionLog(date, 'bike', { status: 'planned' })
           },
           () => 'Przywrócono plan',
         )
@@ -203,10 +201,10 @@ function DayRow({ d, today, outcome, onHold }: { d: DayPlan; today: ISODate; out
               <br />
               <span className="m-foot">{d.date.slice(8)}</span>
             </span>
-            <img src={d.bike || d.gym ? dayArt(d.day_type, d.flags.includes('test')) : ART.rest} alt="" width={28} height={28} className="h-7 w-7 object-contain" style={!d.bike && !d.gym ? { opacity: 0.45 } : undefined} />
+            <img src={d.bike ? dayArt(d.day_type, d.flags.includes('test')) : ART.rest} alt="" width={28} height={28} className="h-7 w-7 object-contain" style={!d.bike ? { opacity: 0.45 } : undefined} />
           </span>
         }
-        title={<span className={d.day_type === 'key' || d.flags.includes('test') ? 'font-semibold' : ''}>{d.bike?.name ?? d.gym?.name ?? 'Wolne'}</span>}
+        title={<span className={d.day_type === 'key' || d.flags.includes('test') ? 'font-semibold' : ''}>{d.bike?.name ?? 'Wolne'}</span>}
         sub={
           d.bike ? (
             <>
@@ -214,8 +212,6 @@ function DayRow({ d, today, outcome, onHold }: { d: DayPlan; today: ISODate; out
               {d.flags.includes('test') ? <span style={{ color: 'var(--red)' }}> · test</span> : d.day_type === 'key' ? <span style={{ color: 'var(--orange)' }}> · ★ klucz</span> : null}
               {outcome?.on_bolt ? ' · na Bolcie' : ''}
             </>
-          ) : d.gym ? (
-            'Siłownia'
           ) : undefined
         }
         value={

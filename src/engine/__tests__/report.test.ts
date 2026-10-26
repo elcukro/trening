@@ -28,8 +28,7 @@ describe('rangeReport', () => {
     expect(r.days.length).toBe(7)
     expect(r.bike_planned).toBe(5)
     expect(r.bike_done).toBe(1)
-    expect(r.gym_planned).toBe(0)
-    expect(r.gym_done).toBe(0)
+
     expect(r.done_min).toBe(120)
     expect(r.done_tss).toBe(75)
     expect(r.planned_tss).toBeGreaterThan(100)

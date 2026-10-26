@@ -197,7 +197,7 @@ export function BackupSection() {
         <input ref={fileRef} type="file" accept="application/json,.json" className="hidden" onChange={(e) => e.target.files?.[0] && importJson(e.target.files[0])} />
       </Actions>
       {msg && <p className="mt-2 text-sm">{msg}</p>}
-      <p className="mt-3 text-xs text-slate-500 dark:text-slate-400">Kopia zawiera ustawienia, check-iny, logi jazd i siłowni oraz wyniki testów. Import scala po dacie zmiany.</p>
+      <p className="mt-3 text-xs text-slate-500 dark:text-slate-400">Kopia zawiera ustawienia, check-iny, logi jazd oraz wyniki testów. Import scala po dacie zmiany.</p>
     </Card>
   )
 }

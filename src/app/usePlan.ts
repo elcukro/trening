@@ -11,7 +11,7 @@ import { useEngine, type Engine } from './useSettings'
 import { todayISO } from '@/lib/dates'
 import { useToast } from '@/components/Toast'
 
-/** Ile dni wstecz i w przód liczymy, żeby reguły widziały kontekst (R7 potrzebuje dwóch tygodni). */
+/** Ile dni wstecz i w przód liczymy, żeby reguły widziały kontekst (rampa i raporty patrzą ok. dwa tygodnie wstecz). */
 const BACK = 15
 const FORWARD = 8
 

@@ -4,7 +4,7 @@ import type { Checkin, SessionLog, StravaActivity } from '@/db'
 import { buildCoachContext } from '../coachContext'
 
 const nutrition = { energy: 'maintenance', label: '', protein_g_per_kg: 2, on_bike_carbs_g_per_h: [0, 0] } as unknown as CalendarDay['nutrition']
-const day = (date: string, o: Partial<CalendarDay> = {}): CalendarDay => ({ date, weekday: 'sat', week: 5, phase: 'I', week_type: 'build', day_type: 'rest', bike: null, gym: null, nutrition, flags: [], ...o })
+const day = (date: string, o: Partial<CalendarDay> = {}): CalendarDay => ({ date, weekday: 'sat', week: 5, phase: 'I', week_type: 'build', day_type: 'rest', bike: null, nutrition, flags: [], ...o })
 const bike = (name: string) => ({ workout_id: 'Z2_90', name, duration_min: 90, bike: 'gravel', fallback_workout_id: null })
 const ci = (date: string, o: Partial<Checkin>): Checkin => ({ id: date, date, weight_kg: null, resting_hr: null, sleep: null, legs: null, motivation: null, sick: false, updated_at: '', ...o })
 const act = (date: string, o: Partial<StravaActivity> = {}): StravaActivity => ({ id: date, date, start_at: `${date}T10:00:00Z`, name: 'Jazda', sport_type: 'Ride', moving_time_s: 5400, is_ride: true, updated_at: '', distance_m: 45_250, elevation_m: 120, avg_hr: 131, avg_watts: 180, np_w: 185, device_watts: true, decoupling_pct: 4.26, note: 'Dobra jazda.', ...o })

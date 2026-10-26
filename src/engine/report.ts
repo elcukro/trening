@@ -10,7 +10,8 @@ import type { CalendarDay } from './types'
 
 export interface ReportLog {
   date: ISODate
-  kind: 'bike' | 'gym' | 'test'
+  /** historyczne logi siłowni (kind 'gym') raport pomija */
+  kind: string
   status: 'planned' | 'in_progress' | 'done' | 'modified' | 'skipped'
   duration_min?: number | null
   rpe?: number | null
@@ -24,9 +25,7 @@ export interface ReportDay {
   bike_name: string | null
   bike_min: number
   key: boolean
-  gym_name: string | null
   bike: DayOutcome
-  gym: DayOutcome
   tss_planned: number
   tss_done: number | null
   /** zgodność z analizy plan vs wykonanie (0–100) */
@@ -43,8 +42,6 @@ export interface RangeReport {
   done_tss: number
   bike_planned: number
   bike_done: number
-  gym_planned: number
-  gym_done: number
   /** średnia zgodność z dostępnych analiz */
   score: number | null
   /** dni z problemem: pominięte, zmienione, bez wpisu w przeszłości */
@@ -71,8 +68,6 @@ export function rangeReport(input: { from: ISODate; to: ISODate; today: ISODate;
   let done_tss = 0
   let bike_planned = 0
   let bike_done = 0
-  let gym_planned = 0
-  let gym_done = 0
   let scoreSum = 0
   let scoreN = 0
   let extra_rides = 0
@@ -80,10 +75,10 @@ export function rangeReport(input: { from: ISODate; to: ISODate; today: ISODate;
     const day = byDate.get(date) ?? null
     const ride = day?.bike && !NON_RIDES.has(day.bike.workout_id) ? day.bike : null
     const bikeLog = input.logs.find((l) => l.date === date && l.kind === 'bike')
-    const gymLog = input.logs.find((l) => l.date === date && l.kind === 'gym')
+
     const past = date < input.today
     const bike = outcome(!!ride, bikeLog, past)
-    const gym = outcome(!!day?.gym, gymLog, past)
+
     const tss_planned = day ? plannedTss(day, input.program) : 0
     const tss_done = date <= input.today ? (input.tss.get(date) ?? null) : null
     const score = input.scores.get(date) ?? null
@@ -99,19 +94,16 @@ export function rangeReport(input: { from: ISODate; to: ISODate; today: ISODate;
       extra_rides++
       done_min += bikeLog?.duration_min ?? 0
     }
-    if (day?.gym) {
-      gym_planned++
-      if (gym === 'done' || gym === 'modified') gym_done++
-    }
+
     if (tss_done != null) done_tss += tss_done
     if (score != null) {
       scoreSum += score
       scoreN++
     }
-    out.push({ date, day, bike_name: ride?.name ?? null, bike_min: ride?.duration_min ?? 0, key: day?.day_type === 'key', gym_name: day?.gym?.name ?? null, bike, gym, tss_planned, tss_done, score })
+    out.push({ date, day, bike_name: ride?.name ?? null, bike_min: ride?.duration_min ?? 0, key: day?.day_type === 'key', bike, tss_planned, tss_done, score })
   }
-  const issues = out.filter((d) => d.bike === 'skipped' || d.bike === 'missed' || d.bike === 'modified' || d.gym === 'skipped' || d.gym === 'missed')
-  return { from: input.from, to: input.to, days: out, planned_min, done_min, planned_tss, done_tss, bike_planned, bike_done, gym_planned, gym_done, score: scoreN ? Math.round(scoreSum / scoreN) : null, issues, extra_rides }
+  const issues = out.filter((d) => d.bike === 'skipped' || d.bike === 'missed' || d.bike === 'modified')
+  return { from: input.from, to: input.to, days: out, planned_min, done_min, planned_tss, done_tss, bike_planned, bike_done, score: scoreN ? Math.round(scoreSum / scoreN) : null, issues, extra_rides }
 }
 
 /** Tygodnie (poniedziałki) zawierające się w [from, to] – do tabeli miesiąca. */

@@ -19,7 +19,7 @@ import { dropState, useDragMove } from '@/features/calendar/useDragMove'
 import { DROP_CLASS, DragBar, FLASH_CLASS, useFlash } from '@/features/calendar/DragUi'
 
 const dm = (iso: string) => `${iso.slice(8)}.${iso.slice(5, 7)}`
-const dayLabel = (d: DayPlan) => `${WEEKDAY_SHORT[d.weekday]} ${dm(d.date)} · ${d.bike?.name ?? d.gym?.name ?? 'Wolne'}`
+const dayLabel = (d: DayPlan) => `${WEEKDAY_SHORT[d.weekday]} ${dm(d.date)} · ${d.bike?.name ?? 'Wolne'}`
 
 /*
  * Układ: telefon i 1024–1279 px – lista dni (wiersz: data | treść | zamiana);
@@ -43,8 +43,6 @@ export function WeekPage() {
   const doneTss = days.reduce((a, d) => a + (dailyTss.get(d.date) ?? 0), 0)
   const planMin = days.reduce((a, d) => a + (d.bike && d.bike.workout_id !== 'TRIP' && d.bike.workout_id !== 'TRAVEL_REST' ? d.bike.duration_min : 0), 0)
   const doneMin = logs.filter((l) => l.kind === 'bike' && (l.status === 'done' || l.status === 'modified')).reduce((a, l) => a + (l.duration_min ?? 0), 0)
-  const gymCount = days.filter((d) => d.gym).length
-  const gymDone = logs.filter((l) => l.kind === 'gym' && (l.status === 'done' || l.status === 'modified')).length
   const isCurrent = mondayOf(today) === monday
 
   // zamiana dni: przytrzymaj i przeciągnij kartę dnia albo „Zamień” → „Tu”; te same kolory co w Kalendarzu
@@ -52,7 +50,7 @@ export function WeekPage() {
     (a: string, b: string): { ok: boolean; reason?: string } => {
       const A = days.find((d) => d.date === a)
       const B = days.find((d) => d.date === b)
-      if (A && B && !A.bike && !A.gym && !B.bike && !B.gym) return { ok: false, reason: 'Oba dni są wolne – nie ma czego zamieniać.' }
+      if (A && B && !A.bike && !B.bike) return { ok: false, reason: 'Oba dni są wolne – nie ma czego zamieniać.' }
       return validateSwap(a, b, window)
     },
     [days, window],
@@ -105,7 +103,6 @@ export function WeekPage() {
           <span className="text-slate-600 dark:text-slate-300">{WEEK_TYPE_LABEL[first.week_type]}</span>
           <span className="ml-auto text-slate-600 tabular-nums dark:text-slate-300">
             {hours(doneMin)} z {hours(planMin)} · TSS {doneTss}/{planTss}
-            {gymCount > 0 && ` · siłownia ${gymDone}/${gymCount}`}
           </span>
         </div>
       )}
@@ -119,11 +116,10 @@ export function WeekPage() {
       <ul className="space-y-2 xl:grid xl:grid-cols-7 xl:gap-3 xl:space-y-0">
         {days.map((d) => {
           const bikeLog = logs.find((l) => l.date === d.date && l.kind === 'bike')
-          const gymLog = logs.find((l) => l.date === d.date && l.kind === 'gym')
           // zamiana dotyczy dwóch dni – znacznik (i cofnięcie) widać na obu
           const dayOverrides = overrides.filter((o) => o.date === d.date || (o.kind === 'swap' && o.payload.swap_with === d.date))
           const drop = dropState(drag, d.date, canDrop)
-          const hasContent = !!d.bike || !!d.gym
+          const hasContent = !!d.bike
           const isToday = d.date === today
           const weekend = d.weekday === 'sat' || d.weekday === 'sun'
           return (
@@ -161,20 +157,11 @@ export function WeekPage() {
                         <span className="shrink-0 text-slate-600 tabular-nums dark:text-slate-300 xl:text-xs">{minutes(d.bike.duration_min)}</span>
                       </div>
                     ) : (
-                      <div className="text-sm text-slate-400 dark:text-slate-500">🛋️ {d.gym ? 'Bez roweru' : 'Wolne'}</div>
-                    )}
-                    {d.gym && (
-                      <div className="flex items-baseline justify-between gap-2 text-sm xl:flex-col xl:gap-0">
-                        <Link to={`/silownia/${d.date}`} className="min-w-0 truncate hover:text-sky-700 xl:whitespace-normal xl:font-medium xl:leading-5 dark:hover:text-sky-300" title={d.gym.name}>
-                          🏋️ {d.gym.name}
-                        </Link>
-                        <span className="shrink-0 text-slate-600 tabular-nums dark:text-slate-300 xl:text-xs">~{d.gym.est_min} min</span>
-                      </div>
+                      <div className="text-sm text-slate-400 dark:text-slate-500">🛋️ Wolne</div>
                     )}
                     <div className="flex min-w-0 flex-wrap items-center gap-1">
                       {d.day_type === 'key' && d.bike && <Badge color="bg-red-500" title="Trening kluczowy tygodnia – akcent">Klucz</Badge>}
                       {bikeLog && bikeLog.status !== 'planned' && <StatusBadge status={bikeLog.status} />}
-                      {gymLog && gymLog.status !== 'planned' && <StatusBadge status={gymLog.status} />}
                       {d.flags.map((f) => (
                         <Badge key={f} color={FLAG_COLOR[f]}>
                           {FLAG_LABEL[f]}

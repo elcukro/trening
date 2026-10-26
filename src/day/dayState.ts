@@ -23,12 +23,10 @@ export interface DayFlowInput {
   today: ISODate
   /** jazda tego dnia (po nadpisaniach) */
   ride: { name: string; minutes: number; pushable: boolean } | null
-  gym: { name: string } | null
   checkedIn: boolean
   /** plan jazdy leży na Bolcie w aktualnej wersji */
   boltReady: boolean
   rideLog: LogState
-  gymLog: LogState
   /** jest już jazda ze Stravy na ten dzień */
   hasActivity: boolean
 }
@@ -68,15 +66,13 @@ export function dayFlow(inp: DayFlowInput): DayFlow {
     })
   }
 
-  // dzień z jazdą prowadzi przez jazdę (siłownia ma wtedy własną kartę); dzień bez jazdy – przez siłownię
-  const gymOnly = !inp.ride && !!inp.gym
-  if (inp.ride || inp.gym) {
-    const logged = gymOnly ? LOGGED.includes(inp.gymLog) : LOGGED.includes(inp.rideLog)
+  if (inp.ride) {
+    const logged = LOGGED.includes(inp.rideLog)
     steps.push({
       key: 'train',
-      title: gymOnly ? inp.gym!.name : (inp.ride?.name ?? 'Trening'),
-      detail: gymOnly ? 'Tryb siłowni: serie, ciężary, przerwy' : inp.ride ? `${inp.ride.minutes} min` : null,
-      done: gymOnly ? logged : inp.hasActivity || logged,
+      title: inp.ride.name,
+      detail: `${inp.ride.minutes} min`,
+      done: inp.hasActivity || logged,
       actionable: !future,
     })
     steps.push({
@@ -148,7 +144,7 @@ export interface DayPhaseInput extends DayFlowInput {
   hour: number
   /** planowana godzina startu jazdy (ustawienie `ride_hours`) */
   startHour: number
-  /** RPE zapisane dla jazdy (albo wynik siłowni) */
+  /** RPE zapisane dla jazdy */
   hasRpe: boolean
 }
 
@@ -157,11 +153,9 @@ const EVENING_HOUR = 20
 export function dayPhase(inp: DayPhaseInput): DayPhase {
   if (inp.date > inp.today) return 'future'
   const past = inp.date < inp.today
-  const gymOnly = !inp.ride && !!inp.gym
-  const log = gymOnly ? inp.gymLog : inp.rideLog
-  if ((inp.ride || inp.gym) && log === 'skipped') return 'skipped'
-  const trained = gymOnly ? LOGGED.includes(inp.gymLog) : inp.hasActivity || LOGGED.includes(inp.rideLog)
-  if (!inp.ride && !inp.gym) {
+  if (inp.ride && inp.rideLog === 'skipped') return 'skipped'
+  const trained = inp.hasActivity || LOGGED.includes(inp.rideLog)
+  if (!inp.ride) {
     if (!past && !inp.checkedIn) return 'morning'
     return 'rest'
   }

@@ -43,40 +43,6 @@ export const BikeWorkoutSchema = z.object({
   insert: StepBlockSchema.optional(),
 })
 
-export const ExerciseSchema = z.object({
-  id: z.string(),
-  name: z.string(),
-  pattern: z.string(),
-  equipment: z.array(z.string()),
-  cues: z.array(z.string()),
-  why: z.string(),
-  alternatives: z.array(z.string()).optional().default([]),
-  load_unit: z.string(),
-  per_side: z.boolean(),
-})
-
-export const RxSchema = z.object({
-  sets: z.union([z.number().int(), z.string()]),
-  reps: z.union([z.number().int(), z.string()]),
-  rir: z.union([z.number().int(), z.string()]).optional(),
-  rest_s: z.number().int().optional(),
-  note: z.string().optional(),
-  load_hint: z.string().optional(),
-})
-
-export const GymItemSchema = z.object({
-  exercise: z.string(),
-  rx: RxSchema,
-  block: z.string().optional(),
-  circuit: z.string().optional(),
-})
-
-export const GymSessionSchema = z.object({
-  session: z.string(),
-  name: z.string(),
-  est_min: z.number(),
-  items: z.array(GymItemSchema),
-})
 
 const daySlot = z.tuple([z.string(), z.number().nullable()]).nullable().optional()
 
@@ -91,7 +57,6 @@ export const WeekTemplateSchema = z.object({
   fri: daySlot,
   sat: daySlot,
   sun: daySlot,
-  gym_stage: z.string().nullable().optional(),
   notes: z.string().optional(),
   event: z.string().optional(),
 })
@@ -103,13 +68,6 @@ export const PhaseSchema = z.object({
   weeks: z.tuple([z.number().int(), z.number().int()]).optional(),
 })
 
-/** Dni siłowni: program alpejski używa wed/fri, program „FTP 300” jednej sesji w sobotę. */
-const weekdayEnum = z.enum(['mon', 'tue', 'wed', 'thu', 'fri', 'sat', 'sun'])
-export const GymDaysSchema = z.object({
-  A: weekdayEnum,
-  B: weekdayEnum,
-  C: weekdayEnum,
-})
 
 export const SettingsSchema = z.object({
   program_start: z.string().regex(/^\d{4}-\d{2}-\d{2}$/),
@@ -124,9 +82,7 @@ export const SettingsSchema = z.object({
   ftp_w_goal: z.number(),
   /** miernik mocy: cele mocy w planach Wahoo i waty na ekranie */
   power_meter: z.boolean().default(false),
-  gym_days: GymDaysSchema,
-  /** false = sesje siłowe z programu nie trafiają do kalendarza (zostają w bibliotece); zawodnik włącza je, gdy ma czas */
-  gym_enabled: z.boolean().default(true),
+
   timezone: z.string(),
   volume_scale: z.number().min(0.7).max(1),
   /** Który program treningowy obowiązuje tego użytkownika (klucz z `src/data/program.ts`). */
@@ -156,7 +112,6 @@ export const WeekSummarySchema = z.object({
   start: z.string(),
   end: z.string(),
   bike_min: z.number(),
-  gym: z.array(z.string()),
   key: z.array(z.string()),
   sat: z.string().nullable(),
   sun: z.string().nullable(),
@@ -288,10 +243,10 @@ export const ProgramRulesSchema = z.object({
   tests: z.array(z.object({ id: z.string(), name: z.string(), when: z.string(), protocol: z.string(), result: z.string() })),
   /** strategia na przełęcz – tylko programy z wyjazdem w góry */
   pass_strategy: z.array(z.string()).optional(),
-  /** R3: pominięta sesja siłowa – `move` proponuje odrobienie w ciągu 2 dni, `drop` mówi, że przepada */
-  gym_catchup: z.record(z.string(), z.enum(['move', 'drop'])),
+  /** R1: dni tygodnia, na które nie przenosimy pominiętego akcentu (brak = każdy dzień ze spokojną jazdą) */
+  accent_catchup_not_onto: z.array(z.enum(['mon', 'tue', 'wed', 'thu', 'fri', 'sat', 'sun'])).optional(),
   /** R2: na jaki typ dnia po pominiętej długiej jeździe wolno ją przenieść (pusta lista = przepada) */
-  long_catchup_onto: z.array(z.enum(['rest', 'gym', 'easy', 'long', 'key', 'trip'])),
+  long_catchup_onto: z.array(z.enum(['rest', 'easy', 'long', 'key', 'trip'])),
   /** R12: komunikat w tygodniu rozładowania */
   deload_note: z.string(),
 })
@@ -313,17 +268,15 @@ export const ProgramSchema = z.object({
    * Należą do programu – ustalenia jednego zawodnika nie mogą trafić do drugiego.
    */
   coach_notes: z.array(z.string()).optional(),
-  /** warianty dni Sesji A/C do wyboru w Ustawieniach; brak = układ siłowni stały, bez wyboru */
-  gym_day_options: z.array(z.object({ value: z.enum(['mon', 'tue', 'wed', 'thu', 'fri', 'sat', 'sun']), label: z.string() })).optional(),
+
   default_settings: SettingsSchema,
   hr_zones_lthr_fraction: z.array(HrZoneSchema),
   power_zones_ftp_fraction: z.array(PowerZoneSchema),
   phases: z.array(PhaseSchema),
   bike_workouts: z.record(z.string(), BikeWorkoutSchema),
-  exercises: z.record(z.string(), ExerciseSchema),
-  gym_prescription_stages: z.record(z.string(), z.string()),
+
   weeks: z.record(z.string(), WeekTemplateSchema),
-  gym_prescriptions: z.record(z.string(), z.record(z.string(), GymSessionSchema)),
+
   week_summary: z.array(WeekSummarySchema),
   /**
    * `fixed` – tygodnie idą po kolei od szablonu 0 do ostatniego (program o stałej długości).
@@ -344,14 +297,9 @@ export type HrZone = z.infer<typeof HrZoneSchema>
 export type PowerZone = z.infer<typeof PowerZoneSchema>
 export type Step = z.infer<typeof StepSchema>
 export type BikeWorkout = z.infer<typeof BikeWorkoutSchema>
-export type Exercise = z.infer<typeof ExerciseSchema>
-export type Rx = z.infer<typeof RxSchema>
-export type GymItem = z.infer<typeof GymItemSchema>
-export type GymSession = z.infer<typeof GymSessionSchema>
 export type WeekTemplate = z.infer<typeof WeekTemplateSchema>
 export type Phase = z.infer<typeof PhaseSchema>
 export type Settings = z.infer<typeof SettingsSchema>
-export type GymDays = z.infer<typeof GymDaysSchema>
 export type WeekSummary = z.infer<typeof WeekSummarySchema>
 
 export function parseProgram(raw: unknown): Program {

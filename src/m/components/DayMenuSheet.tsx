@@ -20,7 +20,7 @@ const OVERRIDE_LABEL: Record<string, string> = { indoor: 'pod dachem', sick: 'ch
 export function DayMenuSheet({ day, window, overrides, today, onClose, onAction }: { day: DayPlan; window: CalendarDay[]; overrides: PlanOverrideRow[]; today: ISODate; onClose: () => void; onAction: (a: DayAction) => void }) {
   const [mode, setMode] = useState<'menu' | 'move' | 'swap'>('menu')
   const hasRide = !!day.bike
-  const hasAny = !!day.bike || !!day.gym
+  const hasAny = !!day.bike
   const indoorOn = overrides.some((o) => o.kind === 'indoor')
   const canSkip = hasAny && !overrides.some((o) => o.kind === 'skip')
   const past = day.date < today
@@ -29,7 +29,7 @@ export function DayMenuSheet({ day, window, overrides, today, onClose, onAction 
   const moveTargets: { d: CalendarDay; v: Check }[] = window.filter((d) => d.date !== day.date && d.date >= today && d.date.slice(0, 7) === day.date.slice(0, 7) && isFreeDay(d)).map((d) => ({ d, v: validateMove(day.date, d.date, window, { today }) }))
   const swapTargets: { d: CalendarDay; v: Check }[] = window.filter((d) => d.date !== day.date && d.week === day.week && d.date >= today).map((d) => ({ d, v: validateSwap(day.date, d.date, window) }))
 
-  const title = `${fmtShort(day.date)} · ${day.bike?.name ?? day.gym?.name ?? 'Wolne'}`
+  const title = `${fmtShort(day.date)} · ${day.bike?.name ?? 'Wolne'}`
 
   if (mode === 'move' || mode === 'swap') {
     const list = mode === 'move' ? moveTargets : swapTargets
@@ -40,10 +40,10 @@ export function DayMenuSheet({ day, window, overrides, today, onClose, onAction 
         <div className="m-list">
           {list.map(({ d, v }) => (
             <button key={d.date} className="m-row" disabled={!v.ok} style={!v.ok ? { opacity: 0.5 } : undefined} onClick={() => onAction(mode === 'move' ? { kind: 'move', to: d.date } : { kind: 'swap', with: d.date })}>
-              <img src={d.bike || d.gym ? dayArt(d.day_type, d.flags.includes('test')) : ART.rest} alt="" width={28} height={28} className="h-7 w-7 object-contain" style={!d.bike && !d.gym ? { opacity: 0.45 } : undefined} />
+              <img src={d.bike ? dayArt(d.day_type, d.flags.includes('test')) : ART.rest} alt="" width={28} height={28} className="h-7 w-7 object-contain" style={!d.bike ? { opacity: 0.45 } : undefined} />
               <span className="min-w-0 flex-1">
                 <span className="block">
-                  {fmtShort(d.date)} · {d.bike?.name ?? d.gym?.name ?? 'Wolne'}
+                  {fmtShort(d.date)} · {d.bike?.name ?? 'Wolne'}
                   {d.bike ? ` · ${minutes(d.bike.duration_min)}` : ''}
                 </span>
                 {!v.ok && <span className="m-foot block" style={{ color: 'var(--red)' }}>{v.reason}</span>}

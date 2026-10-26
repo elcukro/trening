@@ -1,5 +1,4 @@
 import { expect, test } from '@playwright/test'
-import { enableGym } from './helpers'
 
 // Testy pełnej aplikacji startują z `/`, a na telefonie start przekierowuje do uproszczonego widoku (`/i`).
 // Znacznik w sessionStorage to ta sama ucieczka, której używa przycisk „Otwórz pełną aplikację”.
@@ -8,7 +7,7 @@ test.beforeEach(async ({ page }) => {
 })
 
 
-test('Dziś 30.09.2026: tydzień 3, akcent sweet spot w środę; 25.11 bez siłowni, Sesja A dopiero po włączeniu w Ustawieniach', async ({ page }) => {
+test('Dziś 30.09.2026: tydzień 3, akcent sweet spot w środę; 25.11 dzień wolny z deficytem z masy', async ({ page }) => {
   await page.goto('/?today=2026-09-30')
   await expect(page.getByRole('heading', { name: 'Tydzień 3' })).toBeVisible()
   await expect(page.getByText('Sweet spot 2×12 min')).toBeVisible()
@@ -17,14 +16,9 @@ test('Dziś 30.09.2026: tydzień 3, akcent sweet spot w środę; 25.11 bez siło
   await expect(page.getByText('346 dni do wyjazdu')).toBeVisible()
   await expect(page.getByText(/Zrób test i wpisz LTHR/)).toBeVisible()
   await page.screenshot({ path: 'test-results/today-2026-09-30.png', fullPage: true })
-  // siłownia domyślnie wyłączona (30.09.2026): środa 25.11 to dzień wolny; po włączeniu przełącznika wraca Sesja A
+  // środa 25.11 to dzień wolny
   await page.goto('/?today=2026-11-25')
-  await expect(page.getByText('Sesja A – Siła nóg (ciężka)')).toHaveCount(0)
-  await enableGym(page, '2026-11-25')
-  await page.goto('/?today=2026-11-25')
-  await expect(page.getByText('Sesja A – Siła nóg (ciężka)')).toBeVisible()
-  await expect(page.getByText('Przysiad ze sztangą na plecach')).toBeVisible()
-  await expect(page.getByText('4×8 · RIR 3 · 120 s').first()).toBeVisible()
+  await expect(page.getByRole('heading', { name: 'Dzień wolny' })).toBeVisible()
   // deficyt liczony z masy (start 110 kg → punkt kontrolny 91 kg na 1.03), nie stała etykieta
   await expect(page.getByText(/Dzień lekki: deficyt ok\. \d+ kcal \(cały tydzień ≈ 0,\d+ kg.*91 kg na 1\.03/)).toBeVisible()
 })
@@ -40,9 +34,7 @@ test('Tydzień: nawigacja i suma godzin', async ({ page }) => {
   await page.goto('/tydzien/2026-09-16?today=2026-09-16')
   await expect(page.getByRole('heading', { name: 'Tydzień 1' })).toBeVisible()
   await expect(page.getByText(/5,3\s*h/)).toBeVisible()
-  // siłownia wyłączona – nagłówek nie pokazuje pustego licznika „siłownia 0/0”
   await expect(page.getByText(/TSS 0\/\d+$/)).toBeVisible()
-  await expect(page.getByText(/siłownia \d+\/\d+/)).toHaveCount(0)
   await page.getByRole('button', { name: '›' }).click()
   await expect(page.getByRole('heading', { name: 'Tydzień 2' })).toBeVisible()
   await page.screenshot({ path: 'test-results/week.png', fullPage: true })
@@ -106,19 +98,6 @@ test('Ustawienia: zmiana daty wyjazdu pokazuje podgląd R14', async ({ page }) =
 test('Biblioteka, strefy, zasady, sezon', async ({ page }) => {
   await page.goto('/biblioteka')
   await expect(page.getByText('Sweet spot 2×20 min')).toBeVisible()
-  await page.getByRole('button', { name: 'Ćwiczenia' }).click()
-  await page.getByText('Przysiad ze sztangą na plecach').click()
-  await expect(page.getByRole('heading', { name: 'Technika' })).toBeVisible()
-  // schemat ćwiczenia i link do filmu (pkt 8)
-  await expect(page.getByRole('img', { name: /Przysiad ze sztangą na plecach – pozycja startowa/ })).toBeVisible()
-  await expect(page.getByRole('link', { name: /Pokaż technikę/ })).toHaveAttribute('href', /youtube\.com/)
-  // powiększenie zdjęcia: dialog, przełączenie na koniec, zamknięcie Escape
-  await page.getByRole('button', { name: /Powiększ: Przysiad ze sztangą na plecach – pozycja startowa/ }).click()
-  await expect(page.getByRole('dialog', { name: /pozycja startowa/ })).toBeVisible()
-  await page.getByRole('button', { name: 'koniec ›' }).click()
-  await expect(page.getByRole('dialog', { name: /pozycja końcowa/ })).toBeVisible()
-  await page.keyboard.press('Escape')
-  await expect(page.getByRole('dialog')).toHaveCount(0)
   await page.goto('/biblioteka/strefy')
   await expect(page.getByText('Sweet spot').first()).toBeVisible()
   // kolumna W: Z2 z FTP 220 W (szacunek) = 56–75 % → 123–165

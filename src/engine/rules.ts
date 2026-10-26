@@ -1,6 +1,6 @@
-import type { GymSession, Program } from './schema'
+import type { Program } from './schema'
 import type { CalendarDay, DayFlag, PlanOverride } from './types'
-import { addDays, compareISO, diffDays, type ISODate, type Weekday } from './dates'
+import { addDays, compareISO, diffDays, type ISODate } from './dates'
 import { nutritionForDay } from './nutrition'
 
 /**
@@ -28,7 +28,8 @@ export interface RuleWarning {
 
 export interface LogLike {
   date: ISODate
-  kind: 'bike' | 'gym' | 'test'
+  /** historyczne logi siłowni (kind 'gym', sprzed 26.10.2026) silnik pomija */
+  kind: string
   status: 'planned' | 'in_progress' | 'done' | 'modified' | 'skipped'
   rpe?: number | null
 }
@@ -52,7 +53,7 @@ export interface RuleContext {
 }
 
 // ---------------------------------------------------------------- pomocnicze
-const LEG_SESSIONS = new Set(['A', 'B', 'C'])
+
 const PROTECTED_FLAGS: DayFlag[] = ['test', 'mountain_weekend', 'back_to_back']
 /** Znaczniki opisujące trening, nie tydzień – wędrują razem z treningiem przy zamianie i przeniesieniu. */
 const SESSION_FLAGS: DayFlag[] = ['test', 'mountain_weekend', 'back_to_back', 'heat']
@@ -77,26 +78,6 @@ export function isProtectedDay(day: CalendarDay): boolean {
   return PROTECTED_FLAGS.some((f) => day.flags.includes(f)) || day.bike?.workout_id === 'BLOCK_DAY1'
 }
 
-/** Lżejsza wersja sesji: −1 seria, RIR +1 (R1, R6). */
-export function lighterSession(session: GymSession, suffix = 'wersja lżejsza'): GymSession {
-  return {
-    ...session,
-    name: `${session.name} – ${suffix}`,
-    est_min: Math.round(session.est_min * 0.85),
-    items: session.items.map((it) => {
-      if (typeof it.rx.sets !== 'number' || it.rx.sets <= 1) return it
-      const rir = it.rx.rir
-      const nextRir = typeof rir === 'number' ? rir + 1 : typeof rir === 'string' && rir.includes('–') ? rir.split('–').map((x) => Number(x) + 1).join('–') : rir
-      return { ...it, rx: { ...it.rx, sets: it.rx.sets - 1, ...(rir !== undefined ? { rir: nextRir } : {}) } }
-    }),
-  }
-}
-
-/** Wersja core, bez nóg (propozycja przy naruszeniu R9). */
-export function coreOnlySession(session: GymSession): GymSession {
-  const items = session.items.filter((it) => it.circuit || ['pallof_press', 'dead_bug', 'side_plank', 'plank_reach', 'copenhagen_plank', 'mobility_circuit', 'cooldown_stretch'].includes(it.exercise))
-  return { ...session, session: 'CORE', name: 'Core i mobilność (zamiast nóg)', est_min: 20, items }
-}
 
 function indoorReplacement(program: Program, day: CalendarDay): CalendarDay['bike'] {
   if (!day.bike) return null
@@ -152,7 +133,7 @@ export function applyOverrides(days: CalendarDay[], overrides: PlanOverride[], p
   // dni zmienione przez nadpisania dostają żywienie policzone na nowo (dzień bez jazdy ≠ „Dzień treningowy”)
   const touched = new Set<ISODate>()
 
-  // Zamiany (R15) i przeniesienia (R1/R3) w kolejności, w jakiej je zrobiono: druga zamiana działa na tygodniu
+  // Zamiany (R15) i przeniesienia (R1/R2) w kolejności, w jakiej je zrobiono: druga zamiana działa na tygodniu
   // już zmienionym przez pierwszą. Nakładane „po dacie” dawały inny układ niż ten, który użytkownik widział przy klikaniu.
   for (const o of structuralInOrder(overrides)) {
     const date = o.date
@@ -165,35 +146,30 @@ export function applyOverrides(days: CalendarDay[], overrides: PlanOverride[], p
       const B = out[b]!
       const [fa, fb] = [sessionFlags(A), sessionFlags(B)]
       ;[A.bike, B.bike] = [B.bike, A.bike]
-      ;[A.gym, B.gym] = [B.gym, A.gym]
+
       ;[A.day_type, B.day_type] = [B.day_type, A.day_type]
       A.flags = withSessionFlags(A, fb)
       B.flags = withSessionFlags(B, fa)
       touched.add(A.date).add(B.date)
     } else {
       const to = String(o.payload.to ?? '')
-      const what = (o.payload.what as 'bike' | 'gym') ?? 'bike'
+      // stare przeniesienia sesji siłowej (`what: 'gym'`, sprzed 26.10.2026) nic już nie zmieniają
+      if ((o.payload.what ?? 'bike') !== 'bike') continue
       const from = index.get(date)
       const target = index.get(to)
       if (from === undefined || target === undefined) continue
       const F = out[from]!
       const T = out[target]!
       // nie ma czego przenosić (np. jazda już przeniesiona gdzie indziej) – cel zostaje nietknięty
-      if (what === 'bike' ? !F.bike : !F.gym) continue
+      if (!F.bike) continue
       touched.add(F.date).add(T.date)
-      if (what === 'bike') {
-        const moved = sessionFlags(F)
-        T.bike = F.bike
-        T.day_type = F.day_type
-        T.flags = withSessionFlags(T, moved)
-        F.bike = null
-        F.day_type = F.gym ? 'gym' : 'rest'
-        F.flags = weekFlags(F)
-      } else {
-        T.gym = F.gym
-        F.gym = null
-        if (!F.bike) F.day_type = 'rest'
-      }
+      const moved = sessionFlags(F)
+      T.bike = F.bike
+      T.day_type = F.day_type
+      T.flags = withSessionFlags(T, moved)
+      F.bike = null
+      F.day_type = 'rest'
+      F.flags = weekFlags(F)
     }
   }
 
@@ -207,7 +183,6 @@ export function applyOverrides(days: CalendarDay[], overrides: PlanOverride[], p
           break
         case 'sick': {
           const level = String(o.payload.level ?? 'fever')
-          d.gym = null
           if (level === 'fever') {
             d.bike = null
             d.day_type = 'rest'
@@ -224,14 +199,13 @@ export function applyOverrides(days: CalendarDay[], overrides: PlanOverride[], p
             if (z2) d.bike = { ...d.bike, workout_id: 'Z2', name: z2.name, duration_min: 60, fallback_workout_id: null }
             d.day_type = 'easy'
           }
-          if (d.gym) d.gym = lighterSession(d.gym)
           break
         }
         case 'skip': {
-          const what = (o.payload.what as 'bike' | 'gym' | 'both') ?? 'both'
-          if (what !== 'gym') d.bike = null
-          if (what !== 'bike') d.gym = null
-          if (!d.bike && !d.gym) d.day_type = 'rest'
+          // stare pominięcie samej siłowni (`what: 'gym'`) nie rusza jazdy
+          if (o.payload.what === 'gym') break
+          d.bike = null
+          d.day_type = 'rest'
           break
         }
         default:
@@ -244,13 +218,13 @@ export function applyOverrides(days: CalendarDay[], overrides: PlanOverride[], p
 }
 
 // ---------------------------------------------------------------- ostrzeżenia
-function logFor(ctx: RuleContext, date: ISODate, kind: 'bike' | 'gym'): LogLike | undefined {
-  return ctx.logs.find((l) => l.date === date && l.kind === kind)
+function bikeLogFor(ctx: RuleContext, date: ISODate): LogLike | undefined {
+  return ctx.logs.find((l) => l.date === date && l.kind === 'bike')
 }
 
-function wasSkipped(ctx: RuleContext, date: ISODate, kind: 'bike' | 'gym'): boolean {
+function wasSkipped(ctx: RuleContext, date: ISODate): boolean {
   if (compareISO(date, ctx.today) >= 0) return false
-  const log = logFor(ctx, date, kind)
+  const log = bikeLogFor(ctx, date)
   return !log || log.status === 'skipped' || log.status === 'planned'
 }
 
@@ -272,22 +246,18 @@ export function restingHrAlarm(checkins: CheckinLike[], date: ISODate): boolean 
   return high(date) && high(addDays(date, -1))
 }
 
-/** biernik – „przenieś na …” */
-const WEEKDAY_PL: Record<Weekday, string> = { mon: 'poniedziałek', tue: 'wtorek', wed: 'środę', thu: 'czwartek', fri: 'piątek', sat: 'sobotę', sun: 'niedzielę' }
-/** dopełniacz z przyimkiem – „sesja … z/ze …” */
-const FROM_WEEKDAY_PL: Record<Weekday, string> = { mon: 'z poniedziałku', tue: 'z wtorku', wed: 'ze środy', thu: 'z czwartku', fri: 'z piątku', sat: 'z soboty', sun: 'z niedzieli' }
-
 /**
- * R1: akcent da się odrobić tylko na dzień ze spokojną jazdą, bez siłowni, i tak, żeby nie wypadły dwa akcenty
+ * R1: akcent da się odrobić tylko na dzień ze spokojną jazdą i tak, żeby nie wypadły dwa akcenty
  * dzień po dniu. Bez znajomości dni tygodnia – o tym, który dzień jest akcentem, mówi kalendarz programu.
  */
-function canTakeAccent(target: CalendarDay | undefined, next: CalendarDay | undefined): target is CalendarDay {
-  return !!target && !!target.bike && target.day_type === 'easy' && !target.gym && !isProtectedDay(target) && !(next && isKeyDay(next))
+function canTakeAccent(program: Program, target: CalendarDay | undefined, next: CalendarDay | undefined): target is CalendarDay {
+  if (!target || program.rules.accent_catchup_not_onto?.includes(target.weekday)) return false
+  return !!target.bike && target.day_type === 'easy' && !isProtectedDay(target) && !(next && isKeyDay(next))
 }
 
 /**
  * Ostrzeżenia i propozycje dla jednego dnia. `window` to dni wokół niego, już po nałożeniu nadpisań.
- * Minimum to bieżący tydzień; R7 potrzebuje dwóch tygodni wstecz, żeby zobaczyć nieudane akcenty.
+ * Minimum to bieżący tydzień.
  */
 export function warningsFor(date: ISODate, window: CalendarDay[], ctx: RuleContext): RuleWarning[] {
   const out: RuleWarning[] = []
@@ -295,47 +265,27 @@ export function warningsFor(date: ISODate, window: CalendarDay[], ctx: RuleConte
   if (!day) return out
   const at = (d: ISODate) => window.find((x) => x.date === d)
 
-  // R9 – 48 h ochrony przed testem, górami, back-to-back i blokiem
-  if (day.gym && LEG_SESSIONS.has(day.gym.session)) {
-    for (let i = 1; i <= 2; i++) {
-      const next = at(addDays(date, i))
-      if (!next || !isProtectedDay(next)) continue
-      const safe = [-3, -2, -1].map((k) => at(addDays(next.date, k))).find((d) => d && !d.gym && diffDays(next.date, d.date) >= 3)
-      out.push({
-        rule: 'R9',
-        severity: 'warn',
-        message: `Sesja ${day.gym.session} mniej niż 48 h przed: ${next.event ?? (next.flags.includes('test') ? 'testem' : 'ciężkim weekendem')}. Nogi nie zdążą odpocząć.`,
-        actions: [
-          ...(safe ? [{ kind: 'move' as const, date, label: `Przenieś na ${WEEKDAY_PL[safe.weekday]} ${safe.date.slice(8)}.${safe.date.slice(5, 7)}`, payload: { to: safe.date, what: 'gym' } }] : []),
-          { kind: 'downgrade', date, label: 'Zamień na core i mobilność', payload: { to_core: true } },
-        ],
-      })
-      break
-    }
-  }
-
   // R1 – pominięty akcent rowerowy
   const yesterday = at(addDays(date, -1))
   const tomorrow = at(addDays(date, 1))
-  if (yesterday && isKeyDay(yesterday) && wasSkipped(ctx, yesterday.date, 'bike') && canTakeAccent(day, tomorrow)) {
-    const lighter = tomorrow?.gym ? ` Wtedy jutrzejsza Sesja ${tomorrow.gym.session} lżejsza.` : ''
+  if (yesterday && isKeyDay(yesterday) && wasSkipped(ctx, yesterday.date) && canTakeAccent(ctx.program, day, tomorrow)) {
     out.push({
       rule: 'R1',
       severity: 'info',
-      message: `Wczorajszy akcent (${yesterday.bike?.name}) nie został wykonany. Możesz go przenieść na dziś zamiast ${day.bike!.name}.${lighter}`,
+      message: `Wczorajszy akcent (${yesterday.bike?.name}) nie został wykonany. Możesz go przenieść na dziś zamiast ${day.bike!.name}.`,
       actions: [{ kind: 'move', date: yesterday.date, label: 'Przenieś akcent na dziś', payload: { to: date, what: 'bike' } }],
     })
   }
-  // przeniesienie tylko na dzień z lekką jazdą – nigdy na dzień wolny, na siłownię ani tuż przed kolejnym akcentem
-  if (isKeyDay(day) && compareISO(date, ctx.today) < 0 && wasSkipped(ctx, date, 'bike')) {
-    if (canTakeAccent(tomorrow, at(addDays(date, 2)))) {
+  // przeniesienie tylko na dzień z lekką jazdą – nigdy na dzień wolny ani tuż przed kolejnym akcentem
+  if (isKeyDay(day) && compareISO(date, ctx.today) < 0 && wasSkipped(ctx, date)) {
+    if (canTakeAccent(ctx.program, tomorrow, at(addDays(date, 2)))) {
       out.push({ rule: 'R1', severity: 'info', message: `Akcent nie został wykonany. Przenieś go na jutro (zamiast ${tomorrow.bike!.name}) albo odpuść – nigdy dwóch akcentów dzień po dniu.`, actions: [{ kind: 'move', date, label: 'Przenieś na jutro', payload: { to: tomorrow.date, what: 'bike' } }] })
     }
   }
 
   // R2 – pominięta długa jazda
   // dokąd wolno ją przenieść, mówi program (`rules.long_catchup_onto`); pusta lista = przepada
-  if (yesterday && yesterday.day_type === 'long' && wasSkipped(ctx, yesterday.date, 'bike') && day.bike && !day.gym && ctx.program.rules.long_catchup_onto.includes(day.day_type)) {
+  if (yesterday && yesterday.day_type === 'long' && wasSkipped(ctx, yesterday.date) && day.bike && ctx.program.rules.long_catchup_onto.includes(day.day_type)) {
     out.push({
       rule: 'R2',
       severity: 'info',
@@ -344,21 +294,6 @@ export function warningsFor(date: ISODate, window: CalendarDay[], ctx: RuleConte
     })
   }
 
-  // R3 – pominięta sesja siłowa
-  const gymMissed = window.filter((d) => compareISO(d.date, date) < 0 && diffDays(date, d.date) <= 2 && d.gym && wasSkipped(ctx, d.date, 'gym'))
-  for (const m of gymMissed) {
-    const session = m.gym!.session
-    // co z pominiętą sesją, mówi program; sesja spoza listy (np. core) po prostu przepada bez komunikatu
-    const policy = ctx.program.rules.gym_catchup[session]
-    if (policy === 'move') {
-      // nie na akcent, długą ani drugą siłownię i nie przed dniem chronionym (R9)
-      if (!day.gym && day.day_type !== 'key' && day.day_type !== 'long' && !(tomorrow && (isProtectedDay(tomorrow) || tomorrow.day_type === 'long'))) {
-        out.push({ rule: 'R3', severity: 'info', message: `Sesja ${session} ${FROM_WEEKDAY_PL[m.weekday]} nie została zrobiona. Możesz ją zrobić dziś.`, actions: [{ kind: 'move', date: m.date, label: 'Przenieś sesję na dziś', payload: { to: date, what: 'gym' } }] })
-      }
-    } else if (policy === 'drop') {
-      out.push({ rule: 'R3', severity: 'info', message: `Sesja ${session} ${FROM_WEEKDAY_PL[m.weekday]} przepada w tym tygodniu – nie odrabiaj jej. W przyszłym tygodniu wracasz do planu.` })
-    }
-  }
 
   // R6 – słaby poranny check-in
   const todayCheckin = ctx.checkins.find((c) => c.date === date)
@@ -366,11 +301,11 @@ export function warningsFor(date: ISODate, window: CalendarDay[], ctx: RuleConte
   const hrAlarm = restingHrAlarm(ctx.checkins, date)
   if ((score !== null && score <= 6) || hrAlarm) {
     const why = hrAlarm ? 'Tętno spoczynkowe jest podwyższone drugi dzień z rzędu' : `Suma ocen z check-inu to ${score} na 15`
-    if (isKeyDay(day) || day.gym) {
+    if (isKeyDay(day)) {
       out.push({
         rule: 'R6',
         severity: 'warn',
-        message: `${why}. Obniż dzień: akcent na Z2 60 min, siłownia o serię mniej i RIR wyżej.`,
+        message: `${why}. Obniż dzień: akcent na Z2 60 min.`,
         actions: [{ kind: 'downgrade', date, label: 'Obniż dzisiejszy trening', payload: {} }],
       })
     } else {
@@ -381,7 +316,7 @@ export function warningsFor(date: ISODate, window: CalendarDay[], ctx: RuleConte
     out.push({
       rule: 'R5',
       severity: 'warn',
-      message: 'Zaznaczyłeś chorobę. Gorączka lub objawy poniżej szyi to zero treningu. Sam katar: tylko Z1 do 45 min, bez siłowni.',
+      message: 'Zaznaczyłeś chorobę. Gorączka lub objawy poniżej szyi to zero treningu. Sam katar: tylko Z1 do 45 min.',
       actions: [
         { kind: 'sick', date, label: 'Gorączka – dzień wolny', payload: { level: 'fever' } },
         { kind: 'sick', date, label: 'Katar – tylko Z1 45 min', payload: { level: 'cold' } },
@@ -389,15 +324,9 @@ export function warningsFor(date: ISODate, window: CalendarDay[], ctx: RuleConte
     })
   }
 
-  // R7 – dwa tygodnie akcentów, które nie wyszły
-  const failedKeys = ctx.logs.filter((l) => l.kind === 'bike' && (l.status === 'skipped' || (l.status === 'modified' && (l.rpe ?? 0) >= 9)) && compareISO(l.date, date) <= 0 && diffDays(date, l.date) <= 14)
-  const failedKeyDays = failedKeys.filter((l) => window.find((d) => d.date === l.date && isKeyDay(d)))
-  if (day.gym && failedKeyDays.length >= 2) {
-    out.push({ rule: 'R7', severity: 'info', message: 'Dwa akcenty rowerowe z rzędu nie wyszły. Rower ma pierwszeństwo: zrób o jedną serię mniej w sesjach siłowych do końca bloku.' })
-  }
 
   // R12 – tydzień rozładowania
-  if (day.flags.includes('deload') && (day.bike || day.gym)) {
+  if (day.flags.includes('deload') && day.bike) {
     out.push({ rule: 'R12', severity: 'info', message: ctx.program.rules.deload_note })
   }
 
@@ -420,17 +349,17 @@ export function warningsFor(date: ISODate, window: CalendarDay[], ctx: RuleConte
   return out
 }
 
-/** Walidacja zamiany dni (R15): w obrębie tygodnia, bez dwóch akcentów pod rząd, z pilnowaniem R9. */
+/** Walidacja zamiany dni (R15): w obrębie tygodnia, bez dwóch akcentów pod rząd. */
 const NON_MOVABLE = new Set(['TRIP', 'TRAVEL_REST', 'REST'])
 
-/** Dzień „Wolne” w kalendarzu: bez jazdy i bez siłowni – jedyny dozwolony cel przeniesienia. */
+/** Dzień „Wolne” w kalendarzu: bez jazdy – jedyny dozwolony cel przeniesienia. */
 export function isFreeDay(day: CalendarDay): boolean {
-  return !day.bike && !day.gym
+  return !day.bike
 }
 
 /**
  * R15 dla przeciągnięcia jazdy w kalendarzu: cel musi być dniem wolnym w tym samym miesiącu i nie w przeszłości;
- * po przeniesieniu nie mogą wypaść dwa akcenty dzień po dniu ani Sesja nóg mniej niż 48 h przed ciężkim dniem.
+ * po przeniesieniu nie mogą wypaść dwa akcenty dzień po dniu.
  * `warning` nie blokuje – informuje (R2: opuszczonej jednostki nie odrabiamy).
  */
 export function validateMove(from: ISODate, to: ISODate, window: CalendarDay[], opts: { today?: ISODate } = {}): { ok: boolean; reason?: string; warning?: string } {
@@ -440,26 +369,19 @@ export function validateMove(from: ISODate, to: ISODate, window: CalendarDay[], 
   if (!T) return { ok: false, reason: 'Cel jest poza planem.' }
   if (from === to) return { ok: false, reason: 'To ten sam dzień.' }
   if (from.slice(0, 7) !== to.slice(0, 7)) return { ok: false, reason: 'Przenoś tylko w obrębie jednego miesiąca.' }
-  if (!isFreeDay(T)) return { ok: false, reason: 'Celem może być tylko dzień wolny (bez jazdy i bez siłowni).' }
+  if (!isFreeDay(T)) return { ok: false, reason: 'Celem może być tylko dzień wolny (bez jazdy).' }
   if (opts.today && compareISO(to, opts.today) < 0) return { ok: false, reason: 'Nie przenoś treningu w przeszłość.' }
 
   const moved = sessionFlags(F)
   const after = window.map((d) =>
     d.date === from
-      ? { ...d, bike: null, day_type: d.gym ? ('gym' as const) : ('rest' as const), flags: weekFlags(d) }
+      ? { ...d, bike: null, day_type: 'rest' as const, flags: weekFlags(d) }
       : d.date === to
         ? { ...d, bike: F.bike, day_type: F.day_type, flags: withSessionFlags(d, moved) }
         : d,
   )
   for (let i = 1; i < after.length; i++) {
     if (isKeyDay(after[i]!) && isKeyDay(after[i - 1]!)) return { ok: false, reason: 'Po przeniesieniu dwa akcenty wypadłyby dzień po dniu.' }
-  }
-  for (const d of after) {
-    if (!d.gym || !LEG_SESSIONS.has(d.gym.session)) continue
-    for (let i = 1; i <= 2; i++) {
-      const next = after.find((x) => x.date === addDays(d.date, i))
-      if (next && isProtectedDay(next)) return { ok: false, reason: `Po przeniesieniu Sesja ${d.gym.session} wypadłaby mniej niż 48 h przed ciężkim dniem (${next.date.slice(8)}.${next.date.slice(5, 7)}).` }
-    }
   }
   const warning = opts.today && compareISO(from, opts.today) < 0 ? 'To jednostka z przeszłości – R2 mówi, żeby jej nie odrabiać. Przenoś tylko, jeśli świadomie zmieniasz układ tygodnia.' : undefined
   return { ok: true, warning }
@@ -472,18 +394,11 @@ export function validateSwap(a: ISODate, b: ISODate, window: CalendarDay[]): { o
   if (A.week !== B.week) return { ok: false, reason: 'Dni muszą być w tym samym tygodniu.' }
   const after = window.map((d) =>
     d.date === a
-      ? { ...d, bike: B.bike, gym: B.gym, day_type: B.day_type, flags: withSessionFlags(d, sessionFlags(B)) }
+      ? { ...d, bike: B.bike, day_type: B.day_type, flags: withSessionFlags(d, sessionFlags(B)) }
       : d.date === b
-        ? { ...d, bike: A.bike, gym: A.gym, day_type: A.day_type, flags: withSessionFlags(d, sessionFlags(A)) }
+        ? { ...d, bike: A.bike, day_type: A.day_type, flags: withSessionFlags(d, sessionFlags(A)) }
         : d,
   )
-  for (const d of after) {
-    if (!d.gym || !LEG_SESSIONS.has(d.gym.session)) continue
-    for (let i = 1; i <= 2; i++) {
-      const next = after.find((x) => x.date === addDays(d.date, i))
-      if (next && isProtectedDay(next)) return { ok: false, reason: `Po zamianie Sesja ${d.gym.session} wypadłaby mniej niż 48 h przed ciężkim dniem (${next.date.slice(8)}.${next.date.slice(5, 7)}).` }
-    }
-  }
   for (let i = 1; i < after.length; i++) {
     if (isKeyDay(after[i]!) && isKeyDay(after[i - 1]!)) return { ok: false, reason: 'Po zamianie dwa akcenty wypadłyby dzień po dniu.' }
   }

@@ -1,4 +1,4 @@
-import { db, newId, nowISO, type BaselineEntry, type BikeRow, type Checkin, type GearTaskState, type MealRow, type PackingState, type PlanOverrideRow, type ServiceLogRow, type SessionLog, type SetLog, type SyncTable, type SyncedRow, type TestResult } from './index'
+import { db, newId, nowISO, type BaselineEntry, type BikeRow, type Checkin, type GearTaskState, type MealRow, type PackingState, type PlanOverrideRow, type ServiceLogRow, type SessionLog, type SyncTable, type SyncedRow, type TestResult } from './index'
 import { addDays } from '@/engine/dates'
 import { swapToUndo } from '@/engine/rules'
 
@@ -57,34 +57,6 @@ export async function upsertSessionLog(date: string, kind: SessionLog['kind'], p
     updated_at: nowISO(),
   }
   return putSynced('session_logs', row)
-}
-
-// ---------------------------------------------------------------- serie
-export async function putSet(row: Omit<SetLog, 'updated_at'> & Partial<Pick<SetLog, 'updated_at'>>): Promise<SetLog> {
-  return putSynced('set_logs', { ...row, updated_at: row.updated_at ?? nowISO() })
-}
-
-export async function setsForSession(sessionLogId: string): Promise<SetLog[]> {
-  const rows = await db.set_logs.where('session_log_id').equals(sessionLogId).toArray()
-  return rows.filter((r) => !r.deleted_at).toSorted((a, b) => a.set_no - b.set_no)
-}
-
-/** Historia ćwiczenia: sesje (data + serie robocze), od najstarszej. */
-export async function exerciseHistory(exerciseId: string): Promise<{ date: string; session_log_id: string; sets: SetLog[] }[]> {
-  const sets = (await db.set_logs.where('exercise_id').equals(exerciseId).toArray()).filter((s) => !s.deleted_at && !s.is_warmup)
-  if (sets.length === 0) return []
-  const ids = [...new Set(sets.map((s) => s.session_log_id))]
-  const sessions = await db.session_logs.bulkGet(ids)
-  const byId = new Map(sessions.filter((s): s is SessionLog => !!s && !s.deleted_at).map((s) => [s.id, s]))
-  const grouped = new Map<string, { date: string; session_log_id: string; sets: SetLog[] }>()
-  for (const s of sets) {
-    const sess = byId.get(s.session_log_id)
-    if (!sess) continue
-    const g = grouped.get(sess.id) ?? { date: sess.date, session_log_id: sess.id, sets: [] }
-    g.sets.push(s)
-    grouped.set(sess.id, g)
-  }
-  return [...grouped.values()].map((g) => ({ ...g, sets: g.sets.toSorted((a, b) => a.set_no - b.set_no) })).toSorted((a, b) => (a.date < b.date ? -1 : 1))
 }
 
 // ---------------------------------------------------------------- testy

@@ -28,8 +28,6 @@ type Form = {
   power_meter: boolean
   program_start: string
   trip_start: string
-  gym_a: Settings['gym_days']['A']
-  gym_enabled: boolean
   volume_scale: string
   height_cm: string
   birth_date: string
@@ -50,8 +48,6 @@ function toForm(s: Settings): Form {
     power_meter: s.power_meter,
     program_start: s.program_start,
     trip_start: s.trip_start,
-    gym_a: s.gym_days.A,
-    gym_enabled: s.gym_enabled,
     volume_scale: String(s.volume_scale),
     height_cm: s.height_cm != null ? String(s.height_cm) : '',
     birth_date: s.birth_date ?? (s.birth_year != null ? `${s.birth_year}-01-01` : ''),
@@ -96,8 +92,6 @@ function fromForm(f: Form, base: Settings): { settings: Settings; errors: FieldE
     power_meter: f.power_meter,
     program_start: f.program_start,
     trip_start: f.trip_start,
-    gym_days: { ...base.gym_days, A: f.gym_a, C: f.gym_a },
-    gym_enabled: f.gym_enabled,
     volume_scale: Math.round(req('volume_scale', f.volume_scale, 0.7, 1) * 100) / 100,
     height_cm: intOrNull(opt('height_cm', f.height_cm, 120, 230)),
     birth_date: f.birth_date && isValidISODate(f.birth_date) && f.birth_date >= '1920-01-01' && f.birth_date <= '2015-12-31' ? f.birth_date : null,
@@ -164,7 +158,7 @@ function SettingsForm({ engine, saved, setSaved }: { engine: ReturnType<typeof u
 
   return (
     <div className="space-y-3">
-      <PageTitle sub="Profil, daty, siłownia, konto">Ustawienia</PageTitle>
+      <PageTitle sub="Profil, daty, objętość, konto">Ustawienia</PageTitle>
       {/* dwie niezależne kolumny (a nie wiersze siatki) – bez pustych dziur, gdy karty mają różną wysokość; na komputerze profil po lewej */}
       <div className="space-y-3 lg:grid lg:grid-cols-2 lg:items-start lg:gap-6 lg:space-y-0">
         <div className="min-w-0 space-y-3 lg:space-y-4">
@@ -251,30 +245,8 @@ function SettingsForm({ engine, saved, setSaved }: { engine: ReturnType<typeof u
           </Card>
           <WeatherSettings />
           <Card>
-            <CardTitle icon="🏋️">Siłownia i objętość</CardTitle>
+            <CardTitle icon="📏">Objętość</CardTitle>
             <div className="space-y-3">
-              {Object.values(engine.ctx.program.gym_prescriptions).some((w) => Object.keys(w).length > 0) && (
-                <Checkbox
-                  label="Siłownia w planie"
-                  hint="Wyłączona: sesje zostają w Bibliotece, w kalendarzu tylko rower. Włącz, gdy znajdzie się czas – wrócą w dniach z ustawienia poniżej."
-                  checked={form.gym_enabled}
-                  onChange={(e) => {
-                    setSaved(false)
-                    setForm((f) => ({ ...f, gym_enabled: e.target.checked }))
-                  }}
-                />
-              )}
-              {engine.ctx.program.gym_day_options && form.gym_enabled && (
-                <Field label="Dni siłowni">
-                  <Select value={form.gym_a} onChange={set('gym_a')}>
-                    {engine.ctx.program.gym_day_options.map((o) => (
-                      <option key={o.value} value={o.value}>
-                        {o.label}
-                      </option>
-                    ))}
-                  </Select>
-                </Field>
-              )}
               <Field label={`Skala objętości (R16): ${Number(form.volume_scale).toLocaleString('pl-PL')}`} hint="0,7–1,0 – skraca Z2, długie jazdy i pagórki; akcenty, testy i góry bez zmian" error={err('volume_scale')}>
                 <input className="block min-h-11 w-full accent-sky-600" type="range" min={0.7} max={1} step={0.05} value={form.volume_scale} onChange={set('volume_scale')} />
               </Field>

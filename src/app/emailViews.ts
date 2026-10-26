@@ -60,17 +60,6 @@ export function morningView(day: DayPlan, program: Program, opts: { athlete: str
             timeline: morningTimeline(day),
           }
         : null,
-    gym: day.gym
-      ? {
-          name: day.gym.name,
-          minutes: day.gym.est_min,
-          items: day.gym.items.map((it) => {
-            const ex = program.exercises[it.exercise]?.name ?? it.exercise
-            const rx = [it.rx.sets && it.rx.reps ? `${it.rx.sets}×${it.rx.reps}` : null, it.rx.rir !== undefined ? `RIR ${it.rx.rir}` : null].filter(Boolean).join(', ')
-            return rx ? `${ex} – ${rx}` : ex
-          }),
-        }
-      : null,
     nutrition: {
       label: day.nutrition.label,
       carbs: day.nutrition.on_bike_carbs_g_per_h[1] > 0 ? `${day.nutrition.on_bike_carbs_g_per_h[0]}–${day.nutrition.on_bike_carbs_g_per_h[1]} g węglowodanów na godzinę` : null,
@@ -101,7 +90,7 @@ export function snapshotFor(day: DayPlan, window: DayPlan[], program: Program, o
   const monday = mondayOf(day.date)
   const weekPlanned = window.filter((d) => mondayOf(d.date) === monday).reduce((a, d) => a + (d.bike && d.workout ? d.bike.duration_min : 0), 0)
   const next = window.find((d) => d.date > day.date && d.bike && d.workout)
-  const hasTraining = (!!day.bike && !!day.workout && day.bike.duration_min > 0) || !!day.gym
+  const hasTraining = !!day.bike && !!day.workout && day.bike.duration_min > 0
   return {
     date: day.date,
     dateLabel: fmtLong(day.date),

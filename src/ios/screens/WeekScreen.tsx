@@ -45,8 +45,7 @@ export function WeekScreen() {
 
   function statusOf(date: string) {
     const log = view.logs.find((l) => l.date === date && l.kind === 'bike' && !l.deleted_at)
-    const gym = view.logs.find((l) => l.date === date && l.kind === 'gym' && !l.deleted_at)
-    const s = log?.status ?? gym?.status
+    const s = log?.status
     if (s === 'done') return { color: 'var(--green)', label: 'zrobione' }
     if (s === 'modified') return { color: 'var(--orange)', label: 'inaczej' }
     if (s === 'skipped') return { color: 'var(--red)', label: 'odpuszczone' }
@@ -89,8 +88,8 @@ export function WeekScreen() {
         <List>
           {view.days.map((d) => {
             const st = statusOf(d.date)
-            const label = d.bike ? d.bike.name : d.gym ? d.gym.name : 'Wolne'
-            const detail = [d.bike ? minutes(d.bike.duration_min) : null, d.gym && d.bike ? 'siłownia' : null, d.day_type !== 'rest' ? DAY_TYPE_LABEL[d.day_type] : null].filter(Boolean).join(' · ')
+            const label = d.bike ? d.bike.name : 'Wolne'
+            const detail = [d.bike ? minutes(d.bike.duration_min) : null, d.day_type !== 'rest' ? DAY_TYPE_LABEL[d.day_type] : null].filter(Boolean).join(' · ')
             return (
               <Row
                 key={d.date}

@@ -11,7 +11,7 @@ import { resolveWorkout } from './zones'
 
 export const CTL_DAYS = 42
 export const ATL_DAYS = 7
-/** R7 w wersji PMC: przyrost CTL powyżej tylu punktów na tydzień to zbyt szybka progresja. */
+/** Rampa PMC: przyrost CTL powyżej tylu punktów na tydzień to zbyt szybka progresja. */
 export const RAMP_LIMIT_PER_WEEK = 7
 
 const NON_RIDES = new Set(['TRIP', 'TRAVEL_REST'])
@@ -91,7 +91,7 @@ export function rampRate(series: PmcPoint[], upTo: ISODate): { per_week: number;
   const start = series.find((p) => p.date === addDays(end?.date ?? upTo, -7))
   if (!end || !start) return null
   const per_week = Math.round((end.ctl - start.ctl) * 10) / 10
-  const warning = per_week > RAMP_LIMIT_PER_WEEK ? `Forma (CTL) rośnie o ${per_week} pkt/tydz. – szybciej niż ${RAMP_LIMIT_PER_WEEK}. Rozważ krótszą długą jazdę albo dzień wolny więcej (R7).` : null
+  const warning = per_week > RAMP_LIMIT_PER_WEEK ? `Forma (CTL) rośnie o ${per_week} pkt/tydz. – szybciej niż ${RAMP_LIMIT_PER_WEEK}. Rozważ krótszą długą jazdę albo dzień wolny więcej.` : null
   return { per_week, warning }
 }
 

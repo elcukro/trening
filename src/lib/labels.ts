@@ -10,7 +10,6 @@ export const WEEK_TYPE_LABEL: Record<WeekType, string> = {
 
 export const DAY_TYPE_LABEL: Record<DayType, string> = {
   rest: 'Wolne',
-  gym: 'Siłownia',
   easy: 'Lekko',
   long: 'Długa jazda',
   key: 'Akcent',
@@ -57,7 +56,6 @@ export const FLAG_COLOR: Record<DayFlag, string> = {
 /** Kolor paska jazdy wg typu dnia – zgodny z kolorami stref (lekko = Z2, długa = Z3, akcent = próg). */
 export const DAY_TYPE_COLOR: Record<DayType, string> = {
   rest: 'bg-slate-300 dark:bg-slate-600',
-  gym: 'bg-slate-300 dark:bg-slate-600',
   easy: 'bg-sky-500',
   long: 'bg-emerald-500',
   key: 'bg-red-500',

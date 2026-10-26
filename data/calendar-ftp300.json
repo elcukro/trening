@@ -1,5 +1,5 @@
 {
- "version": "2026.09.26-2",
+ "version": "2026.10.26-1",
  "settings": {
   "program_start": "2026-09-21",
   "trip_start": "2027-06-28",
@@ -12,12 +12,6 @@
   "ftp_w_estimate": 235,
   "ftp_w_goal": 300,
   "power_meter": true,
-  "gym_days": {
-   "A": "sat",
-   "B": "fri",
-   "C": "sat"
-  },
-  "gym_enabled": true,
   "timezone": "Europe/Warsaw",
   "volume_scale": 1.0,
   "units": "metric",
@@ -33,7 +27,6 @@
    "week_type": "test",
    "day_type": "rest",
    "bike": null,
-   "gym": null,
    "nutrition": {
     "energy": "deficit_300",
     "label": "Dzień lekki: deficyt dobrany do masy",
@@ -56,7 +49,6 @@
    "week_type": "test",
    "day_type": "rest",
    "bike": null,
-   "gym": null,
    "nutrition": {
     "energy": "deficit_300",
     "label": "Dzień lekki: deficyt dobrany do masy",
@@ -78,7 +70,6 @@
    "week_type": "test",
    "day_type": "rest",
    "bike": null,
-   "gym": null,
    "nutrition": {
     "energy": "deficit_300",
     "label": "Dzień lekki: deficyt dobrany do masy",
@@ -100,7 +91,6 @@
    "week_type": "test",
    "day_type": "rest",
    "bike": null,
-   "gym": null,
    "nutrition": {
     "energy": "deficit_300",
     "label": "Dzień lekki: deficyt dobrany do masy",
@@ -128,7 +118,6 @@
     "bike": "Rower",
     "fallback_workout_id": null
    },
-   "gym": null,
    "nutrition": {
     "energy": "deficit_300",
     "label": "Dzień lekki: deficyt dobrany do masy",
@@ -150,7 +139,6 @@
    "week_type": "test",
    "day_type": "rest",
    "bike": null,
-   "gym": null,
    "nutrition": {
     "energy": "deficit_300",
     "label": "Dzień lekki: deficyt dobrany do masy",
@@ -178,7 +166,6 @@
     "bike": "Rower",
     "fallback_workout_id": null
    },
-   "gym": null,
    "nutrition": {
     "energy": "maintenance",
     "label": "Dzień ciężki: bez deficytu, paliwo na trening",
@@ -207,7 +194,6 @@
     "bike": "Rower",
     "fallback_workout_id": null
    },
-   "gym": null,
    "nutrition": {
     "energy": "maintenance",
     "label": "Dzień ciężki: bez deficytu, paliwo na trening",
@@ -229,7 +215,6 @@
    "week_type": "build",
    "day_type": "rest",
    "bike": null,
-   "gym": null,
    "nutrition": {
     "energy": "deficit_300",
     "label": "Dzień lekki: deficyt dobrany do masy",
@@ -257,7 +242,6 @@
     "bike": "Rower",
     "fallback_workout_id": null
    },
-   "gym": null,
    "nutrition": {
     "energy": "maintenance",
     "label": "Dzień ciężki: bez deficytu, paliwo na trening",
@@ -284,7 +268,6 @@
     "bike": "Rower",
     "fallback_workout_id": null
    },
-   "gym": null,
    "nutrition": {
     "energy": "deficit_300",
     "label": "Dzień treningowy: deficyt dobrany do masy",
@@ -312,7 +295,6 @@
     "bike": "Rower",
     "fallback_workout_id": null
    },
-   "gym": null,
    "nutrition": {
     "energy": "deficit_300",
     "label": "Dzień treningowy: deficyt dobrany do masy",
@@ -340,100 +322,6 @@
     "bike": "Rower",
     "fallback_workout_id": null
    },
-   "gym": {
-    "session": "A",
-    "name": "Sesja A – Siła nóg (ciężka)",
-    "est_min": 70,
-    "items": [
-     {
-      "exercise": "mobility_circuit",
-      "rx": {
-       "sets": 2,
-       "reps": "obwód",
-       "note": "5 min rowerek/wioślarz luźno + 2 rundy obwodu. Serie wstępne do 1. ćwiczenia: pusta sztanga×8 → 50%×5 → 70%×3 → 85%×1–2."
-      }
-     },
-     {
-      "exercise": "back_squat",
-      "rx": {
-       "sets": 2,
-       "reps": 10,
-       "rir": 4,
-       "rest_s": 120
-      },
-      "block": "1"
-     },
-     {
-      "exercise": "rdl",
-      "rx": {
-       "sets": 2,
-       "reps": 10,
-       "rir": 4,
-       "rest_s": 120
-      },
-      "block": "2"
-     },
-     {
-      "exercise": "db_row",
-      "rx": {
-       "sets": 2,
-       "reps": 10,
-       "rir": 2,
-       "rest_s": 60,
-       "note": "superseria 3A/3B"
-      },
-      "block": "3A"
-     },
-     {
-      "exercise": "calf_raise",
-      "rx": {
-       "sets": 2,
-       "reps": 15,
-       "rir": 2,
-       "rest_s": 60,
-       "note": "pauza 1 s na górze"
-      },
-      "block": "3B"
-     },
-     {
-      "exercise": "pallof_press",
-      "rx": {
-       "sets": 2,
-       "reps": 10,
-       "rest_s": 30
-      },
-      "block": "4",
-      "circuit": "core_A"
-     },
-     {
-      "exercise": "dead_bug",
-      "rx": {
-       "sets": 2,
-       "reps": 8,
-       "rest_s": 30
-      },
-      "block": "4",
-      "circuit": "core_A"
-     },
-     {
-      "exercise": "side_plank",
-      "rx": {
-       "sets": 2,
-       "reps": "30 s",
-       "rest_s": 30
-      },
-      "block": "4",
-      "circuit": "core_A"
-     },
-     {
-      "exercise": "cooldown_stretch",
-      "rx": {
-       "sets": 1,
-       "reps": "4–5 min"
-      }
-     }
-    ]
-   },
    "nutrition": {
     "energy": "deficit_300",
     "label": "Dzień treningowy: deficyt dobrany do masy",
@@ -455,7 +343,6 @@
    "week_type": "build",
    "day_type": "rest",
    "bike": null,
-   "gym": null,
    "nutrition": {
     "energy": "deficit_300",
     "label": "Dzień lekki: deficyt dobrany do masy",
@@ -483,7 +370,6 @@
     "bike": "Rower",
     "fallback_workout_id": null
    },
-   "gym": null,
    "nutrition": {
     "energy": "maintenance",
     "label": "Dzień ciężki: bez deficytu, paliwo na trening",
@@ -504,7 +390,6 @@
    "week_type": "build",
    "day_type": "rest",
    "bike": null,
-   "gym": null,
    "nutrition": {
     "energy": "deficit_300",
     "label": "Dzień lekki: deficyt dobrany do masy",
@@ -532,7 +417,6 @@
     "bike": "Rower",
     "fallback_workout_id": null
    },
-   "gym": null,
    "nutrition": {
     "energy": "maintenance",
     "label": "Dzień ciężki: bez deficytu, paliwo na trening",
@@ -559,7 +443,6 @@
     "bike": "Rower",
     "fallback_workout_id": null
    },
-   "gym": null,
    "nutrition": {
     "energy": "deficit_300",
     "label": "Dzień treningowy: deficyt dobrany do masy",
@@ -587,7 +470,6 @@
     "bike": "Rower",
     "fallback_workout_id": null
    },
-   "gym": null,
    "nutrition": {
     "energy": "deficit_300",
     "label": "Dzień treningowy: deficyt dobrany do masy",
@@ -615,100 +497,6 @@
     "bike": "Rower",
     "fallback_workout_id": null
    },
-   "gym": {
-    "session": "A",
-    "name": "Sesja A – Siła nóg (ciężka)",
-    "est_min": 70,
-    "items": [
-     {
-      "exercise": "mobility_circuit",
-      "rx": {
-       "sets": 2,
-       "reps": "obwód",
-       "note": "5 min rowerek/wioślarz luźno + 2 rundy obwodu. Serie wstępne do 1. ćwiczenia: pusta sztanga×8 → 50%×5 → 70%×3 → 85%×1–2."
-      }
-     },
-     {
-      "exercise": "back_squat",
-      "rx": {
-       "sets": 3,
-       "reps": 10,
-       "rir": 3,
-       "rest_s": 120
-      },
-      "block": "1"
-     },
-     {
-      "exercise": "rdl",
-      "rx": {
-       "sets": 3,
-       "reps": 10,
-       "rir": 3,
-       "rest_s": 120
-      },
-      "block": "2"
-     },
-     {
-      "exercise": "db_row",
-      "rx": {
-       "sets": 3,
-       "reps": 10,
-       "rir": 2,
-       "rest_s": 60,
-       "note": "superseria 3A/3B"
-      },
-      "block": "3A"
-     },
-     {
-      "exercise": "calf_raise",
-      "rx": {
-       "sets": 3,
-       "reps": 15,
-       "rir": 2,
-       "rest_s": 60,
-       "note": "pauza 1 s na górze"
-      },
-      "block": "3B"
-     },
-     {
-      "exercise": "pallof_press",
-      "rx": {
-       "sets": 3,
-       "reps": 10,
-       "rest_s": 30
-      },
-      "block": "4",
-      "circuit": "core_A"
-     },
-     {
-      "exercise": "dead_bug",
-      "rx": {
-       "sets": 3,
-       "reps": 8,
-       "rest_s": 30
-      },
-      "block": "4",
-      "circuit": "core_A"
-     },
-     {
-      "exercise": "side_plank",
-      "rx": {
-       "sets": 3,
-       "reps": "30 s",
-       "rest_s": 30
-      },
-      "block": "4",
-      "circuit": "core_A"
-     },
-     {
-      "exercise": "cooldown_stretch",
-      "rx": {
-       "sets": 1,
-       "reps": "4–5 min"
-      }
-     }
-    ]
-   },
    "nutrition": {
     "energy": "deficit_300",
     "label": "Dzień treningowy: deficyt dobrany do masy",
@@ -730,7 +518,6 @@
    "week_type": "build",
    "day_type": "rest",
    "bike": null,
-   "gym": null,
    "nutrition": {
     "energy": "deficit_300",
     "label": "Dzień lekki: deficyt dobrany do masy",
@@ -758,7 +545,6 @@
     "bike": "Rower",
     "fallback_workout_id": null
    },
-   "gym": null,
    "nutrition": {
     "energy": "maintenance",
     "label": "Dzień ciężki: bez deficytu, paliwo na trening",
@@ -779,7 +565,6 @@
    "week_type": "build",
    "day_type": "rest",
    "bike": null,
-   "gym": null,
    "nutrition": {
     "energy": "deficit_300",
     "label": "Dzień lekki: deficyt dobrany do masy",
@@ -807,7 +592,6 @@
     "bike": "Rower",
     "fallback_workout_id": null
    },
-   "gym": null,
    "nutrition": {
     "energy": "maintenance",
     "label": "Dzień ciężki: bez deficytu, paliwo na trening",
@@ -834,7 +618,6 @@
     "bike": "Rower",
     "fallback_workout_id": null
    },
-   "gym": null,
    "nutrition": {
     "energy": "deficit_300",
     "label": "Dzień treningowy: deficyt dobrany do masy",
@@ -862,7 +645,6 @@
     "bike": "Rower",
     "fallback_workout_id": null
    },
-   "gym": null,
    "nutrition": {
     "energy": "deficit_300",
     "label": "Dzień treningowy: deficyt dobrany do masy",
@@ -890,100 +672,6 @@
     "bike": "Rower",
     "fallback_workout_id": null
    },
-   "gym": {
-    "session": "A",
-    "name": "Sesja A – Siła nóg (ciężka)",
-    "est_min": 70,
-    "items": [
-     {
-      "exercise": "mobility_circuit",
-      "rx": {
-       "sets": 2,
-       "reps": "obwód",
-       "note": "5 min rowerek/wioślarz luźno + 2 rundy obwodu. Serie wstępne do 1. ćwiczenia: pusta sztanga×8 → 50%×5 → 70%×3 → 85%×1–2."
-      }
-     },
-     {
-      "exercise": "back_squat",
-      "rx": {
-       "sets": 4,
-       "reps": 8,
-       "rir": 3,
-       "rest_s": 120
-      },
-      "block": "1"
-     },
-     {
-      "exercise": "rdl",
-      "rx": {
-       "sets": 3,
-       "reps": 10,
-       "rir": 3,
-       "rest_s": 120
-      },
-      "block": "2"
-     },
-     {
-      "exercise": "db_row",
-      "rx": {
-       "sets": 3,
-       "reps": 10,
-       "rir": 2,
-       "rest_s": 60,
-       "note": "superseria 3A/3B"
-      },
-      "block": "3A"
-     },
-     {
-      "exercise": "calf_raise",
-      "rx": {
-       "sets": 3,
-       "reps": 15,
-       "rir": 2,
-       "rest_s": 60,
-       "note": "pauza 1 s na górze"
-      },
-      "block": "3B"
-     },
-     {
-      "exercise": "pallof_press",
-      "rx": {
-       "sets": 3,
-       "reps": 10,
-       "rest_s": 30
-      },
-      "block": "4",
-      "circuit": "core_A"
-     },
-     {
-      "exercise": "dead_bug",
-      "rx": {
-       "sets": 3,
-       "reps": 8,
-       "rest_s": 30
-      },
-      "block": "4",
-      "circuit": "core_A"
-     },
-     {
-      "exercise": "side_plank",
-      "rx": {
-       "sets": 3,
-       "reps": "30 s",
-       "rest_s": 30
-      },
-      "block": "4",
-      "circuit": "core_A"
-     },
-     {
-      "exercise": "cooldown_stretch",
-      "rx": {
-       "sets": 1,
-       "reps": "4–5 min"
-      }
-     }
-    ]
-   },
    "nutrition": {
     "energy": "deficit_300",
     "label": "Dzień treningowy: deficyt dobrany do masy",
@@ -1005,7 +693,6 @@
    "week_type": "build",
    "day_type": "rest",
    "bike": null,
-   "gym": null,
    "nutrition": {
     "energy": "deficit_300",
     "label": "Dzień lekki: deficyt dobrany do masy",
@@ -1033,7 +720,6 @@
     "bike": "Rower",
     "fallback_workout_id": null
    },
-   "gym": null,
    "nutrition": {
     "energy": "maintenance",
     "label": "Dzień ciężki: bez deficytu, paliwo na trening",
@@ -1054,7 +740,6 @@
    "week_type": "build",
    "day_type": "rest",
    "bike": null,
-   "gym": null,
    "nutrition": {
     "energy": "deficit_300",
     "label": "Dzień lekki: deficyt dobrany do masy",
@@ -1082,7 +767,6 @@
     "bike": "Rower",
     "fallback_workout_id": null
    },
-   "gym": null,
    "nutrition": {
     "energy": "maintenance",
     "label": "Dzień ciężki: bez deficytu, paliwo na trening",
@@ -1109,7 +793,6 @@
     "bike": "Rower",
     "fallback_workout_id": null
    },
-   "gym": null,
    "nutrition": {
     "energy": "deficit_300",
     "label": "Dzień treningowy: deficyt dobrany do masy",
@@ -1137,7 +820,6 @@
     "bike": "Rower",
     "fallback_workout_id": null
    },
-   "gym": null,
    "nutrition": {
     "energy": "deficit_300",
     "label": "Dzień treningowy: deficyt dobrany do masy",
@@ -1165,100 +847,6 @@
     "bike": "Rower",
     "fallback_workout_id": null
    },
-   "gym": {
-    "session": "A",
-    "name": "Sesja A – Siła nóg (ciężka)",
-    "est_min": 70,
-    "items": [
-     {
-      "exercise": "mobility_circuit",
-      "rx": {
-       "sets": 2,
-       "reps": "obwód",
-       "note": "5 min rowerek/wioślarz luźno + 2 rundy obwodu. Serie wstępne do 1. ćwiczenia: pusta sztanga×8 → 50%×5 → 70%×3 → 85%×1–2."
-      }
-     },
-     {
-      "exercise": "back_squat",
-      "rx": {
-       "sets": 4,
-       "reps": 8,
-       "rir": 3,
-       "rest_s": 120
-      },
-      "block": "1"
-     },
-     {
-      "exercise": "rdl",
-      "rx": {
-       "sets": 3,
-       "reps": 8,
-       "rir": 3,
-       "rest_s": 120
-      },
-      "block": "2"
-     },
-     {
-      "exercise": "db_row",
-      "rx": {
-       "sets": 3,
-       "reps": 10,
-       "rir": 2,
-       "rest_s": 60,
-       "note": "superseria 3A/3B"
-      },
-      "block": "3A"
-     },
-     {
-      "exercise": "calf_raise",
-      "rx": {
-       "sets": 3,
-       "reps": 15,
-       "rir": 2,
-       "rest_s": 60,
-       "note": "pauza 1 s na górze"
-      },
-      "block": "3B"
-     },
-     {
-      "exercise": "pallof_press",
-      "rx": {
-       "sets": 3,
-       "reps": 10,
-       "rest_s": 30
-      },
-      "block": "4",
-      "circuit": "core_A"
-     },
-     {
-      "exercise": "dead_bug",
-      "rx": {
-       "sets": 3,
-       "reps": 8,
-       "rest_s": 30
-      },
-      "block": "4",
-      "circuit": "core_A"
-     },
-     {
-      "exercise": "side_plank",
-      "rx": {
-       "sets": 3,
-       "reps": "30 s",
-       "rest_s": 30
-      },
-      "block": "4",
-      "circuit": "core_A"
-     },
-     {
-      "exercise": "cooldown_stretch",
-      "rx": {
-       "sets": 1,
-       "reps": "4–5 min"
-      }
-     }
-    ]
-   },
    "nutrition": {
     "energy": "deficit_300",
     "label": "Dzień treningowy: deficyt dobrany do masy",
@@ -1280,7 +868,6 @@
    "week_type": "build",
    "day_type": "rest",
    "bike": null,
-   "gym": null,
    "nutrition": {
     "energy": "deficit_300",
     "label": "Dzień lekki: deficyt dobrany do masy",
@@ -1308,7 +895,6 @@
     "bike": "Rower",
     "fallback_workout_id": null
    },
-   "gym": null,
    "nutrition": {
     "energy": "maintenance",
     "label": "Dzień ciężki: bez deficytu, paliwo na trening",
@@ -1332,7 +918,6 @@
    "week_type": "deload",
    "day_type": "rest",
    "bike": null,
-   "gym": null,
    "nutrition": {
     "energy": "deficit_300",
     "label": "Dzień lekki: deficyt dobrany do masy",
@@ -1362,7 +947,6 @@
     "bike": "Rower",
     "fallback_workout_id": null
    },
-   "gym": null,
    "nutrition": {
     "energy": "deficit_300",
     "label": "Dzień treningowy: deficyt dobrany do masy",
@@ -1392,7 +976,6 @@
     "bike": "Rower",
     "fallback_workout_id": null
    },
-   "gym": null,
    "nutrition": {
     "energy": "deficit_300",
     "label": "Dzień lekki: deficyt dobrany do masy",
@@ -1416,7 +999,6 @@
    "week_type": "deload",
    "day_type": "rest",
    "bike": null,
-   "gym": null,
    "nutrition": {
     "energy": "deficit_300",
     "label": "Dzień lekki: deficyt dobrany do masy",
@@ -1446,105 +1028,6 @@
     "bike": "Rower",
     "fallback_workout_id": null
    },
-   "gym": {
-    "session": "A",
-    "name": "Sesja A – Siła nóg (ciężka) – tydzień rozładowania",
-    "est_min": 49,
-    "items": [
-     {
-      "exercise": "mobility_circuit",
-      "rx": {
-       "sets": 2,
-       "reps": "obwód",
-       "note": "5 min rowerek/wioślarz luźno + 2 rundy obwodu. Serie wstępne do 1. ćwiczenia: pusta sztanga×8 → 50%×5 → 70%×3 → 85%×1–2."
-      }
-     },
-     {
-      "exercise": "back_squat",
-      "rx": {
-       "sets": 2,
-       "reps": 8,
-       "rir": 4,
-       "rest_s": 120,
-       "note": "Rozładowanie: −40% serii, ciężar −10%, RIR +1."
-      },
-      "block": "1"
-     },
-     {
-      "exercise": "rdl",
-      "rx": {
-       "sets": 2,
-       "reps": 8,
-       "rir": 4,
-       "rest_s": 120,
-       "note": "Rozładowanie: −40% serii, ciężar −10%, RIR +1."
-      },
-      "block": "2"
-     },
-     {
-      "exercise": "db_row",
-      "rx": {
-       "sets": 2,
-       "reps": 10,
-       "rir": 3,
-       "rest_s": 60,
-       "note": "superseria 3A/3B · Rozładowanie: −40% serii, ciężar −10%, RIR +1."
-      },
-      "block": "3A"
-     },
-     {
-      "exercise": "calf_raise",
-      "rx": {
-       "sets": 2,
-       "reps": 15,
-       "rir": 3,
-       "rest_s": 60,
-       "note": "pauza 1 s na górze · Rozładowanie: −40% serii, ciężar −10%, RIR +1."
-      },
-      "block": "3B"
-     },
-     {
-      "exercise": "pallof_press",
-      "rx": {
-       "sets": 2,
-       "reps": 10,
-       "rest_s": 30,
-       "note": "Rozładowanie: −40% serii, ciężar −10%, RIR +1."
-      },
-      "block": "4",
-      "circuit": "core_A"
-     },
-     {
-      "exercise": "dead_bug",
-      "rx": {
-       "sets": 2,
-       "reps": 8,
-       "rest_s": 30,
-       "note": "Rozładowanie: −40% serii, ciężar −10%, RIR +1."
-      },
-      "block": "4",
-      "circuit": "core_A"
-     },
-     {
-      "exercise": "side_plank",
-      "rx": {
-       "sets": 2,
-       "reps": "30 s",
-       "rest_s": 30,
-       "note": "Rozładowanie: −40% serii, ciężar −10%, RIR +1."
-      },
-      "block": "4",
-      "circuit": "core_A"
-     },
-     {
-      "exercise": "cooldown_stretch",
-      "rx": {
-       "sets": 1,
-       "reps": "4–5 min"
-      }
-     }
-    ]
-   },
    "nutrition": {
     "energy": "deficit_300",
     "label": "Dzień treningowy: deficyt dobrany do masy",
@@ -1568,7 +1051,6 @@
    "week_type": "deload",
    "day_type": "rest",
    "bike": null,
-   "gym": null,
    "nutrition": {
     "energy": "deficit_300",
     "label": "Dzień lekki: deficyt dobrany do masy",
@@ -1598,7 +1080,6 @@
     "bike": "Rower",
     "fallback_workout_id": null
    },
-   "gym": null,
    "nutrition": {
     "energy": "maintenance",
     "label": "Dzień ciężki: bez deficytu, paliwo na trening",
@@ -1620,7 +1101,6 @@
    "week_type": "build",
    "day_type": "rest",
    "bike": null,
-   "gym": null,
    "nutrition": {
     "energy": "deficit_300",
     "label": "Dzień lekki: deficyt dobrany do masy",
@@ -1648,7 +1128,6 @@
     "bike": "Rower",
     "fallback_workout_id": null
    },
-   "gym": null,
    "nutrition": {
     "energy": "maintenance",
     "label": "Dzień ciężki: bez deficytu, paliwo na trening",
@@ -1675,7 +1154,6 @@
     "bike": "Rower",
     "fallback_workout_id": null
    },
-   "gym": null,
    "nutrition": {
     "energy": "deficit_300",
     "label": "Dzień treningowy: deficyt dobrany do masy",
@@ -1703,7 +1181,6 @@
     "bike": "Rower",
     "fallback_workout_id": null
    },
-   "gym": null,
    "nutrition": {
     "energy": "maintenance",
     "label": "Dzień ciężki: bez deficytu, paliwo na trening",
@@ -1730,100 +1207,6 @@
     "bike": "Rower",
     "fallback_workout_id": null
    },
-   "gym": {
-    "session": "A",
-    "name": "Sesja A – Siła nóg (ciężka)",
-    "est_min": 70,
-    "items": [
-     {
-      "exercise": "mobility_circuit",
-      "rx": {
-       "sets": 2,
-       "reps": "obwód",
-       "note": "5 min rowerek/wioślarz luźno + 2 rundy obwodu. Serie wstępne do 1. ćwiczenia: pusta sztanga×8 → 50%×5 → 70%×3 → 85%×1–2."
-      }
-     },
-     {
-      "exercise": "back_squat",
-      "rx": {
-       "sets": 4,
-       "reps": 8,
-       "rir": 3,
-       "rest_s": 120
-      },
-      "block": "1"
-     },
-     {
-      "exercise": "rdl",
-      "rx": {
-       "sets": 3,
-       "reps": 8,
-       "rir": "2–3",
-       "rest_s": 150
-      },
-      "block": "2"
-     },
-     {
-      "exercise": "db_row",
-      "rx": {
-       "sets": 3,
-       "reps": 10,
-       "rir": 2,
-       "rest_s": 60,
-       "note": "superseria 3A/3B"
-      },
-      "block": "3A"
-     },
-     {
-      "exercise": "calf_raise",
-      "rx": {
-       "sets": 3,
-       "reps": 15,
-       "rir": 2,
-       "rest_s": 60,
-       "note": "pauza 1 s na górze"
-      },
-      "block": "3B"
-     },
-     {
-      "exercise": "pallof_press",
-      "rx": {
-       "sets": 3,
-       "reps": 10,
-       "rest_s": 30
-      },
-      "block": "4",
-      "circuit": "core_A"
-     },
-     {
-      "exercise": "dead_bug",
-      "rx": {
-       "sets": 3,
-       "reps": 8,
-       "rest_s": 30
-      },
-      "block": "4",
-      "circuit": "core_A"
-     },
-     {
-      "exercise": "side_plank",
-      "rx": {
-       "sets": 3,
-       "reps": "30 s",
-       "rest_s": 30
-      },
-      "block": "4",
-      "circuit": "core_A"
-     },
-     {
-      "exercise": "cooldown_stretch",
-      "rx": {
-       "sets": 1,
-       "reps": "4–5 min"
-      }
-     }
-    ]
-   },
    "nutrition": {
     "energy": "deficit_300",
     "label": "Dzień treningowy: deficyt dobrany do masy",
@@ -1845,7 +1228,6 @@
    "week_type": "build",
    "day_type": "rest",
    "bike": null,
-   "gym": null,
    "nutrition": {
     "energy": "deficit_300",
     "label": "Dzień lekki: deficyt dobrany do masy",
@@ -1873,7 +1255,6 @@
     "bike": "Rower",
     "fallback_workout_id": null
    },
-   "gym": null,
    "nutrition": {
     "energy": "maintenance",
     "label": "Dzień ciężki: bez deficytu, paliwo na trening",
@@ -1894,7 +1275,6 @@
    "week_type": "build",
    "day_type": "rest",
    "bike": null,
-   "gym": null,
    "nutrition": {
     "energy": "deficit_300",
     "label": "Dzień lekki: deficyt dobrany do masy",
@@ -1922,7 +1302,6 @@
     "bike": "Rower",
     "fallback_workout_id": null
    },
-   "gym": null,
    "nutrition": {
     "energy": "maintenance",
     "label": "Dzień ciężki: bez deficytu, paliwo na trening",
@@ -1949,7 +1328,6 @@
     "bike": "Rower",
     "fallback_workout_id": null
    },
-   "gym": null,
    "nutrition": {
     "energy": "deficit_300",
     "label": "Dzień treningowy: deficyt dobrany do masy",
@@ -1977,7 +1355,6 @@
     "bike": "Rower",
     "fallback_workout_id": null
    },
-   "gym": null,
    "nutrition": {
     "energy": "maintenance",
     "label": "Dzień ciężki: bez deficytu, paliwo na trening",
@@ -2004,100 +1381,6 @@
     "bike": "Rower",
     "fallback_workout_id": null
    },
-   "gym": {
-    "session": "A",
-    "name": "Sesja A – Siła nóg (ciężka)",
-    "est_min": 70,
-    "items": [
-     {
-      "exercise": "mobility_circuit",
-      "rx": {
-       "sets": 2,
-       "reps": "obwód",
-       "note": "5 min rowerek/wioślarz luźno + 2 rundy obwodu. Serie wstępne do 1. ćwiczenia: pusta sztanga×8 → 50%×5 → 70%×3 → 85%×1–2."
-      }
-     },
-     {
-      "exercise": "back_squat",
-      "rx": {
-       "sets": 4,
-       "reps": 6,
-       "rir": "2–3",
-       "rest_s": 150
-      },
-      "block": "1"
-     },
-     {
-      "exercise": "rdl",
-      "rx": {
-       "sets": 3,
-       "reps": 8,
-       "rir": "2–3",
-       "rest_s": 150
-      },
-      "block": "2"
-     },
-     {
-      "exercise": "db_row",
-      "rx": {
-       "sets": 3,
-       "reps": 10,
-       "rir": 2,
-       "rest_s": 60,
-       "note": "superseria 3A/3B"
-      },
-      "block": "3A"
-     },
-     {
-      "exercise": "calf_raise",
-      "rx": {
-       "sets": 3,
-       "reps": 15,
-       "rir": 2,
-       "rest_s": 60,
-       "note": "pauza 1 s na górze"
-      },
-      "block": "3B"
-     },
-     {
-      "exercise": "pallof_press",
-      "rx": {
-       "sets": 3,
-       "reps": 10,
-       "rest_s": 30
-      },
-      "block": "4",
-      "circuit": "core_A"
-     },
-     {
-      "exercise": "dead_bug",
-      "rx": {
-       "sets": 3,
-       "reps": 8,
-       "rest_s": 30
-      },
-      "block": "4",
-      "circuit": "core_A"
-     },
-     {
-      "exercise": "side_plank",
-      "rx": {
-       "sets": 3,
-       "reps": "30 s",
-       "rest_s": 30
-      },
-      "block": "4",
-      "circuit": "core_A"
-     },
-     {
-      "exercise": "cooldown_stretch",
-      "rx": {
-       "sets": 1,
-       "reps": "4–5 min"
-      }
-     }
-    ]
-   },
    "nutrition": {
     "energy": "deficit_300",
     "label": "Dzień treningowy: deficyt dobrany do masy",
@@ -2119,7 +1402,6 @@
    "week_type": "build",
    "day_type": "rest",
    "bike": null,
-   "gym": null,
    "nutrition": {
     "energy": "deficit_300",
     "label": "Dzień lekki: deficyt dobrany do masy",
@@ -2147,7 +1429,6 @@
     "bike": "Rower",
     "fallback_workout_id": null
    },
-   "gym": null,
    "nutrition": {
     "energy": "maintenance",
     "label": "Dzień ciężki: bez deficytu, paliwo na trening",
@@ -2168,7 +1449,6 @@
    "week_type": "build",
    "day_type": "rest",
    "bike": null,
-   "gym": null,
    "nutrition": {
     "energy": "deficit_300",
     "label": "Dzień lekki: deficyt dobrany do masy",
@@ -2196,7 +1476,6 @@
     "bike": "Rower",
     "fallback_workout_id": null
    },
-   "gym": null,
    "nutrition": {
     "energy": "maintenance",
     "label": "Dzień ciężki: bez deficytu, paliwo na trening",
@@ -2223,7 +1502,6 @@
     "bike": "Rower",
     "fallback_workout_id": null
    },
-   "gym": null,
    "nutrition": {
     "energy": "deficit_300",
     "label": "Dzień treningowy: deficyt dobrany do masy",
@@ -2251,7 +1529,6 @@
     "bike": "Rower",
     "fallback_workout_id": null
    },
-   "gym": null,
    "nutrition": {
     "energy": "maintenance",
     "label": "Dzień ciężki: bez deficytu, paliwo na trening",
@@ -2278,100 +1555,6 @@
     "bike": "Rower",
     "fallback_workout_id": null
    },
-   "gym": {
-    "session": "A",
-    "name": "Sesja A – Siła nóg (ciężka)",
-    "est_min": 70,
-    "items": [
-     {
-      "exercise": "mobility_circuit",
-      "rx": {
-       "sets": 2,
-       "reps": "obwód",
-       "note": "5 min rowerek/wioślarz luźno + 2 rundy obwodu. Serie wstępne do 1. ćwiczenia: pusta sztanga×8 → 50%×5 → 70%×3 → 85%×1–2."
-      }
-     },
-     {
-      "exercise": "back_squat",
-      "rx": {
-       "sets": 4,
-       "reps": 6,
-       "rir": 2,
-       "rest_s": 150
-      },
-      "block": "1"
-     },
-     {
-      "exercise": "rdl",
-      "rx": {
-       "sets": 3,
-       "reps": 8,
-       "rir": "2–3",
-       "rest_s": 150
-      },
-      "block": "2"
-     },
-     {
-      "exercise": "db_row",
-      "rx": {
-       "sets": 3,
-       "reps": 10,
-       "rir": 2,
-       "rest_s": 60,
-       "note": "superseria 3A/3B"
-      },
-      "block": "3A"
-     },
-     {
-      "exercise": "calf_raise",
-      "rx": {
-       "sets": 3,
-       "reps": 15,
-       "rir": 2,
-       "rest_s": 60,
-       "note": "pauza 1 s na górze"
-      },
-      "block": "3B"
-     },
-     {
-      "exercise": "pallof_press",
-      "rx": {
-       "sets": 3,
-       "reps": 10,
-       "rest_s": 30
-      },
-      "block": "4",
-      "circuit": "core_A"
-     },
-     {
-      "exercise": "dead_bug",
-      "rx": {
-       "sets": 3,
-       "reps": 8,
-       "rest_s": 30
-      },
-      "block": "4",
-      "circuit": "core_A"
-     },
-     {
-      "exercise": "side_plank",
-      "rx": {
-       "sets": 3,
-       "reps": "30 s",
-       "rest_s": 30
-      },
-      "block": "4",
-      "circuit": "core_A"
-     },
-     {
-      "exercise": "cooldown_stretch",
-      "rx": {
-       "sets": 1,
-       "reps": "4–5 min"
-      }
-     }
-    ]
-   },
    "nutrition": {
     "energy": "deficit_300",
     "label": "Dzień treningowy: deficyt dobrany do masy",
@@ -2393,7 +1576,6 @@
    "week_type": "build",
    "day_type": "rest",
    "bike": null,
-   "gym": null,
    "nutrition": {
     "energy": "deficit_300",
     "label": "Dzień lekki: deficyt dobrany do masy",
@@ -2421,7 +1603,6 @@
     "bike": "Rower",
     "fallback_workout_id": null
    },
-   "gym": null,
    "nutrition": {
     "energy": "maintenance",
     "label": "Dzień ciężki: bez deficytu, paliwo na trening",
@@ -2444,7 +1625,6 @@
    "week_type": "deload",
    "day_type": "rest",
    "bike": null,
-   "gym": null,
    "nutrition": {
     "energy": "deficit_300",
     "label": "Dzień lekki: deficyt dobrany do masy",
@@ -2474,7 +1654,6 @@
     "bike": "Rower",
     "fallback_workout_id": null
    },
-   "gym": null,
    "nutrition": {
     "energy": "deficit_300",
     "label": "Dzień treningowy: deficyt dobrany do masy",
@@ -2504,7 +1683,6 @@
     "bike": "Rower",
     "fallback_workout_id": null
    },
-   "gym": null,
    "nutrition": {
     "energy": "deficit_300",
     "label": "Dzień lekki: deficyt dobrany do masy",
@@ -2528,7 +1706,6 @@
    "week_type": "deload",
    "day_type": "rest",
    "bike": null,
-   "gym": null,
    "nutrition": {
     "energy": "deficit_300",
     "label": "Dzień lekki: deficyt dobrany do masy",
@@ -2558,105 +1735,6 @@
     "bike": "Rower",
     "fallback_workout_id": null
    },
-   "gym": {
-    "session": "A",
-    "name": "Sesja A – Siła nóg (ciężka) – tydzień rozładowania",
-    "est_min": 49,
-    "items": [
-     {
-      "exercise": "mobility_circuit",
-      "rx": {
-       "sets": 2,
-       "reps": "obwód",
-       "note": "5 min rowerek/wioślarz luźno + 2 rundy obwodu. Serie wstępne do 1. ćwiczenia: pusta sztanga×8 → 50%×5 → 70%×3 → 85%×1–2."
-      }
-     },
-     {
-      "exercise": "back_squat",
-      "rx": {
-       "sets": 2,
-       "reps": 6,
-       "rir": 3,
-       "rest_s": 150,
-       "note": "Rozładowanie: −40% serii, ciężar −10%, RIR +1."
-      },
-      "block": "1"
-     },
-     {
-      "exercise": "rdl",
-      "rx": {
-       "sets": 2,
-       "reps": 8,
-       "rir": "3–4",
-       "rest_s": 150,
-       "note": "Rozładowanie: −40% serii, ciężar −10%, RIR +1."
-      },
-      "block": "2"
-     },
-     {
-      "exercise": "db_row",
-      "rx": {
-       "sets": 2,
-       "reps": 10,
-       "rir": 3,
-       "rest_s": 60,
-       "note": "superseria 3A/3B · Rozładowanie: −40% serii, ciężar −10%, RIR +1."
-      },
-      "block": "3A"
-     },
-     {
-      "exercise": "calf_raise",
-      "rx": {
-       "sets": 2,
-       "reps": 15,
-       "rir": 3,
-       "rest_s": 60,
-       "note": "pauza 1 s na górze · Rozładowanie: −40% serii, ciężar −10%, RIR +1."
-      },
-      "block": "3B"
-     },
-     {
-      "exercise": "pallof_press",
-      "rx": {
-       "sets": 2,
-       "reps": 10,
-       "rest_s": 30,
-       "note": "Rozładowanie: −40% serii, ciężar −10%, RIR +1."
-      },
-      "block": "4",
-      "circuit": "core_A"
-     },
-     {
-      "exercise": "dead_bug",
-      "rx": {
-       "sets": 2,
-       "reps": 8,
-       "rest_s": 30,
-       "note": "Rozładowanie: −40% serii, ciężar −10%, RIR +1."
-      },
-      "block": "4",
-      "circuit": "core_A"
-     },
-     {
-      "exercise": "side_plank",
-      "rx": {
-       "sets": 2,
-       "reps": "30 s",
-       "rest_s": 30,
-       "note": "Rozładowanie: −40% serii, ciężar −10%, RIR +1."
-      },
-      "block": "4",
-      "circuit": "core_A"
-     },
-     {
-      "exercise": "cooldown_stretch",
-      "rx": {
-       "sets": 1,
-       "reps": "4–5 min"
-      }
-     }
-    ]
-   },
    "nutrition": {
     "energy": "deficit_300",
     "label": "Dzień treningowy: deficyt dobrany do masy",
@@ -2680,7 +1758,6 @@
    "week_type": "deload",
    "day_type": "rest",
    "bike": null,
-   "gym": null,
    "nutrition": {
     "energy": "deficit_300",
     "label": "Dzień lekki: deficyt dobrany do masy",
@@ -2710,7 +1787,6 @@
     "bike": "Rower",
     "fallback_workout_id": null
    },
-   "gym": null,
    "nutrition": {
     "energy": "maintenance",
     "label": "Dzień ciężki: bez deficytu, paliwo na trening",
@@ -2732,7 +1808,6 @@
    "week_type": "build",
    "day_type": "rest",
    "bike": null,
-   "gym": null,
    "nutrition": {
     "energy": "deficit_300",
     "label": "Dzień lekki: deficyt dobrany do masy",
@@ -2760,7 +1835,6 @@
     "bike": "Rower",
     "fallback_workout_id": null
    },
-   "gym": null,
    "nutrition": {
     "energy": "maintenance",
     "label": "Dzień ciężki: bez deficytu, paliwo na trening",
@@ -2787,7 +1861,6 @@
     "bike": "Rower",
     "fallback_workout_id": null
    },
-   "gym": null,
    "nutrition": {
     "energy": "deficit_300",
     "label": "Dzień treningowy: deficyt dobrany do masy",
@@ -2815,7 +1888,6 @@
     "bike": "Rower",
     "fallback_workout_id": null
    },
-   "gym": null,
    "nutrition": {
     "energy": "maintenance",
     "label": "Dzień ciężki: bez deficytu, paliwo na trening",
@@ -2842,100 +1914,6 @@
     "bike": "Rower",
     "fallback_workout_id": null
    },
-   "gym": {
-    "session": "A",
-    "name": "Sesja A – Siła nóg (ciężka)",
-    "est_min": 70,
-    "items": [
-     {
-      "exercise": "mobility_circuit",
-      "rx": {
-       "sets": 2,
-       "reps": "obwód",
-       "note": "5 min rowerek/wioślarz luźno + 2 rundy obwodu. Serie wstępne do 1. ćwiczenia: pusta sztanga×8 → 50%×5 → 70%×3 → 85%×1–2."
-      }
-     },
-     {
-      "exercise": "back_squat",
-      "rx": {
-       "sets": 4,
-       "reps": 6,
-       "rir": 2,
-       "rest_s": 150
-      },
-      "block": "1"
-     },
-     {
-      "exercise": "rdl",
-      "rx": {
-       "sets": 3,
-       "reps": 8,
-       "rir": "2–3",
-       "rest_s": 150
-      },
-      "block": "2"
-     },
-     {
-      "exercise": "db_row",
-      "rx": {
-       "sets": 3,
-       "reps": 10,
-       "rir": 2,
-       "rest_s": 60,
-       "note": "superseria 3A/3B"
-      },
-      "block": "3A"
-     },
-     {
-      "exercise": "calf_raise",
-      "rx": {
-       "sets": 3,
-       "reps": 15,
-       "rir": 2,
-       "rest_s": 60,
-       "note": "pauza 1 s na górze"
-      },
-      "block": "3B"
-     },
-     {
-      "exercise": "pallof_press",
-      "rx": {
-       "sets": 3,
-       "reps": 10,
-       "rest_s": 30
-      },
-      "block": "4",
-      "circuit": "core_A"
-     },
-     {
-      "exercise": "dead_bug",
-      "rx": {
-       "sets": 3,
-       "reps": 8,
-       "rest_s": 30
-      },
-      "block": "4",
-      "circuit": "core_A"
-     },
-     {
-      "exercise": "side_plank",
-      "rx": {
-       "sets": 3,
-       "reps": "30 s",
-       "rest_s": 30
-      },
-      "block": "4",
-      "circuit": "core_A"
-     },
-     {
-      "exercise": "cooldown_stretch",
-      "rx": {
-       "sets": 1,
-       "reps": "4–5 min"
-      }
-     }
-    ]
-   },
    "nutrition": {
     "energy": "deficit_300",
     "label": "Dzień treningowy: deficyt dobrany do masy",
@@ -2957,7 +1935,6 @@
    "week_type": "build",
    "day_type": "rest",
    "bike": null,
-   "gym": null,
    "nutrition": {
     "energy": "deficit_300",
     "label": "Dzień lekki: deficyt dobrany do masy",
@@ -2985,7 +1962,6 @@
     "bike": "Rower",
     "fallback_workout_id": null
    },
-   "gym": null,
    "nutrition": {
     "energy": "maintenance",
     "label": "Dzień ciężki: bez deficytu, paliwo na trening",
@@ -3007,7 +1983,6 @@
    "week_type": "test",
    "day_type": "rest",
    "bike": null,
-   "gym": null,
    "nutrition": {
     "energy": "deficit_300",
     "label": "Dzień lekki: deficyt dobrany do masy",
@@ -3035,7 +2010,6 @@
     "bike": "Rower",
     "fallback_workout_id": null
    },
-   "gym": null,
    "nutrition": {
     "energy": "maintenance",
     "label": "Dzień ciężki: bez deficytu, paliwo na trening",
@@ -3064,7 +2038,6 @@
     "bike": "Rower",
     "fallback_workout_id": null
    },
-   "gym": null,
    "nutrition": {
     "energy": "deficit_300",
     "label": "Dzień lekki: deficyt dobrany do masy",
@@ -3092,7 +2065,6 @@
     "bike": "Rower",
     "fallback_workout_id": null
    },
-   "gym": null,
    "nutrition": {
     "energy": "deficit_300",
     "label": "Dzień treningowy: deficyt dobrany do masy",
@@ -3120,101 +2092,6 @@
     "bike": "Rower",
     "fallback_workout_id": null
    },
-   "gym": {
-    "session": "A",
-    "name": "Sesja A – Siła nóg (ciężka)",
-    "est_min": 70,
-    "items": [
-     {
-      "exercise": "mobility_circuit",
-      "rx": {
-       "sets": 2,
-       "reps": "obwód",
-       "note": "5 min rowerek/wioślarz luźno + 2 rundy obwodu. Serie wstępne do 1. ćwiczenia: pusta sztanga×8 → 50%×5 → 70%×3 → 85%×1–2."
-      }
-     },
-     {
-      "exercise": "back_squat",
-      "rx": {
-       "sets": 3,
-       "reps": 6,
-       "rir": 2,
-       "rest_s": 180
-      },
-      "block": "1"
-     },
-     {
-      "exercise": "trap_bar_deadlift",
-      "rx": {
-       "sets": 3,
-       "reps": 6,
-       "rir": 2,
-       "rest_s": 150,
-       "note": "Wprowadzenie trap bar – ustal ciężar na Fazę II."
-      },
-      "block": "2"
-     },
-     {
-      "exercise": "db_row",
-      "rx": {
-       "sets": 3,
-       "reps": 10,
-       "rir": 2,
-       "rest_s": 60,
-       "note": "superseria 3A/3B"
-      },
-      "block": "3A"
-     },
-     {
-      "exercise": "calf_raise",
-      "rx": {
-       "sets": 3,
-       "reps": 15,
-       "rir": 2,
-       "rest_s": 60,
-       "note": "pauza 1 s na górze"
-      },
-      "block": "3B"
-     },
-     {
-      "exercise": "pallof_press",
-      "rx": {
-       "sets": 3,
-       "reps": 10,
-       "rest_s": 30
-      },
-      "block": "4",
-      "circuit": "core_A"
-     },
-     {
-      "exercise": "dead_bug",
-      "rx": {
-       "sets": 3,
-       "reps": 8,
-       "rest_s": 30
-      },
-      "block": "4",
-      "circuit": "core_A"
-     },
-     {
-      "exercise": "side_plank",
-      "rx": {
-       "sets": 3,
-       "reps": "30 s",
-       "rest_s": 30
-      },
-      "block": "4",
-      "circuit": "core_A"
-     },
-     {
-      "exercise": "cooldown_stretch",
-      "rx": {
-       "sets": 1,
-       "reps": "4–5 min"
-      }
-     }
-    ]
-   },
    "nutrition": {
     "energy": "deficit_300",
     "label": "Dzień treningowy: deficyt dobrany do masy",
@@ -3236,7 +2113,6 @@
    "week_type": "test",
    "day_type": "rest",
    "bike": null,
-   "gym": null,
    "nutrition": {
     "energy": "deficit_300",
     "label": "Dzień lekki: deficyt dobrany do masy",
@@ -3264,7 +2140,6 @@
     "bike": "Rower",
     "fallback_workout_id": null
    },
-   "gym": null,
    "nutrition": {
     "energy": "maintenance",
     "label": "Dzień ciężki: bez deficytu, paliwo na trening",
@@ -3286,7 +2161,6 @@
    "week_type": "build",
    "day_type": "rest",
    "bike": null,
-   "gym": null,
    "nutrition": {
     "energy": "deficit_300",
     "label": "Dzień lekki: deficyt dobrany do masy",
@@ -3314,7 +2188,6 @@
     "bike": "Rower",
     "fallback_workout_id": "INDOOR_4x4"
    },
-   "gym": null,
    "nutrition": {
     "energy": "maintenance",
     "label": "Dzień ciężki: bez deficytu, paliwo na trening",
@@ -3341,7 +2214,6 @@
     "bike": "Rower",
     "fallback_workout_id": null
    },
-   "gym": null,
    "nutrition": {
     "energy": "deficit_300",
     "label": "Dzień treningowy: deficyt dobrany do masy",
@@ -3369,7 +2241,6 @@
     "bike": "Rower",
     "fallback_workout_id": "INDOOR_4x4"
    },
-   "gym": null,
    "nutrition": {
     "energy": "maintenance",
     "label": "Dzień ciężki: bez deficytu, paliwo na trening",
@@ -3396,100 +2267,6 @@
     "bike": "Rower",
     "fallback_workout_id": null
    },
-   "gym": {
-    "session": "A",
-    "name": "Sesja A – Siła nóg (ciężka)",
-    "est_min": 70,
-    "items": [
-     {
-      "exercise": "mobility_circuit",
-      "rx": {
-       "sets": 2,
-       "reps": "obwód",
-       "note": "5 min rowerek/wioślarz luźno + 2 rundy obwodu. Serie wstępne do 1. ćwiczenia: pusta sztanga×8 → 50%×5 → 70%×3 → 85%×1–2."
-      }
-     },
-     {
-      "exercise": "back_squat",
-      "rx": {
-       "sets": 4,
-       "reps": 6,
-       "rir": 2,
-       "rest_s": 180
-      },
-      "block": "1"
-     },
-     {
-      "exercise": "trap_bar_deadlift",
-      "rx": {
-       "sets": 4,
-       "reps": 5,
-       "rir": 2,
-       "rest_s": 150
-      },
-      "block": "2"
-     },
-     {
-      "exercise": "db_row",
-      "rx": {
-       "sets": 3,
-       "reps": 8,
-       "rir": 2,
-       "rest_s": 60,
-       "note": "superseria 3A/3B"
-      },
-      "block": "3A"
-     },
-     {
-      "exercise": "calf_raise",
-      "rx": {
-       "sets": 3,
-       "reps": 10,
-       "rir": 2,
-       "rest_s": 60,
-       "note": "pauza 1 s na górze"
-      },
-      "block": "3B"
-     },
-     {
-      "exercise": "pallof_press",
-      "rx": {
-       "sets": 3,
-       "reps": 10,
-       "rest_s": 30
-      },
-      "block": "4",
-      "circuit": "core_A"
-     },
-     {
-      "exercise": "dead_bug",
-      "rx": {
-       "sets": 3,
-       "reps": 8,
-       "rest_s": 30
-      },
-      "block": "4",
-      "circuit": "core_A"
-     },
-     {
-      "exercise": "side_plank",
-      "rx": {
-       "sets": 3,
-       "reps": "45 s",
-       "rest_s": 30
-      },
-      "block": "4",
-      "circuit": "core_A"
-     },
-     {
-      "exercise": "cooldown_stretch",
-      "rx": {
-       "sets": 1,
-       "reps": "4–5 min"
-      }
-     }
-    ]
-   },
    "nutrition": {
     "energy": "deficit_300",
     "label": "Dzień treningowy: deficyt dobrany do masy",
@@ -3511,7 +2288,6 @@
    "week_type": "build",
    "day_type": "rest",
    "bike": null,
-   "gym": null,
    "nutrition": {
     "energy": "deficit_300",
     "label": "Dzień lekki: deficyt dobrany do masy",
@@ -3539,7 +2315,6 @@
     "bike": "Rower",
     "fallback_workout_id": null
    },
-   "gym": null,
    "nutrition": {
     "energy": "maintenance",
     "label": "Dzień ciężki: bez deficytu, paliwo na trening",
@@ -3560,7 +2335,6 @@
    "week_type": "build",
    "day_type": "rest",
    "bike": null,
-   "gym": null,
    "nutrition": {
     "energy": "deficit_300",
     "label": "Dzień lekki: deficyt dobrany do masy",
@@ -3588,7 +2362,6 @@
     "bike": "Rower",
     "fallback_workout_id": "INDOOR_4x4"
    },
-   "gym": null,
    "nutrition": {
     "energy": "maintenance",
     "label": "Dzień ciężki: bez deficytu, paliwo na trening",
@@ -3615,7 +2388,6 @@
     "bike": "Rower",
     "fallback_workout_id": null
    },
-   "gym": null,
    "nutrition": {
     "energy": "deficit_300",
     "label": "Dzień treningowy: deficyt dobrany do masy",
@@ -3643,7 +2415,6 @@
     "bike": "Rower",
     "fallback_workout_id": "INDOOR_4x4"
    },
-   "gym": null,
    "nutrition": {
     "energy": "maintenance",
     "label": "Dzień ciężki: bez deficytu, paliwo na trening",
@@ -3670,100 +2441,6 @@
     "bike": "Rower",
     "fallback_workout_id": null
    },
-   "gym": {
-    "session": "A",
-    "name": "Sesja A – Siła nóg (ciężka)",
-    "est_min": 70,
-    "items": [
-     {
-      "exercise": "mobility_circuit",
-      "rx": {
-       "sets": 2,
-       "reps": "obwód",
-       "note": "5 min rowerek/wioślarz luźno + 2 rundy obwodu. Serie wstępne do 1. ćwiczenia: pusta sztanga×8 → 50%×5 → 70%×3 → 85%×1–2."
-      }
-     },
-     {
-      "exercise": "back_squat",
-      "rx": {
-       "sets": 5,
-       "reps": 5,
-       "rir": 2,
-       "rest_s": 180
-      },
-      "block": "1"
-     },
-     {
-      "exercise": "trap_bar_deadlift",
-      "rx": {
-       "sets": 4,
-       "reps": 5,
-       "rir": 2,
-       "rest_s": 150
-      },
-      "block": "2"
-     },
-     {
-      "exercise": "db_row",
-      "rx": {
-       "sets": 3,
-       "reps": 8,
-       "rir": 2,
-       "rest_s": 60,
-       "note": "superseria 3A/3B"
-      },
-      "block": "3A"
-     },
-     {
-      "exercise": "calf_raise",
-      "rx": {
-       "sets": 3,
-       "reps": 10,
-       "rir": 2,
-       "rest_s": 60,
-       "note": "pauza 1 s na górze"
-      },
-      "block": "3B"
-     },
-     {
-      "exercise": "pallof_press",
-      "rx": {
-       "sets": 3,
-       "reps": 10,
-       "rest_s": 30
-      },
-      "block": "4",
-      "circuit": "core_A"
-     },
-     {
-      "exercise": "dead_bug",
-      "rx": {
-       "sets": 3,
-       "reps": 8,
-       "rest_s": 30
-      },
-      "block": "4",
-      "circuit": "core_A"
-     },
-     {
-      "exercise": "side_plank",
-      "rx": {
-       "sets": 3,
-       "reps": "45 s",
-       "rest_s": 30
-      },
-      "block": "4",
-      "circuit": "core_A"
-     },
-     {
-      "exercise": "cooldown_stretch",
-      "rx": {
-       "sets": 1,
-       "reps": "4–5 min"
-      }
-     }
-    ]
-   },
    "nutrition": {
     "energy": "deficit_300",
     "label": "Dzień treningowy: deficyt dobrany do masy",
@@ -3785,7 +2462,6 @@
    "week_type": "build",
    "day_type": "rest",
    "bike": null,
-   "gym": null,
    "nutrition": {
     "energy": "deficit_300",
     "label": "Dzień lekki: deficyt dobrany do masy",
@@ -3813,7 +2489,6 @@
     "bike": "Rower",
     "fallback_workout_id": null
    },
-   "gym": null,
    "nutrition": {
     "energy": "maintenance",
     "label": "Dzień ciężki: bez deficytu, paliwo na trening",
@@ -3834,7 +2509,6 @@
    "week_type": "build",
    "day_type": "rest",
    "bike": null,
-   "gym": null,
    "nutrition": {
     "energy": "deficit_300",
     "label": "Dzień lekki: deficyt dobrany do masy",
@@ -3862,7 +2536,6 @@
     "bike": "Rower",
     "fallback_workout_id": "INDOOR_4x4"
    },
-   "gym": null,
    "nutrition": {
     "energy": "maintenance",
     "label": "Dzień ciężki: bez deficytu, paliwo na trening",
@@ -3889,7 +2562,6 @@
     "bike": "Rower",
     "fallback_workout_id": null
    },
-   "gym": null,
    "nutrition": {
     "energy": "deficit_300",
     "label": "Dzień treningowy: deficyt dobrany do masy",
@@ -3917,7 +2589,6 @@
     "bike": "Rower",
     "fallback_workout_id": "INDOOR_4x4"
    },
-   "gym": null,
    "nutrition": {
     "energy": "maintenance",
     "label": "Dzień ciężki: bez deficytu, paliwo na trening",
@@ -3944,100 +2615,6 @@
     "bike": "Rower",
     "fallback_workout_id": null
    },
-   "gym": {
-    "session": "A",
-    "name": "Sesja A – Siła nóg (ciężka)",
-    "est_min": 70,
-    "items": [
-     {
-      "exercise": "mobility_circuit",
-      "rx": {
-       "sets": 2,
-       "reps": "obwód",
-       "note": "5 min rowerek/wioślarz luźno + 2 rundy obwodu. Serie wstępne do 1. ćwiczenia: pusta sztanga×8 → 50%×5 → 70%×3 → 85%×1–2."
-      }
-     },
-     {
-      "exercise": "back_squat",
-      "rx": {
-       "sets": 5,
-       "reps": 5,
-       "rir": 2,
-       "rest_s": 180
-      },
-      "block": "1"
-     },
-     {
-      "exercise": "trap_bar_deadlift",
-      "rx": {
-       "sets": 4,
-       "reps": 4,
-       "rir": 2,
-       "rest_s": 150
-      },
-      "block": "2"
-     },
-     {
-      "exercise": "db_row",
-      "rx": {
-       "sets": 3,
-       "reps": 8,
-       "rir": 2,
-       "rest_s": 60,
-       "note": "superseria 3A/3B"
-      },
-      "block": "3A"
-     },
-     {
-      "exercise": "calf_raise",
-      "rx": {
-       "sets": 3,
-       "reps": 10,
-       "rir": 2,
-       "rest_s": 60,
-       "note": "pauza 1 s na górze"
-      },
-      "block": "3B"
-     },
-     {
-      "exercise": "pallof_press",
-      "rx": {
-       "sets": 3,
-       "reps": 10,
-       "rest_s": 30
-      },
-      "block": "4",
-      "circuit": "core_A"
-     },
-     {
-      "exercise": "dead_bug",
-      "rx": {
-       "sets": 3,
-       "reps": 8,
-       "rest_s": 30
-      },
-      "block": "4",
-      "circuit": "core_A"
-     },
-     {
-      "exercise": "side_plank",
-      "rx": {
-       "sets": 3,
-       "reps": "45 s",
-       "rest_s": 30
-      },
-      "block": "4",
-      "circuit": "core_A"
-     },
-     {
-      "exercise": "cooldown_stretch",
-      "rx": {
-       "sets": 1,
-       "reps": "4–5 min"
-      }
-     }
-    ]
-   },
    "nutrition": {
     "energy": "deficit_300",
     "label": "Dzień treningowy: deficyt dobrany do masy",
@@ -4059,7 +2636,6 @@
    "week_type": "build",
    "day_type": "rest",
    "bike": null,
-   "gym": null,
    "nutrition": {
     "energy": "deficit_300",
     "label": "Dzień lekki: deficyt dobrany do masy",
@@ -4087,7 +2663,6 @@
     "bike": "Rower",
     "fallback_workout_id": null
    },
-   "gym": null,
    "nutrition": {
     "energy": "maintenance",
     "label": "Dzień ciężki: bez deficytu, paliwo na trening",
@@ -4110,7 +2685,6 @@
    "week_type": "deload",
    "day_type": "rest",
    "bike": null,
-   "gym": null,
    "nutrition": {
     "energy": "deficit_300",
     "label": "Dzień lekki: deficyt dobrany do masy",
@@ -4140,7 +2714,6 @@
     "bike": "Rower",
     "fallback_workout_id": null
    },
-   "gym": null,
    "nutrition": {
     "energy": "deficit_300",
     "label": "Dzień treningowy: deficyt dobrany do masy",
@@ -4170,7 +2743,6 @@
     "bike": "Rower",
     "fallback_workout_id": null
    },
-   "gym": null,
    "nutrition": {
     "energy": "deficit_300",
     "label": "Dzień lekki: deficyt dobrany do masy",
@@ -4194,7 +2766,6 @@
    "week_type": "deload",
    "day_type": "rest",
    "bike": null,
-   "gym": null,
    "nutrition": {
     "energy": "deficit_300",
     "label": "Dzień lekki: deficyt dobrany do masy",
@@ -4224,105 +2795,6 @@
     "bike": "Rower",
     "fallback_workout_id": null
    },
-   "gym": {
-    "session": "A",
-    "name": "Sesja A – Siła nóg (ciężka) – tydzień rozładowania",
-    "est_min": 49,
-    "items": [
-     {
-      "exercise": "mobility_circuit",
-      "rx": {
-       "sets": 2,
-       "reps": "obwód",
-       "note": "5 min rowerek/wioślarz luźno + 2 rundy obwodu. Serie wstępne do 1. ćwiczenia: pusta sztanga×8 → 50%×5 → 70%×3 → 85%×1–2."
-      }
-     },
-     {
-      "exercise": "back_squat",
-      "rx": {
-       "sets": 3,
-       "reps": 5,
-       "rir": 3,
-       "rest_s": 180,
-       "note": "Rozładowanie: −40% serii, ciężar −10%, RIR +1."
-      },
-      "block": "1"
-     },
-     {
-      "exercise": "trap_bar_deadlift",
-      "rx": {
-       "sets": 2,
-       "reps": 4,
-       "rir": 3,
-       "rest_s": 150,
-       "note": "Rozładowanie: −40% serii, ciężar −10%, RIR +1."
-      },
-      "block": "2"
-     },
-     {
-      "exercise": "db_row",
-      "rx": {
-       "sets": 2,
-       "reps": 8,
-       "rir": 3,
-       "rest_s": 60,
-       "note": "superseria 3A/3B · Rozładowanie: −40% serii, ciężar −10%, RIR +1."
-      },
-      "block": "3A"
-     },
-     {
-      "exercise": "calf_raise",
-      "rx": {
-       "sets": 2,
-       "reps": 10,
-       "rir": 3,
-       "rest_s": 60,
-       "note": "pauza 1 s na górze · Rozładowanie: −40% serii, ciężar −10%, RIR +1."
-      },
-      "block": "3B"
-     },
-     {
-      "exercise": "pallof_press",
-      "rx": {
-       "sets": 2,
-       "reps": 10,
-       "rest_s": 30,
-       "note": "Rozładowanie: −40% serii, ciężar −10%, RIR +1."
-      },
-      "block": "4",
-      "circuit": "core_A"
-     },
-     {
-      "exercise": "dead_bug",
-      "rx": {
-       "sets": 2,
-       "reps": 8,
-       "rest_s": 30,
-       "note": "Rozładowanie: −40% serii, ciężar −10%, RIR +1."
-      },
-      "block": "4",
-      "circuit": "core_A"
-     },
-     {
-      "exercise": "side_plank",
-      "rx": {
-       "sets": 2,
-       "reps": "45 s",
-       "rest_s": 30,
-       "note": "Rozładowanie: −40% serii, ciężar −10%, RIR +1."
-      },
-      "block": "4",
-      "circuit": "core_A"
-     },
-     {
-      "exercise": "cooldown_stretch",
-      "rx": {
-       "sets": 1,
-       "reps": "4–5 min"
-      }
-     }
-    ]
-   },
    "nutrition": {
     "energy": "deficit_300",
     "label": "Dzień treningowy: deficyt dobrany do masy",
@@ -4346,7 +2818,6 @@
    "week_type": "deload",
    "day_type": "rest",
    "bike": null,
-   "gym": null,
    "nutrition": {
     "energy": "deficit_300",
     "label": "Dzień lekki: deficyt dobrany do masy",
@@ -4376,7 +2847,6 @@
     "bike": "Rower",
     "fallback_workout_id": null
    },
-   "gym": null,
    "nutrition": {
     "energy": "maintenance",
     "label": "Dzień ciężki: bez deficytu, paliwo na trening",
@@ -4397,7 +2867,6 @@
    "week_type": "build",
    "day_type": "rest",
    "bike": null,
-   "gym": null,
    "nutrition": {
     "energy": "deficit_300",
     "label": "Dzień lekki: deficyt dobrany do masy",
@@ -4425,7 +2894,6 @@
     "bike": "Rower",
     "fallback_workout_id": "INDOOR_4x4"
    },
-   "gym": null,
    "nutrition": {
     "energy": "maintenance",
     "label": "Dzień ciężki: bez deficytu, paliwo na trening",
@@ -4452,7 +2920,6 @@
     "bike": "Rower",
     "fallback_workout_id": null
    },
-   "gym": null,
    "nutrition": {
     "energy": "deficit_300",
     "label": "Dzień treningowy: deficyt dobrany do masy",
@@ -4480,7 +2947,6 @@
     "bike": "Rower",
     "fallback_workout_id": "INDOOR_4x4"
    },
-   "gym": null,
    "nutrition": {
     "energy": "maintenance",
     "label": "Dzień ciężki: bez deficytu, paliwo na trening",
@@ -4507,100 +2973,6 @@
     "bike": "Rower",
     "fallback_workout_id": null
    },
-   "gym": {
-    "session": "A",
-    "name": "Sesja A – Siła nóg (ciężka)",
-    "est_min": 70,
-    "items": [
-     {
-      "exercise": "mobility_circuit",
-      "rx": {
-       "sets": 2,
-       "reps": "obwód",
-       "note": "5 min rowerek/wioślarz luźno + 2 rundy obwodu. Serie wstępne do 1. ćwiczenia: pusta sztanga×8 → 50%×5 → 70%×3 → 85%×1–2."
-      }
-     },
-     {
-      "exercise": "back_squat",
-      "rx": {
-       "sets": 5,
-       "reps": 5,
-       "rir": 2,
-       "rest_s": 180
-      },
-      "block": "1"
-     },
-     {
-      "exercise": "trap_bar_deadlift",
-      "rx": {
-       "sets": 4,
-       "reps": 4,
-       "rir": 2,
-       "rest_s": 180
-      },
-      "block": "2"
-     },
-     {
-      "exercise": "db_row",
-      "rx": {
-       "sets": 3,
-       "reps": 8,
-       "rir": 2,
-       "rest_s": 60,
-       "note": "superseria 3A/3B"
-      },
-      "block": "3A"
-     },
-     {
-      "exercise": "calf_raise",
-      "rx": {
-       "sets": 3,
-       "reps": 10,
-       "rir": 2,
-       "rest_s": 60,
-       "note": "pauza 1 s na górze"
-      },
-      "block": "3B"
-     },
-     {
-      "exercise": "pallof_press",
-      "rx": {
-       "sets": 3,
-       "reps": 10,
-       "rest_s": 30
-      },
-      "block": "4",
-      "circuit": "core_A"
-     },
-     {
-      "exercise": "dead_bug",
-      "rx": {
-       "sets": 3,
-       "reps": 8,
-       "rest_s": 30
-      },
-      "block": "4",
-      "circuit": "core_A"
-     },
-     {
-      "exercise": "side_plank",
-      "rx": {
-       "sets": 3,
-       "reps": "45 s",
-       "rest_s": 30
-      },
-      "block": "4",
-      "circuit": "core_A"
-     },
-     {
-      "exercise": "cooldown_stretch",
-      "rx": {
-       "sets": 1,
-       "reps": "4–5 min"
-      }
-     }
-    ]
-   },
    "nutrition": {
     "energy": "deficit_300",
     "label": "Dzień treningowy: deficyt dobrany do masy",
@@ -4622,7 +2994,6 @@
    "week_type": "build",
    "day_type": "rest",
    "bike": null,
-   "gym": null,
    "nutrition": {
     "energy": "deficit_300",
     "label": "Dzień lekki: deficyt dobrany do masy",
@@ -4650,7 +3021,6 @@
     "bike": "Rower",
     "fallback_workout_id": null
    },
-   "gym": null,
    "nutrition": {
     "energy": "maintenance",
     "label": "Dzień ciężki: bez deficytu, paliwo na trening",
@@ -4671,7 +3041,6 @@
    "week_type": "build",
    "day_type": "rest",
    "bike": null,
-   "gym": null,
    "nutrition": {
     "energy": "deficit_300",
     "label": "Dzień lekki: deficyt dobrany do masy",
@@ -4699,7 +3068,6 @@
     "bike": "Rower",
     "fallback_workout_id": "INDOOR_4x4"
    },
-   "gym": null,
    "nutrition": {
     "energy": "maintenance",
     "label": "Dzień ciężki: bez deficytu, paliwo na trening",
@@ -4726,7 +3094,6 @@
     "bike": "Rower",
     "fallback_workout_id": null
    },
-   "gym": null,
    "nutrition": {
     "energy": "deficit_300",
     "label": "Dzień treningowy: deficyt dobrany do masy",
@@ -4754,7 +3121,6 @@
     "bike": "Rower",
     "fallback_workout_id": "INDOOR_4x4"
    },
-   "gym": null,
    "nutrition": {
     "energy": "maintenance",
     "label": "Dzień ciężki: bez deficytu, paliwo na trening",
@@ -4781,100 +3147,6 @@
     "bike": "Rower",
     "fallback_workout_id": null
    },
-   "gym": {
-    "session": "A",
-    "name": "Sesja A – Siła nóg (ciężka)",
-    "est_min": 70,
-    "items": [
-     {
-      "exercise": "mobility_circuit",
-      "rx": {
-       "sets": 2,
-       "reps": "obwód",
-       "note": "5 min rowerek/wioślarz luźno + 2 rundy obwodu. Serie wstępne do 1. ćwiczenia: pusta sztanga×8 → 50%×5 → 70%×3 → 85%×1–2."
-      }
-     },
-     {
-      "exercise": "back_squat",
-      "rx": {
-       "sets": 5,
-       "reps": 4,
-       "rir": 2,
-       "rest_s": 180
-      },
-      "block": "1"
-     },
-     {
-      "exercise": "trap_bar_deadlift",
-      "rx": {
-       "sets": 4,
-       "reps": 4,
-       "rir": 2,
-       "rest_s": 180
-      },
-      "block": "2"
-     },
-     {
-      "exercise": "db_row",
-      "rx": {
-       "sets": 3,
-       "reps": 8,
-       "rir": 2,
-       "rest_s": 60,
-       "note": "superseria 3A/3B"
-      },
-      "block": "3A"
-     },
-     {
-      "exercise": "calf_raise",
-      "rx": {
-       "sets": 3,
-       "reps": 10,
-       "rir": 2,
-       "rest_s": 60,
-       "note": "pauza 1 s na górze"
-      },
-      "block": "3B"
-     },
-     {
-      "exercise": "pallof_press",
-      "rx": {
-       "sets": 3,
-       "reps": 10,
-       "rest_s": 30
-      },
-      "block": "4",
-      "circuit": "core_A"
-     },
-     {
-      "exercise": "dead_bug",
-      "rx": {
-       "sets": 3,
-       "reps": 8,
-       "rest_s": 30
-      },
-      "block": "4",
-      "circuit": "core_A"
-     },
-     {
-      "exercise": "side_plank",
-      "rx": {
-       "sets": 3,
-       "reps": "45 s",
-       "rest_s": 30
-      },
-      "block": "4",
-      "circuit": "core_A"
-     },
-     {
-      "exercise": "cooldown_stretch",
-      "rx": {
-       "sets": 1,
-       "reps": "4–5 min"
-      }
-     }
-    ]
-   },
    "nutrition": {
     "energy": "deficit_300",
     "label": "Dzień treningowy: deficyt dobrany do masy",
@@ -4896,7 +3168,6 @@
    "week_type": "build",
    "day_type": "rest",
    "bike": null,
-   "gym": null,
    "nutrition": {
     "energy": "deficit_300",
     "label": "Dzień lekki: deficyt dobrany do masy",
@@ -4924,7 +3195,6 @@
     "bike": "Rower",
     "fallback_workout_id": null
    },
-   "gym": null,
    "nutrition": {
     "energy": "maintenance",
     "label": "Dzień ciężki: bez deficytu, paliwo na trening",
@@ -4945,7 +3215,6 @@
    "week_type": "build",
    "day_type": "rest",
    "bike": null,
-   "gym": null,
    "nutrition": {
     "energy": "deficit_300",
     "label": "Dzień lekki: deficyt dobrany do masy",
@@ -4973,7 +3242,6 @@
     "bike": "Rower",
     "fallback_workout_id": "INDOOR_4x4"
    },
-   "gym": null,
    "nutrition": {
     "energy": "maintenance",
     "label": "Dzień ciężki: bez deficytu, paliwo na trening",
@@ -5000,7 +3268,6 @@
     "bike": "Rower",
     "fallback_workout_id": null
    },
-   "gym": null,
    "nutrition": {
     "energy": "deficit_300",
     "label": "Dzień treningowy: deficyt dobrany do masy",
@@ -5028,7 +3295,6 @@
     "bike": "Rower",
     "fallback_workout_id": "INDOOR_4x4"
    },
-   "gym": null,
    "nutrition": {
     "energy": "maintenance",
     "label": "Dzień ciężki: bez deficytu, paliwo na trening",
@@ -5055,100 +3321,6 @@
     "bike": "Rower",
     "fallback_workout_id": null
    },
-   "gym": {
-    "session": "A",
-    "name": "Sesja A – Siła nóg (ciężka)",
-    "est_min": 70,
-    "items": [
-     {
-      "exercise": "mobility_circuit",
-      "rx": {
-       "sets": 2,
-       "reps": "obwód",
-       "note": "5 min rowerek/wioślarz luźno + 2 rundy obwodu. Serie wstępne do 1. ćwiczenia: pusta sztanga×8 → 50%×5 → 70%×3 → 85%×1–2."
-      }
-     },
-     {
-      "exercise": "back_squat",
-      "rx": {
-       "sets": 5,
-       "reps": 4,
-       "rir": 2,
-       "rest_s": 180
-      },
-      "block": "1"
-     },
-     {
-      "exercise": "trap_bar_deadlift",
-      "rx": {
-       "sets": 5,
-       "reps": 3,
-       "rir": 2,
-       "rest_s": 180
-      },
-      "block": "2"
-     },
-     {
-      "exercise": "db_row",
-      "rx": {
-       "sets": 3,
-       "reps": 8,
-       "rir": 2,
-       "rest_s": 60,
-       "note": "superseria 3A/3B"
-      },
-      "block": "3A"
-     },
-     {
-      "exercise": "calf_raise",
-      "rx": {
-       "sets": 3,
-       "reps": 10,
-       "rir": 2,
-       "rest_s": 60,
-       "note": "pauza 1 s na górze"
-      },
-      "block": "3B"
-     },
-     {
-      "exercise": "pallof_press",
-      "rx": {
-       "sets": 3,
-       "reps": 10,
-       "rest_s": 30
-      },
-      "block": "4",
-      "circuit": "core_A"
-     },
-     {
-      "exercise": "dead_bug",
-      "rx": {
-       "sets": 3,
-       "reps": 8,
-       "rest_s": 30
-      },
-      "block": "4",
-      "circuit": "core_A"
-     },
-     {
-      "exercise": "side_plank",
-      "rx": {
-       "sets": 3,
-       "reps": "45 s",
-       "rest_s": 30
-      },
-      "block": "4",
-      "circuit": "core_A"
-     },
-     {
-      "exercise": "cooldown_stretch",
-      "rx": {
-       "sets": 1,
-       "reps": "4–5 min"
-      }
-     }
-    ]
-   },
    "nutrition": {
     "energy": "deficit_300",
     "label": "Dzień treningowy: deficyt dobrany do masy",
@@ -5170,7 +3342,6 @@
    "week_type": "build",
    "day_type": "rest",
    "bike": null,
-   "gym": null,
    "nutrition": {
     "energy": "deficit_300",
     "label": "Dzień lekki: deficyt dobrany do masy",
@@ -5198,7 +3369,6 @@
     "bike": "Rower",
     "fallback_workout_id": null
    },
-   "gym": null,
    "nutrition": {
     "energy": "maintenance",
     "label": "Dzień ciężki: bez deficytu, paliwo na trening",
@@ -5221,7 +3391,6 @@
    "week_type": "deload",
    "day_type": "rest",
    "bike": null,
-   "gym": null,
    "nutrition": {
     "energy": "deficit_300",
     "label": "Dzień lekki: deficyt dobrany do masy",
@@ -5251,7 +3420,6 @@
     "bike": "Rower",
     "fallback_workout_id": null
    },
-   "gym": null,
    "nutrition": {
     "energy": "deficit_300",
     "label": "Dzień treningowy: deficyt dobrany do masy",
@@ -5281,7 +3449,6 @@
     "bike": "Rower",
     "fallback_workout_id": null
    },
-   "gym": null,
    "nutrition": {
     "energy": "deficit_300",
     "label": "Dzień lekki: deficyt dobrany do masy",
@@ -5305,7 +3472,6 @@
    "week_type": "deload",
    "day_type": "rest",
    "bike": null,
-   "gym": null,
    "nutrition": {
     "energy": "deficit_300",
     "label": "Dzień lekki: deficyt dobrany do masy",
@@ -5335,105 +3501,6 @@
     "bike": "Rower",
     "fallback_workout_id": null
    },
-   "gym": {
-    "session": "A",
-    "name": "Sesja A – Siła nóg (ciężka) – tydzień rozładowania",
-    "est_min": 49,
-    "items": [
-     {
-      "exercise": "mobility_circuit",
-      "rx": {
-       "sets": 2,
-       "reps": "obwód",
-       "note": "5 min rowerek/wioślarz luźno + 2 rundy obwodu. Serie wstępne do 1. ćwiczenia: pusta sztanga×8 → 50%×5 → 70%×3 → 85%×1–2."
-      }
-     },
-     {
-      "exercise": "back_squat",
-      "rx": {
-       "sets": 3,
-       "reps": 4,
-       "rir": 3,
-       "rest_s": 180,
-       "note": "Rozładowanie: −40% serii, ciężar −10%, RIR +1."
-      },
-      "block": "1"
-     },
-     {
-      "exercise": "trap_bar_deadlift",
-      "rx": {
-       "sets": 3,
-       "reps": 3,
-       "rir": 3,
-       "rest_s": 180,
-       "note": "Rozładowanie: −40% serii, ciężar −10%, RIR +1."
-      },
-      "block": "2"
-     },
-     {
-      "exercise": "db_row",
-      "rx": {
-       "sets": 2,
-       "reps": 8,
-       "rir": 3,
-       "rest_s": 60,
-       "note": "superseria 3A/3B · Rozładowanie: −40% serii, ciężar −10%, RIR +1."
-      },
-      "block": "3A"
-     },
-     {
-      "exercise": "calf_raise",
-      "rx": {
-       "sets": 2,
-       "reps": 10,
-       "rir": 3,
-       "rest_s": 60,
-       "note": "pauza 1 s na górze · Rozładowanie: −40% serii, ciężar −10%, RIR +1."
-      },
-      "block": "3B"
-     },
-     {
-      "exercise": "pallof_press",
-      "rx": {
-       "sets": 2,
-       "reps": 10,
-       "rest_s": 30,
-       "note": "Rozładowanie: −40% serii, ciężar −10%, RIR +1."
-      },
-      "block": "4",
-      "circuit": "core_A"
-     },
-     {
-      "exercise": "dead_bug",
-      "rx": {
-       "sets": 2,
-       "reps": 8,
-       "rest_s": 30,
-       "note": "Rozładowanie: −40% serii, ciężar −10%, RIR +1."
-      },
-      "block": "4",
-      "circuit": "core_A"
-     },
-     {
-      "exercise": "side_plank",
-      "rx": {
-       "sets": 2,
-       "reps": "45 s",
-       "rest_s": 30,
-       "note": "Rozładowanie: −40% serii, ciężar −10%, RIR +1."
-      },
-      "block": "4",
-      "circuit": "core_A"
-     },
-     {
-      "exercise": "cooldown_stretch",
-      "rx": {
-       "sets": 1,
-       "reps": "4–5 min"
-      }
-     }
-    ]
-   },
    "nutrition": {
     "energy": "deficit_300",
     "label": "Dzień treningowy: deficyt dobrany do masy",
@@ -5457,7 +3524,6 @@
    "week_type": "deload",
    "day_type": "rest",
    "bike": null,
-   "gym": null,
    "nutrition": {
     "energy": "deficit_300",
     "label": "Dzień lekki: deficyt dobrany do masy",
@@ -5487,7 +3553,6 @@
     "bike": "Rower",
     "fallback_workout_id": null
    },
-   "gym": null,
    "nutrition": {
     "energy": "maintenance",
     "label": "Dzień ciężki: bez deficytu, paliwo na trening",
@@ -5509,7 +3574,6 @@
    "week_type": "build",
    "day_type": "rest",
    "bike": null,
-   "gym": null,
    "nutrition": {
     "energy": "deficit_300",
     "label": "Dzień lekki: deficyt dobrany do masy",
@@ -5537,7 +3601,6 @@
     "bike": "Rower",
     "fallback_workout_id": "INDOOR_4x4"
    },
-   "gym": null,
    "nutrition": {
     "energy": "maintenance",
     "label": "Dzień ciężki: bez deficytu, paliwo na trening",
@@ -5564,7 +3627,6 @@
     "bike": "Rower",
     "fallback_workout_id": null
    },
-   "gym": null,
    "nutrition": {
     "energy": "deficit_300",
     "label": "Dzień treningowy: deficyt dobrany do masy",
@@ -5592,7 +3654,6 @@
     "bike": "Rower",
     "fallback_workout_id": "INDOOR_4x4"
    },
-   "gym": null,
    "nutrition": {
     "energy": "maintenance",
     "label": "Dzień ciężki: bez deficytu, paliwo na trening",
@@ -5619,100 +3680,6 @@
     "bike": "Rower",
     "fallback_workout_id": null
    },
-   "gym": {
-    "session": "A",
-    "name": "Sesja A – Siła nóg (ciężka)",
-    "est_min": 70,
-    "items": [
-     {
-      "exercise": "mobility_circuit",
-      "rx": {
-       "sets": 2,
-       "reps": "obwód",
-       "note": "5 min rowerek/wioślarz luźno + 2 rundy obwodu. Serie wstępne do 1. ćwiczenia: pusta sztanga×8 → 50%×5 → 70%×3 → 85%×1–2."
-      }
-     },
-     {
-      "exercise": "back_squat",
-      "rx": {
-       "sets": 5,
-       "reps": 4,
-       "rir": 2,
-       "rest_s": 180
-      },
-      "block": "1"
-     },
-     {
-      "exercise": "trap_bar_deadlift",
-      "rx": {
-       "sets": 5,
-       "reps": 3,
-       "rir": 2,
-       "rest_s": 180
-      },
-      "block": "2"
-     },
-     {
-      "exercise": "db_row",
-      "rx": {
-       "sets": 3,
-       "reps": 8,
-       "rir": 2,
-       "rest_s": 60,
-       "note": "superseria 3A/3B"
-      },
-      "block": "3A"
-     },
-     {
-      "exercise": "calf_raise",
-      "rx": {
-       "sets": 3,
-       "reps": 10,
-       "rir": 2,
-       "rest_s": 60,
-       "note": "pauza 1 s na górze"
-      },
-      "block": "3B"
-     },
-     {
-      "exercise": "pallof_press",
-      "rx": {
-       "sets": 3,
-       "reps": 10,
-       "rest_s": 30
-      },
-      "block": "4",
-      "circuit": "core_A"
-     },
-     {
-      "exercise": "dead_bug",
-      "rx": {
-       "sets": 3,
-       "reps": 8,
-       "rest_s": 30
-      },
-      "block": "4",
-      "circuit": "core_A"
-     },
-     {
-      "exercise": "side_plank",
-      "rx": {
-       "sets": 3,
-       "reps": "45 s",
-       "rest_s": 30
-      },
-      "block": "4",
-      "circuit": "core_A"
-     },
-     {
-      "exercise": "cooldown_stretch",
-      "rx": {
-       "sets": 1,
-       "reps": "4–5 min"
-      }
-     }
-    ]
-   },
    "nutrition": {
     "energy": "deficit_300",
     "label": "Dzień treningowy: deficyt dobrany do masy",
@@ -5734,7 +3701,6 @@
    "week_type": "build",
    "day_type": "rest",
    "bike": null,
-   "gym": null,
    "nutrition": {
     "energy": "deficit_300",
     "label": "Dzień lekki: deficyt dobrany do masy",
@@ -5762,7 +3728,6 @@
     "bike": "Rower",
     "fallback_workout_id": null
    },
-   "gym": null,
    "nutrition": {
     "energy": "maintenance",
     "label": "Dzień ciężki: bez deficytu, paliwo na trening",
@@ -5784,7 +3749,6 @@
    "week_type": "test",
    "day_type": "rest",
    "bike": null,
-   "gym": null,
    "nutrition": {
     "energy": "deficit_300",
     "label": "Dzień lekki: deficyt dobrany do masy",
@@ -5812,7 +3776,6 @@
     "bike": "Rower",
     "fallback_workout_id": "WATTBIKE_TEST"
    },
-   "gym": null,
    "nutrition": {
     "energy": "maintenance",
     "label": "Dzień ciężki: bez deficytu, paliwo na trening",
@@ -5841,7 +3804,6 @@
     "bike": "Rower",
     "fallback_workout_id": null
    },
-   "gym": null,
    "nutrition": {
     "energy": "deficit_300",
     "label": "Dzień lekki: deficyt dobrany do masy",
@@ -5869,7 +3831,6 @@
     "bike": "Rower",
     "fallback_workout_id": null
    },
-   "gym": null,
    "nutrition": {
     "energy": "deficit_300",
     "label": "Dzień treningowy: deficyt dobrany do masy",
@@ -5897,100 +3858,6 @@
     "bike": "Rower",
     "fallback_workout_id": null
    },
-   "gym": {
-    "session": "A",
-    "name": "Sesja A – Siła nóg (ciężka)",
-    "est_min": 70,
-    "items": [
-     {
-      "exercise": "mobility_circuit",
-      "rx": {
-       "sets": 2,
-       "reps": "obwód",
-       "note": "5 min rowerek/wioślarz luźno + 2 rundy obwodu. Serie wstępne do 1. ćwiczenia: pusta sztanga×8 → 50%×5 → 70%×3 → 85%×1–2."
-      }
-     },
-     {
-      "exercise": "back_squat",
-      "rx": {
-       "sets": 5,
-       "reps": 3,
-       "rir": 2,
-       "rest_s": 180
-      },
-      "block": "1"
-     },
-     {
-      "exercise": "trap_bar_deadlift",
-      "rx": {
-       "sets": 5,
-       "reps": 3,
-       "rir": 2,
-       "rest_s": 180
-      },
-      "block": "2"
-     },
-     {
-      "exercise": "db_row",
-      "rx": {
-       "sets": 3,
-       "reps": 8,
-       "rir": 2,
-       "rest_s": 60,
-       "note": "superseria 3A/3B"
-      },
-      "block": "3A"
-     },
-     {
-      "exercise": "calf_raise",
-      "rx": {
-       "sets": 3,
-       "reps": 10,
-       "rir": 2,
-       "rest_s": 60,
-       "note": "pauza 1 s na górze"
-      },
-      "block": "3B"
-     },
-     {
-      "exercise": "pallof_press",
-      "rx": {
-       "sets": 3,
-       "reps": 10,
-       "rest_s": 30
-      },
-      "block": "4",
-      "circuit": "core_A"
-     },
-     {
-      "exercise": "dead_bug",
-      "rx": {
-       "sets": 3,
-       "reps": 8,
-       "rest_s": 30
-      },
-      "block": "4",
-      "circuit": "core_A"
-     },
-     {
-      "exercise": "side_plank",
-      "rx": {
-       "sets": 3,
-       "reps": "45 s",
-       "rest_s": 30
-      },
-      "block": "4",
-      "circuit": "core_A"
-     },
-     {
-      "exercise": "cooldown_stretch",
-      "rx": {
-       "sets": 1,
-       "reps": "4–5 min"
-      }
-     }
-    ]
-   },
    "nutrition": {
     "energy": "deficit_300",
     "label": "Dzień treningowy: deficyt dobrany do masy",
@@ -6012,7 +3879,6 @@
    "week_type": "test",
    "day_type": "rest",
    "bike": null,
-   "gym": null,
    "nutrition": {
     "energy": "deficit_300",
     "label": "Dzień lekki: deficyt dobrany do masy",
@@ -6040,7 +3906,6 @@
     "bike": "Rower",
     "fallback_workout_id": null
    },
-   "gym": null,
    "nutrition": {
     "energy": "maintenance",
     "label": "Bilans zerowy – jedz na pełną wydajność",
@@ -6062,7 +3927,6 @@
    "week_type": "build",
    "day_type": "rest",
    "bike": null,
-   "gym": null,
    "nutrition": {
     "energy": "maintenance",
     "label": "Bilans zerowy – jedz na pełną wydajność",
@@ -6089,7 +3953,6 @@
     "bike": "Rower",
     "fallback_workout_id": null
    },
-   "gym": null,
    "nutrition": {
     "energy": "maintenance",
     "label": "Bilans zerowy – jedz na pełną wydajność",
@@ -6116,7 +3979,6 @@
     "bike": "Rower",
     "fallback_workout_id": null
    },
-   "gym": null,
    "nutrition": {
     "energy": "maintenance",
     "label": "Bilans zerowy – jedz na pełną wydajność",
@@ -6143,7 +4005,6 @@
     "bike": "Rower",
     "fallback_workout_id": null
    },
-   "gym": null,
    "nutrition": {
     "energy": "maintenance",
     "label": "Bilans zerowy – jedz na pełną wydajność",
@@ -6170,100 +4031,6 @@
     "bike": "Rower",
     "fallback_workout_id": null
    },
-   "gym": {
-    "session": "A",
-    "name": "Sesja A – Siła nóg (ciężka)",
-    "est_min": 70,
-    "items": [
-     {
-      "exercise": "mobility_circuit",
-      "rx": {
-       "sets": 2,
-       "reps": "obwód",
-       "note": "5 min rowerek/wioślarz luźno + 2 rundy obwodu. Serie wstępne do 1. ćwiczenia: pusta sztanga×8 → 50%×5 → 70%×3 → 85%×1–2."
-      }
-     },
-     {
-      "exercise": "back_squat",
-      "rx": {
-       "sets": 5,
-       "reps": 3,
-       "rir": 1,
-       "rest_s": 180
-      },
-      "block": "1"
-     },
-     {
-      "exercise": "trap_bar_deadlift",
-      "rx": {
-       "sets": 5,
-       "reps": 3,
-       "rir": "1–2",
-       "rest_s": 180
-      },
-      "block": "2"
-     },
-     {
-      "exercise": "db_row",
-      "rx": {
-       "sets": 3,
-       "reps": 8,
-       "rir": 2,
-       "rest_s": 60,
-       "note": "superseria 3A/3B"
-      },
-      "block": "3A"
-     },
-     {
-      "exercise": "calf_raise",
-      "rx": {
-       "sets": 3,
-       "reps": 10,
-       "rir": 2,
-       "rest_s": 60,
-       "note": "pauza 1 s na górze"
-      },
-      "block": "3B"
-     },
-     {
-      "exercise": "pallof_press",
-      "rx": {
-       "sets": 3,
-       "reps": 10,
-       "rest_s": 30
-      },
-      "block": "4",
-      "circuit": "core_A"
-     },
-     {
-      "exercise": "dead_bug",
-      "rx": {
-       "sets": 3,
-       "reps": 8,
-       "rest_s": 30
-      },
-      "block": "4",
-      "circuit": "core_A"
-     },
-     {
-      "exercise": "side_plank",
-      "rx": {
-       "sets": 3,
-       "reps": "45 s",
-       "rest_s": 30
-      },
-      "block": "4",
-      "circuit": "core_A"
-     },
-     {
-      "exercise": "cooldown_stretch",
-      "rx": {
-       "sets": 1,
-       "reps": "4–5 min"
-      }
-     }
-    ]
-   },
    "nutrition": {
     "energy": "maintenance",
     "label": "Bilans zerowy – jedz na pełną wydajność",
@@ -6284,7 +4051,6 @@
    "week_type": "build",
    "day_type": "rest",
    "bike": null,
-   "gym": null,
    "nutrition": {
     "energy": "maintenance",
     "label": "Bilans zerowy – jedz na pełną wydajność",
@@ -6311,7 +4077,6 @@
     "bike": "Rower",
     "fallback_workout_id": null
    },
-   "gym": null,
    "nutrition": {
     "energy": "maintenance",
     "label": "Bilans zerowy – jedz na pełną wydajność",
@@ -6332,7 +4097,6 @@
    "week_type": "build",
    "day_type": "rest",
    "bike": null,
-   "gym": null,
    "nutrition": {
     "energy": "maintenance",
     "label": "Bilans zerowy – jedz na pełną wydajność",
@@ -6359,7 +4123,6 @@
     "bike": "Rower",
     "fallback_workout_id": null
    },
-   "gym": null,
    "nutrition": {
     "energy": "maintenance",
     "label": "Bilans zerowy – jedz na pełną wydajność",
@@ -6386,7 +4149,6 @@
     "bike": "Rower",
     "fallback_workout_id": null
    },
-   "gym": null,
    "nutrition": {
     "energy": "maintenance",
     "label": "Bilans zerowy – jedz na pełną wydajność",
@@ -6413,7 +4175,6 @@
     "bike": "Rower",
     "fallback_workout_id": null
    },
-   "gym": null,
    "nutrition": {
     "energy": "maintenance",
     "label": "Bilans zerowy – jedz na pełną wydajność",
@@ -6440,100 +4201,6 @@
     "bike": "Rower",
     "fallback_workout_id": null
    },
-   "gym": {
-    "session": "A",
-    "name": "Sesja A – Siła nóg (ciężka)",
-    "est_min": 70,
-    "items": [
-     {
-      "exercise": "mobility_circuit",
-      "rx": {
-       "sets": 2,
-       "reps": "obwód",
-       "note": "5 min rowerek/wioślarz luźno + 2 rundy obwodu. Serie wstępne do 1. ćwiczenia: pusta sztanga×8 → 50%×5 → 70%×3 → 85%×1–2."
-      }
-     },
-     {
-      "exercise": "back_squat",
-      "rx": {
-       "sets": 5,
-       "reps": 3,
-       "rir": 1,
-       "rest_s": 180
-      },
-      "block": "1"
-     },
-     {
-      "exercise": "trap_bar_deadlift",
-      "rx": {
-       "sets": 5,
-       "reps": 3,
-       "rir": "1–2",
-       "rest_s": 180
-      },
-      "block": "2"
-     },
-     {
-      "exercise": "db_row",
-      "rx": {
-       "sets": 3,
-       "reps": 8,
-       "rir": 2,
-       "rest_s": 60,
-       "note": "superseria 3A/3B"
-      },
-      "block": "3A"
-     },
-     {
-      "exercise": "calf_raise",
-      "rx": {
-       "sets": 3,
-       "reps": 10,
-       "rir": 2,
-       "rest_s": 60,
-       "note": "pauza 1 s na górze"
-      },
-      "block": "3B"
-     },
-     {
-      "exercise": "pallof_press",
-      "rx": {
-       "sets": 3,
-       "reps": 10,
-       "rest_s": 30
-      },
-      "block": "4",
-      "circuit": "core_A"
-     },
-     {
-      "exercise": "dead_bug",
-      "rx": {
-       "sets": 3,
-       "reps": 8,
-       "rest_s": 30
-      },
-      "block": "4",
-      "circuit": "core_A"
-     },
-     {
-      "exercise": "side_plank",
-      "rx": {
-       "sets": 3,
-       "reps": "45 s",
-       "rest_s": 30
-      },
-      "block": "4",
-      "circuit": "core_A"
-     },
-     {
-      "exercise": "cooldown_stretch",
-      "rx": {
-       "sets": 1,
-       "reps": "4–5 min"
-      }
-     }
-    ]
-   },
    "nutrition": {
     "energy": "maintenance",
     "label": "Bilans zerowy – jedz na pełną wydajność",
@@ -6554,7 +4221,6 @@
    "week_type": "build",
    "day_type": "rest",
    "bike": null,
-   "gym": null,
    "nutrition": {
     "energy": "maintenance",
     "label": "Bilans zerowy – jedz na pełną wydajność",
@@ -6581,7 +4247,6 @@
     "bike": "Rower",
     "fallback_workout_id": null
    },
-   "gym": null,
    "nutrition": {
     "energy": "maintenance",
     "label": "Bilans zerowy – jedz na pełną wydajność",
@@ -6602,7 +4267,6 @@
    "week_type": "build",
    "day_type": "rest",
    "bike": null,
-   "gym": null,
    "nutrition": {
     "energy": "maintenance",
     "label": "Bilans zerowy – jedz na pełną wydajność",
@@ -6629,7 +4293,6 @@
     "bike": "Rower",
     "fallback_workout_id": null
    },
-   "gym": null,
    "nutrition": {
     "energy": "maintenance",
     "label": "Bilans zerowy – jedz na pełną wydajność",
@@ -6656,7 +4319,6 @@
     "bike": "Rower",
     "fallback_workout_id": null
    },
-   "gym": null,
    "nutrition": {
     "energy": "maintenance",
     "label": "Bilans zerowy – jedz na pełną wydajność",
@@ -6683,7 +4345,6 @@
     "bike": "Rower",
     "fallback_workout_id": null
    },
-   "gym": null,
    "nutrition": {
     "energy": "maintenance",
     "label": "Bilans zerowy – jedz na pełną wydajność",
@@ -6710,102 +4371,6 @@
     "bike": "Rower",
     "fallback_workout_id": null
    },
-   "gym": {
-    "session": "A",
-    "name": "Sesja A – Siła nóg (ciężka)",
-    "est_min": 70,
-    "items": [
-     {
-      "exercise": "mobility_circuit",
-      "rx": {
-       "sets": 2,
-       "reps": "obwód",
-       "note": "5 min rowerek/wioślarz luźno + 2 rundy obwodu. Serie wstępne do 1. ćwiczenia: pusta sztanga×8 → 50%×5 → 70%×3 → 85%×1–2."
-      }
-     },
-     {
-      "exercise": "back_squat",
-      "rx": {
-       "sets": 1,
-       "reps": 5,
-       "rir": 1,
-       "rest_s": 180,
-       "note": "Sprawdzian: 1 seria ciężka na 5 powtórzeń, potem 2×3 lekko (RIR 4)."
-      },
-      "block": "1"
-     },
-     {
-      "exercise": "trap_bar_deadlift",
-      "rx": {
-       "sets": 1,
-       "reps": 5,
-       "rir": 1,
-       "rest_s": 180,
-       "note": "Sprawdzian."
-      },
-      "block": "2"
-     },
-     {
-      "exercise": "db_row",
-      "rx": {
-       "sets": 2,
-       "reps": 8,
-       "rir": 2,
-       "rest_s": 60,
-       "note": "superseria 3A/3B"
-      },
-      "block": "3A"
-     },
-     {
-      "exercise": "calf_raise",
-      "rx": {
-       "sets": 2,
-       "reps": 10,
-       "rir": 2,
-       "rest_s": 60,
-       "note": "pauza 1 s na górze"
-      },
-      "block": "3B"
-     },
-     {
-      "exercise": "pallof_press",
-      "rx": {
-       "sets": 2,
-       "reps": 10,
-       "rest_s": 30
-      },
-      "block": "4",
-      "circuit": "core_A"
-     },
-     {
-      "exercise": "dead_bug",
-      "rx": {
-       "sets": 2,
-       "reps": 8,
-       "rest_s": 30
-      },
-      "block": "4",
-      "circuit": "core_A"
-     },
-     {
-      "exercise": "side_plank",
-      "rx": {
-       "sets": 2,
-       "reps": "45 s",
-       "rest_s": 30
-      },
-      "block": "4",
-      "circuit": "core_A"
-     },
-     {
-      "exercise": "cooldown_stretch",
-      "rx": {
-       "sets": 1,
-       "reps": "4–5 min"
-      }
-     }
-    ]
-   },
    "nutrition": {
     "energy": "maintenance",
     "label": "Bilans zerowy – jedz na pełną wydajność",
@@ -6826,7 +4391,6 @@
    "week_type": "build",
    "day_type": "rest",
    "bike": null,
-   "gym": null,
    "nutrition": {
     "energy": "maintenance",
     "label": "Bilans zerowy – jedz na pełną wydajność",
@@ -6853,7 +4417,6 @@
     "bike": "Rower",
     "fallback_workout_id": null
    },
-   "gym": null,
    "nutrition": {
     "energy": "maintenance",
     "label": "Bilans zerowy – jedz na pełną wydajność",
@@ -6877,7 +4440,6 @@
    "week_type": "deload",
    "day_type": "rest",
    "bike": null,
-   "gym": null,
    "nutrition": {
     "energy": "maintenance",
     "label": "Bilans zerowy – jedz na pełną wydajność",
@@ -6906,7 +4468,6 @@
     "bike": "Rower",
     "fallback_workout_id": null
    },
-   "gym": null,
    "nutrition": {
     "energy": "maintenance",
     "label": "Bilans zerowy – jedz na pełną wydajność",
@@ -6935,7 +4496,6 @@
     "bike": "Rower",
     "fallback_workout_id": null
    },
-   "gym": null,
    "nutrition": {
     "energy": "maintenance",
     "label": "Bilans zerowy – jedz na pełną wydajność",
@@ -6958,7 +4518,6 @@
    "week_type": "deload",
    "day_type": "rest",
    "bike": null,
-   "gym": null,
    "nutrition": {
     "energy": "maintenance",
     "label": "Bilans zerowy – jedz na pełną wydajność",
@@ -6987,105 +4546,6 @@
     "bike": "Rower",
     "fallback_workout_id": null
    },
-   "gym": {
-    "session": "A",
-    "name": "Sesja A – Siła nóg (ciężka) – tydzień rozładowania",
-    "est_min": 49,
-    "items": [
-     {
-      "exercise": "mobility_circuit",
-      "rx": {
-       "sets": 2,
-       "reps": "obwód",
-       "note": "5 min rowerek/wioślarz luźno + 2 rundy obwodu. Serie wstępne do 1. ćwiczenia: pusta sztanga×8 → 50%×5 → 70%×3 → 85%×1–2."
-      }
-     },
-     {
-      "exercise": "back_squat",
-      "rx": {
-       "sets": 1,
-       "reps": 5,
-       "rir": 2,
-       "rest_s": 180,
-       "note": "Sprawdzian: 1 seria ciężka na 5 powtórzeń, potem 2×3 lekko (RIR 4). · Rozładowanie: −40% serii, ciężar −10%, RIR +1."
-      },
-      "block": "1"
-     },
-     {
-      "exercise": "trap_bar_deadlift",
-      "rx": {
-       "sets": 1,
-       "reps": 5,
-       "rir": 2,
-       "rest_s": 180,
-       "note": "Sprawdzian. · Rozładowanie: −40% serii, ciężar −10%, RIR +1."
-      },
-      "block": "2"
-     },
-     {
-      "exercise": "db_row",
-      "rx": {
-       "sets": 1,
-       "reps": 8,
-       "rir": 3,
-       "rest_s": 60,
-       "note": "superseria 3A/3B · Rozładowanie: −40% serii, ciężar −10%, RIR +1."
-      },
-      "block": "3A"
-     },
-     {
-      "exercise": "calf_raise",
-      "rx": {
-       "sets": 1,
-       "reps": 10,
-       "rir": 3,
-       "rest_s": 60,
-       "note": "pauza 1 s na górze · Rozładowanie: −40% serii, ciężar −10%, RIR +1."
-      },
-      "block": "3B"
-     },
-     {
-      "exercise": "pallof_press",
-      "rx": {
-       "sets": 1,
-       "reps": 10,
-       "rest_s": 30,
-       "note": "Rozładowanie: −40% serii, ciężar −10%, RIR +1."
-      },
-      "block": "4",
-      "circuit": "core_A"
-     },
-     {
-      "exercise": "dead_bug",
-      "rx": {
-       "sets": 1,
-       "reps": 8,
-       "rest_s": 30,
-       "note": "Rozładowanie: −40% serii, ciężar −10%, RIR +1."
-      },
-      "block": "4",
-      "circuit": "core_A"
-     },
-     {
-      "exercise": "side_plank",
-      "rx": {
-       "sets": 1,
-       "reps": "45 s",
-       "rest_s": 30,
-       "note": "Rozładowanie: −40% serii, ciężar −10%, RIR +1."
-      },
-      "block": "4",
-      "circuit": "core_A"
-     },
-     {
-      "exercise": "cooldown_stretch",
-      "rx": {
-       "sets": 1,
-       "reps": "4–5 min"
-      }
-     }
-    ]
-   },
    "nutrition": {
     "energy": "maintenance",
     "label": "Bilans zerowy – jedz na pełną wydajność",
@@ -7108,7 +4568,6 @@
    "week_type": "deload",
    "day_type": "rest",
    "bike": null,
-   "gym": null,
    "nutrition": {
     "energy": "maintenance",
     "label": "Bilans zerowy – jedz na pełną wydajność",
@@ -7137,7 +4596,6 @@
     "bike": "Rower",
     "fallback_workout_id": null
    },
-   "gym": null,
    "nutrition": {
     "energy": "maintenance",
     "label": "Bilans zerowy – jedz na pełną wydajność",
@@ -7158,7 +4616,6 @@
    "week_type": "build",
    "day_type": "rest",
    "bike": null,
-   "gym": null,
    "nutrition": {
     "energy": "maintenance",
     "label": "Bilans zerowy – jedz na pełną wydajność",
@@ -7185,7 +4642,6 @@
     "bike": "Rower",
     "fallback_workout_id": null
    },
-   "gym": null,
    "nutrition": {
     "energy": "maintenance",
     "label": "Bilans zerowy – jedz na pełną wydajność",
@@ -7212,7 +4668,6 @@
     "bike": "Rower",
     "fallback_workout_id": null
    },
-   "gym": null,
    "nutrition": {
     "energy": "maintenance",
     "label": "Bilans zerowy – jedz na pełną wydajność",
@@ -7239,7 +4694,6 @@
     "bike": "Rower",
     "fallback_workout_id": null
    },
-   "gym": null,
    "nutrition": {
     "energy": "maintenance",
     "label": "Bilans zerowy – jedz na pełną wydajność",
@@ -7266,120 +4720,6 @@
     "bike": "Rower",
     "fallback_workout_id": null
    },
-   "gym": {
-    "session": "A",
-    "name": "Sesja A – Siła nóg (ciężka)",
-    "est_min": 70,
-    "items": [
-     {
-      "exercise": "mobility_circuit",
-      "rx": {
-       "sets": 2,
-       "reps": "obwód",
-       "note": "5 min rowerek/wioślarz luźno + 2 rundy obwodu. Serie wstępne do 1. ćwiczenia: pusta sztanga×8 → 50%×5 → 70%×3 → 85%×1–2."
-      }
-     },
-     {
-      "exercise": "back_squat",
-      "rx": {
-       "sets": 3,
-       "reps": 3,
-       "rir": 2,
-       "rest_s": 180
-      },
-      "block": "1"
-     },
-     {
-      "exercise": "jump_squat",
-      "rx": {
-       "sets": 3,
-       "reps": 5,
-       "rest_s": 90,
-       "load_hint": "hantle 10–15% masy ciała"
-      },
-      "block": "1b"
-     },
-     {
-      "exercise": "trap_bar_deadlift",
-      "rx": {
-       "sets": 3,
-       "reps": 3,
-       "rir": 2,
-       "rest_s": 180
-      },
-      "block": "2"
-     },
-     {
-      "exercise": "kb_swing",
-      "rx": {
-       "sets": 3,
-       "reps": 8,
-       "rest_s": 90,
-       "load_hint": "24–32 kg"
-      },
-      "block": "2b"
-     },
-     {
-      "exercise": "db_row",
-      "rx": {
-       "sets": 3,
-       "reps": 8,
-       "rir": 2,
-       "rest_s": 60,
-       "note": "superseria 3A/3B"
-      },
-      "block": "3A"
-     },
-     {
-      "exercise": "calf_raise",
-      "rx": {
-       "sets": 2,
-       "reps": 10,
-       "rir": 2,
-       "rest_s": 60,
-       "note": "pauza 1 s na górze"
-      },
-      "block": "3B"
-     },
-     {
-      "exercise": "pallof_press",
-      "rx": {
-       "sets": 2,
-       "reps": 10,
-       "rest_s": 30
-      },
-      "block": "4",
-      "circuit": "core_A"
-     },
-     {
-      "exercise": "dead_bug",
-      "rx": {
-       "sets": 2,
-       "reps": 8,
-       "rest_s": 30
-      },
-      "block": "4",
-      "circuit": "core_A"
-     },
-     {
-      "exercise": "side_plank",
-      "rx": {
-       "sets": 2,
-       "reps": "45 s",
-       "rest_s": 30
-      },
-      "block": "4",
-      "circuit": "core_A"
-     },
-     {
-      "exercise": "cooldown_stretch",
-      "rx": {
-       "sets": 1,
-       "reps": "4–5 min"
-      }
-     }
-    ]
-   },
    "nutrition": {
     "energy": "maintenance",
     "label": "Bilans zerowy – jedz na pełną wydajność",
@@ -7400,7 +4740,6 @@
    "week_type": "build",
    "day_type": "rest",
    "bike": null,
-   "gym": null,
    "nutrition": {
     "energy": "maintenance",
     "label": "Bilans zerowy – jedz na pełną wydajność",
@@ -7427,7 +4766,6 @@
     "bike": "Rower",
     "fallback_workout_id": null
    },
-   "gym": null,
    "nutrition": {
     "energy": "maintenance",
     "label": "Bilans zerowy – jedz na pełną wydajność",
@@ -7449,7 +4787,6 @@
    "week_type": "test",
    "day_type": "rest",
    "bike": null,
-   "gym": null,
    "nutrition": {
     "energy": "maintenance",
     "label": "Bilans zerowy – jedz na pełną wydajność",
@@ -7476,7 +4813,6 @@
     "bike": "Rower",
     "fallback_workout_id": null
    },
-   "gym": null,
    "nutrition": {
     "energy": "maintenance",
     "label": "Bilans zerowy – jedz na pełną wydajność",
@@ -7505,7 +4841,6 @@
     "bike": "Rower",
     "fallback_workout_id": null
    },
-   "gym": null,
    "nutrition": {
     "energy": "maintenance",
     "label": "Bilans zerowy – jedz na pełną wydajność",
@@ -7532,7 +4867,6 @@
     "bike": "Rower",
     "fallback_workout_id": null
    },
-   "gym": null,
    "nutrition": {
     "energy": "maintenance",
     "label": "Bilans zerowy – jedz na pełną wydajność",
@@ -7559,120 +4893,6 @@
     "bike": "Rower",
     "fallback_workout_id": null
    },
-   "gym": {
-    "session": "A",
-    "name": "Sesja A – Siła nóg (ciężka)",
-    "est_min": 70,
-    "items": [
-     {
-      "exercise": "mobility_circuit",
-      "rx": {
-       "sets": 2,
-       "reps": "obwód",
-       "note": "5 min rowerek/wioślarz luźno + 2 rundy obwodu. Serie wstępne do 1. ćwiczenia: pusta sztanga×8 → 50%×5 → 70%×3 → 85%×1–2."
-      }
-     },
-     {
-      "exercise": "back_squat",
-      "rx": {
-       "sets": 3,
-       "reps": 3,
-       "rir": 2,
-       "rest_s": 180
-      },
-      "block": "1"
-     },
-     {
-      "exercise": "jump_squat",
-      "rx": {
-       "sets": 3,
-       "reps": 5,
-       "rest_s": 90,
-       "load_hint": "hantle 10–15% masy ciała"
-      },
-      "block": "1b"
-     },
-     {
-      "exercise": "trap_bar_deadlift",
-      "rx": {
-       "sets": 3,
-       "reps": 3,
-       "rir": 2,
-       "rest_s": 180
-      },
-      "block": "2"
-     },
-     {
-      "exercise": "kb_swing",
-      "rx": {
-       "sets": 3,
-       "reps": 8,
-       "rest_s": 90,
-       "load_hint": "24–32 kg"
-      },
-      "block": "2b"
-     },
-     {
-      "exercise": "db_row",
-      "rx": {
-       "sets": 3,
-       "reps": 8,
-       "rir": 2,
-       "rest_s": 60,
-       "note": "superseria 3A/3B"
-      },
-      "block": "3A"
-     },
-     {
-      "exercise": "calf_raise",
-      "rx": {
-       "sets": 2,
-       "reps": 10,
-       "rir": 2,
-       "rest_s": 60,
-       "note": "pauza 1 s na górze"
-      },
-      "block": "3B"
-     },
-     {
-      "exercise": "pallof_press",
-      "rx": {
-       "sets": 2,
-       "reps": 10,
-       "rest_s": 30
-      },
-      "block": "4",
-      "circuit": "core_A"
-     },
-     {
-      "exercise": "dead_bug",
-      "rx": {
-       "sets": 2,
-       "reps": 8,
-       "rest_s": 30
-      },
-      "block": "4",
-      "circuit": "core_A"
-     },
-     {
-      "exercise": "side_plank",
-      "rx": {
-       "sets": 2,
-       "reps": "45 s",
-       "rest_s": 30
-      },
-      "block": "4",
-      "circuit": "core_A"
-     },
-     {
-      "exercise": "cooldown_stretch",
-      "rx": {
-       "sets": 1,
-       "reps": "4–5 min"
-      }
-     }
-    ]
-   },
    "nutrition": {
     "energy": "maintenance",
     "label": "Bilans zerowy – jedz na pełną wydajność",
@@ -7693,7 +4913,6 @@
    "week_type": "test",
    "day_type": "rest",
    "bike": null,
-   "gym": null,
    "nutrition": {
     "energy": "maintenance",
     "label": "Bilans zerowy – jedz na pełną wydajność",
@@ -7720,7 +4939,6 @@
     "bike": "Rower",
     "fallback_workout_id": null
    },
-   "gym": null,
    "nutrition": {
     "energy": "maintenance",
     "label": "Dzień ciężki: bez deficytu, paliwo na trening",
@@ -7742,7 +4960,6 @@
    "week_type": "build",
    "day_type": "rest",
    "bike": null,
-   "gym": null,
    "nutrition": {
     "energy": "deficit_300",
     "label": "Dzień lekki: deficyt dobrany do masy",
@@ -7770,7 +4987,6 @@
     "bike": "Rower",
     "fallback_workout_id": null
    },
-   "gym": null,
    "nutrition": {
     "energy": "maintenance",
     "label": "Dzień ciężki: bez deficytu, paliwo na trening",
@@ -7797,7 +5013,6 @@
     "bike": "Rower",
     "fallback_workout_id": null
    },
-   "gym": null,
    "nutrition": {
     "energy": "deficit_300",
     "label": "Dzień treningowy: deficyt dobrany do masy",
@@ -7825,7 +5040,6 @@
     "bike": "Rower",
     "fallback_workout_id": null
    },
-   "gym": null,
    "nutrition": {
     "energy": "maintenance",
     "label": "Dzień ciężki: bez deficytu, paliwo na trening",
@@ -7852,120 +5066,6 @@
     "bike": "Rower",
     "fallback_workout_id": null
    },
-   "gym": {
-    "session": "A",
-    "name": "Sesja A – Siła nóg (ciężka)",
-    "est_min": 70,
-    "items": [
-     {
-      "exercise": "mobility_circuit",
-      "rx": {
-       "sets": 2,
-       "reps": "obwód",
-       "note": "5 min rowerek/wioślarz luźno + 2 rundy obwodu. Serie wstępne do 1. ćwiczenia: pusta sztanga×8 → 50%×5 → 70%×3 → 85%×1–2."
-      }
-     },
-     {
-      "exercise": "back_squat",
-      "rx": {
-       "sets": 3,
-       "reps": 3,
-       "rir": 2,
-       "rest_s": 180
-      },
-      "block": "1"
-     },
-     {
-      "exercise": "jump_squat",
-      "rx": {
-       "sets": 3,
-       "reps": 5,
-       "rest_s": 90,
-       "load_hint": "hantle 10–15% masy ciała"
-      },
-      "block": "1b"
-     },
-     {
-      "exercise": "trap_bar_deadlift",
-      "rx": {
-       "sets": 3,
-       "reps": 3,
-       "rir": 2,
-       "rest_s": 180
-      },
-      "block": "2"
-     },
-     {
-      "exercise": "kb_swing",
-      "rx": {
-       "sets": 3,
-       "reps": 8,
-       "rest_s": 90,
-       "load_hint": "24–32 kg"
-      },
-      "block": "2b"
-     },
-     {
-      "exercise": "db_row",
-      "rx": {
-       "sets": 3,
-       "reps": 8,
-       "rir": 2,
-       "rest_s": 60,
-       "note": "superseria 3A/3B"
-      },
-      "block": "3A"
-     },
-     {
-      "exercise": "calf_raise",
-      "rx": {
-       "sets": 2,
-       "reps": 10,
-       "rir": 2,
-       "rest_s": 60,
-       "note": "pauza 1 s na górze"
-      },
-      "block": "3B"
-     },
-     {
-      "exercise": "pallof_press",
-      "rx": {
-       "sets": 2,
-       "reps": 10,
-       "rest_s": 30
-      },
-      "block": "4",
-      "circuit": "core_A"
-     },
-     {
-      "exercise": "dead_bug",
-      "rx": {
-       "sets": 2,
-       "reps": 8,
-       "rest_s": 30
-      },
-      "block": "4",
-      "circuit": "core_A"
-     },
-     {
-      "exercise": "side_plank",
-      "rx": {
-       "sets": 2,
-       "reps": "45 s",
-       "rest_s": 30
-      },
-      "block": "4",
-      "circuit": "core_A"
-     },
-     {
-      "exercise": "cooldown_stretch",
-      "rx": {
-       "sets": 1,
-       "reps": "4–5 min"
-      }
-     }
-    ]
-   },
    "nutrition": {
     "energy": "deficit_300",
     "label": "Dzień treningowy: deficyt dobrany do masy",
@@ -7987,7 +5087,6 @@
    "week_type": "build",
    "day_type": "rest",
    "bike": null,
-   "gym": null,
    "nutrition": {
     "energy": "deficit_300",
     "label": "Dzień lekki: deficyt dobrany do masy",
@@ -8015,7 +5114,6 @@
     "bike": "Rower",
     "fallback_workout_id": null
    },
-   "gym": null,
    "nutrition": {
     "energy": "maintenance",
     "label": "Dzień ciężki: bez deficytu, paliwo na trening",
@@ -8036,7 +5134,6 @@
    "week_type": "build",
    "day_type": "rest",
    "bike": null,
-   "gym": null,
    "nutrition": {
     "energy": "deficit_300",
     "label": "Dzień lekki: deficyt dobrany do masy",
@@ -8064,7 +5161,6 @@
     "bike": "Rower",
     "fallback_workout_id": null
    },
-   "gym": null,
    "nutrition": {
     "energy": "maintenance",
     "label": "Dzień ciężki: bez deficytu, paliwo na trening",
@@ -8091,7 +5187,6 @@
     "bike": "Rower",
     "fallback_workout_id": null
    },
-   "gym": null,
    "nutrition": {
     "energy": "deficit_300",
     "label": "Dzień treningowy: deficyt dobrany do masy",
@@ -8119,7 +5214,6 @@
     "bike": "Rower",
     "fallback_workout_id": null
    },
-   "gym": null,
    "nutrition": {
     "energy": "maintenance",
     "label": "Dzień ciężki: bez deficytu, paliwo na trening",
@@ -8146,120 +5240,6 @@
     "bike": "Rower",
     "fallback_workout_id": null
    },
-   "gym": {
-    "session": "A",
-    "name": "Sesja A – Siła nóg (ciężka)",
-    "est_min": 70,
-    "items": [
-     {
-      "exercise": "mobility_circuit",
-      "rx": {
-       "sets": 2,
-       "reps": "obwód",
-       "note": "5 min rowerek/wioślarz luźno + 2 rundy obwodu. Serie wstępne do 1. ćwiczenia: pusta sztanga×8 → 50%×5 → 70%×3 → 85%×1–2."
-      }
-     },
-     {
-      "exercise": "back_squat",
-      "rx": {
-       "sets": 3,
-       "reps": 3,
-       "rir": 2,
-       "rest_s": 180
-      },
-      "block": "1"
-     },
-     {
-      "exercise": "jump_squat",
-      "rx": {
-       "sets": 3,
-       "reps": 5,
-       "rest_s": 90,
-       "load_hint": "hantle 10–15% masy ciała"
-      },
-      "block": "1b"
-     },
-     {
-      "exercise": "trap_bar_deadlift",
-      "rx": {
-       "sets": 3,
-       "reps": 3,
-       "rir": 2,
-       "rest_s": 180
-      },
-      "block": "2"
-     },
-     {
-      "exercise": "kb_swing",
-      "rx": {
-       "sets": 3,
-       "reps": 8,
-       "rest_s": 90,
-       "load_hint": "24–32 kg"
-      },
-      "block": "2b"
-     },
-     {
-      "exercise": "db_row",
-      "rx": {
-       "sets": 3,
-       "reps": 8,
-       "rir": 2,
-       "rest_s": 60,
-       "note": "superseria 3A/3B"
-      },
-      "block": "3A"
-     },
-     {
-      "exercise": "calf_raise",
-      "rx": {
-       "sets": 2,
-       "reps": 10,
-       "rir": 2,
-       "rest_s": 60,
-       "note": "pauza 1 s na górze"
-      },
-      "block": "3B"
-     },
-     {
-      "exercise": "pallof_press",
-      "rx": {
-       "sets": 2,
-       "reps": 10,
-       "rest_s": 30
-      },
-      "block": "4",
-      "circuit": "core_A"
-     },
-     {
-      "exercise": "dead_bug",
-      "rx": {
-       "sets": 2,
-       "reps": 8,
-       "rest_s": 30
-      },
-      "block": "4",
-      "circuit": "core_A"
-     },
-     {
-      "exercise": "side_plank",
-      "rx": {
-       "sets": 2,
-       "reps": "45 s",
-       "rest_s": 30
-      },
-      "block": "4",
-      "circuit": "core_A"
-     },
-     {
-      "exercise": "cooldown_stretch",
-      "rx": {
-       "sets": 1,
-       "reps": "4–5 min"
-      }
-     }
-    ]
-   },
    "nutrition": {
     "energy": "deficit_300",
     "label": "Dzień treningowy: deficyt dobrany do masy",
@@ -8281,7 +5261,6 @@
    "week_type": "build",
    "day_type": "rest",
    "bike": null,
-   "gym": null,
    "nutrition": {
     "energy": "deficit_300",
     "label": "Dzień lekki: deficyt dobrany do masy",
@@ -8309,7 +5288,6 @@
     "bike": "Rower",
     "fallback_workout_id": null
    },
-   "gym": null,
    "nutrition": {
     "energy": "maintenance",
     "label": "Dzień ciężki: bez deficytu, paliwo na trening",
@@ -8330,7 +5308,6 @@
    "week_type": "build",
    "day_type": "rest",
    "bike": null,
-   "gym": null,
    "nutrition": {
     "energy": "deficit_300",
     "label": "Dzień lekki: deficyt dobrany do masy",
@@ -8358,7 +5335,6 @@
     "bike": "Rower",
     "fallback_workout_id": null
    },
-   "gym": null,
    "nutrition": {
     "energy": "maintenance",
     "label": "Dzień ciężki: bez deficytu, paliwo na trening",
@@ -8385,7 +5361,6 @@
     "bike": "Rower",
     "fallback_workout_id": null
    },
-   "gym": null,
    "nutrition": {
     "energy": "deficit_300",
     "label": "Dzień treningowy: deficyt dobrany do masy",
@@ -8413,7 +5388,6 @@
     "bike": "Rower",
     "fallback_workout_id": null
    },
-   "gym": null,
    "nutrition": {
     "energy": "maintenance",
     "label": "Dzień ciężki: bez deficytu, paliwo na trening",
@@ -8440,120 +5414,6 @@
     "bike": "Rower",
     "fallback_workout_id": null
    },
-   "gym": {
-    "session": "A",
-    "name": "Sesja A – Siła nóg (ciężka)",
-    "est_min": 70,
-    "items": [
-     {
-      "exercise": "mobility_circuit",
-      "rx": {
-       "sets": 2,
-       "reps": "obwód",
-       "note": "5 min rowerek/wioślarz luźno + 2 rundy obwodu. Serie wstępne do 1. ćwiczenia: pusta sztanga×8 → 50%×5 → 70%×3 → 85%×1–2."
-      }
-     },
-     {
-      "exercise": "back_squat",
-      "rx": {
-       "sets": 3,
-       "reps": 3,
-       "rir": 2,
-       "rest_s": 180
-      },
-      "block": "1"
-     },
-     {
-      "exercise": "jump_squat",
-      "rx": {
-       "sets": 3,
-       "reps": 5,
-       "rest_s": 90,
-       "load_hint": "hantle 10–15% masy ciała"
-      },
-      "block": "1b"
-     },
-     {
-      "exercise": "trap_bar_deadlift",
-      "rx": {
-       "sets": 3,
-       "reps": 3,
-       "rir": 2,
-       "rest_s": 180
-      },
-      "block": "2"
-     },
-     {
-      "exercise": "kb_swing",
-      "rx": {
-       "sets": 3,
-       "reps": 8,
-       "rest_s": 90,
-       "load_hint": "24–32 kg"
-      },
-      "block": "2b"
-     },
-     {
-      "exercise": "db_row",
-      "rx": {
-       "sets": 3,
-       "reps": 8,
-       "rir": 2,
-       "rest_s": 60,
-       "note": "superseria 3A/3B"
-      },
-      "block": "3A"
-     },
-     {
-      "exercise": "calf_raise",
-      "rx": {
-       "sets": 2,
-       "reps": 10,
-       "rir": 2,
-       "rest_s": 60,
-       "note": "pauza 1 s na górze"
-      },
-      "block": "3B"
-     },
-     {
-      "exercise": "pallof_press",
-      "rx": {
-       "sets": 2,
-       "reps": 10,
-       "rest_s": 30
-      },
-      "block": "4",
-      "circuit": "core_A"
-     },
-     {
-      "exercise": "dead_bug",
-      "rx": {
-       "sets": 2,
-       "reps": 8,
-       "rest_s": 30
-      },
-      "block": "4",
-      "circuit": "core_A"
-     },
-     {
-      "exercise": "side_plank",
-      "rx": {
-       "sets": 2,
-       "reps": "45 s",
-       "rest_s": 30
-      },
-      "block": "4",
-      "circuit": "core_A"
-     },
-     {
-      "exercise": "cooldown_stretch",
-      "rx": {
-       "sets": 1,
-       "reps": "4–5 min"
-      }
-     }
-    ]
-   },
    "nutrition": {
     "energy": "deficit_300",
     "label": "Dzień treningowy: deficyt dobrany do masy",
@@ -8575,7 +5435,6 @@
    "week_type": "build",
    "day_type": "rest",
    "bike": null,
-   "gym": null,
    "nutrition": {
     "energy": "deficit_300",
     "label": "Dzień lekki: deficyt dobrany do masy",
@@ -8603,7 +5462,6 @@
     "bike": "Rower",
     "fallback_workout_id": null
    },
-   "gym": null,
    "nutrition": {
     "energy": "maintenance",
     "label": "Dzień ciężki: bez deficytu, paliwo na trening",
@@ -8626,7 +5484,6 @@
    "week_type": "deload",
    "day_type": "rest",
    "bike": null,
-   "gym": null,
    "nutrition": {
     "energy": "deficit_300",
     "label": "Dzień lekki: deficyt dobrany do masy",
@@ -8656,7 +5513,6 @@
     "bike": "Rower",
     "fallback_workout_id": null
    },
-   "gym": null,
    "nutrition": {
     "energy": "deficit_300",
     "label": "Dzień treningowy: deficyt dobrany do masy",
@@ -8686,7 +5542,6 @@
     "bike": "Rower",
     "fallback_workout_id": null
    },
-   "gym": null,
    "nutrition": {
     "energy": "deficit_300",
     "label": "Dzień lekki: deficyt dobrany do masy",
@@ -8710,7 +5565,6 @@
    "week_type": "deload",
    "day_type": "rest",
    "bike": null,
-   "gym": null,
    "nutrition": {
     "energy": "deficit_300",
     "label": "Dzień lekki: deficyt dobrany do masy",
@@ -8740,127 +5594,6 @@
     "bike": "Rower",
     "fallback_workout_id": null
    },
-   "gym": {
-    "session": "A",
-    "name": "Sesja A – Siła nóg (ciężka) – tydzień rozładowania",
-    "est_min": 49,
-    "items": [
-     {
-      "exercise": "mobility_circuit",
-      "rx": {
-       "sets": 2,
-       "reps": "obwód",
-       "note": "5 min rowerek/wioślarz luźno + 2 rundy obwodu. Serie wstępne do 1. ćwiczenia: pusta sztanga×8 → 50%×5 → 70%×3 → 85%×1–2."
-      }
-     },
-     {
-      "exercise": "back_squat",
-      "rx": {
-       "sets": 2,
-       "reps": 3,
-       "rir": 3,
-       "rest_s": 180,
-       "note": "Rozładowanie: −40% serii, ciężar −10%, RIR +1."
-      },
-      "block": "1"
-     },
-     {
-      "exercise": "jump_squat",
-      "rx": {
-       "sets": 2,
-       "reps": 5,
-       "rest_s": 90,
-       "load_hint": "hantle 10–15% masy ciała",
-       "note": "Rozładowanie: −40% serii, ciężar −10%, RIR +1."
-      },
-      "block": "1b"
-     },
-     {
-      "exercise": "trap_bar_deadlift",
-      "rx": {
-       "sets": 2,
-       "reps": 3,
-       "rir": 3,
-       "rest_s": 180,
-       "note": "Rozładowanie: −40% serii, ciężar −10%, RIR +1."
-      },
-      "block": "2"
-     },
-     {
-      "exercise": "kb_swing",
-      "rx": {
-       "sets": 2,
-       "reps": 8,
-       "rest_s": 90,
-       "load_hint": "24–32 kg",
-       "note": "Rozładowanie: −40% serii, ciężar −10%, RIR +1."
-      },
-      "block": "2b"
-     },
-     {
-      "exercise": "db_row",
-      "rx": {
-       "sets": 2,
-       "reps": 8,
-       "rir": 3,
-       "rest_s": 60,
-       "note": "superseria 3A/3B · Rozładowanie: −40% serii, ciężar −10%, RIR +1."
-      },
-      "block": "3A"
-     },
-     {
-      "exercise": "calf_raise",
-      "rx": {
-       "sets": 1,
-       "reps": 10,
-       "rir": 3,
-       "rest_s": 60,
-       "note": "pauza 1 s na górze · Rozładowanie: −40% serii, ciężar −10%, RIR +1."
-      },
-      "block": "3B"
-     },
-     {
-      "exercise": "pallof_press",
-      "rx": {
-       "sets": 1,
-       "reps": 10,
-       "rest_s": 30,
-       "note": "Rozładowanie: −40% serii, ciężar −10%, RIR +1."
-      },
-      "block": "4",
-      "circuit": "core_A"
-     },
-     {
-      "exercise": "dead_bug",
-      "rx": {
-       "sets": 1,
-       "reps": 8,
-       "rest_s": 30,
-       "note": "Rozładowanie: −40% serii, ciężar −10%, RIR +1."
-      },
-      "block": "4",
-      "circuit": "core_A"
-     },
-     {
-      "exercise": "side_plank",
-      "rx": {
-       "sets": 1,
-       "reps": "45 s",
-       "rest_s": 30,
-       "note": "Rozładowanie: −40% serii, ciężar −10%, RIR +1."
-      },
-      "block": "4",
-      "circuit": "core_A"
-     },
-     {
-      "exercise": "cooldown_stretch",
-      "rx": {
-       "sets": 1,
-       "reps": "4–5 min"
-      }
-     }
-    ]
-   },
    "nutrition": {
     "energy": "deficit_300",
     "label": "Dzień treningowy: deficyt dobrany do masy",
@@ -8884,7 +5617,6 @@
    "week_type": "deload",
    "day_type": "rest",
    "bike": null,
-   "gym": null,
    "nutrition": {
     "energy": "deficit_300",
     "label": "Dzień lekki: deficyt dobrany do masy",
@@ -8914,7 +5646,6 @@
     "bike": "Rower",
     "fallback_workout_id": null
    },
-   "gym": null,
    "nutrition": {
     "energy": "maintenance",
     "label": "Dzień ciężki: bez deficytu, paliwo na trening",
@@ -8935,7 +5666,6 @@
    "week_type": "build",
    "day_type": "rest",
    "bike": null,
-   "gym": null,
    "nutrition": {
     "energy": "deficit_300",
     "label": "Dzień lekki: deficyt dobrany do masy",
@@ -8963,7 +5693,6 @@
     "bike": "Rower",
     "fallback_workout_id": null
    },
-   "gym": null,
    "nutrition": {
     "energy": "maintenance",
     "label": "Dzień ciężki: bez deficytu, paliwo na trening",
@@ -8990,7 +5719,6 @@
     "bike": "Rower",
     "fallback_workout_id": null
    },
-   "gym": null,
    "nutrition": {
     "energy": "deficit_300",
     "label": "Dzień treningowy: deficyt dobrany do masy",
@@ -9018,7 +5746,6 @@
     "bike": "Rower",
     "fallback_workout_id": null
    },
-   "gym": null,
    "nutrition": {
     "energy": "maintenance",
     "label": "Dzień ciężki: bez deficytu, paliwo na trening",
@@ -9045,120 +5772,6 @@
     "bike": "Rower",
     "fallback_workout_id": null
    },
-   "gym": {
-    "session": "A",
-    "name": "Sesja A – Siła nóg (ciężka)",
-    "est_min": 70,
-    "items": [
-     {
-      "exercise": "mobility_circuit",
-      "rx": {
-       "sets": 2,
-       "reps": "obwód",
-       "note": "5 min rowerek/wioślarz luźno + 2 rundy obwodu. Serie wstępne do 1. ćwiczenia: pusta sztanga×8 → 50%×5 → 70%×3 → 85%×1–2."
-      }
-     },
-     {
-      "exercise": "back_squat",
-      "rx": {
-       "sets": 3,
-       "reps": 3,
-       "rir": 2,
-       "rest_s": 180
-      },
-      "block": "1"
-     },
-     {
-      "exercise": "jump_squat",
-      "rx": {
-       "sets": 3,
-       "reps": 5,
-       "rest_s": 90,
-       "load_hint": "hantle 10–15% masy ciała"
-      },
-      "block": "1b"
-     },
-     {
-      "exercise": "trap_bar_deadlift",
-      "rx": {
-       "sets": 3,
-       "reps": 3,
-       "rir": 2,
-       "rest_s": 180
-      },
-      "block": "2"
-     },
-     {
-      "exercise": "kb_swing",
-      "rx": {
-       "sets": 3,
-       "reps": 8,
-       "rest_s": 90,
-       "load_hint": "24–32 kg"
-      },
-      "block": "2b"
-     },
-     {
-      "exercise": "db_row",
-      "rx": {
-       "sets": 3,
-       "reps": 8,
-       "rir": 2,
-       "rest_s": 60,
-       "note": "superseria 3A/3B"
-      },
-      "block": "3A"
-     },
-     {
-      "exercise": "calf_raise",
-      "rx": {
-       "sets": 2,
-       "reps": 10,
-       "rir": 2,
-       "rest_s": 60,
-       "note": "pauza 1 s na górze"
-      },
-      "block": "3B"
-     },
-     {
-      "exercise": "pallof_press",
-      "rx": {
-       "sets": 2,
-       "reps": 10,
-       "rest_s": 30
-      },
-      "block": "4",
-      "circuit": "core_A"
-     },
-     {
-      "exercise": "dead_bug",
-      "rx": {
-       "sets": 2,
-       "reps": 8,
-       "rest_s": 30
-      },
-      "block": "4",
-      "circuit": "core_A"
-     },
-     {
-      "exercise": "side_plank",
-      "rx": {
-       "sets": 2,
-       "reps": "45 s",
-       "rest_s": 30
-      },
-      "block": "4",
-      "circuit": "core_A"
-     },
-     {
-      "exercise": "cooldown_stretch",
-      "rx": {
-       "sets": 1,
-       "reps": "4–5 min"
-      }
-     }
-    ]
-   },
    "nutrition": {
     "energy": "deficit_300",
     "label": "Dzień treningowy: deficyt dobrany do masy",
@@ -9180,7 +5793,6 @@
    "week_type": "build",
    "day_type": "rest",
    "bike": null,
-   "gym": null,
    "nutrition": {
     "energy": "deficit_300",
     "label": "Dzień lekki: deficyt dobrany do masy",
@@ -9208,7 +5820,6 @@
     "bike": "Rower",
     "fallback_workout_id": null
    },
-   "gym": null,
    "nutrition": {
     "energy": "maintenance",
     "label": "Dzień ciężki: bez deficytu, paliwo na trening",
@@ -9229,7 +5840,6 @@
    "week_type": "build",
    "day_type": "rest",
    "bike": null,
-   "gym": null,
    "nutrition": {
     "energy": "deficit_300",
     "label": "Dzień lekki: deficyt dobrany do masy",
@@ -9257,7 +5867,6 @@
     "bike": "Rower",
     "fallback_workout_id": null
    },
-   "gym": null,
    "nutrition": {
     "energy": "maintenance",
     "label": "Dzień ciężki: bez deficytu, paliwo na trening",
@@ -9284,7 +5893,6 @@
     "bike": "Rower",
     "fallback_workout_id": null
    },
-   "gym": null,
    "nutrition": {
     "energy": "deficit_300",
     "label": "Dzień treningowy: deficyt dobrany do masy",
@@ -9312,7 +5920,6 @@
     "bike": "Rower",
     "fallback_workout_id": null
    },
-   "gym": null,
    "nutrition": {
     "energy": "maintenance",
     "label": "Dzień ciężki: bez deficytu, paliwo na trening",
@@ -9339,120 +5946,6 @@
     "bike": "Rower",
     "fallback_workout_id": null
    },
-   "gym": {
-    "session": "A",
-    "name": "Sesja A – Siła nóg (ciężka)",
-    "est_min": 70,
-    "items": [
-     {
-      "exercise": "mobility_circuit",
-      "rx": {
-       "sets": 2,
-       "reps": "obwód",
-       "note": "5 min rowerek/wioślarz luźno + 2 rundy obwodu. Serie wstępne do 1. ćwiczenia: pusta sztanga×8 → 50%×5 → 70%×3 → 85%×1–2."
-      }
-     },
-     {
-      "exercise": "back_squat",
-      "rx": {
-       "sets": 3,
-       "reps": 3,
-       "rir": 2,
-       "rest_s": 180
-      },
-      "block": "1"
-     },
-     {
-      "exercise": "jump_squat",
-      "rx": {
-       "sets": 3,
-       "reps": 5,
-       "rest_s": 90,
-       "load_hint": "hantle 10–15% masy ciała"
-      },
-      "block": "1b"
-     },
-     {
-      "exercise": "trap_bar_deadlift",
-      "rx": {
-       "sets": 3,
-       "reps": 3,
-       "rir": 2,
-       "rest_s": 180
-      },
-      "block": "2"
-     },
-     {
-      "exercise": "kb_swing",
-      "rx": {
-       "sets": 3,
-       "reps": 8,
-       "rest_s": 90,
-       "load_hint": "24–32 kg"
-      },
-      "block": "2b"
-     },
-     {
-      "exercise": "db_row",
-      "rx": {
-       "sets": 3,
-       "reps": 8,
-       "rir": 2,
-       "rest_s": 60,
-       "note": "superseria 3A/3B"
-      },
-      "block": "3A"
-     },
-     {
-      "exercise": "calf_raise",
-      "rx": {
-       "sets": 2,
-       "reps": 10,
-       "rir": 2,
-       "rest_s": 60,
-       "note": "pauza 1 s na górze"
-      },
-      "block": "3B"
-     },
-     {
-      "exercise": "pallof_press",
-      "rx": {
-       "sets": 2,
-       "reps": 10,
-       "rest_s": 30
-      },
-      "block": "4",
-      "circuit": "core_A"
-     },
-     {
-      "exercise": "dead_bug",
-      "rx": {
-       "sets": 2,
-       "reps": 8,
-       "rest_s": 30
-      },
-      "block": "4",
-      "circuit": "core_A"
-     },
-     {
-      "exercise": "side_plank",
-      "rx": {
-       "sets": 2,
-       "reps": "45 s",
-       "rest_s": 30
-      },
-      "block": "4",
-      "circuit": "core_A"
-     },
-     {
-      "exercise": "cooldown_stretch",
-      "rx": {
-       "sets": 1,
-       "reps": "4–5 min"
-      }
-     }
-    ]
-   },
    "nutrition": {
     "energy": "deficit_300",
     "label": "Dzień treningowy: deficyt dobrany do masy",
@@ -9474,7 +5967,6 @@
    "week_type": "build",
    "day_type": "rest",
    "bike": null,
-   "gym": null,
    "nutrition": {
     "energy": "deficit_300",
     "label": "Dzień lekki: deficyt dobrany do masy",
@@ -9502,7 +5994,6 @@
     "bike": "Rower",
     "fallback_workout_id": null
    },
-   "gym": null,
    "nutrition": {
     "energy": "maintenance",
     "label": "Dzień ciężki: bez deficytu, paliwo na trening",
@@ -9524,7 +6015,6 @@
    "week_type": "build",
    "day_type": "rest",
    "bike": null,
-   "gym": null,
    "nutrition": {
     "energy": "deficit_300",
     "label": "Dzień lekki: deficyt dobrany do masy",
@@ -9552,7 +6042,6 @@
     "bike": "Rower",
     "fallback_workout_id": null
    },
-   "gym": null,
    "nutrition": {
     "energy": "maintenance",
     "label": "Dzień ciężki: bez deficytu, paliwo na trening",
@@ -9579,7 +6068,6 @@
     "bike": "Rower",
     "fallback_workout_id": null
    },
-   "gym": null,
    "nutrition": {
     "energy": "deficit_300",
     "label": "Dzień treningowy: deficyt dobrany do masy",
@@ -9607,7 +6095,6 @@
     "bike": "Rower",
     "fallback_workout_id": null
    },
-   "gym": null,
    "nutrition": {
     "energy": "maintenance",
     "label": "Dzień ciężki: bez deficytu, paliwo na trening",
@@ -9634,120 +6121,6 @@
     "bike": "Rower",
     "fallback_workout_id": null
    },
-   "gym": {
-    "session": "A",
-    "name": "Sesja A – Siła nóg (ciężka)",
-    "est_min": 70,
-    "items": [
-     {
-      "exercise": "mobility_circuit",
-      "rx": {
-       "sets": 2,
-       "reps": "obwód",
-       "note": "5 min rowerek/wioślarz luźno + 2 rundy obwodu. Serie wstępne do 1. ćwiczenia: pusta sztanga×8 → 50%×5 → 70%×3 → 85%×1–2."
-      }
-     },
-     {
-      "exercise": "back_squat",
-      "rx": {
-       "sets": 3,
-       "reps": 3,
-       "rir": 2,
-       "rest_s": 180
-      },
-      "block": "1"
-     },
-     {
-      "exercise": "jump_squat",
-      "rx": {
-       "sets": 3,
-       "reps": 5,
-       "rest_s": 90,
-       "load_hint": "hantle 10–15% masy ciała"
-      },
-      "block": "1b"
-     },
-     {
-      "exercise": "trap_bar_deadlift",
-      "rx": {
-       "sets": 3,
-       "reps": 3,
-       "rir": 2,
-       "rest_s": 180
-      },
-      "block": "2"
-     },
-     {
-      "exercise": "kb_swing",
-      "rx": {
-       "sets": 3,
-       "reps": 8,
-       "rest_s": 90,
-       "load_hint": "24–32 kg"
-      },
-      "block": "2b"
-     },
-     {
-      "exercise": "db_row",
-      "rx": {
-       "sets": 3,
-       "reps": 8,
-       "rir": 2,
-       "rest_s": 60,
-       "note": "superseria 3A/3B"
-      },
-      "block": "3A"
-     },
-     {
-      "exercise": "calf_raise",
-      "rx": {
-       "sets": 2,
-       "reps": 10,
-       "rir": 2,
-       "rest_s": 60,
-       "note": "pauza 1 s na górze"
-      },
-      "block": "3B"
-     },
-     {
-      "exercise": "pallof_press",
-      "rx": {
-       "sets": 2,
-       "reps": 10,
-       "rest_s": 30
-      },
-      "block": "4",
-      "circuit": "core_A"
-     },
-     {
-      "exercise": "dead_bug",
-      "rx": {
-       "sets": 2,
-       "reps": 8,
-       "rest_s": 30
-      },
-      "block": "4",
-      "circuit": "core_A"
-     },
-     {
-      "exercise": "side_plank",
-      "rx": {
-       "sets": 2,
-       "reps": "45 s",
-       "rest_s": 30
-      },
-      "block": "4",
-      "circuit": "core_A"
-     },
-     {
-      "exercise": "cooldown_stretch",
-      "rx": {
-       "sets": 1,
-       "reps": "4–5 min"
-      }
-     }
-    ]
-   },
    "nutrition": {
     "energy": "deficit_300",
     "label": "Dzień treningowy: deficyt dobrany do masy",
@@ -9769,7 +6142,6 @@
    "week_type": "build",
    "day_type": "rest",
    "bike": null,
-   "gym": null,
    "nutrition": {
     "energy": "deficit_300",
     "label": "Dzień lekki: deficyt dobrany do masy",
@@ -9797,7 +6169,6 @@
     "bike": "Rower",
     "fallback_workout_id": null
    },
-   "gym": null,
    "nutrition": {
     "energy": "maintenance",
     "label": "Dzień ciężki: bez deficytu, paliwo na trening",
@@ -9820,7 +6191,6 @@
    "week_type": "deload",
    "day_type": "rest",
    "bike": null,
-   "gym": null,
    "nutrition": {
     "energy": "deficit_300",
     "label": "Dzień lekki: deficyt dobrany do masy",
@@ -9850,7 +6220,6 @@
     "bike": "Rower",
     "fallback_workout_id": null
    },
-   "gym": null,
    "nutrition": {
     "energy": "deficit_300",
     "label": "Dzień treningowy: deficyt dobrany do masy",
@@ -9880,7 +6249,6 @@
     "bike": "Rower",
     "fallback_workout_id": null
    },
-   "gym": null,
    "nutrition": {
     "energy": "deficit_300",
     "label": "Dzień lekki: deficyt dobrany do masy",
@@ -9904,7 +6272,6 @@
    "week_type": "deload",
    "day_type": "rest",
    "bike": null,
-   "gym": null,
    "nutrition": {
     "energy": "deficit_300",
     "label": "Dzień lekki: deficyt dobrany do masy",
@@ -9934,127 +6301,6 @@
     "bike": "Rower",
     "fallback_workout_id": null
    },
-   "gym": {
-    "session": "A",
-    "name": "Sesja A – Siła nóg (ciężka) – tydzień rozładowania",
-    "est_min": 49,
-    "items": [
-     {
-      "exercise": "mobility_circuit",
-      "rx": {
-       "sets": 2,
-       "reps": "obwód",
-       "note": "5 min rowerek/wioślarz luźno + 2 rundy obwodu. Serie wstępne do 1. ćwiczenia: pusta sztanga×8 → 50%×5 → 70%×3 → 85%×1–2."
-      }
-     },
-     {
-      "exercise": "back_squat",
-      "rx": {
-       "sets": 2,
-       "reps": 3,
-       "rir": 3,
-       "rest_s": 180,
-       "note": "Rozładowanie: −40% serii, ciężar −10%, RIR +1."
-      },
-      "block": "1"
-     },
-     {
-      "exercise": "jump_squat",
-      "rx": {
-       "sets": 2,
-       "reps": 5,
-       "rest_s": 90,
-       "load_hint": "hantle 10–15% masy ciała",
-       "note": "Rozładowanie: −40% serii, ciężar −10%, RIR +1."
-      },
-      "block": "1b"
-     },
-     {
-      "exercise": "trap_bar_deadlift",
-      "rx": {
-       "sets": 2,
-       "reps": 3,
-       "rir": 3,
-       "rest_s": 180,
-       "note": "Rozładowanie: −40% serii, ciężar −10%, RIR +1."
-      },
-      "block": "2"
-     },
-     {
-      "exercise": "kb_swing",
-      "rx": {
-       "sets": 2,
-       "reps": 8,
-       "rest_s": 90,
-       "load_hint": "24–32 kg",
-       "note": "Rozładowanie: −40% serii, ciężar −10%, RIR +1."
-      },
-      "block": "2b"
-     },
-     {
-      "exercise": "db_row",
-      "rx": {
-       "sets": 2,
-       "reps": 8,
-       "rir": 3,
-       "rest_s": 60,
-       "note": "superseria 3A/3B · Rozładowanie: −40% serii, ciężar −10%, RIR +1."
-      },
-      "block": "3A"
-     },
-     {
-      "exercise": "calf_raise",
-      "rx": {
-       "sets": 1,
-       "reps": 10,
-       "rir": 3,
-       "rest_s": 60,
-       "note": "pauza 1 s na górze · Rozładowanie: −40% serii, ciężar −10%, RIR +1."
-      },
-      "block": "3B"
-     },
-     {
-      "exercise": "pallof_press",
-      "rx": {
-       "sets": 1,
-       "reps": 10,
-       "rest_s": 30,
-       "note": "Rozładowanie: −40% serii, ciężar −10%, RIR +1."
-      },
-      "block": "4",
-      "circuit": "core_A"
-     },
-     {
-      "exercise": "dead_bug",
-      "rx": {
-       "sets": 1,
-       "reps": 8,
-       "rest_s": 30,
-       "note": "Rozładowanie: −40% serii, ciężar −10%, RIR +1."
-      },
-      "block": "4",
-      "circuit": "core_A"
-     },
-     {
-      "exercise": "side_plank",
-      "rx": {
-       "sets": 1,
-       "reps": "45 s",
-       "rest_s": 30,
-       "note": "Rozładowanie: −40% serii, ciężar −10%, RIR +1."
-      },
-      "block": "4",
-      "circuit": "core_A"
-     },
-     {
-      "exercise": "cooldown_stretch",
-      "rx": {
-       "sets": 1,
-       "reps": "4–5 min"
-      }
-     }
-    ]
-   },
    "nutrition": {
     "energy": "deficit_300",
     "label": "Dzień treningowy: deficyt dobrany do masy",
@@ -10078,7 +6324,6 @@
    "week_type": "deload",
    "day_type": "rest",
    "bike": null,
-   "gym": null,
    "nutrition": {
     "energy": "deficit_300",
     "label": "Dzień lekki: deficyt dobrany do masy",
@@ -10108,7 +6353,6 @@
     "bike": "Rower",
     "fallback_workout_id": null
    },
-   "gym": null,
    "nutrition": {
     "energy": "maintenance",
     "label": "Bilans zerowy – jedz na pełną wydajność",
@@ -10130,7 +6374,6 @@
    "week_type": "build",
    "day_type": "rest",
    "bike": null,
-   "gym": null,
    "nutrition": {
     "energy": "maintenance",
     "label": "Bilans zerowy – jedz na pełną wydajność",
@@ -10157,7 +6400,6 @@
     "bike": "Rower",
     "fallback_workout_id": null
    },
-   "gym": null,
    "nutrition": {
     "energy": "maintenance",
     "label": "Bilans zerowy – jedz na pełną wydajność",
@@ -10184,7 +6426,6 @@
     "bike": "Rower",
     "fallback_workout_id": null
    },
-   "gym": null,
    "nutrition": {
     "energy": "maintenance",
     "label": "Bilans zerowy – jedz na pełną wydajność",
@@ -10211,7 +6452,6 @@
     "bike": "Rower",
     "fallback_workout_id": null
    },
-   "gym": null,
    "nutrition": {
     "energy": "maintenance",
     "label": "Bilans zerowy – jedz na pełną wydajność",
@@ -10238,120 +6478,6 @@
     "bike": "Rower",
     "fallback_workout_id": null
    },
-   "gym": {
-    "session": "A",
-    "name": "Sesja A – Siła nóg (ciężka)",
-    "est_min": 70,
-    "items": [
-     {
-      "exercise": "mobility_circuit",
-      "rx": {
-       "sets": 2,
-       "reps": "obwód",
-       "note": "5 min rowerek/wioślarz luźno + 2 rundy obwodu. Serie wstępne do 1. ćwiczenia: pusta sztanga×8 → 50%×5 → 70%×3 → 85%×1–2."
-      }
-     },
-     {
-      "exercise": "back_squat",
-      "rx": {
-       "sets": 3,
-       "reps": 3,
-       "rir": 2,
-       "rest_s": 180
-      },
-      "block": "1"
-     },
-     {
-      "exercise": "jump_squat",
-      "rx": {
-       "sets": 3,
-       "reps": 5,
-       "rest_s": 90,
-       "load_hint": "hantle 10–15% masy ciała"
-      },
-      "block": "1b"
-     },
-     {
-      "exercise": "trap_bar_deadlift",
-      "rx": {
-       "sets": 3,
-       "reps": 3,
-       "rir": 2,
-       "rest_s": 180
-      },
-      "block": "2"
-     },
-     {
-      "exercise": "kb_swing",
-      "rx": {
-       "sets": 3,
-       "reps": 8,
-       "rest_s": 90,
-       "load_hint": "24–32 kg"
-      },
-      "block": "2b"
-     },
-     {
-      "exercise": "db_row",
-      "rx": {
-       "sets": 3,
-       "reps": 8,
-       "rir": 2,
-       "rest_s": 60,
-       "note": "superseria 3A/3B"
-      },
-      "block": "3A"
-     },
-     {
-      "exercise": "calf_raise",
-      "rx": {
-       "sets": 2,
-       "reps": 10,
-       "rir": 2,
-       "rest_s": 60,
-       "note": "pauza 1 s na górze"
-      },
-      "block": "3B"
-     },
-     {
-      "exercise": "pallof_press",
-      "rx": {
-       "sets": 2,
-       "reps": 10,
-       "rest_s": 30
-      },
-      "block": "4",
-      "circuit": "core_A"
-     },
-     {
-      "exercise": "dead_bug",
-      "rx": {
-       "sets": 2,
-       "reps": 8,
-       "rest_s": 30
-      },
-      "block": "4",
-      "circuit": "core_A"
-     },
-     {
-      "exercise": "side_plank",
-      "rx": {
-       "sets": 2,
-       "reps": "45 s",
-       "rest_s": 30
-      },
-      "block": "4",
-      "circuit": "core_A"
-     },
-     {
-      "exercise": "cooldown_stretch",
-      "rx": {
-       "sets": 1,
-       "reps": "4–5 min"
-      }
-     }
-    ]
-   },
    "nutrition": {
     "energy": "maintenance",
     "label": "Bilans zerowy – jedz na pełną wydajność",
@@ -10372,7 +6498,6 @@
    "week_type": "build",
    "day_type": "rest",
    "bike": null,
-   "gym": null,
    "nutrition": {
     "energy": "maintenance",
     "label": "Bilans zerowy – jedz na pełną wydajność",
@@ -10399,7 +6524,6 @@
     "bike": "Rower",
     "fallback_workout_id": null
    },
-   "gym": null,
    "nutrition": {
     "energy": "maintenance",
     "label": "Bilans zerowy – jedz na pełną wydajność",
@@ -10420,7 +6544,6 @@
    "week_type": "build",
    "day_type": "rest",
    "bike": null,
-   "gym": null,
    "nutrition": {
     "energy": "maintenance",
     "label": "Bilans zerowy – jedz na pełną wydajność",
@@ -10447,7 +6570,6 @@
     "bike": "Rower",
     "fallback_workout_id": null
    },
-   "gym": null,
    "nutrition": {
     "energy": "maintenance",
     "label": "Bilans zerowy – jedz na pełną wydajność",
@@ -10474,7 +6596,6 @@
     "bike": "Rower",
     "fallback_workout_id": null
    },
-   "gym": null,
    "nutrition": {
     "energy": "maintenance",
     "label": "Bilans zerowy – jedz na pełną wydajność",
@@ -10501,7 +6622,6 @@
     "bike": "Rower",
     "fallback_workout_id": null
    },
-   "gym": null,
    "nutrition": {
     "energy": "maintenance",
     "label": "Bilans zerowy – jedz na pełną wydajność",
@@ -10528,7 +6648,6 @@
     "bike": "Rower",
     "fallback_workout_id": null
    },
-   "gym": null,
    "nutrition": {
     "energy": "maintenance",
     "label": "Bilans zerowy – jedz na pełną wydajność",
@@ -10549,7 +6668,6 @@
    "week_type": "build",
    "day_type": "rest",
    "bike": null,
-   "gym": null,
    "nutrition": {
     "energy": "maintenance",
     "label": "Bilans zerowy – jedz na pełną wydajność",
@@ -10576,7 +6694,6 @@
     "bike": "Rower",
     "fallback_workout_id": null
    },
-   "gym": null,
    "nutrition": {
     "energy": "maintenance",
     "label": "Bilans zerowy – jedz na pełną wydajność",
@@ -10588,7 +6705,7 @@
     "post_workout": "30–40 g białka + węglowodany w ciągu 1–2 h"
    },
    "flags": [],
-   "week_notes": "Siłownia wypada – od teraz wszystko idzie w świeżość na test."
+   "week_notes": "Od teraz wszystko idzie w świeżość na test."
   },
   {
    "date": "2027-06-15",
@@ -10598,7 +6715,6 @@
    "week_type": "build",
    "day_type": "rest",
    "bike": null,
-   "gym": null,
    "nutrition": {
     "energy": "maintenance",
     "label": "Bilans zerowy – jedz na pełną wydajność",
@@ -10625,7 +6741,6 @@
     "bike": "Rower",
     "fallback_workout_id": null
    },
-   "gym": null,
    "nutrition": {
     "energy": "maintenance",
     "label": "Bilans zerowy – jedz na pełną wydajność",
@@ -10652,7 +6767,6 @@
     "bike": "Rower",
     "fallback_workout_id": null
    },
-   "gym": null,
    "nutrition": {
     "energy": "maintenance",
     "label": "Bilans zerowy – jedz na pełną wydajność",
@@ -10679,7 +6793,6 @@
     "bike": "Rower",
     "fallback_workout_id": null
    },
-   "gym": null,
    "nutrition": {
     "energy": "maintenance",
     "label": "Bilans zerowy – jedz na pełną wydajność",
@@ -10706,7 +6819,6 @@
     "bike": "Rower",
     "fallback_workout_id": null
    },
-   "gym": null,
    "nutrition": {
     "energy": "maintenance",
     "label": "Bilans zerowy – jedz na pełną wydajność",
@@ -10727,7 +6839,6 @@
    "week_type": "build",
    "day_type": "rest",
    "bike": null,
-   "gym": null,
    "nutrition": {
     "energy": "maintenance",
     "label": "Bilans zerowy – jedz na pełną wydajność",
@@ -10754,7 +6865,6 @@
     "bike": "Rower",
     "fallback_workout_id": null
    },
-   "gym": null,
    "nutrition": {
     "energy": "maintenance",
     "label": "Bilans zerowy – jedz na pełną wydajność",
@@ -10776,7 +6886,6 @@
    "week_type": "taper",
    "day_type": "rest",
    "bike": null,
-   "gym": null,
    "nutrition": {
     "energy": "maintenance",
     "label": "Bilans zerowy – jedz na pełną wydajność",
@@ -10803,7 +6912,6 @@
     "bike": "Rower",
     "fallback_workout_id": null
    },
-   "gym": null,
    "nutrition": {
     "energy": "maintenance",
     "label": "Bilans zerowy – jedz na pełną wydajność",
@@ -10826,7 +6934,6 @@
    "week_type": "taper",
    "day_type": "rest",
    "bike": null,
-   "gym": null,
    "nutrition": {
     "energy": "maintenance",
     "label": "Bilans zerowy – jedz na pełną wydajność",
@@ -10853,7 +6960,6 @@
     "bike": "Rower",
     "fallback_workout_id": null
    },
-   "gym": null,
    "nutrition": {
     "energy": "maintenance",
     "label": "Bilans zerowy – jedz na pełną wydajność",
@@ -10880,7 +6986,6 @@
     "bike": "Rower",
     "fallback_workout_id": null
    },
-   "gym": null,
    "nutrition": {
     "energy": "maintenance",
     "label": "Bilans zerowy – jedz na pełną wydajność",
@@ -10901,7 +7006,6 @@
    "week_type": "taper",
    "day_type": "rest",
    "bike": null,
-   "gym": null,
    "nutrition": {
     "energy": "maintenance",
     "label": "Bilans zerowy – jedz na pełną wydajność",

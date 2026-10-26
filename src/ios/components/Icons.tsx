@@ -110,14 +110,6 @@ export function IconBike(p: P) {
   )
 }
 
-export function IconGym(p: P) {
-  return (
-    <Svg {...p}>
-      <path d="M3 9.5v5M6.5 7v10M17.5 7v10M21 9.5v5M6.5 12h11" />
-    </Svg>
-  )
-}
-
 export function IconRest(p: P) {
   return (
     <Svg {...p}>

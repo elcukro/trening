@@ -21,16 +21,14 @@ export function useDayPhase(d: IosDay, date: ISODate): DayPhase {
         date,
         today,
         ride: day?.bike ? { name: day.bike.name, minutes: day.bike.duration_min, pushable: d.bolt.kind !== 'na' } : null,
-        gym: day?.gym ? { name: day.gym.name } : null,
         checkedIn: !!d.checkin && (d.checkin.sleep != null || d.checkin.weight_kg != null || d.checkin.legs != null),
         boltReady: d.bolt.kind === 'ok',
         rideLog: stateOf(d.rideLog),
-        gymLog: stateOf(d.gymLog),
         hasActivity: d.activities.length > 0,
         hour: nowHour(),
         startHour: weekend ? hours.weekend : hours.weekday,
-        hasRpe: (day?.bike ? d.rideLog?.rpe : d.gymLog?.rpe) != null,
+        hasRpe: d.rideLog?.rpe != null,
       }),
-    [date, today, day, d.bolt.kind, d.checkin, d.rideLog, d.gymLog, d.activities.length, hours, weekend],
+    [date, today, day, d.bolt.kind, d.checkin, d.rideLog, d.activities.length, hours, weekend],
   )
 }

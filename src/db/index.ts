@@ -27,6 +27,7 @@ export interface KeyValueRow {
   updated_at: string
 }
 
+/** `gym` – tylko w historii (siłownia usunięta z aplikacji 26.10.2026); nowe logi to `bike` albo `test`. */
 export type SessionKind = 'bike' | 'gym' | 'test'
 export type SessionStatus = 'planned' | 'in_progress' | 'done' | 'modified' | 'skipped'
 
@@ -48,6 +49,7 @@ export interface SessionLog extends SyncedRow {
   notes?: string | null
 }
 
+/** Serie z dawnego trybu siłowni – tabela zostaje w Dexie i na serwerze jako historia, nie jest już synchronizowana. */
 export interface SetLog extends SyncedRow {
   session_log_id: string
   exercise_id: string
@@ -232,7 +234,7 @@ export interface OutboxItem {
   ts: string
 }
 
-export const SYNC_TABLES = ['bikes', 'checkins', 'session_logs', 'set_logs', 'test_results', 'plan_overrides', 'gear_task_state', 'service_log', 'packing_state', 'strava_activities', 'baseline_entries', 'wahoo_pushes', 'wahoo_workouts', 'meals'] as const
+export const SYNC_TABLES = ['bikes', 'checkins', 'session_logs', 'test_results', 'plan_overrides', 'gear_task_state', 'service_log', 'packing_state', 'strava_activities', 'baseline_entries', 'wahoo_pushes', 'wahoo_workouts', 'meals'] as const
 /** Tabele, do których klient nie wstawia wierszy – tylko aktualizuje wybrane pola (RLS: update own). */
 export const UPDATE_ONLY_TABLES: Record<string, string[]> = { strava_activities: ['date', 'is_ride', 'updated_at'], wahoo_pushes: [], wahoo_workouts: [] }
 export type SyncTable = (typeof SYNC_TABLES)[number]

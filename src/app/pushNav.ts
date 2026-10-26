@@ -17,7 +17,7 @@ export function iosPathFor(pathname: string): string | null {
 
 /**
  * Odpowiednik ścieżki (pełnej aplikacji albo `/i`) w mobilnym v2 `/m` (docs/24): Dziś, dzień, Plan (tydzień), Ja (postęp).
- * `null`, gdy ekranu nie ma w `/m` (raporty, siłownia, biblioteka – zostaje pełna aplikacja).
+ * `null`, gdy ekranu nie ma w `/m` (raporty, biblioteka – zostaje pełna aplikacja).
  */
 export function mobilePathFor(pathname: string): string | null {
   if (pathname === '/' || pathname === '' || pathname === '/i' || pathname === '/i/') return '/m'

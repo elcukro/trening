@@ -8,7 +8,7 @@ import { applyOverrides, swapToUndo, warningsFor, type LogLike, type RuleContext
 import type { CalendarDay, EngineContext, PlanOverride } from '../types'
 
 /**
- * Reguły R1–R3 i R12 na programie FTP 300 (pn długa, śr akcent, pt drugi akcent, sb Z2 + jedyna siłownia).
+ * Reguły R1, R2 i R12 na programie FTP 300 (pn długa, śr akcent, pt drugi akcent, sb Z2).
  * Pilnują, że silnik nie zakłada tygodnia programu alpejskiego (docs/18, krok 2).
  */
 const program = parseProgram(programJson)
@@ -30,7 +30,7 @@ describe('FTP 300 – pominięte treningi', () => {
     for (const d of ['2026-11-10', '2026-11-11', '2026-11-12']) expect(only('R2', d, w, rules({ today: d, logs }))).toHaveLength(0)
   })
 
-  it('pominięty piątkowy akcent przepada – sobota ma siłownię', () => {
+  it('pominięty piątkowy akcent przepada – nie przechodzi na sobotę (`accent_catchup_not_onto`)', () => {
     const w = week('2026-11-07', 3, 2)
     const logs: LogLike[] = [{ date: '2026-11-06', kind: 'bike', status: 'skipped' }]
     expect(only('R1', '2026-11-07', w, rules({ today: '2026-11-07', logs }))).toHaveLength(0)
@@ -43,22 +43,12 @@ describe('FTP 300 – pominięte treningi', () => {
     expect(only('R1', '2026-11-05', w, rules({ today: '2026-11-05', logs }))).toHaveLength(0)
   })
 
-  it('w tygodniu z jednym akcentem środa przechodzi na czwartek, bez wzmianki o siłowni', () => {
+  it('w tygodniu z jednym akcentem środa przechodzi na czwartek', () => {
     const w = week('2026-10-08', 3, 3)
     const logs: LogLike[] = [{ date: '2026-10-07', kind: 'bike', status: 'skipped' }]
     const warn = only('R1', '2026-10-08', w, rules({ today: '2026-10-08', logs }))[0]!
     expect(warn.actions![0]).toMatchObject({ kind: 'move', date: '2026-10-07', payload: { to: '2026-10-08', what: 'bike' } })
     expect(warn.message).not.toContain('Sesja')
-  })
-
-  it('pominięta sobotnia siłownia przepada, z poprawną odmianą dnia', () => {
-    const w = week('2026-11-08', 3, 3)
-    const logs: LogLike[] = [{ date: '2026-11-07', kind: 'gym', status: 'skipped' }]
-    const warn = only('R3', '2026-11-08', w, rules({ today: '2026-11-08', logs }))
-    expect(warn).toHaveLength(1)
-    expect(warn[0]!.message).toContain('Sesja A z soboty przepada')
-    expect(warn[0]!.actions).toBeUndefined()
-    expect(only('R3', '2026-11-09', w, rules({ today: '2026-11-09', logs }))[0]!.actions).toBeUndefined()
   })
 
   it('tydzień rozładowania mówi o wolnym piątku, nie o środzie z interwałami', () => {
@@ -83,13 +73,15 @@ describe('teksty zasad należą do programu', () => {
     for (const leak of ['Sesja B', 'sobotnia długa', 'Sobotnia długa', 'Wattbike', 'przełęcz', '26.04.2027']) expect(all).not.toContain(leak)
     expect(program.rules.pass_strategy).toBeUndefined()
   })
-  it('oba programy mają pełen zestaw R1–R16', () => {
-    for (const p of [program, alps]) expect(p.rules.text.map((r) => r.id)).toEqual(Array.from({ length: 16 }, (_, i) => `R${i + 1}`))
+  it('oba programy mają zestaw R1–R16 bez zasad siłowni', () => {
+    // R3, R7, R8 i R9 dotyczyły siłowni – wypadły 26.10.2026; numeracja pozostałych bez zmian
+    const ids = Array.from({ length: 16 }, (_, i) => `R${i + 1}`).filter((id) => !['R3', 'R7', 'R8', 'R9'].includes(id))
+    for (const p of [program, alps]) expect(p.rules.text.map((r) => r.id)).toEqual(ids)
   })
 })
 
 describe('zamiany i przeniesienia w kolejności wykonania (zgłoszenie Ferdynanda, 30.09.2026)', () => {
-  // tydzień 1: pn długa, wt wolne, śr akcent, czw Z2, pt Z2 z wstawkami, sb Z2 + siłownia, nd wolne
+  // tydzień 1: pn długa, wt wolne, śr akcent, czw Z2, pt Z2 z wstawkami, sb Z2, nd wolne
   const w = week('2026-10-01', 3, 3)
   const bikeOf = (days: CalendarDay[], date: string) => days.find((d) => d.date === date)!.bike?.workout_id ?? null
   const sw = (id: string, date: string, other: string, at: string): PlanOverride => ({ id, date, kind: 'swap', payload: { swap_with: other }, at })
@@ -103,10 +95,9 @@ describe('zamiany i przeniesienia w kolejności wykonania (zgłoszenie Ferdynand
   })
 
   it('dwie zamiany z tego samego dnia się składają (rotacja trzech dni)', () => {
-    // wtorek ↔ czwartek, potem wtorek ↔ sobota: Z2 z czwartku ląduje w sobotę, sobotnie Z2 z siłownią we wtorek
+    // wtorek ↔ czwartek, potem wtorek ↔ sobota: Z2 z czwartku ląduje w sobotę, sobotnie Z2 we wtorek
     const out = applyOverrides(w, [sw('a', '2026-09-29', '2026-10-01', '2026-09-28T21:00:00Z'), sw('b', '2026-09-29', '2026-10-03', '2026-09-28T21:00:10Z')], program)
-    expect(out.find((d) => d.date === '2026-09-29')!.gym?.session).toBe('A')
-    expect(out.find((d) => d.date === '2026-10-03')!.gym).toBeNull()
+    expect(bikeOf(out, '2026-09-29')).toBe('Z2')
     expect(bikeOf(out, '2026-10-03')).toBe('Z2')
     expect(bikeOf(out, '2026-10-01')).toBeNull()
   })

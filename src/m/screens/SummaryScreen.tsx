@@ -36,7 +36,7 @@ export function SummaryScreen() {
   const score = useRideScore(idx === 0 ? a : undefined, day, d.ftp)
   const back = date === today ? '/m' : `/m/dzien/${date}`
   const color = dayColor(day?.day_type, day?.flags.includes('test'))
-  const log = day?.bike || !day?.gym ? d.rideLog : d.gymLog
+  const log = d.rideLog
   const rpe = log?.rpe ?? null
 
   async function saveRpe(v: number) {

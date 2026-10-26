@@ -3,7 +3,7 @@ import type { CalendarDay } from '@/engine/types'
 import { runCoachTool, type CoachToolDeps } from '../coachTools'
 
 const nutrition = { energy: 'maintenance', label: '', protein_g_per_kg: 2, on_bike_carbs_g_per_h: [0, 0] } as unknown as CalendarDay['nutrition']
-const day = (date: string, o: Partial<CalendarDay> = {}): CalendarDay => ({ date, weekday: 'mon', week: 5, phase: 'I', week_type: 'build', day_type: 'rest', bike: null, gym: null, nutrition, flags: [], ...o })
+const day = (date: string, o: Partial<CalendarDay> = {}): CalendarDay => ({ date, weekday: 'mon', week: 5, phase: 'I', week_type: 'build', day_type: 'rest', bike: null, nutrition, flags: [], ...o })
 const bike = (name: string, workout_id = 'Z2_90') => ({ workout_id, name, duration_min: 90, bike: 'gravel', fallback_workout_id: null })
 
 function deps(window: CalendarDay[]): CoachToolDeps & { calls: Record<string, unknown[][]> } {
@@ -29,11 +29,11 @@ describe('narzędzia trenera', () => {
     expect((await runCoachTool('save_checkin', { weight_kg: 12 }, d)).ok).toBe(false)
     expect((await runCoachTool('save_checkin', { date: '18.10.2026', legs: 3 }, d)).ok).toBe(false)
   })
-  it('set_rpe: jazda albo siłownia zależnie od dnia', async () => {
-    const d = deps([day('2026-10-17', { gym: { session: 'A', name: 'Sesja A' } as CalendarDay['gym'] })])
+  it('set_rpe: zapis do logu jazdy', async () => {
+    const d = deps([day('2026-10-17', { bike: bike('Z2 90 min'), day_type: 'easy' })])
     const r = await runCoachTool('set_rpe', { date: '2026-10-17', rpe: 7.4 }, d)
     expect(r).toEqual({ ok: true, text: 'Zapisano RPE 7 dla 2026-10-17.', changed: 'log' })
-    expect(d.calls.upsertSessionLog![0]).toEqual(['2026-10-17', 'gym', { rpe: 7 }])
+    expect(d.calls.upsertSessionLog![0]).toEqual(['2026-10-17', 'bike', { rpe: 7 }])
     expect((await runCoachTool('set_rpe', { rpe: 11 }, d)).ok).toBe(false)
   })
   it('mark_skipped: log + nadpisanie skip; dzień wolny odmawia', async () => {

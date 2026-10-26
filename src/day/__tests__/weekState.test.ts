@@ -3,7 +3,7 @@ import type { CalendarDay } from '@/engine/types'
 import { weekState } from '../weekState'
 
 const nutrition = { energy: 'maintenance', label: '', protein_g_per_kg: 2, on_bike_carbs_g_per_h: [0, 0] } as unknown as CalendarDay['nutrition']
-const day = (date: string, weekday: CalendarDay['weekday'], o: Partial<CalendarDay> = {}): CalendarDay => ({ date, weekday, week: 5, phase: 'I', week_type: 'build', day_type: 'rest', bike: null, gym: null, nutrition, flags: [], ...o })
+const day = (date: string, weekday: CalendarDay['weekday'], o: Partial<CalendarDay> = {}): CalendarDay => ({ date, weekday, week: 5, phase: 'I', week_type: 'build', day_type: 'rest', bike: null, nutrition, flags: [], ...o })
 const bike = (name: string, min: number) => ({ workout_id: 'X', name, duration_min: min, bike: 'gravel', fallback_workout_id: null })
 
 describe('weekState', () => {

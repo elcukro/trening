@@ -58,14 +58,13 @@ export function TodayScreen() {
   const warn = d.view.warnings.filter((w) => w.severity === 'warn')
 
   async function saveRpe(rpe: number) {
-    const log = day?.bike ? d.rideLog : d.gymLog
+    const log = d.rideLog
     const status = log && LOGGED.includes(log.status) && log.status !== 'skipped' ? (log.status as 'done' | 'modified') : score != null && score < 70 ? 'modified' : 'done'
     await toast.run('Zapisuję RPE…', () => d.logRide(status, { rpe }), () => `RPE ${rpe} zapisane`)
   }
   async function unskip() {
-    const kind = day?.bike ? 'bike' : 'gym'
     await toast.run('Przywracam…', async () => {
-      await upsertSessionLog(date, kind, { status: 'planned', rpe: null })
+      await upsertSessionLog(date, 'bike', { status: 'planned', rpe: null })
       for (const o of d.view.overrides.filter((o) => o.kind === 'skip')) await d.view.undo(o.id)
     }, () => 'Trening wrócił do planu')
   }
@@ -136,7 +135,7 @@ export function TodayScreen() {
               icon={<img src={ART.heart} alt="" width={28} height={28} className="h-7 w-7 object-contain" />}
             />
           )}
-          {isToday && tomorrow && <Row title="Jutro" sub={tomorrow.bike ? `${tomorrow.bike.name} · ${minutes(tomorrow.bike.duration_min)}` : tomorrow.gym ? tomorrow.gym.name : 'Wolne'} to={`/m/dzien/${tomorrow.date}`} icon={<img src={dayArt(tomorrow.day_type, tomorrow.flags.includes('test'))} alt="" width={28} height={28} className="h-7 w-7 object-contain" />} />}
+          {isToday && tomorrow && <Row title="Jutro" sub={tomorrow.bike ? `${tomorrow.bike.name} · ${minutes(tomorrow.bike.duration_min)}` : 'Wolne'} to={`/m/dzien/${tomorrow.date}`} icon={<img src={dayArt(tomorrow.day_type, tomorrow.flags.includes('test'))} alt="" width={28} height={28} className="h-7 w-7 object-contain" />} />}
         </Group>
       )}
 
@@ -166,8 +165,8 @@ interface CardProps {
 
 function StateCard(p: CardProps) {
   const { phase, day, d } = p
-  const name = day.bike?.name ?? day.gym?.name ?? 'Dzień wolny'
-  const eyebrow = day.flags.includes('test') ? 'Test' : day.bike ? DAY_TYPE_LABEL[day.day_type] : day.gym ? 'Siłownia' : 'Wolne'
+  const name = day.bike?.name ?? 'Dzień wolny'
+  const eyebrow = day.flags.includes('test') ? 'Test' : day.bike ? DAY_TYPE_LABEL[day.day_type] : 'Wolne'
   const art = dayArt(day.day_type, day.flags.includes('test'))
 
   switch (phase) {
@@ -181,7 +180,7 @@ function StateCard(p: CardProps) {
               </p>
               <p className="m-title mt-1">Jak się czujesz?</p>
               <p className="m-sub m-dim mt-2">
-                {day.bike ? `${name} · ${minutes(day.bike.duration_min)}` : day.gym ? name : 'Dziś wolne'}
+                {day.bike ? `${name} · ${minutes(day.bike.duration_min)}` : 'Dziś wolne'}
                 {d.lastWeight ? ` · ostatnia waga ${num(d.lastWeight.kg)} kg` : ''}
               </p>
             </div>
@@ -249,7 +248,7 @@ function StateCard(p: CardProps) {
       const a = d.activities[0]
       const load = a ? d.loadOf(a) : null
       const verdict = rideVerdict(p.score)
-      const rpe = day.bike ? d.rideLog?.rpe : d.gymLog?.rpe
+      const rpe = d.rideLog?.rpe
       const note = a?.note ?? null
       return (
         <Card day>
@@ -305,7 +304,7 @@ function StateCard(p: CardProps) {
                 Odpuszczone
               </p>
               <p className="m-title mt-1">{name}</p>
-              {(day.bike ? d.rideLog?.notes : d.gymLog?.notes) && <p className="m-sub m-dim mt-2">{day.bike ? d.rideLog?.notes : d.gymLog?.notes}</p>}
+              {d.rideLog?.notes && <p className="m-sub m-dim mt-2">{d.rideLog.notes}</p>}
             </div>
             <img src={ART.rest} alt="" width={96} height={96} className="-mt-1 -mr-1 h-24 w-24 shrink-0 object-contain" />
           </div>

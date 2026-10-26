@@ -15,21 +15,15 @@ import { hours, minutes } from '@/lib/format'
 import { DAY_TYPE_COLOR, FLAG_COLOR, FLAG_LABEL, PHASE_COLOR, PHASE_SHORT, WEEKDAY_LONG, WEEKDAY_SHORT } from '@/lib/labels'
 import { WEEKDAYS } from '@/engine/dates'
 
-const GYM_COLOR = 'bg-violet-500'
 const STATUS_COLOR: Record<SessionStatus, string> = { planned: 'bg-slate-400', in_progress: 'bg-sky-500', done: 'bg-emerald-500', modified: 'bg-amber-500', skipped: 'bg-red-500' }
 const STATUS_LABEL: Record<SessionStatus, string> = { planned: 'zaplanowane', in_progress: 'w trakcie', done: 'wykonane', modified: 'zmienione', skipped: 'pominięte' }
-
-/** „Sesja A – Siła nóg (ciężka)” → „Sesja A” */
-function gymShort(name: string): string {
-  return name.split(' – ')[0] ?? name
-}
 
 function isTravel(day: DayPlan): boolean {
   return day.bike?.workout_id === 'TRIP' || day.bike?.workout_id === 'TRAVEL_REST'
 }
 
-function statusOf(logs: SessionLog[], date: ISODate, kind: 'bike' | 'gym'): SessionStatus | null {
-  const s = logs.find((l) => l.date === date && l.kind === kind)?.status
+function statusOf(logs: SessionLog[], date: ISODate): SessionStatus | null {
+  const s = logs.find((l) => l.date === date && l.kind === 'bike')?.status
   return s && s !== 'planned' ? s : null
 }
 
@@ -79,8 +73,7 @@ function DayCell({ date, day, inMonth, today, logs, hasOverride, dragApi }: { da
       </div>
     )
   }
-  const bikeStatus = statusOf(logs, date, 'bike')
-  const gymStatus = statusOf(logs, date, 'gym')
+  const bikeStatus = statusOf(logs, date)
   const ride = day.bike && !isTravel(day) ? day.bike : null
   const travel = day.bike && isTravel(day) ? day.bike : null
   const tone = inMonth ? 'bg-white hover:bg-sky-50 dark:bg-slate-800 dark:hover:bg-slate-700' : 'bg-white/60 text-slate-500 hover:bg-sky-50 dark:bg-slate-800/50 dark:hover:bg-slate-700'
@@ -126,19 +119,12 @@ function DayCell({ date, day, inMonth, today, logs, hasOverride, dragApi }: { da
           <CellItem color={DAY_TYPE_COLOR.trip} name={travel.workout_id === 'TRIP' ? 'Wyjazd' : 'Dojazd'} title={travel.name} />
         </>
       )}
-      {day.gym && (
-        <>
-          <span className={`h-1.5 w-1/2 rounded-full lg:hidden ${GYM_COLOR}`} />
-          <CellItem color={GYM_COLOR} name={gymShort(day.gym.name)} title={day.gym.name} meta={`~${day.gym.est_min} min`} status={gymStatus} />
-        </>
-      )}
-      {!ride && !travel && !day.gym && <span className="hidden text-xs text-slate-400 lg:block">Wolne</span>}
+      {!ride && !travel && <span className="hidden text-xs text-slate-400 lg:block">Wolne</span>}
 
-      {/* telefon: statusy jako kropki w rogu */}
-      {(bikeStatus || gymStatus) && (
+      {/* telefon: status jako kropka w rogu */}
+      {bikeStatus && (
         <span className="absolute right-1 bottom-1 flex gap-0.5 lg:hidden">
           <StatusDot status={bikeStatus} />
-          <StatusDot status={gymStatus} />
         </span>
       )}
 
@@ -183,7 +169,7 @@ export function CalendarPage() {
   const summary = useMemo(() => {
     const inMonth = days.filter((d) => d.date >= first && d.date <= last)
     const rides = inMonth.filter((d) => d.bike && !isTravel(d))
-    return { rides: rides.length, min: rides.reduce((a, d) => a + (d.bike?.duration_min ?? 0), 0), gym: inMonth.filter((d) => d.gym).length }
+    return { rides: rides.length, min: rides.reduce((a, d) => a + (d.bike?.duration_min ?? 0), 0) }
   }, [days, first, last])
 
   const go = (iso: ISODate) => navigate(`/kalendarz/${iso.slice(0, 7)}${search}`)
@@ -238,7 +224,7 @@ export function CalendarPage() {
         </Button>
         {summary.rides > 0 && (
           <p className="w-full text-sm text-slate-500 lg:ml-2 lg:w-auto dark:text-slate-400">
-            {summary.rides} jazd · {hours(summary.min)} · siłownia ×{summary.gym}
+            {summary.rides} jazd · {hours(summary.min)}
           </p>
         )}
       </header>
@@ -315,9 +301,6 @@ export function CalendarPage() {
         </li>
         <li className="flex items-center gap-1.5">
           <Dot color={DAY_TYPE_COLOR.key} /> Akcent (★ trening kluczowy)
-        </li>
-        <li className="flex items-center gap-1.5">
-          <Dot color={GYM_COLOR} /> Siłownia
         </li>
         {(Object.keys(FLAG_LABEL) as (keyof typeof FLAG_LABEL)[]).map((f) => (
           <li key={f} className="flex items-center gap-1.5">

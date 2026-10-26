@@ -1,5 +1,4 @@
 import { addDays, diffDays, mondayOf, type ISODate } from './dates'
-import { epley1RM } from './load'
 import type { CalendarDay } from './types'
 
 /** R11: LTHR obowiązujące danego dnia = ostatni test sprzed tego dnia (strefy od następnego dnia), inaczej wartość z ustawień. */
@@ -69,32 +68,6 @@ export function weightTrend(points: WeightPoint[]): { kg_per_week: number; pct_p
   if (pct < -1) warning = 'R10: spadek szybszy niż 1% masy na tydzień – jeśli utrzyma się drugi tydzień, dodaj 200–300 kcal.'
   else if (kg > 0.3) warning = 'Masa rośnie – sprawdź deficyt w dni lekkie.'
   return { kg_per_week: kg, pct_per_week: pct, warning }
-}
-
-// ---------------------------------------------------------------- siła
-export interface StrengthPoint {
-  date: ISODate
-  exercise_id: string
-  e1rm: number
-  best_set: { weight_kg: number; reps: number }
-}
-
-export function e1rmSeries(history: { date: string; exercise_id: string; sets: { weight_kg: number | null; reps: number | null; is_warmup?: boolean }[] }[]): StrengthPoint[] {
-  const out: StrengthPoint[] = []
-  for (const h of history) {
-    let best: StrengthPoint | null = null
-    for (const s of h.sets) {
-      if (s.is_warmup || !s.weight_kg || !s.reps) continue
-      const e = epley1RM(s.weight_kg, s.reps)
-      if (!best || e > best.e1rm) best = { date: h.date, exercise_id: h.exercise_id, e1rm: e, best_set: { weight_kg: s.weight_kg, reps: s.reps } }
-    }
-    if (best) out.push(best)
-  }
-  return out.toSorted((a, b) => (a.date < b.date ? -1 : 1))
-}
-
-export function tonnage(sets: { weight_kg: number | null; reps: number | null; is_warmup?: boolean }[]): number {
-  return sets.reduce((a, s) => a + (s.is_warmup ? 0 : (s.weight_kg ?? 0) * (s.reps ?? 0)), 0)
 }
 
 // ---------------------------------------------------------------- objętość

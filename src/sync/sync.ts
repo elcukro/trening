@@ -48,6 +48,9 @@ export function normalize(row: Record<string, unknown>): Record<string, unknown>
 async function pushOutbox(userId: string): Promise<void> {
   if (!supabase) return
   const items = await db.outbox.orderBy('seq').toArray()
+  // wpisy tabel, których już nie synchronizujemy (np. `set_logs` po usunięciu siłowni), czekałyby w kolejce w nieskończoność
+  const stale = items.filter((i) => !(SYNC_TABLES as readonly string[]).includes(i.table))
+  if (stale.length) await db.outbox.bulkDelete(stale.map((i) => i.seq!))
   for (const table of SYNC_TABLES) {
     const mine = items.filter((i) => i.table === table)
     if (mine.length === 0) continue
@@ -112,8 +115,6 @@ const PROFILE_MAP: [keyof Settings, string][] = [
   ['power_meter', 'power_meter'],
   ['program_start', 'program_start'],
   ['trip_start', 'trip_start'],
-  ['gym_days', 'gym_days'],
-  ['gym_enabled', 'gym_enabled'],
   ['volume_scale', 'volume_scale'],
   ['program_id', 'program_id'],
   ['email_morning', 'email_morning'],

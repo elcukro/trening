@@ -1,5 +1,4 @@
 import { expect, test, type Page } from '@playwright/test'
-import { enableGym } from './helpers'
 
 // Testy pełnej aplikacji startują z `/`, a na telefonie start przekierowuje do uproszczonego widoku (`/i`).
 // Znacznik w sessionStorage to ta sama ucieczka, której używa przycisk „Otwórz pełną aplikację”.
@@ -60,51 +59,6 @@ test('wynik testu FTP: strefy od następnego dnia (R11)', async ({ page }) => {
   await expect(page.getByText('160', { exact: true }).first()).toBeVisible()
 })
 
-test('tryb siłowni: serie, timer przerwy, podsumowanie, status', async ({ page }) => {
-  await enableGym(page, '2026-09-16')
-  await page.goto('/?today=2026-09-16')
-  await page.getByRole('link', { name: 'Start sesji' }).click()
-  await expect(page.getByRole('heading', { name: 'Sesja A – Siła nóg (ciężka)' })).toBeVisible()
-  await page.getByRole('button', { name: '▶ Start sesji' }).click()
-  // rozgrzewka: 2 serie do odhaczenia
-  await expect(page.getByRole('heading', { name: 'Obwód mobilności' })).toBeVisible()
-  await page.getByRole('button', { name: /Zalicz serię/ }).click()
-  await page.getByRole('button', { name: /Zalicz serię/ }).click()
-  // przysiad: seria 1
-  await expect(page.getByRole('heading', { name: 'Przysiad ze sztangą na plecach' })).toBeVisible()
-  await expect(page.getByText('Seria 1 z 2')).toBeVisible()
-  await expect(page.getByText(/ustal ciężar startowy/)).toBeVisible()
-  await page.getByLabel('kg').fill('60')
-  await page.getByLabel('powt.').fill('10')
-  await page.getByLabel('RIR').fill('4')
-  // kalkulator talerzy: 60 kg na gryfie 20 = 20 kg na stronę
-  await expect(page.getByTestId('plates')).toHaveText(/gryf 20 kg\): 20$/)
-  await page.getByRole('button', { name: /Zalicz serię/ }).click()
-  await expect(page.getByRole('dialog', { name: 'Przerwa' })).toBeVisible()
-  await expect(page.getByText(/^1:5\d$/)).toBeVisible()
-  await page.getByRole('button', { name: 'Pomiń' }).click()
-  await expect(page.getByText('Seria 2 z 2')).toBeVisible()
-  await expect(page.getByLabel('kg')).toHaveValue('60')
-  // seria 2 jednym dotknięciem – powtórka poprzedniej
-  await page.getByRole('button', { name: /Powtórz poprzednią serię \(60 kg × 10\)/ }).click()
-  await page.getByRole('button', { name: 'Pomiń' }).click()
-  await page.screenshot({ path: 'test-results/gym-mode.png', fullPage: true })
-  // przeładowanie – sesja trwa, serie zapisane
-  await page.reload()
-  await expect(page.getByRole('heading', { name: 'Martwy ciąg rumuński (RDL)' })).toBeVisible()
-  await page.getByRole('button', { name: 'Podsumuj' }).click()
-  await expect(page.getByRole('heading', { name: 'Podsumowanie' })).toBeVisible()
-  await expect(page.getByText('60×10, 60×10')).toBeVisible()
-  await expect(page.getByText(/e1RM ≈ 80 kg/)).toBeVisible()
-  await page.getByRole('button', { name: '✓ Zakończ: wykonane' }).click()
-  await expect(page.getByText('Wykonane', { exact: true })).toBeVisible()
-  await expect(page.getByRole('link', { name: 'Otwórz sesję' })).toBeVisible()
-  // Postęp: siła
-  await page.goto('/postep?today=2026-09-16')
-  await expect(page.getByText('Przysiad', { exact: true })).toBeVisible()
-  await expect(page.getByText(/80 kg/).first()).toBeVisible()
-})
-
 test('kalkulator podjazdu i konto bez konfiguracji', async ({ page }) => {
   await page.goto('/postep')
   await expect(page.getByRole('heading', { name: 'Kalkulator podjazdu' })).toBeVisible()
@@ -138,22 +92,6 @@ test('Etap 5: gołoledź podmienia trening, cofnięcie wraca do planu', async ({
   await expect(page.getByRole('heading', { name: /4×4 min/ })).toBeVisible()
   await page.getByRole('button', { name: 'cofnij' }).click()
   await expect(page.getByRole('heading', { name: 'Sweet spot 2×20 min' })).toBeVisible()
-})
-
-test('Etap 5: zamiana dni pilnuje reguły 48 godzin (R9)', async ({ page }) => {
-  await enableGym(page, '2027-05-12')
-  await page.goto('/tydzien/2027-05-12?today=2027-05-12')
-  await expect(page.getByRole('heading', { name: 'Tydzień 35' })).toBeVisible()
-  await page.getByRole('button', { name: 'Zamień dzień 2027-05-12' }).click()
-  // czwartek nie jest celem: przygaszony, a po dotknięciu pasek mówi dlaczego i wybór trwa dalej
-  const thu = page.locator('li[data-date="2027-05-13"]')
-  await expect(thu).toHaveAttribute('data-drop', 'blocked')
-  await thu.getByRole('button', { name: 'Nie tu' }).click()
-  await expect(thu).toHaveAttribute('data-drop', 'denied')
-  await expect(page.getByRole('status').filter({ hasText: /48 h przed ciężkim dniem/ })).toBeVisible()
-  await expect(page.getByText(/Zamieniam:/)).toBeVisible()
-  await page.keyboard.press('Escape')
-  await expect(page.getByText(/Zamieniam:/)).toHaveCount(0)
 })
 
 test('Zamiany dni składają się w kolejności wykonania i dają się cofnąć', async ({ page }) => {

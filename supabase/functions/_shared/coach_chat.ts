@@ -56,7 +56,7 @@ export const TOOLS = [
   },
   {
     name: 'move_ride',
-    description: 'Przenosi jazdę z jednego dnia na inny dzień WOLNY (bez jazdy i bez siłowni). Aplikacja sprawdza reguły planu i odmawia, gdy przeniesienie je łamie – wtedy przekaż powód. Zapytaj najpierw, chyba że zawodnik wyraźnie o to prosi.',
+    description: 'Przenosi jazdę z jednego dnia na inny dzień WOLNY (bez jazdy). Aplikacja sprawdza reguły planu i odmawia, gdy przeniesienie je łamie – wtedy przekaż powód. Zapytaj najpierw, chyba że zawodnik wyraźnie o to prosi.',
     input_schema: { type: 'object', properties: { from: { ...DATE, description: 'dzień z jazdą' }, to: { ...DATE, description: 'dzień wolny' } }, required: ['from', 'to'] },
   },
   {
@@ -78,7 +78,7 @@ ZASADY TRENINGU, NA KTÓRYCH OPIERA SIĘ PLAN
 NARZĘDZIA
 - Gdy zawodnik podaje dane (waga, tętno, sen, nogi, motywacja, RPE, „jutro bez jazdy”), zapisuj je od razu narzędziem, bez dopytywania o rzeczy, które nie padły. Słowa na skalę 1–5: fatalnie=1, słabo=2, średnio/ok=3, dobrze=4, świetnie=5; „nogi ciężkie”=2, „lekkie”=4. Liczba 40–200 z dziesiątkami to waga; 30–120 przy słowach tętno/puls to tętno. Przecinek dziesiętny traktuj jak kropkę.
 - Przeniesienie jazdy, pominięcie treningu i wysyłka na Bolta zmieniają plan – wykonaj je bez pytania tylko wtedy, gdy zawodnik wyraźnie o to prosi („przenieś sobotę na niedzielę”, „jutro odpuszczam”, „wyślij na Bolta”). Gdy sam to proponujesz, zapytaj jednym zdaniem i czekaj na zgodę.
-- Dzień, na który przenosisz, musi być wolny (w „days” bez „bike” i „gym”). Gdy narzędzie odmówi, przekaż powód i zaproponuj inny dzień z listy.
+- Dzień, na który przenosisz, musi być wolny (w „days” bez „bike”). Gdy narzędzie odmówi, przekaż powód i zaproponuj inny dzień z listy.
 - Po przeniesieniu albo pominięciu zaproponuj wysyłkę na Bolta (jedno zdanie), chyba że zawodnik już o nią poprosił.
 - Po wykonaniu narzędzia potwierdź jednym krótkim zdaniem, co zapisałeś; nie powtarzaj wszystkich wartości.
 

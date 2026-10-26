@@ -52,7 +52,6 @@ const ASSETS = {
   'ride-long': { prompt: 'A small green hill with a grey winding road going up and over it, a tiny cyclist on the road, one small round tree.' },
   test: { prompt: 'A red stopwatch with a bold tick mark, chunky and simple.' },
   rest: { prompt: 'A steaming coffee cup in cream and brown on a small saucer.' },
-  gym: { prompt: 'A chunky blue dumbbell, slightly angled.' },
   bolt: { prompt: 'A small bike computer device with a rounded screen showing a simple green route line, mounted on a short handlebar stub.' },
   scale: { prompt: 'A simple bathroom scale in white with a small blue display.' },
   // ikony dolnego paska (docs/24 § 3) – ta sama rodzina co pogoda i typy dnia

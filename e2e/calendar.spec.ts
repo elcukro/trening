@@ -13,8 +13,8 @@ test.describe('kalendarz na telefonie', () => {
     await expect(page.getByRole('heading', { name: 'wrzesień 2026' })).toBeVisible()
     // nagłówek dni tygodnia od poniedziałku
     await expect(page.getByText('Pn', { exact: true })).toBeVisible()
-    // podsumowanie miesiąca (jazdy, godziny, siłownia)
-    await expect(page.getByText(/jazd · .*h · siłownia/)).toBeVisible()
+    // podsumowanie miesiąca (jazdy, godziny)
+    await expect(page.getByText(/^\d+ jazd · .*h$/)).toBeVisible()
     // dni przed startem planu są wyszarzone, nie są linkami
     await expect(page.getByLabel('2026-09-01 – poza planem')).toBeVisible()
     await page.screenshot({ path: 'test-results/mobile-calendar.png', fullPage: true })

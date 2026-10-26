@@ -81,10 +81,8 @@ export async function runCoachTool(name: string, input: Record<string, unknown>,
         if (!date) return { ok: false, text: 'Zła data.' }
         const rpe = inRange(input.rpe, 1, 10, Math.round)
         if (rpe == null) return { ok: false, text: 'RPE musi być liczbą 1–10.' }
-        const day = deps.window.find((d) => d.date === date)
-        const kind: SessionLog['kind'] = day && !day.bike && day.gym ? 'gym' : 'bike'
         const notes = typeof input.notes === 'string' && input.notes.trim() ? input.notes.trim().slice(0, 300) : undefined
-        await deps.upsertSessionLog(date, kind, { rpe, ...(notes ? { notes } : {}) })
+        await deps.upsertSessionLog(date, 'bike', { rpe, ...(notes ? { notes } : {}) })
         return { ok: true, text: `Zapisano RPE ${rpe} dla ${date}${notes ? ' z notatką' : ''}.`, changed: 'log' }
       }
       case 'mark_skipped': {
@@ -92,13 +90,12 @@ export async function runCoachTool(name: string, input: Record<string, unknown>,
         if (!date) return { ok: false, text: 'Zła data.' }
         const day = deps.window.find((d) => d.date === date)
         if (!day) return { ok: false, text: `Dnia ${date} nie ma w oknie planu (±7 dni).` }
-        if (!day.bike && !day.gym) return { ok: false, text: `${date} to dzień wolny – nie ma czego pomijać.` }
+        if (!day.bike) return { ok: false, text: `${date} to dzień wolny – nie ma czego pomijać.` }
         const reason = typeof input.reason === 'string' && input.reason.trim() ? input.reason.trim().slice(0, 200) : null
-        const kind: SessionLog['kind'] = day.bike ? 'bike' : 'gym'
-        await deps.upsertSessionLog(date, kind, { planned_workout_id: (day.bike ? day.bike.workout_id : day.gym?.session) ?? null, status: 'skipped', rpe: null, ...(reason ? { notes: reason } : {}) })
+        await deps.upsertSessionLog(date, 'bike', { planned_workout_id: day.bike.workout_id, status: 'skipped', rpe: null, ...(reason ? { notes: reason } : {}) })
         // nadpisanie `skip` zdejmuje trening z planu (Bolt, raporty) – log mówi „pominięte”, override „nie ma”
-        await deps.addOverride(date, 'skip', { what: day.bike && day.gym ? 'both' : kind })
-        return { ok: true, text: `Oznaczono ${date} (${day.bike?.name ?? day.gym?.name}) jako pominięte${reason ? `: ${reason}` : ''}.`, changed: 'plan' }
+        await deps.addOverride(date, 'skip', { what: 'bike' })
+        return { ok: true, text: `Oznaczono ${date} (${day.bike.name}) jako pominięte${reason ? `: ${reason}` : ''}.`, changed: 'plan' }
       }
       case 'move_ride': {
         const from = dateOr(input.from, '')

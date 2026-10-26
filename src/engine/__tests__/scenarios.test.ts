@@ -7,30 +7,24 @@ import { computeZones, resolveWorkout } from '../zones'
 import { layoutWeeks, TripDateError, earliestTripStart } from '../layout'
 import { buildCalendar, scaleDuration } from '../calendar'
 import { estimateClimb, powerForKmh } from '../climb'
-import { epley1RM, suggestLoad, warmupSets } from '../load'
 import { proteinGrams } from '../nutrition'
 import { addDays, mondayOf, weekdayOf, isValidISODate } from '../dates'
 
 const program = parseProgram(programJson)
-// scenariusze specyfikacji zakładają siłownię w planie; od 30.09.2026 domyślnie jest wyłączona (`gym_enabled`), więc włączamy ją tu jawnie
-const settings = { ...program.default_settings, gym_enabled: true }
+// scenariusze specyfikacji pisane były z siłownią w planie; od 26.10.2026 aplikacja jest wyłącznie rowerowa – dni siłowni to dni wolne
+const settings = program.default_settings
 const base: EngineContext = { program, settings }
 const withLthr = (lthr: number): EngineContext => ({ program, settings: { ...settings, lthr_bpm: lthr } })
 
-function rx(items: { exercise: string; rx: Record<string, unknown> }[], id: string) {
-  return items.find((i) => i.exercise === id)?.rx
-}
 
 describe('scenariusze ze specyfikacji §10', () => {
-  it('1. 16.09.2026: tydzień 1 (reset), Sesja A lekko 2×10 RIR 4, bez jazdy; 26.09 test FTP', () => {
+  it('1. 16.09.2026: tydzień 1 (reset), dzień wolny; 26.09 test FTP', () => {
     const d = getDayPlan('2026-09-16', base)!
     expect(d.week).toBe(1)
     expect(d.phase).toBe('PREP')
     expect(d.bike).toBeNull()
-    expect(d.day_type).toBe('gym')
-    expect(d.gym?.session).toBe('A')
-    expect(rx(d.gym!.items, 'back_squat')).toMatchObject({ sets: 2, reps: 10, rir: 4 })
-    expect(rx(d.gym!.items, 'rdl')).toMatchObject({ sets: 2, reps: 10, rir: 4 })
+    expect(d.day_type).toBe('rest')
+    expect('gym' in d).toBe(false)
     expect(d.nutrition.energy).toBe('deficit_500')
     const t = getDayPlan('2026-09-26', base)!
     expect(t.week).toBe(2)
@@ -41,41 +35,38 @@ describe('scenariusze ze specyfikacji §10', () => {
     expect(t.nutrition.energy).toBe('maintenance')
     expect(t.warnings.some((w) => w.rule === 'LTHR')).toBe(true)
   })
-  it('1b. Blok 5 jazd (tyg. 3): wt Z2, śr akcent, czw wolne, pt Z2, sb długa, nd Z2, bez siłowni', () => {
+  it('1b. Blok 5 jazd (tyg. 3): wt Z2, śr akcent, czw wolne, pt Z2, sb długa, nd Z2', () => {
     const ids = ['2026-09-28', '2026-09-29', '2026-09-30', '2026-10-01', '2026-10-02', '2026-10-03', '2026-10-04'].map((x) => getDayPlan(x, base)!)
     expect(ids.map((d) => d.bike?.workout_id ?? null)).toEqual([null, 'Z2', 'SS_2x12', null, 'Z2', 'LONG', 'Z2'])
-    expect(ids.map((d) => d.gym?.session ?? null)).toEqual([null, null, null, null, null, null, null])
     expect(ids[2]!.day_type).toBe('key')
-    expect(ids[0]!.week_notes).toContain('5 jazd bez siłowni')
+    expect(ids[0]!.week_notes).toContain('Start bloku 5 jazd')
   })
 
-  it('1c. Siłownia wraca w tygodniu 10 (16.11), plan schodzi do 3 jazd', () => {
+  it('1c. Od tygodnia 10 (16.11) plan schodzi do 3 jazd, środa i piątek wolne', () => {
     const ids = ['2026-11-17', '2026-11-18', '2026-11-19', '2026-11-20'].map((x) => getDayPlan(x, base)!)
     expect(ids.map((d) => d.bike?.workout_id ?? null)).toEqual(['Z2', null, 'Z2', null])
-    expect(ids.map((d) => d.gym?.session ?? null)).toEqual([null, 'A', null, 'B'])
+    expect(ids.map((d) => d.day_type)).toEqual(['easy', 'rest', 'easy', 'rest'])
   })
 
-  it('2. 18.09.2026: brak jazdy, Sesja B step-up 2×8 RIR 4, deficyt 500', () => {
+  it('2. 18.09.2026: brak jazdy, deficyt 500', () => {
     const d = getDayPlan('2026-09-18', base)!
     expect(d.bike).toBeNull()
-    expect(d.gym?.session).toBe('B')
-    expect(rx(d.gym!.items, 'step_up')).toMatchObject({ sets: 2, reps: 8, rir: 4 })
+    expect(d.day_type).toBe('rest')
     expect(d.nutrition.energy).toBe('deficit_500')
   })
 
-  it('3. 23.12.2026: tydzień 15 rozładowanie – środa tylko siłownia (przysiad 3×5 RIR 3), czwartek Z2 60', () => {
+  it('3. 23.12.2026: tydzień 15 rozładowanie – środa wolna, czwartek Z2 60', () => {
     const d = getDayPlan('2026-12-23', base)!
     expect(d.week).toBe(15)
     expect(d.week_type).toBe('deload')
     expect(d.bike).toBeNull()
-    expect(d.gym?.name).toContain('rozładowania')
-    expect(rx(d.gym!.items, 'back_squat')).toMatchObject({ sets: 3, reps: 5, rir: 3 })
+    expect(d.day_type).toBe('rest')
     const thu = getDayPlan('2026-12-24', base)!
     expect(thu.bike?.workout_id).toBe('Z2')
     expect(thu.bike?.duration_min).toBe(60)
   })
 
-  it('4. 14.01.2027 (czw): SS_2x20 z fallbackiem INDOOR_4x4; 13.01 Sesja A: przysiad 5×4 RIR 2, trap bar 5×3 RIR 2', () => {
+  it('4. 14.01.2027 (czw): SS_2x20 z fallbackiem INDOOR_4x4; 13.01 wolne', () => {
     const d = getDayPlan('2027-01-14', base)!
     expect(d.weekday).toBe('thu')
     expect(d.bike?.workout_id).toBe('SS_2x20')
@@ -84,11 +75,10 @@ describe('scenariusze ze specyfikacji §10', () => {
     expect(d.fallback_workout?.duration_min).toBe(program.bike_workouts.INDOOR_4x4!.duration_min)
     const g = getDayPlan('2027-01-13', base)!
     expect(g.bike).toBeNull()
-    expect(rx(g.gym!.items, 'back_squat')).toMatchObject({ sets: 5, reps: 4, rir: 2 })
-    expect(rx(g.gym!.items, 'trap_bar_deadlift')).toMatchObject({ sets: 5, reps: 3, rir: 2 })
+    expect(g.day_type).toBe('rest')
   })
 
-  it('5. testy FTP co 5 tygodni: 11.02.2027 (czw, zimą fallback Wattbike), 17.03 i 21.04 (środy); 24.02 sprawdzian siłowy przysiad 1×5 RIR 1', () => {
+  it('5. testy FTP co 5 tygodni: 11.02.2027 (czw, zimą fallback Wattbike), 17.03 i 21.04 (środy)', () => {
     const t = getDayPlan('2027-02-11', base)!
     expect(t.bike?.workout_id).toBe('FTP_TEST')
     expect(t.bike?.fallback_workout_id).toBe('WATTBIKE_TEST')
@@ -96,17 +86,13 @@ describe('scenariusze ze specyfikacji §10', () => {
     expect(getDayPlan('2027-02-09', base)!.bike?.workout_id).toBe('Z2') // wtorek tygodnia testu lekko
     for (const date of ['2026-10-28', '2026-12-03', '2027-01-07', '2027-03-17', '2027-04-21', '2027-05-26', '2027-06-30', '2027-08-04']) expect(getDayPlan(date, base)!.bike?.workout_id, date).toBe('FTP_TEST')
     expect(getDayPlan('2027-02-23', base)!.bike?.workout_id).toBe('Z2')
-    const d = getDayPlan('2027-02-24', base)!
-    expect(d.bike).toBeNull()
-    expect(rx(d.gym!.items, 'back_squat')).toMatchObject({ sets: 1, reps: 5, rir: 1 })
+    expect(getDayPlan('2027-02-24', base)!.bike).toBeNull()
   })
 
-  it('6. 31.03.2027: próg 3×12 + Sesja C (przysiad 3×3 RIR 2–3, wskoki 3×3)', () => {
+  it('6. 31.03.2027: próg 3×12', () => {
     const d = getDayPlan('2027-03-31', base)!
     expect(d.bike?.workout_id).toBe('THR_3x12')
-    expect(d.gym?.session).toBe('C')
-    expect(rx(d.gym!.items, 'back_squat')).toMatchObject({ sets: 3, reps: 3, rir: '2–3' })
-    expect(rx(d.gym!.items, 'box_jump')).toMatchObject({ sets: 3, reps: 3 })
+    expect(d.day_type).toBe('key')
   })
 
   it('7. 15.05.2027: MOUNTAIN_DAY 240, event Karkonosze, Checkpoint', () => {
@@ -119,13 +105,11 @@ describe('scenariusze ze specyfikacji §10', () => {
     expect(d.flags).toContain('mountain_weekend')
   })
 
-  it('8. 20.08.2027 BLOCK_DAY1 210; 25.08 ostatnia sesja z nogami', () => {
+  it('8. 20.08.2027 BLOCK_DAY1 210', () => {
     const d1 = getDayPlan('2027-08-20', base)!
     expect(d1.weekday).toBe('fri')
     expect(d1.bike?.workout_id).toBe('BLOCK_DAY1')
     expect(d1.bike?.duration_min).toBe(210)
-    const d2 = getDayPlan('2027-08-25', base)!
-    expect(d2.gym?.name).toContain('ostatnia sesja z nogami')
   })
 
   it('9. 11.09.2027: dzień wyjazdu (TRIP)', () => {
@@ -207,45 +191,6 @@ describe('scenariusze ze specyfikacji §10', () => {
     expect(Math.round(powerForKmh(90, 8.8, 7.5))).toBeLessThan(207)
   })
 
-  it('14. Sugestia ciężaru: 4×8 @ 80 kg, RIR 3 (cel 3) → 82,5 kg', () => {
-    const s = suggestLoad('back_squat', [{ date: '2026-10-07', rx: { sets: 4, reps: 8, rir: 3 }, sets: Array.from({ length: 4 }, () => ({ weight_kg: 80, reps: 8, rir: 3 })) }], { sets: 4, reps: 8, rir: 3 })
-    expect(s.weight_kg).toBe(82.5)
-  })
-})
-
-describe('R8 – pozostałe przypadki', () => {
-  const hist = (sets: { weight_kg: number; reps: number; rir: number | null }[], date = '2026-10-07', reps = 8) => ({ date, rx: { sets: sets.length, reps, rir: 3 }, sets })
-  it('brak historii → pytanie o ciężar startowy', () => {
-    expect(suggestLoad('back_squat', [], { sets: 4, reps: 8, rir: 3 }).needs_start_weight).toBe(true)
-  })
-  it('duży zapas → +5 kg', () => {
-    expect(suggestLoad('back_squat', [hist([{ weight_kg: 80, reps: 8, rir: 5 }, { weight_kg: 80, reps: 8, rir: 5 }])], { sets: 2, reps: 8, rir: 3 }).weight_kg).toBe(85)
-  })
-  it('hantle: +1 kg / +2 kg', () => {
-    expect(suggestLoad('step_up', [hist([{ weight_kg: 16, reps: 8, rir: 3 }])], { sets: 1, reps: 8, rir: 3 }).weight_kg).toBe(17)
-    expect(suggestLoad('step_up', [hist([{ weight_kg: 16, reps: 8, rir: 6 }])], { sets: 1, reps: 8, rir: 3 }).weight_kg).toBe(18)
-  })
-  it('1 seria z brakiem → ten sam ciężar', () => {
-    expect(suggestLoad('back_squat', [hist([{ weight_kg: 80, reps: 8, rir: 3 }, { weight_kg: 80, reps: 6, rir: 3 }])], { sets: 2, reps: 8, rir: 3 }).weight_kg).toBe(80)
-  })
-  it('≥2 braki dwa razy z rzędu → −10%', () => {
-    const bad = [{ weight_kg: 80, reps: 6, rir: 1 }, { weight_kg: 80, reps: 5, rir: 0 }]
-    expect(suggestLoad('back_squat', [hist(bad, '2026-10-01'), hist(bad, '2026-10-08')], { sets: 2, reps: 8, rir: 3 }).weight_kg).toBe(72.5)
-    expect(suggestLoad('back_squat', [hist(bad, '2026-10-08')], { sets: 2, reps: 8, rir: 3 }).weight_kg).toBe(80)
-  })
-  it('mniej powtórzeń w nowym tygodniu → +2,5 kg', () => {
-    expect(suggestLoad('back_squat', [hist([{ weight_kg: 100, reps: 5, rir: 2 }], '2027-01-06', 5)], { sets: 5, reps: 4, rir: 2 }).weight_kg).toBe(102.5)
-  })
-  it('rozładowanie → −10%; wdrożenie → bez zmian', () => {
-    expect(suggestLoad('back_squat', [hist([{ weight_kg: 100, reps: 8, rir: 3 }])], { sets: 3, reps: 5, rir: 3 }, { deload: true }).weight_kg).toBe(90)
-    expect(suggestLoad('back_squat', [hist([{ weight_kg: 60, reps: 10, rir: 4 }])], { sets: 2, reps: 10, rir: 4 }, { intro: true }).weight_kg).toBe(60)
-  })
-  it('e1RM i serie wstępne', () => {
-    expect(epley1RM(100, 5)).toBeCloseTo(116.67, 1)
-    expect(epley1RM(100, 1)).toBe(100)
-    expect(warmupSets(100)).toEqual([{ weight_kg: 20, reps: 8 }, { weight_kg: 50, reps: 5 }, { weight_kg: 70, reps: 3 }, { weight_kg: 85, reps: 2 }])
-    expect(warmupSets(20)).toHaveLength(1)
-  })
 })
 
 describe('R16 – volume_scale', () => {
@@ -302,20 +247,6 @@ describe('resolveWorkout', () => {
   })
 })
 
-describe('gym_days: Sesja A we wtorek', () => {
-  it('przenosi A/C na wtorek, B zostaje w piątek, treść bez zmian', () => {
-    const ctx: EngineContext = { program, settings: { ...settings, gym_days: { A: 'tue', B: 'fri', C: 'tue' } } }
-    const tue = getDayPlan('2026-09-15', ctx)!
-    const wed = getDayPlan('2026-09-16', ctx)!
-    expect(tue.gym?.session).toBe('A')
-    expect(wed.gym).toBeNull()
-    expect(tue.gym).toEqual(getDayPlan('2026-09-16', base)!.gym)
-    expect(getDayPlan('2026-09-18', ctx)!.gym?.session).toBe('B')
-    expect(getDayPlan('2027-03-30', ctx)!.gym?.session).toBe('C')
-    expect(getDayPlan('2027-09-01', ctx)!.gym?.session).toBe('CORE')
-  })
-})
-
 describe('pomocnicze', () => {
   it('białko: 1,8 × 90 = 160 g (zaokr. do 5)', () => {
     expect(proteinGrams({ energy: 'maintenance', label: '', protein_g_per_kg: 1.8, on_bike_carbs_g_per_h: [0, 0] }, 90)).toBe(160)
@@ -335,7 +266,7 @@ describe('pomocnicze', () => {
 
 describe('plan – API pomocnicze', () => {
   it('getWeekPlan zwraca 7 dni od poniedziałku, getSeason układ + dni', async () => {
-    const { getWeekPlan, getSeason, calendarRange, exerciseOf, gymSessionMinutes } = await import('../plan')
+    const { getWeekPlan, getSeason, calendarRange } = await import('../plan')
     const { zoneById } = await import('../zones')
     const week = getWeekPlan('2026-09-16', base)
     expect(week).toHaveLength(7)
@@ -346,8 +277,6 @@ describe('plan – API pomocnicze', () => {
     expect(season.weeks).toHaveLength(53)
     expect(season.days).toHaveLength(367)
     expect(calendarRange(base)).toEqual({ start: '2026-09-11', end: '2027-09-12' })
-    expect(exerciseOf(base, 'back_squat')?.name).toContain('Przysiad')
-    expect(gymSessionMinutes(week[2]!.gym!)).toBe(70)
     expect(zoneById(program, 'SS')?.low).toBe(0.92)
     expect(getWeekPlan('2026-09-07', base)).toHaveLength(3)
   })

@@ -48,7 +48,7 @@ describe('pmcSeries', () => {
     expect(s[0]!.ctl).toBeGreaterThan(20)
     const r = rampRate(s, '2026-09-21')!
     expect(r.per_week).toBeGreaterThan(RAMP)
-    expect(r.warning).toContain('R7')
+    expect(r.warning).toContain('szybciej niż')
     expect(rampRate(s, '2026-09-10')).toBeNull()
   })
 })

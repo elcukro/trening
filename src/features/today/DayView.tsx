@@ -2,14 +2,13 @@ import { useEngine } from '@/app/useSettings'
 import { Link } from 'react-router'
 import type { DayPlan } from '@/engine/plan'
 import type { Engine } from '@/app/useSettings'
-import { Badge, Button, buttonClass, Card, CardSection, CardTitle, Inset, Metric, Row } from '@/components/ui'
+import { Badge, Button, Card, CardSection, CardTitle, Inset, Metric, Row } from '@/components/ui'
 import { StepList, TimelineBar } from '@/components/StepTimeline'
 import { fmtLong } from '@/lib/dates'
 import { days, minutes, num } from '@/lib/format'
 import { FLAG_COLOR, FLAG_LABEL, PHASE_COLOR, WEEK_TYPE_LABEL } from '@/lib/labels'
-import { GymItems } from './GymItems'
 import { CheckinCard } from './CheckinCard'
-import { BikeLogCard, StatusBadge } from './BikeLogCard'
+import { BikeLogCard } from './BikeLogCard'
 import { TestResultCard } from './TestResultCard'
 import { StravaActivities } from './StravaCard'
 import { effectiveFtp } from '@/engine/progress'
@@ -66,7 +65,7 @@ export function BikeCard({ day, engine, onAction }: { day: DayPlan; engine: Engi
       <>
         <Card tone="muted">
           <CardTitle icon="🛋️">Dzień wolny</CardTitle>
-          <p className="text-sm text-slate-600 dark:text-slate-300">{day.gym ? 'Dziś bez roweru – tylko siłownia.' : 'Pełny odpoczynek. Spacer, sen, 5 min rozciągania zginaczy bioder.'}</p>
+          <p className="text-sm text-slate-600 dark:text-slate-300">Pełny odpoczynek. Spacer, sen, 5 min rozciągania zginaczy bioder.</p>
         </Card>
         <StravaActivities date={day.date} zones={program.hr_zones_lthr_fraction} lthr={day.lthr} extra />
       </>
@@ -141,26 +140,6 @@ export function BikeCard({ day, engine, onAction }: { day: DayPlan; engine: Engi
   )
 }
 
-export function GymCard({ day, engine }: { day: DayPlan; engine: Engine }) {
-  const log = useLiveQuery(async () => (await db.session_logs.where('[date+kind]').equals([day.date, 'gym']).toArray()).find((r) => !r.deleted_at), [day.date])
-  if (!day.gym) return null
-  const label = log && log.status !== 'planned' && log.status !== 'skipped' ? (log.status === 'in_progress' ? 'Kontynuuj sesję' : 'Otwórz sesję') : 'Start sesji'
-  return (
-    <Card>
-      <CardTitle icon="🏋️" right={<Metric>~{day.gym.est_min} min</Metric>}>
-        {day.gym.name}
-      </CardTitle>
-      <GymItems session={day.gym} program={engine.ctx.program} />
-      <CardSection className="flex items-center gap-3">
-        <Link to={`/silownia/${day.date}`} className={buttonClass('primary', 'md', 'min-h-12 flex-1')}>
-          {label}
-        </Link>
-        {log && log.status !== 'planned' && <StatusBadge status={log.status} />}
-      </CardSection>
-    </Card>
-  )
-}
-
 export function NutritionCard({ day, engine }: { day: DayPlan; engine: Engine }) {
   const n = day.nutrition
   const target = engine.ctx.settings.body_weight_target_kg
@@ -213,7 +192,7 @@ export function DayView({ day, engine, warnings = [], overrides = [], onAction, 
       {day.date === todayISO() && <TodayFtpSuggestion engine={engine} />}
       {onAction && onUndo && <RulesCard warnings={warnings} overrides={overrides} onAction={onAction} onUndo={onUndo} />}
       <NotesCard day={day} />
-      {/* na komputerze: rower (szerszy) po lewej, siłownia i żywienie po prawej */}
+      {/* na komputerze: rower (szerszy) po lewej, żywienie po prawej */}
       <div className="grid min-w-0 gap-3 lg:grid-cols-[minmax(0,3fr)_minmax(0,2fr)] lg:items-start lg:gap-5">
         <div className="min-w-0 space-y-3 lg:space-y-4">
           <BriefingCard day={day} onAction={onAction} hasOverride={overrides.some((o) => o.date === day.date && o.kind === 'indoor')} />
@@ -221,7 +200,6 @@ export function DayView({ day, engine, warnings = [], overrides = [], onAction, 
           {testProtocol && <TestResultCard date={day.date} protocol={testProtocol} program={engine.ctx.program} previousLthr={day.lthr} />}
         </div>
         <div className="min-w-0 space-y-3 lg:space-y-4">
-          <GymCard day={day} engine={engine} />
           <NutritionCard day={day} engine={engine} />
         </div>
       </div>

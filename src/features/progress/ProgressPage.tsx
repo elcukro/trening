@@ -1,13 +1,13 @@
 import { useMemo, useState } from 'react'
 import { useLiveQuery } from 'dexie-react-hooks'
-import { Bar, BarChart, CartesianGrid, Line, LineChart, ReferenceLine, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts'
+import { Bar, BarChart, CartesianGrid, Line, LineChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts'
 import { useEngine } from '@/app/useSettings'
-import { db, type Checkin, type SessionLog, type SetLog, type StravaActivity, type TestResult } from '@/db'
+import { db, type Checkin, type SessionLog, type StravaActivity, type TestResult } from '@/db'
 import { ZoneBar } from '@/features/today/StravaCard'
 import { addDays } from '@/engine/dates'
 import { buildCalendar } from '@/engine/calendar'
 import { estimateClimb } from '@/engine/climb'
-import { compliance, e1rmSeries, weeklyVolume, weightSeries, weightTrend } from '@/engine/progress'
+import { compliance, weeklyVolume, weightSeries, weightTrend } from '@/engine/progress'
 import { Button, Card, CardSection, CardTitle, Input, Metric, PageTitle, Row, Select, buttonClass } from '@/components/ui'
 import { Link } from 'react-router'
 import { mondayOf } from '@/engine/dates'
@@ -22,13 +22,6 @@ import { CadenceCard } from './CadenceCard'
 import { FtpSuggestionCard } from './FtpSuggestionCard'
 import { programGoal } from '@/engine/baseline'
 
-const MAIN = [
-  { id: 'back_squat', label: 'Przysiad', goal: [1.0, 1.2] as [number, number] },
-  { id: 'trap_bar_deadlift', label: 'Trap bar', goal: [1.3, 1.5] as [number, number] },
-  { id: 'hip_thrust', label: 'Hip thrust', goal: [1.3, 1.5] as [number, number] },
-  { id: 'step_up', label: 'Step-up', goal: null },
-]
-
 export function ProgressPage() {
   const engine = useEngine()
   const s = engine.ctx.settings
@@ -36,7 +29,6 @@ export function ProgressPage() {
   const checkins = useLiveQuery(() => db.checkins.orderBy('date').toArray(), [], [] as Checkin[])
   const tests = useLiveQuery(() => db.test_results.orderBy('date').toArray(), [], [] as TestResult[])
   const rides = useLiveQuery(() => db.session_logs.toArray(), [], [] as SessionLog[])
-  const sets = useLiveQuery(() => db.set_logs.toArray(), [], [] as SetLog[])
   const allActs = useLiveQuery(() => db.strava_activities.where('date').aboveOrEqual(addDays(today, -90)).toArray(), [today], [] as StravaActivity[])
   const acts = useMemo(() => allActs.filter((a) => a.date >= addDays(today, -27)), [allActs, today])
   const zoneHist = useMemo(() => {
@@ -66,20 +58,6 @@ export function ProgressPage() {
   )
   const comp = compliance(volumes, 4)
 
-  const strength = useMemo(() => {
-    const logs = new Map(rides.filter((r) => r.kind === 'gym' && !r.deleted_at).map((r) => [r.id, r]))
-    const grouped = new Map<string, { date: string; exercise_id: string; sets: SetLog[] }>()
-    for (const st of sets) {
-      if (st.deleted_at || st.is_warmup) continue
-      const l = logs.get(st.session_log_id)
-      if (!l) continue
-      const k = `${l.id}|${st.exercise_id}`
-      const g = grouped.get(k) ?? { date: l.date, exercise_id: st.exercise_id, sets: [] }
-      g.sets.push(st)
-      grouped.set(k, g)
-    }
-    return e1rmSeries([...grouped.values()])
-  }, [rides, sets])
 
   const [showTestForm, setShowTestForm] = useState(false)
   const [protocol, setProtocol] = useState<'TEST_LTHR' | 'WATTBIKE_TEST' | 'FTP_TEST'>('FTP_TEST')
@@ -88,7 +66,7 @@ export function ProgressPage() {
   return (
     <div className="space-y-3">
       <PageTitle
-        sub="Masa, testy, objętość, siła"
+        sub="Masa, testy, objętość"
         right={
           <Link to={`/postep/tydzien/${mondayOf(today)}`} className={buttonClass('secondary', 'sm')}>
             Przegląd tygodnia
@@ -99,7 +77,7 @@ export function ProgressPage() {
       </PageTitle>
       <FtpSuggestionCard engine={engine} acts={allActs} />
 
-      {/* na komputerze dwie kolumny: masa + testy + kalkulator | objętość + siła */}
+      {/* na komputerze dwie kolumny: masa + testy + kalkulator | obciążenie + objętość */}
       <div className="space-y-3 lg:grid lg:grid-cols-2 lg:items-start lg:gap-6 lg:space-y-0">
       <div className="min-w-0 space-y-3 lg:space-y-4">
       <BaselineCard engine={engine} checkins={checkins} acts={allActs} />
@@ -222,44 +200,6 @@ export function ProgressPage() {
         )}
       </Card>
 
-      <Card>
-        <CardTitle icon="🏋️">Siła (e1RM)</CardTitle>
-        {strength.length === 0 ? (
-          <p className="text-sm text-slate-500 dark:text-slate-400">Zapisuj serie w trybie siłowni – tu pojawi się e1RM przysiadu, trap bara, hip thrustu i step-upu.</p>
-        ) : (
-          <ul className="divide-y divide-slate-100 dark:divide-slate-700/80">
-            {MAIN.map((m) => {
-              const pts = strength.filter((p) => p.exercise_id === m.id)
-              if (pts.length === 0) return null
-              const last = pts.at(-1)!
-              return (
-                <li key={m.id} className="py-2 text-sm">
-                  <div className="flex justify-between gap-2">
-                    <span className="font-medium">{m.label}</span>
-                    <span className="text-right tabular-nums">
-                      {num(last.e1rm, 0)} kg <span className="text-xs text-slate-500 dark:text-slate-400">({num(last.best_set.weight_kg)}×{last.best_set.reps}, {fmtDayMonth(last.date)})</span>
-                    </span>
-                  </div>
-                  {pts.length >= 2 && (
-                    <div className="h-20">
-                      <ResponsiveContainer>
-                        <LineChart data={pts.map((p) => ({ label: fmtDayMonth(p.date), e1rm: Math.round(p.e1rm) }))} margin={{ top: 4, right: 4, left: -24, bottom: 0 }}>
-                          <XAxis dataKey="label" tick={{ fontSize: 9 }} minTickGap={20} />
-                          <YAxis domain={['auto', 'auto']} tick={{ fontSize: 9 }} />
-                          <Tooltip formatter={(v) => `${v} kg`} />
-                          {m.goal && <ReferenceLine y={Math.round(m.goal[0] * 95)} stroke="#f59e0b" strokeDasharray="3 3" />}
-                          <Line type="monotone" dataKey="e1rm" stroke="#0ea5e9" strokeWidth={2} dot={{ r: 2 }} isAnimationActive={false} />
-                        </LineChart>
-                      </ResponsiveContainer>
-                    </div>
-                  )}
-                  {m.goal && <div className="text-xs text-slate-500 dark:text-slate-400">Cel na koniec lutego: {m.goal[0]}–{m.goal[1]} × masa ciała (5 powt.) ≈ {Math.round(m.goal[0] * 95)}–{Math.round(m.goal[1] * 95)} kg przy 95 kg</div>}
-                </li>
-              )
-            })}
-          </ul>
-        )}
-      </Card>
       </div>
       </div>
     </div>

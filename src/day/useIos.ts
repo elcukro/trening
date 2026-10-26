@@ -112,7 +112,6 @@ export interface IosDay {
   /** ostatnie ważenie przed tym dniem */
   lastWeight: { date: ISODate; kg: number } | null
   rideLog: SessionLog | undefined
-  gymLog: SessionLog | undefined
   activities: StravaActivity[]
   bolt: BoltState
   ftp: number | null
@@ -131,7 +130,6 @@ export function useIosDay(date: ISODate): IosDay {
   const engine = view.engine
   const checkin = useLiveQuery(async () => (await db.checkins.where('date').equals(date).toArray()).find((c) => !c.deleted_at), [date])
   const rideLog = useLiveQuery(async () => (await db.session_logs.where('[date+kind]').equals([date, 'bike']).toArray()).find((r) => !r.deleted_at), [date])
-  const gymLog = useLiveQuery(async () => (await db.session_logs.where('[date+kind]').equals([date, 'gym']).toArray()).find((r) => !r.deleted_at), [date])
   const activities = useLiveQuery(async () => (await db.strava_activities.where('date').equals(date).toArray()).filter((a) => !a.deleted_at && a.is_ride), [date], [] as StravaActivity[])
   /** Ostatnie ważenie do tego dnia – podpowiada format (dziesiątki!) i datę w check-inie. */
   const lastWeight = useLiveQuery(
@@ -173,33 +171,30 @@ export function useIosDay(date: ISODate): IosDay {
         date,
         today: todayISO(),
         ride: day?.bike ? { name: day.bike.name, minutes: day.bike.duration_min, pushable: isPushable(day.bike.workout_id) } : null,
-        gym: day?.gym ? { name: day.gym.name } : null,
         checkedIn: !!checkin && (checkin.sleep != null || checkin.weight_kg != null || checkin.legs != null),
         boltReady: bolt.kind === 'ok',
         rideLog: stateOf(rideLog),
-        gymLog: stateOf(gymLog),
         hasActivity: activities.length > 0,
       }),
-    [date, day, checkin, bolt.kind, rideLog, gymLog, activities.length],
+    [date, day, checkin, bolt.kind, rideLog, activities.length],
   )
 
   const saveCheckin = useCallback(async (patch: Partial<Checkin>) => void (await upsertCheckin(date, patch)), [date])
 
-  /** Zapis wyniku dnia: jazda, a w dniu bez jazdy – sesja siłowa. */
+  /** Zapis wyniku dnia (jazdy). */
   const logRide = useCallback(
     async (status: 'done' | 'modified' | 'skipped', extra?: { rpe?: number | null; notes?: string | null }) => {
-      const gymOnly = !day?.bike && !!day?.gym
-      const log = gymOnly ? gymLog : rideLog
-      const minutes = activities.length ? Math.round(activities.reduce((s, a) => s + a.moving_time_s, 0) / 60) : gymOnly ? day?.gym?.est_min : day?.bike?.duration_min
-      await upsertSessionLog(date, gymOnly ? 'gym' : 'bike', {
-        planned_workout_id: (gymOnly ? day?.gym?.session : day?.bike?.workout_id) ?? null,
+      const log = rideLog
+      const minutes = activities.length ? Math.round(activities.reduce((s, a) => s + a.moving_time_s, 0) / 60) : day?.bike?.duration_min
+      await upsertSessionLog(date, 'bike', {
+        planned_workout_id: day?.bike?.workout_id ?? null,
         status,
         rpe: extra?.rpe ?? log?.rpe ?? null,
         duration_min: status === 'skipped' ? (log?.duration_min ?? null) : (log?.duration_min ?? minutes ?? null),
         notes: extra?.notes ?? log?.notes ?? null,
       })
     },
-    [date, day, rideLog, gymLog, activities],
+    [date, day, rideLog, activities],
   )
 
   const sendToBolt = useCallback(async () => {
@@ -222,7 +217,6 @@ export function useIosDay(date: ISODate): IosDay {
     weighDue: weighDue(lastWeight?.date ?? null, date),
     lastWeight,
     rideLog,
-    gymLog,
     activities,
     bolt,
     ftp,

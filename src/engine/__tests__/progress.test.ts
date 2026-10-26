@@ -3,7 +3,7 @@ import programJson from '../../../data/program.json'
 import { parseProgram } from '../schema'
 import { getDayPlan } from '../plan'
 import { buildCalendar } from '../calendar'
-import { compliance, e1rmSeries, effectiveLthr, targetWeightAt, tonnage, weeklyVolume, weightSeries, weightTrend } from '../progress'
+import { compliance, effectiveLthr, targetWeightAt, weeklyVolume, weightSeries, weightTrend } from '../progress'
 
 const program = parseProgram(programJson)
 const settings = program.default_settings
@@ -43,16 +43,6 @@ describe('masa', () => {
     expect(t.kg_per_week).toBeCloseTo(-1.75)
     expect(t.warning).toContain('R10')
     expect(weightTrend(pts.slice(0, 3))).toBeNull()
-  })
-})
-
-describe('siła', () => {
-  it('e1RM z najlepszej serii, tonaż', () => {
-    const sets = [{ weight_kg: 20, reps: 8, is_warmup: true }, { weight_kg: 80, reps: 8 }, { weight_kg: 80, reps: 7 }]
-    const series = e1rmSeries([{ date: '2026-10-07', exercise_id: 'back_squat', sets }])
-    expect(series[0]!.e1rm).toBeCloseTo(101.33, 1)
-    expect(series[0]!.best_set).toEqual({ weight_kg: 80, reps: 8 })
-    expect(tonnage(sets)).toBe(1200)
   })
 })
 

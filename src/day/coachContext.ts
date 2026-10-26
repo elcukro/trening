@@ -39,7 +39,6 @@ export interface CoachContext {
     week_type: string
     day_type: string
     bike: { name: string; minutes: number; workout_id: string } | null
-    gym: string | null
     flags: string[]
     /** wynik dnia dla dni ≤ dziś */
     outcome?: 'done' | 'modified' | 'skipped' | 'missed' | 'extra' | 'free' | 'pending'
@@ -63,7 +62,8 @@ export function buildCoachContext(inp: CoachContextInput): CoachContext {
   const to = addDays(inp.today, FORWARD)
   const inRange = (d: string) => d >= from && d <= to
   const checkins = inp.checkins.filter((c) => !c.deleted_at && inRange(c.date)).toSorted((a, b) => (a.date < b.date ? -1 : 1))
-  const logs = inp.logs.filter((l) => !l.deleted_at && inRange(l.date))
+  // tylko logi jazd – dawne logi siłowni (`kind: 'gym'`) zostają w historii, trener ich nie dostaje
+  const logs = inp.logs.filter((l) => !l.deleted_at && l.kind === 'bike' && inRange(l.date))
   const acts = inp.activities.filter((a) => !a.deleted_at && a.is_ride && inRange(a.date)).toSorted((a, b) => (a.date < b.date ? -1 : 1))
   const bolt = new Set(inp.boltDates ?? [])
 
@@ -79,16 +79,15 @@ export function buildCoachContext(inp: CoachContextInput): CoachContext {
         week_type: d.week_type,
         day_type: d.day_type,
         bike: d.bike ? { name: d.bike.name, minutes: d.bike.duration_min, workout_id: d.bike.workout_id } : null,
-        gym: d.gym?.name ?? null,
         flags: d.flags as string[],
       }
       if (d.date > inp.today) return bolt.has(d.date) ? { ...base, on_bolt: true } : base
-      const log = logs.find((l) => l.date === d.date && l.kind === (d.bike ? 'bike' : 'gym'))
+      const log = d.bike ? logs.find((l) => l.date === d.date) : undefined
       const rode = acts.some((a) => a.date === d.date)
       let outcome: NonNullable<CoachContext['days'][number]['outcome']>
       if (log?.status === 'skipped') outcome = 'skipped'
       else if (log?.status === 'done' || log?.status === 'modified') outcome = log.status
-      else if (!d.bike && !d.gym) outcome = rode ? 'extra' : 'free'
+      else if (!d.bike) outcome = rode ? 'extra' : 'free'
       else if (rode) outcome = 'done'
       else outcome = d.date === inp.today ? 'pending' : 'missed'
       return { ...base, outcome }

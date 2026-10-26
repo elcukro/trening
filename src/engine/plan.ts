@@ -1,4 +1,4 @@
-import type { BikeWorkout, Exercise, GymSession } from './schema'
+import type { BikeWorkout } from './schema'
 import type { CalendarDay, EngineContext, LayoutWeek, PlanOverride, ResolvedWorkout, ZoneBpm } from './types'
 import { applyOverrides } from './rules'
 import { addDays, diffDays, mondayOf, type ISODate } from './dates'
@@ -117,15 +117,6 @@ export function getWeekPlan(weekStart: ISODate, ctx: EngineContext, weeks?: Layo
 
 export function getSeason(ctx: EngineContext) {
   return { weeks: layoutWeeks(ctx.program, ctx.settings), days: buildCalendar(ctx) }
-}
-
-export function exerciseOf(ctx: EngineContext, id: string): Exercise | undefined {
-  return ctx.program.exercises[id]
-}
-
-/** Szacowany czas sesji siłowej wg preskrypcji (informacyjnie). */
-export function gymSessionMinutes(session: GymSession): number {
-  return session.est_min
 }
 
 /** Dni zakresu kalendarza [start, end] – pomocnicze dla nawigacji. */

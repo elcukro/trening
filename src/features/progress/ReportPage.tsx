@@ -97,11 +97,10 @@ function Report({ kind, from, to, today }: { kind: 'week' | 'month'; from: ISODa
         <div className="min-w-0 space-y-3 lg:space-y-4">
           <Card>
             <CardTitle icon="📋">Podsumowanie</CardTitle>
-            <div className="grid grid-cols-2 gap-2 text-center">
+            <div className="grid grid-cols-3 gap-2 text-center">
               <Stat value={`${hours(report.done_min)}`} label={`z ${hours(report.planned_min)} planowanych`} />
               <Stat value={`${report.done_tss} TSS`} label={`z ${report.planned_tss} planowanych`} />
               <Stat value={`${report.bike_done}/${report.bike_planned}`} label={`jazd${report.extra_rides ? ` (+${report.extra_rides} dodatk.)` : ''}`} />
-              <Stat value={`${report.gym_done}/${report.gym_planned}`} label="siłowni" />
             </div>
             <div className="mt-2 divide-y divide-slate-100 tabular-nums dark:divide-slate-700/80">
               <Row label="Zgodność z planem (kroki w celu)">{report.score != null ? `${report.score} %` : 'brak analiz'}</Row>
@@ -136,7 +135,6 @@ function Report({ kind, from, to, today }: { kind: 'week' | 'month'; from: ISODa
                         🚴 {d.bike_name}{d.key ? ' (klucz)' : ''} – {OUTCOME[d.bike].label}
                       </span>
                     )}
-                    {(d.gym === 'skipped' || d.gym === 'missed') && <span>🏋️ {d.gym_name} – {OUTCOME[d.gym].label}</span>}
                   </li>
                 ))}
               </ul>
@@ -195,7 +193,7 @@ function Report({ kind, from, to, today }: { kind: 'week' | 'month'; from: ISODa
               <ul className="mt-2 flex flex-wrap gap-1 text-xs">
                 {nextView.days.map((d) => (
                   <li key={d.date} className={`rounded-lg px-2 py-1 ${d.day_type === 'key' ? 'bg-red-100 font-semibold text-red-800 dark:bg-red-900/50 dark:text-red-100' : 'bg-white/70 dark:bg-slate-800/70'}`}>
-                    {WEEKDAY_SHORT[d.weekday]} {d.bike ? `🚴 ${minutes(d.bike.duration_min)}` : d.gym ? '🏋️' : '—'}
+                    {WEEKDAY_SHORT[d.weekday]} {d.bike ? `🚴 ${minutes(d.bike.duration_min)}` : '—'}
                   </li>
                 ))}
               </ul>
@@ -223,8 +221,7 @@ function DayRow({ d }: { d: ReportDay }) {
         {d.day ? WEEKDAY_SHORT[d.day.weekday] : ''} {d.date.slice(8)}
       </span>
       <span className="min-w-0">
-        <span className="block truncate">{d.bike_name ? `🚴 ${d.bike_name}` : d.bike === 'extra' ? '🚴 jazda poza planem' : d.gym_name ? '' : '🛋️ wolne'}</span>
-        {d.gym_name && <span className="block truncate text-xs text-slate-500 dark:text-slate-400">🏋️ {d.gym_name}{d.gym !== 'rest' && d.gym !== 'upcoming' ? ` · ${OUTCOME[d.gym].label}` : ''}</span>}
+        <span className="block truncate">{d.bike_name ? `🚴 ${d.bike_name}` : d.bike === 'extra' ? '🚴 jazda poza planem' : '🛋️ wolne'}</span>
       </span>
       <span className="flex flex-col items-end gap-0.5 text-xs tabular-nums">
         {o.label && <Badge color={o.cls}>{o.label}</Badge>}

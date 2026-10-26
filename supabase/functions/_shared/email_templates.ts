@@ -47,7 +47,7 @@ export interface MorningView {
     /** pełna oś czasu (z każdym powtórzeniem); bez niej pasek rysuje wiersze tabeli */
     timeline?: { zone: string; minutes: number }[]
   } | null
-  gym?: { name: string; minutes: number; items: string[] } | null
+
   nutrition: { label: string; carbs?: string | null; protein?: string | null; after?: string | null }
   /** krótkie przypomnienia dnia (reguły, test, pogoda) */
   notes?: string[]
@@ -180,8 +180,8 @@ function zoneDot(zone: string): string {
 
 export function morningEmail(v: MorningView, opts: { unsubscribeUrl?: string | null } = {}): EmailOut {
   const w = v.workout
-  const title = w ? w.name : v.gym ? v.gym.name : 'Dzień wolny'
-  const subject = w ? `Dziś: ${w.name} · ${hm(w.minutes)}${v.gym ? ' + siłownia' : ''}` : v.gym ? `Dziś: ${v.gym.name}` : 'Dziś odpoczynek'
+  const title = w ? w.name : 'Dzień wolny'
+  const subject = w ? `Dziś: ${w.name} · ${hm(w.minutes)}` : 'Dziś odpoczynek'
   const preheader = [w ? `${hm(w.minutes)}${w.key ? ', dzień kluczowy' : ''}` : null, v.nutrition.label, v.countdown].filter(Boolean).join(' · ')
 
   const head = card(
@@ -220,13 +220,6 @@ ${w.steps
       )
     : ''
 
-  const gym = v.gym
-    ? card(
-        `${eyebrow('Siłownia')}
-<div style="margin-top:6px;font-size:17px;font-weight:700;">${esc(v.gym.name)} <span style="font-weight:400;color:${C.mute};">· ${esc(hm(v.gym.minutes))}</span></div>
-<ul style="margin:10px 0 0;padding-left:18px;font-size:14px;line-height:22px;color:${C.soft};">${v.gym.items.map((i) => `<li>${esc(i)}</li>`).join('')}</ul>`,
-      )
-    : ''
 
   const food = card(
     `${eyebrow('Jedzenie')}
@@ -249,7 +242,7 @@ ${v.nutrition.after ? `<tr><td style="padding-right:12px;color:${C.mute};">po tr
     v.weekLabel + (v.countdown ? ` · ${v.countdown}` : ''),
     '',
     ...(w ? [`${hm(w.minutes)} · ${w.bike}${w.key ? ' · dzień kluczowy' : ''}`, ...w.steps.map((s) => `- ${s.name}${s.repeat ? ` ${s.repeat}` : ''}: ${hm(s.minutes)} ${[s.watts, s.hr].filter(Boolean).join(' / ')}`), ''] : []),
-    ...(v.gym ? [`Siłownia: ${v.gym.name}`, ...v.gym.items.map((i) => `- ${i}`), ''] : []),
+
     `Jedzenie: ${v.nutrition.label}`,
     ...(v.notes ?? []).map((n) => `! ${n}`),
     ...(v.legs && v.legs.links.length ? ['', v.legs.current != null ? `Nogi dziś: ${v.legs.current}/5` : 'Jak nogi dziś? Kliknij 1–5:', ...v.legs.links.map((l) => `${l.value}: ${l.href}`)] : []),
@@ -257,7 +250,7 @@ ${v.nutrition.after ? `<tr><td style="padding-right:12px;color:${C.mute};">po tr
     v.appUrl,
   ].join('\n')
 
-  return { subject, preheader, text, html: shell(preheader, head + notes + legs + steps + gym + food, v.appUrl, opts.unsubscribeUrl) }
+  return { subject, preheader, text, html: shell(preheader, head + notes + legs + steps + food, v.appUrl, opts.unsubscribeUrl) }
 }
 
 // ---------------------------------------------------------------- po treningu
