@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest'
-import { aiSafe, assertAiSafe, isAiSource } from '../../../supabase/functions/_shared/provenance'
+import { aiSafe, assertAiSafe, isAiSource, redact } from '../../../supabase/functions/_shared/provenance'
+import { fitUrl, isFitHost } from '../../../supabase/functions/_shared/wahoo_summary'
 import { fromStrava, fromWahoo, mergeRides, sameRide, twinOf } from '../../../supabase/functions/_shared/rides'
 
 const wahoo = (o: Record<string, unknown> = {}) => fromWahoo({ id: 1, date: '2026-10-25', starts: '2026-10-25T08:00:00Z', name: 'Z2', minutes_active: 90, moving_time_s: 5400, distance_km: 45.2, ascent_m: 300, avg_power: 180, ...o })
@@ -39,5 +40,20 @@ describe('jedna jazda z dwóch źródeł: kopia z Wahoo wygrywa', () => {
   it('wiersz Wahoo bez pliku FIT: czas z minut, moc tylko z miernika', () => {
     const r = wahoo({ moving_time_s: null, avg_power: 0, np_w: 0 })
     expect(r).toMatchObject({ source: 'wahoo', moving_time_s: 5400, distance_m: 45_200, elevation_m: 300, avg_watts: null, np_w: null })
+  })
+})
+
+describe('plik FIT i dziennik: bezpieczne adresy', () => {
+  it('pobieramy tylko z hostów Wahoo/CDN przez https', () => {
+    expect(isFitHost('https://cdn.wahooligan.com/wahoo-cloud/production/uploads/workout_file/file/abc.fit')).toBe(true)
+    expect(isFitHost('https://wahoo-cloud.s3.amazonaws.com/x.fit?X-Amz-Signature=1')).toBe(true)
+    for (const bad of ['http://cdn.wahooligan.com/a.fit', 'https://169.254.169.254/latest', 'https://evil.com/a.fit', 'https://wahooligan.com.evil.com/a', 'https://u:p@cdn.wahooligan.com/a', 'https://cdn.wahooligan.com:8443/a', 'notaurl']) expect(isFitHost(bad), bad).toBe(false)
+    expect(fitUrl({ file: { url: 'https://evil.com/a.fit' } })).toBeNull()
+  })
+
+  it('redact: bez adresów i tokenów w dzienniku', () => {
+    const r = redact(new Error('fit 403 https://s3.amazonaws.com/a.fit?X-Amz-Signature=abc access_token=sekret'))
+    expect(r).not.toMatch(/amazonaws|sekret|abc/)
+    expect(r).toMatch(/fit 403 <url> access_token=<…>/)
   })
 })

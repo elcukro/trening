@@ -45,3 +45,12 @@ export function assertAiSafe(payload: unknown, path = '$'): void {
     assertAiSafe(v, `${path}.${k}`)
   }
 }
+
+/** Tekst błędu do dziennika: bez adresów (podpisane linki do plików) i bez tokenów. */
+export function redact(e: unknown): string {
+  const msg = e instanceof Error ? e.message : String(e)
+  return msg
+    .replace(/https?:\/\/[^\s"']+/g, '<url>')
+    .replace(/(access_token|refresh_token|token|signature)(["'=:\s]+)[^\s"',}]+/gi, '$1$2<…>')
+    .slice(0, 300)
+}

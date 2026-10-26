@@ -10,7 +10,8 @@ import type { SupabaseClient } from 'npm:@supabase/supabase-js@2'
 import { decodeFit, fitToStreams } from './fit.ts'
 import { hrHistogram, resample, rideMetrics } from './metrics.ts'
 import { accessTokenFor, listWorkoutsDetailed } from './wahoo.ts'
-import { completedInRange, fitUrl, summaryToRow, warsawDate, type WahooSummary, type WahooWorkoutRaw } from './wahoo_summary.ts'
+import { redact } from './provenance.ts'
+import { completedInRange, fitUrl, isFitHost, summaryToRow, warsawDate, type WahooSummary, type WahooWorkoutRaw } from './wahoo_summary.ts'
 
 /** Plik FIT nie liczy się do limitów Wahoo, ale nie ściągamy go bez końca: ≤ 8 MB, 20 s. */
 const FIT_MAX_BYTES = 8 * 1024 * 1024
@@ -19,11 +20,23 @@ export async function fetchFit(url: string): Promise<Uint8Array> {
   const ctrl = new AbortController()
   const timer = setTimeout(() => ctrl.abort(), 20_000)
   try {
-    const res = await fetch(url, { signal: ctrl.signal })
-    if (!res.ok) throw new Error(`fit ${res.status}`)
-    const buf = new Uint8Array(await res.arrayBuffer())
-    if (buf.byteLength > FIT_MAX_BYTES) throw new Error(`fit za duży: ${buf.byteLength} B`)
-    return buf
+    // przekierowania ręcznie: każdy kolejny adres też musi być z listy hostów (bez ucieczki poza Wahoo/CDN)
+    let next = url
+    for (let hop = 0; hop < 4; hop++) {
+      if (!isFitHost(next)) throw new Error('fit: niedozwolony host')
+      const res = await fetch(next, { signal: ctrl.signal, redirect: 'manual' })
+      if (res.status >= 300 && res.status < 400) {
+        const loc = res.headers.get('location')
+        if (!loc) throw new Error(`fit ${res.status} bez adresu`)
+        next = new URL(loc, next).toString()
+        continue
+      }
+      if (!res.ok) throw new Error(`fit ${res.status}`)
+      const buf = new Uint8Array(await res.arrayBuffer())
+      if (buf.byteLength > FIT_MAX_BYTES) throw new Error(`fit za duży: ${buf.byteLength} B`)
+      return buf
+    }
+    throw new Error('fit: za dużo przekierowań')
   } finally {
     clearTimeout(timer)
   }
@@ -58,8 +71,8 @@ export async function ingestFit(admin: SupabaseClient, userId: string, workoutId
     if (e2) throw new Error(`wahoo_workouts: ${e2.message}`)
     return 'ok'
   } catch (e) {
-    const msg = e instanceof Error ? e.message : String(e)
-    await admin.from('wahoo_workouts').update({ fit_error: msg.slice(0, 300), updated_at: new Date().toISOString() }).eq('user_id', userId).eq('id', workoutId)
+    const msg = redact(e)
+    await admin.from('wahoo_workouts').update({ fit_error: msg, updated_at: new Date().toISOString() }).eq('user_id', userId).eq('id', workoutId)
     return msg
   }
 }

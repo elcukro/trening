@@ -8,6 +8,8 @@
  *  POST {mode:'cron', secret}              – pg_cron co 30 min: to samo co 'completed' (2 dni) dla kont z Wahoo
  */
 import { CORS, env, json } from '../_shared/env.ts'
+import { timingSafeEqual } from '../_shared/crypto.ts'
+import { redact } from '../_shared/provenance.ts'
 import { adminClient, userFromRequest } from '../_shared/supabase.ts'
 import { accessTokenFor, cleanupOrphans, diagnose, getWorkout, pushDay, removeDay, type PlanIndex, type PushItem, type PushResult } from '../_shared/wahoo.ts'
 import { processWahooRides } from '../_shared/ride_pipeline.ts'
@@ -18,12 +20,10 @@ const MAX_ITEMS = 10
 Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') return new Response(null, { headers: CORS })
   if (req.method !== 'POST') return json({ error: 'method' }, 405)
-  const user = await userFromRequest(req)
-  if (!user) return json({ error: 'unauthorized' }, 401)
-
   const body = (await req.json().catch(() => ({}))) as { items?: PushItem[]; mode?: 'update' | 'replace' | 'diagnose' | 'cleanup' | 'completed' | 'backfill' | 'cron'; remove?: string[]; days?: number; secret?: string }
   if (body.mode === 'cron') {
-    if (!body.secret || body.secret !== env('PUSH_CRON_SECRET')) return json({ error: 'unauthorized' }, 401)
+    // harmonogram bazy bez sesji – sekret zamiast JWT (sprawdzany przed logowaniem użytkownika)
+    if (!body.secret || !timingSafeEqual(body.secret, env('PUSH_CRON_SECRET'))) return json({ error: 'unauthorized' }, 401)
     const admin = adminClient()
     const { data: linked } = await admin.from('integration_tokens').select('user_id, backfilled_at').eq('provider', 'wahoo')
     const out: Record<string, unknown> = {}
@@ -34,7 +34,7 @@ Deno.serve(async (req) => {
         out[`backfill:${pending.user_id}`] = await backfillWahoo(admin, pending.user_id as string, { days: 400, fitDays: 90, maxPages: 8, fitLimit: 10 })
         await admin.from('integration_tokens').update({ backfilled_at: new Date().toISOString() }).eq('user_id', pending.user_id as string).eq('provider', 'wahoo')
       } catch (e) {
-        out[`backfill:${pending.user_id}`] = `błąd: ${e instanceof Error ? e.message : e}`
+        out[`backfill:${pending.user_id}`] = `błąd: ${redact(e)}`
       }
     }
     for (const { user_id } of linked ?? []) {
@@ -44,7 +44,7 @@ Deno.serve(async (req) => {
         const fit = await fillMissingFit(admin, user_id as string, 90, 5)
         out[user_id as string] = r ? { completed: r.completed, steps: await processWahooRides(admin, user_id as string, r.todo), fit } : 'brak tokenu'
       } catch (e) {
-        out[user_id as string] = `błąd: ${e instanceof Error ? e.message : e}`
+        out[user_id as string] = `błąd: ${redact(e)}`
         // 429 = limit Wahoo – kolejne konta poczekają do następnego przebiegu
         if (String(e).includes('429')) break
       }
@@ -52,6 +52,8 @@ Deno.serve(async (req) => {
     console.log('wahoo cron', JSON.stringify(out))
     return json({ ok: true, users: out })
   }
+  const user = await userFromRequest(req)
+  if (!user) return json({ error: 'unauthorized' }, 401)
   const items = (body.items ?? []).slice(0, MAX_ITEMS)
   // porządkowanie nie potrzebuje listy treningów do wysłania
   const remove = (body.remove ?? []).filter((d) => /^\d{4}-\d{2}-\d{2}$/.test(d)).slice(0, 14)
