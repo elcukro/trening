@@ -24,6 +24,21 @@ import { confirmAction } from '@/native'
 import { health } from '@/native'
 import { HEALTH_BACKFILL_DAYS, setHealthEnabled, syncHealth, useHealthEnabled } from '@/day/useHealth'
 import { healthLine } from '@/day/health'
+import { useOnboardingRow } from '@/day/useOnboarding'
+import { STEPS, firstIncomplete, stepNumber, type Step } from '@/engine/onboarding'
+import type { OnboardingRow } from '@/db'
+import { goalSummary } from '../onboarding/labels'
+
+/** Stan onboardingu jedną linią: cel po skończeniu, krok przy przerwanym, zachęta przy braku. */
+function onboardingSub(row: OnboardingRow | null | undefined): string | undefined {
+  if (row === undefined) return undefined
+  if (row && !row.deleted_at && row.status === 'done' && row.data) return goalSummary(row.data.goal) || 'czas, sprzęt, zdrowie i cel'
+  if (row && !row.deleted_at && row.draft) {
+    const at = firstIncomplete(row.draft)
+    return at === 'summary' ? 'Zostało podsumowanie i zapis' : `Dokończ: krok ${stepNumber(at as Step)} z ${STEPS.length}`
+  }
+  return 'Czas, sprzęt, zdrowie i cel – z nich powstanie plan'
+}
 
 const SYNC_FOOTER: Record<string, string> = {
   // aplikacja iOS nie odsyła do „pełnej aplikacji” (docs/26 § 3 pkt 9)
@@ -70,6 +85,7 @@ export function MeScreen() {
   const toGoal = snap.goal.ftp - snap.ftp.w
   const s = engine.ctx.settings
   const [sheet, setSheet] = useState<'numbers' | 'location' | null>(null)
+  const onboarding = useOnboardingRow()
   const loc = useLiveQuery(getLocation, [], undefined)
   const [sv, setSv] = useState<StravaStatus | 'error' | null>(null)
   const [wh, setWh] = useState<WahooStatus | 'error' | null>(null)
@@ -154,6 +170,10 @@ export function MeScreen() {
           return <Row key={a.id} to={`/m/podsumowanie/${a.date}`} icon={<img src={ART.heart} alt="" width={28} height={28} className="h-7 w-7 object-contain" />} title={a.name ?? 'Jazda'} sub={`${fmtShort(a.date)} · ${Math.round(a.moving_time_s / 60)} min · ${num((a.distance_m ?? 0) / 1000, 0)} km${a.device_watts && a.np_w ? ` · ${Math.round(a.np_w)} W` : a.avg_hr ? ` · ${Math.round(a.avg_hr)} bpm` : ''}`} value={load ? `${Math.round(load.tss)} TSS` : undefined} />
         })}
         {rides.length === 0 && <Row title="Brak jazd z ostatnich 4 tygodni" sub="Jazdy pojawią się po synchronizacji ze Stravą" />}
+      </Group>
+
+      <Group label="Ty i Twój cel">
+        <Row icon={<img src="/m/art/ob-goal.png" alt="" width={28} height={28} className="h-7 w-7 object-contain" />} title={onboarding?.status === 'done' && !onboarding.deleted_at ? 'Zmień swoje potrzeby' : 'Uzupełnij swoje potrzeby'} sub={onboardingSub(onboarding)} to="/m/start" />
       </Group>
 
       <Group label="Ustawienia">

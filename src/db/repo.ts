@@ -1,5 +1,6 @@
-import { db, newId, nowISO, type BaselineEntry, type BikeRow, type Checkin, type GearTaskState, type MealRow, type PackingState, type PlanOverrideRow, type ServiceLogRow, type SessionLog, type SyncTable, type SyncedRow, type TestResult } from './index'
+import { db, newId, nowISO, type BaselineEntry, type BikeRow, type Checkin, type GearTaskState, type MealRow, type OnboardingRow, type PackingState, type PlanOverrideRow, type ServiceLogRow, type SessionLog, type SyncTable, type SyncedRow, type TestResult } from './index'
 import { addDays } from '@/engine/dates'
+import { ONBOARDING_ID, ONBOARDING_SCHEMA_VERSION, type AthleteProfile, type Draft } from '@/engine/onboarding'
 import { swapToUndo } from '@/engine/rules'
 import { healthPatch, sourcesAfterManual, type HealthDay } from '@/day/health'
 
@@ -192,4 +193,19 @@ export async function restoreMeal(id: string): Promise<void> {
 export async function mealsFor(date: string): Promise<MealRow[]> {
   const rows = await db.meals.where('date').equals(date).toArray()
   return rows.filter((m) => !m.deleted_at).toSorted((a, b) => (a.time ?? '').localeCompare(b.time ?? ''))
+}
+
+// ---------------------------------------------------------------- onboarding (docs/31)
+const blankOnboarding = (): OnboardingRow => ({ id: ONBOARDING_ID, updated_at: nowISO(), status: 'draft', step: null, draft: null, data: null, schema_version: ONBOARDING_SCHEMA_VERSION, consent_health_at: null, consent_version: null, completed_at: null })
+
+/** Szkic i bieżący krok – po każdym „Dalej”, żeby dało się wrócić później (także na innym urządzeniu). */
+export async function saveOnboardingDraft(draft: Draft, step: string): Promise<OnboardingRow> {
+  const row = (await db.onboarding.get(ONBOARDING_ID)) ?? blankOnboarding()
+  return putSynced('onboarding', { ...row, draft, step, deleted_at: null })
+}
+
+/** Profil po walidacji (`finalize`) – szkic znika, zgoda trafia do własnych kolumn. */
+export async function completeOnboarding(profile: AthleteProfile): Promise<OnboardingRow> {
+  const row = (await db.onboarding.get(ONBOARDING_ID)) ?? blankOnboarding()
+  return putSynced('onboarding', { ...row, status: 'done', step: null, draft: null, data: profile, schema_version: profile.version, consent_health_at: profile.consent.at, consent_version: profile.consent.version, completed_at: row.completed_at && row.status === 'done' ? row.completed_at : nowISO(), deleted_at: null })
 }

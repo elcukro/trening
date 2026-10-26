@@ -21,6 +21,8 @@ import { SummaryScreen } from './screens/SummaryScreen'
 import { CoachContext } from './coach'
 import { hideSplash } from '@/native'
 import { useHealthSync } from '@/day/useHealth'
+import { useOnboardingDue } from '@/day/useOnboarding'
+import { OnboardingScreen } from './onboarding/OnboardingScreen'
 
 /**
  * Mobilny interfejs v2 (docs/24): trzy zakładki (Dziś, Plan, Ja) i przycisk Trener. Te same hooki konta,
@@ -44,6 +46,8 @@ export function MobileApp() {
   useEffect(() => {
     scroller.current?.scrollTo({ top: 0 })
   }, [location.pathname])
+  // nowe konto bez wypełnionych potrzeb trafia na onboarding (docs/31); istniejące mają wiersz `legacy`
+  const onboardingDue = useOnboardingDue(!!auth.session)
   const [skipped, setSkipped] = useState(() => {
     try {
       return sessionStorage.getItem(NO_ACCOUNT) === '1'
@@ -72,6 +76,16 @@ export function MobileApp() {
       </div>
     )
   }
+
+  // onboarding na pełnym ekranie – bez dolnego paska i Trenera
+  if (location.pathname.startsWith('/m/start')) {
+    return (
+      <div className="m">
+        <OnboardingScreen />
+      </div>
+    )
+  }
+  if (onboardingDue) return <Navigate to="/m/start" replace />
 
   return (
     <CoachContext.Provider value={coachApi}>

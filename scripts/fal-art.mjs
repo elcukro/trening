@@ -65,6 +65,16 @@ const ASSETS = {
   'tab-plan': { prompt: 'A weekly planner icon: a sky blue rounded square (same proportions as a calendar app icon, seen straight on, not tilted, no perspective) with three horizontal white bars of different lengths, each with a small round orange dot on the left.' },
   'tab-me': { prompt: 'A progress icon: a sky blue rounded square (same proportions as a calendar app icon, seen straight on, not tilted, no perspective) with a bold white rising zigzag arrow pointing up-right.' },
   heart: { prompt: 'A glossy red heart with a thin white heartbeat line across it.' },
+  // onboarding (docs/31): jedna ilustracja na krok, ta sama rodzina co ikony dnia
+  'ob-time': { prompt: 'A round sky blue alarm clock next to a small orange calendar page, standing together.' },
+  'ob-form': { prompt: 'Three rounded bars of rising height in green, sky blue and orange, with a small bold upward arrow above the tallest bar.' },
+  'ob-measure': { prompt: 'A small sky blue round gauge dial with an orange needle pointing up-right, next to a small glossy red heart, standing together.' },
+  'ob-gear': { prompt: 'A sky blue road bicycle in front of a green gravel bicycle, slightly overlapping, side view, slightly angled.' },
+  'ob-consent': { prompt: 'A rounded sky blue shield with a bold white check mark, next to a small closed golden padlock.' },
+  'ob-body': { prompt: 'A rolled-up yellow tailor measuring tape with a short loose end, and a small green leaf.' },
+  'ob-health': { prompt: 'A glossy red heart with a soft white medical cross on it and a light blue stethoscope curled around it.' },
+  'ob-goal': { prompt: 'A small snowy mountain peak in blue and white with a red flag on the top and a winding grey road leading up to it.' },
+  'ob-done': { prompt: 'A golden trophy cup with a small sky blue ribbon and two tiny sparkles.' },
   // ekran startowy aplikacji iOS (docs/27): warstwy paralaksy per pora roku (WebP 1800 px do public/m/intro/) i rowerzysta;
   // niebo, słońce/księżyc i pora dnia są w CSS (src/m/intro/)
   ...sceneAssets(),

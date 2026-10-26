@@ -152,6 +152,9 @@ async function syncProfile(userId: string, programVersion: string): Promise<void
   }
 }
 
+/** kv: lista tabel pobranych w całości przy ostatniej udanej synchronizacji */
+export const SYNCED_TABLES_KEY = 'synced_tables'
+
 export async function runSync(opts: { programVersion: string }): Promise<void> {
   if (!supabase) return
   if (running) return running
@@ -173,6 +176,8 @@ export async function runSync(opts: { programVersion: string }): Promise<void> {
       for (const t of SYNC_TABLES) await pullTable(t)
       const now = new Date().toISOString()
       await db.kv.put({ key: 'last_sync', value: now, updated_at: now })
+      // które tabele mają za sobą pełne pobranie – `last_sync` sprzed dodania tabeli nie mówi, że jej wiersze już są (onboarding)
+      await db.kv.put({ key: SYNCED_TABLES_KEY, value: [...SYNC_TABLES], updated_at: now })
       await setStatus({ state: 'idle', last_sync: now })
     } catch (e) {
       await setStatus({ state: 'error', error: e instanceof Error ? e.message : String(e) })

@@ -1,5 +1,6 @@
 import Dexie, { type EntityTable } from 'dexie'
 import type { Settings } from '@/engine/schema'
+import type { AthleteProfile, Draft } from '@/engine/onboarding'
 
 /**
  * Lokalna baza (IndexedDB) – źródło prawdy dla UI, działa offline.
@@ -236,6 +237,19 @@ export interface MealRow extends SyncedRow {
   note: string | null
 }
 
+/** Onboarding (docs/31): szkic w trakcie i profil po walidacji (`AthleteProfile`); jeden wiersz na konto, `id` = 'v1'. */
+export interface OnboardingRow extends SyncedRow {
+  /** `legacy` – konto sprzed onboardingu (migracja), nie wymuszamy go */
+  status: 'draft' | 'done' | 'legacy'
+  step: string | null
+  draft: Draft | null
+  data: AthleteProfile | null
+  schema_version: number
+  consent_health_at: string | null
+  consent_version: string | null
+  completed_at: string | null
+}
+
 export interface OutboxItem {
   seq?: number
   table: SyncTable
@@ -243,7 +257,7 @@ export interface OutboxItem {
   ts: string
 }
 
-export const SYNC_TABLES = ['bikes', 'checkins', 'session_logs', 'test_results', 'plan_overrides', 'gear_task_state', 'service_log', 'packing_state', 'strava_activities', 'baseline_entries', 'wahoo_pushes', 'wahoo_workouts', 'meals'] as const
+export const SYNC_TABLES = ['bikes', 'checkins', 'session_logs', 'test_results', 'plan_overrides', 'gear_task_state', 'service_log', 'packing_state', 'strava_activities', 'baseline_entries', 'wahoo_pushes', 'wahoo_workouts', 'meals', 'onboarding'] as const
 /** Tabele, do których klient nie wstawia wierszy – tylko aktualizuje wybrane pola (RLS: update own). */
 export const UPDATE_ONLY_TABLES: Record<string, string[]> = { strava_activities: ['date', 'is_ride', 'updated_at'], wahoo_pushes: [], wahoo_workouts: [] }
 export type SyncTable = (typeof SYNC_TABLES)[number]
@@ -251,7 +265,7 @@ export type SyncTable = (typeof SYNC_TABLES)[number]
  * Tabele z deterministycznym `id` (np. identyfikator zadania) – klucz główny na serwerze to (user_id, id),
  * żeby dwa konta mogły odhaczyć to samo zadanie bez kolizji wierszy.
  */
-export const USER_SCOPED_ID_TABLES: readonly SyncTable[] = ['gear_task_state', 'packing_state']
+export const USER_SCOPED_ID_TABLES: readonly SyncTable[] = ['gear_task_state', 'packing_state', 'onboarding']
 
 export class TreningDB extends Dexie {
   settings!: EntityTable<SettingsRow, 'key'>
@@ -270,6 +284,7 @@ export class TreningDB extends Dexie {
   wahoo_pushes!: EntityTable<WahooPushRow, 'id'>
   wahoo_workouts!: EntityTable<WahooWorkout, 'id'>
   meals!: EntityTable<MealRow, 'id'>
+  onboarding!: EntityTable<OnboardingRow, 'id'>
   outbox!: EntityTable<OutboxItem, 'seq'>
 
   constructor() {
@@ -307,6 +322,9 @@ export class TreningDB extends Dexie {
     })
     this.version(9).stores({
       meals: 'id, date, updated_at',
+    })
+    this.version(10).stores({
+      onboarding: 'id, updated_at',
     })
   }
 }
