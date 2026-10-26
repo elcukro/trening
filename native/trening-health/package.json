@@ -1,0 +1,14 @@
+{
+  "name": "trening-health",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Apple Health (HealthKit) dla aplikacji Trening – odczyt wagi, tętna spoczynkowego, HRV i snu (docs/27 § 2). Interfejs JS: src/native/health.ts.",
+  "license": "UNLICENSED",
+  "files": ["ios/Sources", "Package.swift"],
+  "capacitor": {
+    "ios": { "src": "ios" }
+  },
+  "peerDependencies": {
+    "@capacitor/core": "^8.0.0"
+  }
+}

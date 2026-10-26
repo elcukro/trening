@@ -2,6 +2,7 @@ import type { Program } from './schema'
 import type { CalendarDay, DayFlag, PlanOverride } from './types'
 import { addDays, compareISO, diffDays, type ISODate } from './dates'
 import { nutritionForDay } from './nutrition'
+import { hrvAlarm } from './readiness'
 
 /**
  * Reguły adaptacji R1–R16 działające na gotowym kalendarzu.
@@ -41,6 +42,8 @@ export interface CheckinLike {
   legs?: number | null
   motivation?: number | null
   sick?: boolean
+  /** HRV z nocy (Apple Health) – sygnał zmęczenia względem własnej normy, `readiness.ts` */
+  hrv_ms?: number | null
 }
 
 export interface RuleContext {
@@ -298,8 +301,13 @@ export function warningsFor(date: ISODate, window: CalendarDay[], ctx: RuleConte
   const todayCheckin = ctx.checkins.find((c) => c.date === date)
   const score = checkinScore(todayCheckin)
   const hrAlarm = restingHrAlarm(ctx.checkins, date)
-  if ((score !== null && score <= 6) || hrAlarm) {
-    const why = hrAlarm ? 'Tętno spoczynkowe jest podwyższone drugi dzień z rzędu' : `Suma ocen z check-inu to ${score} na 15`
+  const hrvLow = hrvAlarm(ctx.checkins, date)
+  if ((score !== null && score <= 6) || hrAlarm || hrvLow) {
+    const why = hrAlarm
+      ? 'Tętno spoczynkowe jest podwyższone drugi dzień z rzędu'
+      : hrvLow
+        ? 'HRV jest poniżej Twojej normy drugi dzień z rzędu'
+        : `Suma ocen z check-inu to ${score} na 15`
     if (isKeyDay(day)) {
       out.push({
         rule: 'R6',

@@ -20,6 +20,7 @@ import { RideScreen } from './screens/RideScreen'
 import { SummaryScreen } from './screens/SummaryScreen'
 import { CoachContext } from './coach'
 import { hideSplash } from '@/native'
+import { useHealthSync } from '@/day/useHealth'
 
 /**
  * Mobilny interfejs v2 (docs/24): trzy zakładki (Dziś, Plan, Ja) i przycisk Trener. Te same hooki konta,
@@ -29,6 +30,7 @@ export function MobileApp() {
   useWahooAutoPush()
   useEmailSnapshots()
   usePushKeepalive()
+  useHealthSync()
   useViewport()
   // aplikacja iOS: ekran startowy znika, gdy `/m` (albo logowanie) jest już na ekranie
   useEffect(hideSplash, [])

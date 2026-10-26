@@ -26,6 +26,7 @@ import { WeekStrip } from '../components/WeekStrip'
 import { fmtShort } from '@/lib/dates'
 import { ART, dayArt, weatherArt } from '../art'
 import { useOpenCoach } from '../coach'
+import { fromHealth, healthLine } from '@/day/health'
 
 const LOGGED = ['done', 'modified', 'skipped']
 const cap = (t: string) => t.charAt(0).toUpperCase() + t.slice(1)
@@ -181,8 +182,10 @@ function StateCard(p: CardProps) {
               <p className="m-title mt-1">Jak się czujesz?</p>
               <p className="m-sub m-dim mt-2">
                 {day.bike ? `${name} · ${minutes(day.bike.duration_min)}` : 'Dziś wolne'}
-                {d.lastWeight ? ` · ostatnia waga ${num(d.lastWeight.kg)} kg` : ''}
+                {d.lastWeight && !fromHealth(d.checkin, 'weight_kg') ? ` · ostatnia waga ${num(d.lastWeight.kg)} kg` : ''}
               </p>
+              {/* Apple Health wypełnił już część check-inu – zostają nogi i samopoczucie (docs/27 § 2) */}
+              {healthLine(d.checkin, (f) => fromHealth(d.checkin, f)) && <p className="m-foot mt-1" style={{ color: 'var(--label)' }}>Ze Zdrowia: {healthLine(d.checkin, (f) => fromHealth(d.checkin, f))}</p>}
             </div>
             <img src={ART.coachWave} alt="" width={84} height={112} className="-mt-2 -mr-2 h-28 w-[84px] shrink-0 object-contain" />
           </div>

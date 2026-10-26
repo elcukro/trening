@@ -2,6 +2,7 @@ import { useState } from 'react'
 import type { Checkin } from '@/db'
 import { Btn, Sheet } from './Chrome'
 import { haptic } from '@/native'
+import { fromHealth, healthLine } from '@/day/health'
 
 const SCALES = [
   { key: 'sleep', label: 'Sen', low: 'fatalny', high: 'świetny' },
@@ -21,6 +22,8 @@ export function CheckinSheet({ checkin, lastWeight, onClose, onSave }: { checkin
   const [rhr, setRhr] = useState(checkin?.resting_hr != null ? String(checkin.resting_hr) : '')
   const [scale, setScale] = useState<Record<ScaleKey, number | null>>({ sleep: checkin?.sleep ?? null, legs: checkin?.legs ?? null, motivation: checkin?.motivation ?? null })
   const [busy, setBusy] = useState(false)
+  const [initialWeight] = useState(weight)
+  const [initialRhr] = useState(rhr)
   // stan z otwarcia – zamknięcie bez zapisu pyta tylko wtedy, gdy coś się zmieniło
   const [initial] = useState(() => JSON.stringify({ weight, rhr, scale }))
   const dirty = JSON.stringify({ weight, rhr, scale }) !== initial
@@ -43,14 +46,16 @@ export function CheckinSheet({ checkin, lastWeight, onClose, onSave }: { checkin
           <label className="m-list p-3">
             <span className="m-eyebrow block">Waga</span>
             <input className="m-big mt-1 w-full bg-transparent outline-none" inputMode="decimal" placeholder={lastWeight ? String(lastWeight.kg).replace('.', ',') : '0,0'} value={weight} onChange={(e) => setWeight(e.target.value)} aria-label="Waga w kg" />
-            <span className="m-foot m-dim">kg{lastWeight ? ` · ostatnio ${lastWeight.date.slice(8)}.${lastWeight.date.slice(5, 7)}` : ''}</span>
+            <span className="m-foot m-dim">kg{fromHealth(checkin, 'weight_kg') && weight === initialWeight ? ' · ze Zdrowia' : lastWeight ? ` · ostatnio ${lastWeight.date.slice(8)}.${lastWeight.date.slice(5, 7)}` : ''}</span>
           </label>
           <label className="m-list p-3">
             <span className="m-eyebrow block">Tętno spocz.</span>
             <input className="m-big mt-1 w-full bg-transparent outline-none" inputMode="numeric" placeholder="52" value={rhr} onChange={(e) => setRhr(e.target.value)} aria-label="Tętno spoczynkowe" />
-            <span className="m-foot m-dim">bpm, zanim wstaniesz</span>
+            <span className="m-foot m-dim">{fromHealth(checkin, 'resting_hr') && rhr === initialRhr ? 'bpm · ze Zdrowia' : 'bpm, zanim wstaniesz'}</span>
           </label>
         </div>
+        {/* HRV i sen tylko ze Zdrowia – do odczytu; subiektywna ocena snu niżej zostaje (docs/27 § 2) */}
+        {healthLine(checkin, (f) => f === 'hrv_ms' || f === 'sleep_min') && <p className="m-foot m-dim -mt-2 px-1">Ze Zdrowia: {healthLine(checkin, (f) => f === 'hrv_ms' || f === 'sleep_min')}</p>}
         {SCALES.map((s) => (
           <div key={s.key} className="m-list p-3">
             <div className="mb-2 flex items-baseline justify-between">

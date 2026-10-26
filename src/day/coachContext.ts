@@ -7,6 +7,7 @@ import type { CalendarDay } from '@/engine/types'
 import type { ISODate } from '@/engine/dates'
 import { addDays } from '@/engine/dates'
 import { restingHrAlarm } from '@/engine/rules'
+import { hrvAlarm } from '@/engine/readiness'
 import type { Checkin, PlanOverrideRow, SessionLog, StravaActivity } from '@/db'
 import { WEEKDAY_LONG } from '@/lib/labels'
 
@@ -45,7 +46,8 @@ export interface CoachContext {
     on_bolt?: boolean
   }[]
   rides: { date: ISODate; name: string | null; minutes: number; km: number; elevation_m: number; avg_w: number | null; np_w: number | null; avg_hr: number | null; tss: number | null; if: number | null; decoupling_pct: number | null; note: string | null }[]
-  checkins: { date: ISODate; weight_kg: number | null; resting_hr: number | null; sleep: number | null; legs: number | null; motivation: number | null; sick: boolean; notes: string | null }[]
+  /** `hrv_ms` i `sleep_min` z Apple Health (docs/27 § 2), `from_health` – które pola przyszły ze Zdrowia */
+  checkins: { date: ISODate; weight_kg: number | null; resting_hr: number | null; sleep: number | null; legs: number | null; motivation: number | null; sick: boolean; notes: string | null; hrv_ms?: number | null; sleep_min?: number | null; from_health?: string[] }[]
   logs: { date: ISODate; kind: string; status: string; rpe: number | null; notes: string | null }[]
   overrides: { date: ISODate; kind: string; payload: Record<string, unknown> }[]
   /** gotowe sygnały z kryteriów luzowania – model ma o nich mówić wprost */
@@ -97,6 +99,11 @@ export function buildCoachContext(inp: CoachContextInput): CoachContext {
 
   const flags: string[] = []
   if (restingHrAlarm(checkins, inp.today) || restingHrAlarm(checkins, addDays(inp.today, -1))) flags.push('tętno spoczynkowe > średnia 7 dni + 7 bpm dwa dni z rzędu')
+  // HRV liczy się z całej historii (norma z 28 dni), nie z okna kontekstu
+  const allCheckins = inp.checkins.filter((c) => !c.deleted_at)
+  if (hrvAlarm(allCheckins, inp.today) || hrvAlarm(allCheckins, addDays(inp.today, -1))) flags.push('HRV z nocy poniżej własnej normy (średnia 28 dni − 1 SD) dwa dni z rzędu')
+  const lastSleep = checkins.filter((c) => c.sleep_min != null && c.date >= addDays(inp.today, -1))
+  if (lastSleep.length === 2 && lastSleep.every((c) => (c.sleep_min as number) < 360)) flags.push('sen poniżej 6 h dwie noce z rzędu (Apple Health)')
   const last2 = checkins.filter((c) => c.date >= addDays(inp.today, -1))
   if (last2.length === 2 && last2.every((c) => c.legs != null && c.legs <= 2)) flags.push('nogi ocenione na 1–2 dwa dni z rzędu')
   if (last2.length === 2 && last2.every((c) => c.sleep != null && c.legs != null && c.motivation != null && c.sleep + c.legs + c.motivation <= 6)) flags.push('suma ocen check-inu ≤ 6 dwa dni z rzędu')
@@ -126,7 +133,19 @@ export function buildCoachContext(inp: CoachContextInput): CoachContext {
         note: a.note ? a.note.slice(0, 400) : null,
       }
     }),
-    checkins: checkins.map((c) => ({ date: c.date, weight_kg: c.weight_kg, resting_hr: c.resting_hr, sleep: c.sleep, legs: c.legs, motivation: c.motivation, sick: !!c.sick, notes: c.notes ?? null })),
+    checkins: checkins.map((c) => ({
+      date: c.date,
+      weight_kg: c.weight_kg,
+      resting_hr: c.resting_hr,
+      sleep: c.sleep,
+      legs: c.legs,
+      motivation: c.motivation,
+      sick: !!c.sick,
+      notes: c.notes ?? null,
+      ...(c.hrv_ms != null ? { hrv_ms: c.hrv_ms } : {}),
+      ...(c.sleep_min != null ? { sleep_min: c.sleep_min } : {}),
+      ...(c.field_sources && Object.keys(c.field_sources).length ? { from_health: Object.keys(c.field_sources) } : {}),
+    })),
     logs: logs.map((l) => ({ date: l.date, kind: l.kind, status: l.status, rpe: l.rpe ?? null, notes: l.notes ?? null })),
     overrides: inp.overrides.filter((o) => !o.deleted_at && o.date >= from).map((o) => ({ date: o.date, kind: o.kind, payload: o.payload })),
     flags,

@@ -22,6 +22,7 @@ import { onSyncStatus, type SyncStatus } from '@/sync/sync'
 import { todayISO } from '@/lib/dates'
 import { dayFlow, weighDue, type DayFlow, type LogState } from './dayState'
 import type { BoltState } from '@/features/today/WahooStatus'
+import { isCheckedIn } from '@/day/health'
 
 /* ------------------------------------------------------------------ tryb interfejsu */
 
@@ -171,7 +172,7 @@ export function useIosDay(date: ISODate): IosDay {
         date,
         today: todayISO(),
         ride: day?.bike ? { name: day.bike.name, minutes: day.bike.duration_min, pushable: isPushable(day.bike.workout_id) } : null,
-        checkedIn: !!checkin && (checkin.sleep != null || checkin.weight_kg != null || checkin.legs != null),
+        checkedIn: isCheckedIn(checkin),
         boltReady: bolt.kind === 'ok',
         rideLog: stateOf(rideLog),
         hasActivity: activities.length > 0,

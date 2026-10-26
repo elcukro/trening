@@ -1,6 +1,7 @@
 import { db, newId, nowISO, type BaselineEntry, type BikeRow, type Checkin, type GearTaskState, type MealRow, type PackingState, type PlanOverrideRow, type ServiceLogRow, type SessionLog, type SyncTable, type SyncedRow, type TestResult } from './index'
 import { addDays } from '@/engine/dates'
 import { swapToUndo } from '@/engine/rules'
+import { healthPatch, sourcesAfterManual, type HealthDay } from '@/day/health'
 
 /** Zapis lokalny + wpis do outboxa (jedna transakcja). */
 export async function putSynced<T extends SyncedRow>(table: SyncTable, row: T): Promise<T> {
@@ -20,8 +21,29 @@ export async function softDelete(table: SyncTable, id: string): Promise<void> {
 }
 
 // ---------------------------------------------------------------- check-in
+/** Check-in wpisany ręcznie (arkusz, trener): pole zmienione ręcznie przestaje być „ze Zdrowia” (docs/27 § 2). */
 export async function upsertCheckin(date: string, patch: Partial<Checkin>): Promise<Checkin> {
   const existing = await db.checkins.where('date').equals(date).first()
+  const field_sources = 'field_sources' in patch ? patch.field_sources : sourcesAfterManual(existing, patch)
+  return writeCheckin(date, existing, { ...patch, field_sources })
+}
+
+/**
+ * Dane dnia z Apple Health → check-in: tylko pola puste albo wcześniej ze Zdrowia. Bez zmian = bez zapisu,
+ * więc odczyt przy każdym otwarciu aplikacji nie generuje synchronizacji. Zwraca, czy coś zapisano.
+ */
+export async function applyHealthDay(date: string, day: HealthDay): Promise<boolean> {
+  const existing = await db.checkins.where('date').equals(date).first()
+  const live = existing?.deleted_at ? undefined : existing
+  const patch = healthPatch(live, day)
+  if (!patch) return false
+  // usunięty wcześniej check-in tego dnia: to samo id (unikat user_id+date na serwerze), ale bez starych ocen
+  const reset: Partial<Checkin> = existing && !live ? { weight_kg: null, resting_hr: null, sleep: null, legs: null, motivation: null, sick: false, notes: null, hrv_ms: null, sleep_min: null, deleted_at: null } : {}
+  await writeCheckin(date, existing, { ...reset, ...patch })
+  return true
+}
+
+async function writeCheckin(date: string, existing: Checkin | undefined, patch: Partial<Checkin>): Promise<Checkin> {
   const row: Checkin = {
     id: existing?.id ?? newId(),
     date,

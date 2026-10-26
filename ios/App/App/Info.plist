@@ -66,6 +66,10 @@
 	<true/>
 	<key>UIStatusBarStyle</key>
 	<string>UIStatusBarStyleDarkContent</string>
+	<key>NSHealthShareUsageDescription</key>
+	<string>Trening czyta ze Zdrowia wagę, tętno spoczynkowe, HRV i sen, żeby poranny check-in wypełniał się sam, a trener widział zmęczenie. Dane nie trafiają do reklam.</string>
+	<key>NSHealthUpdateUsageDescription</key>
+	<string>Trening może zapisywać do Zdrowia kalorie i białko z posiłków – tylko gdy włączysz to w ustawieniach.</string>
 	<key>UIUserInterfaceStyle</key>
 	<string>Light</string>
 </dict>

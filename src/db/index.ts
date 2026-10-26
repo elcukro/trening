@@ -85,7 +85,16 @@ export interface Checkin extends SyncedRow {
   motivation: number | null
   sick: boolean
   notes?: string | null
+  /** HRV (SDNN) z nocy w ms – z Apple Health (docs/27 § 2) */
+  hrv_ms?: number | null
+  /** sen z Apple Health w minutach (obok subiektywnej oceny `sleep` 1–5) */
+  sleep_min?: number | null
+  /** skąd pole: `health` = Apple Health; brak wpisu = ręcznie. Wpis ręczny nadpisuje Zdrowie, nigdy odwrotnie. */
+  field_sources?: Partial<Record<HealthField, 'health'>> | null
 }
+
+/** Pola check-inu, które może wypełnić Apple Health. */
+export type HealthField = 'weight_kg' | 'resting_hr' | 'hrv_ms' | 'sleep_min'
 
 export interface StravaActivity extends SyncedRow {
   id: string // bigint jako string w JSON? PostgREST zwraca number – trzymamy string dla spójności kluczy

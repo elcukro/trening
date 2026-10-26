@@ -21,6 +21,9 @@ import { LocationSheet, NumbersSheet, Switch } from '../components/SettingsSheet
 import { ART } from '../art'
 import { IS_IOS_APP } from '@/native'
 import { confirmAction } from '@/native'
+import { health } from '@/native'
+import { HEALTH_BACKFILL_DAYS, setHealthEnabled, syncHealth, useHealthEnabled } from '@/day/useHealth'
+import { healthLine } from '@/day/health'
 
 const SYNC_FOOTER: Record<string, string> = {
   // aplikacja iOS nie odsyła do „pełnej aplikacji” (docs/26 § 3 pkt 9)
@@ -71,6 +74,12 @@ export function MeScreen() {
   const [sv, setSv] = useState<StravaStatus | 'error' | null>(null)
   const [wh, setWh] = useState<WahooStatus | 'error' | null>(null)
   const [push, setPush] = useState<PushStatus | null>(null)
+  // Apple Health – tylko w aplikacji iOS z HealthKitem (docs/27 § 2)
+  const [healthAvail, setHealthAvail] = useState(false)
+  const healthOn = useHealthEnabled()
+  useEffect(() => {
+    void health.available().then(setHealthAvail)
+  }, [])
   const [diag, setDiag] = useState('')
 
   const rides = useLiveQuery(async () => (await db.strava_activities.where('date').between(addDays(today, -28), today, true, true).toArray()).filter((a) => !a.deleted_at && a.is_ride).toSorted((a, b) => (a.start_at < b.start_at ? 1 : -1)).slice(0, 6), [today], [] as StravaActivity[])
@@ -95,6 +104,18 @@ export function MeScreen() {
       window.clearInterval(id)
     }
   }, [auth.session])
+
+  async function toggleHealth(on: boolean) {
+    if (!on) {
+      await setHealthEnabled(false)
+      return
+    }
+    await health.authorize()
+    await setHealthEnabled(true)
+    const day = await syncHealth(today, HEALTH_BACKFILL_DAYS)
+    const line = healthLine(day)
+    toast.notify(line ? `Ze Zdrowia: ${line}` : 'Zdrowie nie oddało dziś danych', line ? 'success' : 'info', line ? undefined : 'Sprawdź uprawnienia: Ustawienia → Zdrowie → Dostęp do danych i urządzenia → Trening. Dane pojawią się same, gdy waga albo zegarek je zapiszą.')
+  }
 
   async function togglePush() {
     const on = !!push?.subscribed
@@ -138,6 +159,16 @@ export function MeScreen() {
       <Group label="Ustawienia">
         <Row icon={<img src={ART.bolt} alt="" width={28} height={28} className="h-7 w-7 object-contain" />} title="Progi i miernik" sub={`${s.ftp_w_estimate} W${s.lthr_bpm ? ` · ${s.lthr_bpm} bpm` : ' · brak LTHR'} · ${s.power_meter ? 'z miernikiem mocy' : 'bez miernika'}`} onClick={() => setSheet('numbers')} />
         <Row icon={<img src="/m/art/sun.png" alt="" width={28} height={28} className="h-7 w-7 object-contain" />} title="Pogoda" sub={loc ? loc.name : loc === null ? 'Ustaw miejscowość prognozy' : undefined} onClick={() => setSheet('location')} />
+        {healthAvail && (
+          <div className="m-row">
+            <img src={ART.heart} alt="" width={28} height={28} className="h-7 w-7 object-contain" />
+            <span className="min-w-0 flex-1">
+              <span className="block">Apple Health</span>
+              <span className="m-foot m-dim block">{healthOn ? 'waga, tętno, HRV i sen trafiają do check-inu' : 'waga, tętno, HRV i sen bez wpisywania'}</span>
+            </span>
+            <Switch on={healthOn} label="Apple Health" onChange={(v) => void toggleHealth(v)} />
+          </div>
+        )}
         {/* Web Push nie działa w WKWebView – w aplikacji iOS powiadomienia przyjdą z APNs (docs/26, etap 3) */}
         {!IS_IOS_APP && <div className="m-row">
           <img src="/m/art/night.png" alt="" width={28} height={28} className="h-7 w-7 object-contain" />

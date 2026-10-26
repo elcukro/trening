@@ -29,6 +29,30 @@ interfejsu `/m`. Założenia bez zmian: jeden kod ekranów dla webu i iOS, wtycz
   % stref, stopka, obwódka kropek osi dnia).
 - Stopka Ja bez pomiaru okna (tylko `import.meta.env.DEV`); tytuł paska `aria-hidden` (VoiceOver czyta raz).
 
+**Etap 2 – Apple Health, odczyt (26.10.2026), sprawdzone w symulatorze iPhone 17 (bez konta, dane przykładowe):**
+
+- Wtyczka Swift `native/trening-health` (lokalny pakiet Capacitora, `npm install ./native/trening-health`, SPM):
+  `isAvailable`, `requestAuthorization`, `readDay(date)` → waga i tętno spoczynkowe (ostatnie z dnia), HRV SDNN (średnia
+  z nocy 18:00–14:00), sen (fazy snu bez „w łóżku” i „przebudzony”, przedziały zegarka i telefonu łączone). Uprawnienie
+  w `ios/App/App/App.entitlements`, opisy `NSHealthShareUsageDescription`/`NSHealthUpdateUsageDescription` w `Info.plist`.
+  W buildzie Debug argument `-TreningHealthSeed YES` (`xcrun simctl launch … pl.felsztukier.trening -TreningHealthSeed YES`)
+  zapisuje 14 dni przykładowych danych przy włączaniu (ostatnie dwie noce „zmęczone”).
+- `src/native/health.ts` (na webie puste), `src/day/health.ts` (czysty TS + testy): `healthPatch` – Zdrowie wypełnia tylko
+  pola puste albo wcześniej ze Zdrowia, `sourcesAfterManual` – ręczna zmiana zdejmuje źródło, `isCheckedIn` – same dane
+  ze Zdrowia nie zaliczają check-inu. `upsertCheckin`/`applyHealthDay` w `repo.ts` (bez zmian = bez zapisu i synchronizacji).
+- Migracja `20261026170000_checkin_health.sql`: `checkins.hrv_ms`, `sleep_min`, `field_sources` (jsonb). **Musi być na
+  serwerze przed wdrożeniem kodu** – inaczej upsert check-inu z nowymi polami dostaje błąd.
+- `src/engine/readiness.ts` (+ testy): HRV dnia względem średniej z 28 dni (min. 7 pomiarów), `hrvAlarm` = poniżej
+  średnia − 1 SD dwa dni z rzędu → R6 („HRV jest poniżej Twojej normy drugi dzień z rzędu”, jak tętno spoczynkowe).
+  Trener dostaje `hrv_ms`, `sleep_min`, `from_health` i flagi HRV oraz „sen < 6 h dwie noce” (`coachContext.ts`).
+- UI: Ja → Ustawienia → „Apple Health” (tylko gdy HealthKit jest dostępny, włącznik per urządzenie w kv `health_enabled`);
+  włączenie = okno uprawnień + **28 dni wstecz** (bez tego norma HRV powstawałaby tydzień) + komunikat z danymi dnia.
+  Potem odczyt wczoraj + dziś przy otwarciu i powrocie do aplikacji, nie częściej niż co 10 min (`useHealthSync`).
+  Karta poranna: „Ze Zdrowia: waga · tętno · HRV · sen”; arkusz check-inu: „ze Zdrowia” przy polach, HRV i sen do odczytu.
+- **Nie sprawdzone:** prawdziwe dane z wagi/zegarka na telefonie; czy darmowe konto Apple (Personal Team) podpisze
+  uprawnienie HealthKit; ostrzeżenie R6 z HRV na ekranie (w `/m` widać tylko `warn` – na dzień wolny/spokojny R6 jest
+  `info`; logikę pokrywa test `readiness.test.ts`). Zapis posiłków do Zdrowia (v1.1) – nie zrobiony.
+
 Zostaje z § 3.1: nic. Z § 3.2/3.3 – etap 1b i osobne zadania (Dynamic Type, VoiceOver, przejścia między ekranami).
 
 ## 1. Co daje natywna aplikacja, czego PWA nie umie
