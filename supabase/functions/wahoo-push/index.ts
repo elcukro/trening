@@ -12,7 +12,7 @@ import { adminClient, userFromRequest, requestLang } from '../_shared/supabase.t
 import { strings } from '../_shared/i18n.ts'
 import { accessTokenFor, cleanupOrphans, diagnose, getWorkout, pushDay, removeDay, type PlanIndex, type PushItem, type PushResult } from '../_shared/wahoo.ts'
 import { processWahooRides } from '../_shared/ride_pipeline.ts'
-import { backfillWahoo, syncCompleted } from '../_shared/wahoo_sync.ts'
+import { backfillWahoo, fillMissingFit, syncCompleted } from '../_shared/wahoo_sync.ts'
 
 const MAX_ITEMS = 10
 
@@ -26,12 +26,24 @@ Deno.serve(async (req) => {
   if (body.mode === 'cron') {
     if (!body.secret || body.secret !== env('PUSH_CRON_SECRET')) return json({ error: 'unauthorized' }, 401)
     const admin = adminClient()
-    const { data: linked } = await admin.from('integration_tokens').select('user_id').eq('provider', 'wahoo')
+    const { data: linked } = await admin.from('integration_tokens').select('user_id, backfilled_at').eq('provider', 'wahoo')
     const out: Record<string, unknown> = {}
+    // historia (do 400 dni) raz na konto, jedno konto na przebieg – limit Wahoo 25 zapytań / 5 min
+    const pending = (linked ?? []).find((l) => !l.backfilled_at)
+    if (pending) {
+      try {
+        out[`backfill:${pending.user_id}`] = await backfillWahoo(admin, pending.user_id as string, { days: 400, fitDays: 90, maxPages: 8, fitLimit: 10 })
+        await admin.from('integration_tokens').update({ backfilled_at: new Date().toISOString() }).eq('user_id', pending.user_id as string).eq('provider', 'wahoo')
+      } catch (e) {
+        out[`backfill:${pending.user_id}`] = `błąd: ${e instanceof Error ? e.message : e}`
+      }
+    }
     for (const { user_id } of linked ?? []) {
       try {
         const r = await syncCompleted(admin, user_id as string, 2)
-        out[user_id as string] = r ? { completed: r.completed, steps: await processWahooRides(admin, user_id as string, r.todo) } : 'brak tokenu'
+        // pliki FIT z historii dochodzą partiami po 5 przy każdym przebiegu
+        const fit = await fillMissingFit(admin, user_id as string, 90, 5)
+        out[user_id as string] = r ? { completed: r.completed, steps: await processWahooRides(admin, user_id as string, r.todo), fit } : 'brak tokenu'
       } catch (e) {
         out[user_id as string] = `błąd: ${e instanceof Error ? e.message : e}`
         // 429 = limit Wahoo – kolejne konta poczekają do następnego przebiegu
@@ -63,7 +75,7 @@ Deno.serve(async (req) => {
     return json({ ok: true, scanned: r.scanned, completed: r.completed, from: r.from, to: r.to, dates: r.dates, steps })
   }
   if (body.mode === 'backfill') {
-    const r = await backfillWahoo(admin, user.id, { days: Math.min(400, Math.max(7, body.days ?? 400)), fitDays: 90, maxPages: 12 })
+    const r = await backfillWahoo(admin, user.id, { days: Math.min(400, Math.max(7, body.days ?? 400)), fitDays: 90, maxPages: 8, fitLimit: 10 })
     return json({ ok: true, ...r })
   }
 

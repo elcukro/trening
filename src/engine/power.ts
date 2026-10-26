@@ -3,11 +3,12 @@ import { addDays, type ISODate } from './dates'
 
 /**
  * Pkt 3 planu usprawnień (docs/14): FTP i LTHR z jazd (bez formalnego testu), krzywa mocy, historia FTP i W/kg.
- * Czysty TS – dane z `strava_activities` (mmp_w liczone przy imporcie) i z próbek jazdy.
+ * Czysty TS – dane jazd (`RideRow`, mmp_w liczone przy imporcie) i z próbek jazdy.
  */
 
 export interface RideForPower {
-  id: string
+  /** klucz jazdy między źródłami (`wahoo:123`) */
+  key: string
   date: ISODate
   name?: string | null
   device_watts?: boolean | null
@@ -25,6 +26,7 @@ export const FTP_SUGGEST_MIN_GAIN = 0.03
 
 export interface FtpSuggestion {
   ftp: number
+  /** klucz jazdy (`RideRow.key`) */
   ride_id: string
   ride_date: ISODate
   ride_name: string | null
@@ -41,14 +43,14 @@ export interface FtpSuggestion {
 export function suggestFtp(rides: RideForPower[], currentFtp: number, since: ISODate | null, dismissed: Set<string> = new Set()): FtpSuggestion | null {
   let best: FtpSuggestion | null = null
   for (const r of rides) {
-    if (!r.device_watts || !r.mmp_w || dismissed.has(r.id)) continue
+    if (!r.device_watts || !r.mmp_w || dismissed.has(r.key)) continue
     if (since && r.date <= since) continue
     const m20 = r.mmp_w['1200'] ?? 0
     const m60 = r.mmp_w['3600'] ?? 0
     const from20 = Math.round(m20 * FTP_FROM_20MIN)
     const cand = from20 >= m60 ? { ftp: from20, basis: '20min' as const, effort_w: m20 } : { ftp: m60, basis: '60min' as const, effort_w: m60 }
     if (cand.ftp < currentFtp * (1 + FTP_SUGGEST_MIN_GAIN)) continue
-    if (!best || cand.ftp > best.ftp) best = { ...cand, ride_id: r.id, ride_date: r.date, ride_name: r.name ?? null, current_ftp: currentFtp }
+    if (!best || cand.ftp > best.ftp) best = { ...cand, ride_id: r.key, ride_date: r.date, ride_name: r.name ?? null, current_ftp: currentFtp }
   }
   return best
 }

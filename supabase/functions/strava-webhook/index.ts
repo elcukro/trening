@@ -40,6 +40,9 @@ async function handle(ev: StravaEvent): Promise<void> {
       return
     }
     await admin.from('integration_tokens').delete().eq('user_id', userId).eq('provider', 'strava')
+    // polityka API § 7.4: deautoryzacja = kasowanie danych ze Stravy i policzonych z nich
+    const { data: purged } = await admin.rpc('purge_strava_user', { p_user: userId })
+    console.log('webhook: deautoryzacja, usunięte jazdy', purged)
     return
   }
   if (ev.aspect_type === 'delete') {

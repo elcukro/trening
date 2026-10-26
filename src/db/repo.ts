@@ -1,7 +1,7 @@
 import { db, newId, nowISO, type PlanRow, type BaselineEntry, type BikeRow, type Checkin, type GearTaskState, type MealRow, type OnboardingRow, type PackingState, type PlanOverrideRow, type ServiceLogRow, type SessionLog, type SyncTable, type SyncedRow, type TestResult } from './index'
 import { addDays } from '@/engine/dates'
 import { ONBOARDING_ID, ONBOARDING_SCHEMA_VERSION, planInputs, type AthleteProfile, type Draft } from '@/engine/onboarding'
-import { GENERATOR_VERSION, programStart } from '@/engine/generator'
+import { GENERATOR_VERSION, programStart, type PlanTuning } from '@/engine/generator'
 import { swapToUndo } from '@/engine/rules'
 import { healthPatch, sourcesAfterManual, type HealthDay } from '@/day/health'
 
@@ -230,4 +230,11 @@ export async function savePlanFromProfile(profile: AthleteProfile, today: string
     source,
     deleted_at: null,
   })
+}
+
+/** Dopasowanie planu (docs/33 § 8.2) – po `clampTuning`; regeneracja planu dzieje się w `generatedProgram`. */
+export async function savePlanTuning(tuning: PlanTuning, source: NonNullable<PlanRow['tuning_source']>): Promise<PlanRow | null> {
+  const existing = await db.plans.get(PLAN_ID)
+  if (!existing || existing.deleted_at) return null
+  return putSynced('plans', { ...existing, tuning, tuning_source: source })
 }

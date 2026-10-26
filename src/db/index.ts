@@ -1,7 +1,7 @@
 import Dexie, { type EntityTable } from 'dexie'
 import type { Settings } from '@/engine/schema'
 import type { AthleteProfile, Draft, PlanInputs } from '@/engine/onboarding'
-import type { GeneratorExtras } from '@/engine/generator'
+import type { GeneratorExtras, PlanTuning } from '@/engine/generator'
 
 /**
  * Lokalna baza (IndexedDB) – źródło prawdy dla UI, działa offline.
@@ -280,6 +280,9 @@ export interface PlanRow extends SyncedRow {
   /** „dziś” użyte przy generowaniu */
   generated_for: string
   source: 'onboarding' | 'change' | 'coach'
+  /** dopasowanie: szablon i parametry generatora (docs/33 § 8.2) – AI, reguły albo wybór zawodnika */
+  tuning?: PlanTuning | null
+  tuning_source?: 'ai' | 'rules' | 'user' | null
 }
 
 export interface OutboxItem {

@@ -2,6 +2,9 @@ import { plCount } from '../core'
 
 /** Teksty: classic – pełna aplikacja (docs/34). Źródło prawdy – wersja angielska w `../en/classic.ts` musi mieć te same klucze. */
 export default {
+  rideSource: {
+    stravaExpires: 'Strava · znika po 7 dniach',
+  },
   nav: {
     mainLabel: 'Nawigacja główna',
     today: 'Dziś',
@@ -204,7 +207,7 @@ export default {
     fromHr: 'z tętna',
     fromRpe: 'z RPE',
     decouplingTitle: 'Dryf tętna względem mocy – poniżej 5 % oznacza dobrą bazę tlenową',
-    noStreams: 'Ta jazda nie ma zapisanych danych sekunda po sekundzie – w Ustawieniach → Integracje dotknij „Pobierz ostatnie 30 dni”.',
+    noStreams: 'Ta jazda nie ma zapisanych danych sekunda po sekundzie – w Ustawieniach → Integracje dotknij „Pobierz ostatnie 7 dni”.',
     failed: 'Analiza się nie udała.',
     score: (pct: number) => `zgodność ${pct} %`,
     analyzing: 'Analizuję…',

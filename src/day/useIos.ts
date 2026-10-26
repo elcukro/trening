@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { useNavigate } from 'react-router'
 import { useLiveQuery } from 'dexie-react-hooks'
-import { db, type BaselineEntry, type Checkin, type KeyValueRow, type SessionLog, type StravaActivity, type WahooPushRow, type WahooWorkout } from '@/db'
+import { db, type BaselineEntry, type Checkin, type KeyValueRow, type SessionLog, type WahooPushRow, type WahooWorkout } from '@/db'
 import { upsertCheckin, upsertSessionLog, findSessionLog } from '@/db/repo'
 import { useDayView } from '@/app/usePlan'
 import { useDailyLoad } from '@/app/useLoad'
@@ -12,7 +12,8 @@ import type { DayPlan } from '@/engine/plan'
 import { isPushable } from '@/engine/wahoo'
 import { pushItemForDay, wahoo } from '@/sync/wahoo'
 import { supabase } from '@/sync/supabase'
-import { loadStreams } from '@/sync/strava'
+import { loadRideStreams } from '@/sync/strava'
+import { useRides, type RideRow } from '@/app/useRides'
 import { matchSteps, rideLoad, statusFromScore, type RideLoad } from '@/engine/analysis'
 import { pmcSeries, weekTss } from '@/engine/pmc'
 import { effectiveFtp, effectiveLthr, weightTrend } from '@/engine/progress'
@@ -114,12 +115,13 @@ export interface IosDay {
   /** ostatnie ważenie przed tym dniem */
   lastWeight: { date: ISODate; kg: number } | null
   rideLog: SessionLog | undefined
-  activities: StravaActivity[]
+  /** jazdy dnia: Wahoo, a ze Stravy tylko bez bliźniaka z Wahoo */
+  activities: RideRow[]
   bolt: BoltState
   ftp: number | null
   lthr: number | null
-  loadOf: (a: StravaActivity) => RideLoad | null
-  /** trening zapisany przez Bolta – pokazujemy, gdy tego dnia nie ma jazdy ze Stravy */
+  loadOf: (a: RideRow) => RideLoad | null
+  /** surowe wiersze Wahoo dnia (zapas – jazdy Wahoo są już w `activities`) */
   boltWorkouts: WahooWorkout[]
   saveCheckin: (patch: Partial<Checkin>) => Promise<void>
   logRide: (status: 'done' | 'modified' | 'skipped', extra?: { rpe?: number | null; notes?: string | null }) => Promise<void>
@@ -132,7 +134,7 @@ export function useIosDay(date: ISODate): IosDay {
   const engine = view.engine
   const checkin = useLiveQuery(async () => (await db.checkins.where('date').equals(date).toArray()).find((c) => !c.deleted_at), [date])
   const rideLog = useLiveQuery(async () => (await db.session_logs.where('[date+kind]').equals([date, 'bike']).toArray()).find((r) => !r.deleted_at), [date])
-  const activities = useLiveQuery(async () => (await db.strava_activities.where('date').equals(date).toArray()).filter((a) => !a.deleted_at && a.is_ride), [date], [] as StravaActivity[])
+  const activities = useRides(date, date)
   /** Ostatnie ważenie do tego dnia – podpowiada format (dziesiątki!) i datę w check-inie. */
   const lastWeight = useLiveQuery(
     async () => {
@@ -152,7 +154,7 @@ export function useIosDay(date: ISODate): IosDay {
 
   /** Obciążenie pojedynczej jazdy (moc → tętno → RPE). Dwie jazdy w jednym dniu liczą się osobno. */
   const loadOf = useCallback(
-    (a: StravaActivity): RideLoad | null =>
+    (a: RideRow): RideLoad | null =>
       rideLoad({
         moving_s: a.moving_time_s,
         device_watts: a.device_watts,
@@ -238,8 +240,8 @@ export function useIosDay(date: ISODate): IosDay {
  * Zgodność wykonania z planem – liczona raz i zapamiętana w `kv` (ten sam klucz co w pełnej aplikacji,
  * więc oba interfejsy pokazują tę samą liczbę). Bez strumieni po prostu zwraca `null`.
  */
-export function useRideScore(activity: StravaActivity | undefined, day: DayPlan | null, ftp: number | null): number | null {
-  const key = activity ? `analysis:${activity.id}` : null
+export function useRideScore(activity: RideRow | undefined, day: DayPlan | null, ftp: number | null): number | null {
+  const key = activity ? `analysis:${activity.key}` : null
   const saved = useLiveQuery(async () => (key ? ((await db.kv.get(key)) ?? null) : null), [key], null as KeyValueRow | null)
   const [computed, setComputed] = useState<{ id: string; score: number | null } | null>(null)
   const workout = day?.workout ?? null
@@ -247,14 +249,14 @@ export function useRideScore(activity: StravaActivity | undefined, day: DayPlan 
 
   useEffect(() => {
     if (!activity || !workout || !key || !activity.has_streams) return
-    if (saved !== null || computed?.id === activity.id) return
+    if (saved !== null || computed?.id === activity.key) return
     let alive = true
     void (async () => {
       try {
-        const s = await loadStreams(activity.id)
+        const s = await loadRideStreams(activity)
         if (!s || !alive) return
         const m = matchSteps(workout, s, { auto: true, ftp })
-        setComputed({ id: activity.id, score: m.score })
+        setComputed({ id: activity.key, score: m.score })
         await db.kv.put({ key, value: { offset_s: m.offset_s, score: m.score }, updated_at: new Date().toISOString() })
         const log = await findSessionLog(activity.date, 'bike')
         if (log && m.score != null && log.status === 'done' && statusFromScore(m.score) === 'modified') await upsertSessionLog(activity.date, 'bike', { status: 'modified' })
@@ -287,7 +289,7 @@ export function useSnapshot(): Snapshot {
   const today = todayISO()
   const { actual } = useDailyLoad(120)
   const checkins = useLiveQuery(async () => (await db.checkins.toArray()).filter((c) => !c.deleted_at && c.weight_kg != null), [], [] as Checkin[])
-  const acts = useLiveQuery(async () => (await db.strava_activities.where('date').aboveOrEqual(addDays(today, -90)).toArray()).filter((a) => !a.deleted_at && a.is_ride), [today], [] as StravaActivity[])
+  const acts = useRides(addDays(today, -90), today)
   const dismissals = useLiveQuery(async () => (await db.kv.where('key').startsWith('ftp_dismiss:').toArray()).map((r) => r.key.slice('ftp_dismiss:'.length)), [], [] as string[])
   const baseline = useLiveQuery(async () => (await db.baseline_entries.toArray()).filter((b) => !b.deleted_at), [], [] as BaselineEntry[])
   const days = useMemo(() => buildCalendar(engine.ctx), [engine.ctx])
@@ -311,8 +313,9 @@ export function useSnapshot(): Snapshot {
 
   const suggestion = useMemo(() => {
     const lastTest = (tests ?? []).filter((t) => t.ftp_w).map((t) => t.date).toSorted().at(-1) ?? null
+    // tylko Wahoo: zapisane FTP trafia do danych, które widzi AI, więc nie może pochodzić ze Stravy (docs/33)
     return suggestFtp(
-      acts.map((a) => ({ id: a.id, date: a.date, name: a.name, device_watts: a.device_watts, mmp_w: a.mmp_w, moving_time_s: a.moving_time_s })),
+      acts.filter((a) => a.source === 'wahoo'),
       ftpEff.ftp,
       lastTest,
       new Set(dismissals),

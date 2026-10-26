@@ -189,8 +189,8 @@ i spada na program domyślny).
 
 ## 8. Czego generator jeszcze nie robi
 
-- Nie dopasowuje planu rozmową (etap 3 docs/30 – personalizacja przez AI jako wybór parametrów generatora);
-  wejście jest już gotowe (`PlanInputs`), brakuje narzędzia trenera „zmień parametry i przelicz”.
+- Dopasowanie przez AI po onboardingu jest od 26.10.2026 (docs/33 § 8: szablony z `data/templates/`, `PlanTuning`,
+  `plan-tune`, „Dlaczego taki plan”); brakuje jeszcze narzędzia trenera w czacie „zmień parametry i przelicz”.
 - Nie zna pogody ani sezonu (zimą nie przenosi akcentów pod dach – robi to R4 w czasie rzeczywistym).
 - Przy celu dalej niż 52 tygodnie plan obejmuje pierwszy rok bez tapera; przedłużenie = ponowne wygenerowanie.
 - Nie buduje zadań sprzętowych ani listy pakowania (`gear_tasks`, `features.trip`).

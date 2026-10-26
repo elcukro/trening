@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from 'react'
 import { useLiveQuery } from 'dexie-react-hooks'
 import { useNavigate } from 'react-router'
-import { db, type StravaActivity } from '@/db'
+import { useRides } from '@/app/useRides'
 import { useAuth } from '@/sync/auth'
 import { helpUrl } from '@/lib/help'
 import { useEngine } from '@/app/useSettings'
@@ -111,7 +111,8 @@ export function MeScreen() {
   }, [])
   const [diag, setDiag] = useState('')
 
-  const rides = useLiveQuery(async () => (await db.strava_activities.where('date').between(addDays(today, -28), today, true, true).toArray()).filter((a) => !a.deleted_at && a.is_ride).toSorted((a, b) => (a.start_at < b.start_at ? 1 : -1)).slice(0, 6), [today], [] as StravaActivity[])
+  const allRides = useRides(addDays(today, -28), today)
+  const rides = useMemo(() => allRides.toReversed().slice(0, 6), [allRides])
 
   // test FTP: ostatni z wyników, następny z kalendarza programu (znacznik `test`)
   const lastTest = useMemo(() => (engine.ctx.tests ?? []).filter((x) => x.ftp_w || x.lthr_bpm).toSorted((a, b) => (a.date < b.date ? 1 : -1))[0] ?? null, [engine.ctx.tests])
@@ -190,7 +191,7 @@ export function MeScreen() {
       <Group label={tm.rides.group}>
         {rides.map((a) => {
           const load = d.loadOf(a)
-          return <Row key={a.id} to={`/m/podsumowanie/${a.date}`} icon={<img src={ART.heart} alt="" width={28} height={28} className="h-7 w-7 object-contain" />} title={a.name ?? tm.rides.fallbackName} sub={`${fmtShort(a.date)} · ${Math.round(a.moving_time_s / 60)} min · ${num((a.distance_m ?? 0) / 1000, 0)} km${a.device_watts && a.np_w ? ` · ${Math.round(a.np_w)} W` : a.avg_hr ? ` · ${Math.round(a.avg_hr)} bpm` : ''}`} value={load ? `${Math.round(load.tss)} TSS` : undefined} />
+          return <Row key={a.key} to={`/m/podsumowanie/${a.date}`} icon={<img src={ART.heart} alt="" width={28} height={28} className="h-7 w-7 object-contain" />} title={a.name} sub={`${fmtShort(a.date)} · ${Math.round(a.moving_time_s / 60)} min · ${num(a.distance_m / 1000, 0)} km${a.device_watts && a.np_w ? ` · ${Math.round(a.np_w)} W` : a.avg_hr ? ` · ${Math.round(a.avg_hr)} bpm` : ''}`} value={load ? `${Math.round(load.tss)} TSS` : undefined} />
         })}
         {rides.length === 0 && <Row title={tm.rides.none} sub={tm.rides.noneSub} />}
       </Group>

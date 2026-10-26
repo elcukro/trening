@@ -1,7 +1,6 @@
 import { useMemo } from 'react'
 import { useNavigate, useParams } from 'react-router'
-import { useLiveQuery } from 'dexie-react-hooks'
-import { db, type StravaActivity } from '@/db'
+import { useRides } from '@/app/useRides'
 import { useRangeView } from '@/app/usePlan'
 import { useDailyLoad } from '@/app/useLoad'
 import { addDays, isValidISODate, mondayOf } from '@/engine/dates'
@@ -31,7 +30,7 @@ export function WeekScreen() {
   const sunday = addDays(monday, 6)
   const view = useRangeView(monday, sunday)
   const { actual } = useDailyLoad(120)
-  const acts = useLiveQuery(async () => (await db.strava_activities.where('date').between(monday, sunday, true, true).toArray()).filter((a) => !a.deleted_at && a.is_ride), [monday, sunday], [] as StravaActivity[])
+  const acts = useRides(monday, sunday)
 
   const totals = useMemo(() => {
     let planned = 0

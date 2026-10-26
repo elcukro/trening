@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest'
 import { bestEffort, ftpSeries, lthrFromRide, powerCurve, suggestFtp, type RideForPower } from '../power'
 import type { RideSamples } from '../analysis'
 
-const ride = (id: string, date: string, mmp: Record<string, number | null>, device = true): RideForPower => ({ id, date, name: `Jazda ${id}`, device_watts: device, mmp_w: mmp, moving_time_s: 5400 })
+const ride = (key: string, date: string, mmp: Record<string, number | null>, device = true): RideForPower => ({ key, date, name: `Jazda ${key}`, device_watts: device, mmp_w: mmp, moving_time_s: 5400 })
 
 describe('suggestFtp', () => {
   it('proponuje 0,95 × MMP20, gdy przekracza FTP o ≥ 3 %; ignoruje jazdy bez miernika, sprzed testu i odrzucone', () => {

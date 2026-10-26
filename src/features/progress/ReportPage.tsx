@@ -1,7 +1,8 @@
 import { useMemo } from 'react'
 import { Link, useNavigate, useParams } from 'react-router'
 import { useLiveQuery } from 'dexie-react-hooks'
-import { db, type Checkin, type KeyValueRow, type StravaActivity } from '@/db'
+import { db, type Checkin, type KeyValueRow } from '@/db'
+import { useRides } from '@/app/useRides'
 import { useRangeView } from '@/app/usePlan'
 import { useDailyLoad } from '@/app/useLoad'
 import { addDays, isValidISODate, mondayOf, type ISODate } from '@/engine/dates'
@@ -48,7 +49,7 @@ function Report({ kind, from, to, today }: { kind: 'week' | 'month'; from: ISODa
   const view = useRangeView(from, to)
   const nextView = useRangeView(addDays(to, 1), addDays(to, 7))
   const { actual } = useDailyLoad(kind === 'week' ? 60 : 130)
-  const acts = useLiveQuery(() => db.strava_activities.where('date').between(from, to, true, true).toArray(), [from, to], [] as StravaActivity[])
+  const acts = useRides(from, to)
   const checkins = useLiveQuery(() => db.checkins.where('date').between(addDays(from, -7), to, true, true).toArray(), [from, to], [] as Checkin[])
   const analyses = useLiveQuery(async () => (await db.kv.where('key').startsWith('analysis:').toArray()) as KeyValueRow[], [], [] as KeyValueRow[])
   const { program, settings } = view.engine.ctx
@@ -56,8 +57,8 @@ function Report({ kind, from, to, today }: { kind: 'week' | 'month'; from: ISODa
   const scores = useMemo(() => {
     const m = new Map<ISODate, number>()
     for (const a of acts) {
-      const s = (analyses.find((k) => k.key === `analysis:${a.id}`)?.value as { score: number | null } | undefined)?.score
-      if (s != null && !a.deleted_at) m.set(a.date, s)
+      const s = (analyses.find((k) => k.key === `analysis:${a.key}`)?.value as { score: number | null } | undefined)?.score
+      if (s != null) m.set(a.date, s)
     }
     return m
   }, [acts, analyses])
@@ -67,15 +68,15 @@ function Report({ kind, from, to, today }: { kind: 'week' | 'month'; from: ISODa
   const zoneHist = useMemo(() => {
     const h: number[] = []
     for (const a of acts) {
-      if (a.deleted_at || !a.is_ride || !a.hr_histogram) continue
+      if (!a.hr_histogram) continue
       a.hr_histogram.forEach((v, i) => {
         if (v) h[i] = (h[i] ?? 0) + v
       })
     }
     return h.length ? Array.from(h, (v) => v ?? 0) : null
   }, [acts])
-  const cadAll = useLiveQuery(() => db.strava_activities.where('date').between(addDays(from, -21), to, true, true).toArray(), [from, to], [] as StravaActivity[])
-  const cadTrend = useMemo(() => cadenceTrend(cadAll.filter((a) => !a.deleted_at && a.is_ride), to, kind === 'week' ? 3 : 6), [cadAll, to, kind])
+  const cadAll = useRides(addDays(from, -21), to)
+  const cadTrend = useMemo(() => cadenceTrend(cadAll, to, kind === 'week' ? 3 : 6), [cadAll, to, kind])
   const cadWarning = useMemo(() => lowCadenceWarning(cadTrend, program.cadence), [cadTrend, program.cadence])
   const cadThis = cadTrend.at(-1)?.avg_rpm ?? null
   const nextKey = nextView.days.find((d) => d.day_type === 'key' && d.bike)

@@ -1,6 +1,7 @@
 import { useMemo } from 'react'
 import { Bar, BarChart, CartesianGrid, Legend, Line, LineChart, ReferenceLine, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts'
-import type { Checkin, StravaActivity, TestResult } from '@/db'
+import type { Checkin, TestResult } from '@/db'
+import type { RideRow } from '@/app/useRides'
 import type { Engine } from '@/app/useSettings'
 import { ftpSeries, powerCurve } from '@/engine/power'
 import { Card, CardSection, CardTitle, Metric } from '@/components/ui'
@@ -9,11 +10,11 @@ import { fmtDayMonth, todayISO } from '@/lib/dates'
 import { useT } from '@/i18n/react'
 
 /** Krzywa mocy (MMP 28 / 90 dni) i historia FTP z W/kg – pkt 3 planu usprawnień. */
-export function PowerCard({ engine, acts, tests, checkins, goalFtp }: { engine: Engine; acts: StravaActivity[]; tests: TestResult[]; checkins: Checkin[]; goalFtp: number }) {
+export function PowerCard({ engine, acts, tests, checkins, goalFtp }: { engine: Engine; acts: RideRow[]; tests: TestResult[]; checkins: Checkin[]; goalFtp: number }) {
   const tp = useT().progress.power
   const today = todayISO()
   const s = engine.ctx.settings
-  const curve = useMemo(() => powerCurve(acts.filter((a) => !a.deleted_at && a.is_ride), today), [acts, today])
+  const curve = useMemo(() => powerCurve(acts, today), [acts, today])
   const hasCurve = curve.some((p) => p.all != null)
   const history = useMemo(
     () =>

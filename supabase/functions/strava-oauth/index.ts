@@ -96,7 +96,9 @@ Deno.serve(async (req) => {
       const token = await accessTokenFor(admin, user.id).catch(() => null)
       if (token) await deauthorize(token)
       await admin.from('integration_tokens').delete().eq('user_id', user.id).eq('provider', 'strava')
-      return json({ ok: true })
+      // polityka API § 7.4: po cofnięciu dostępu kasujemy wszystkie dane ze Stravy i dane z nich policzone
+      const { data: purged } = await admin.rpc('purge_strava_user', { p_user: user.id })
+      return json({ ok: true, purged })
     }
     case 'subscribe': {
       return json(await ensureSubscription())
@@ -105,7 +107,8 @@ Deno.serve(async (req) => {
       const token = await accessTokenFor(admin, user.id)
       if (!token) return json({ error: 'not_connected' }, 400)
       await ensureSubscription().catch((e) => console.warn('subscription', e)) // samonaprawa po zmianie adresu webhooka
-      const days = Math.min(90, Math.max(1, body.days ?? 14))
+      // dane ze Stravy żyją 7 dni (polityka API § 6.2, docs/33 § 5) – starszych nie ma po co pobierać
+      const days = Math.min(7, Math.max(1, body.days ?? 7))
       const after = Math.floor(Date.now() / 1000) - days * 86400
       const list = await listActivities(token, after)
       let imported = 0
@@ -118,26 +121,10 @@ Deno.serve(async (req) => {
       }
       return json({ ok: true, imported, scanned: list.length })
     }
-    // Historia do kontekstu notatek (docs/20): do 400 dni, bez próbek dla jazd starszych niż 90 dni (1 zapytanie na jazdę),
-    // tylko brakujące; najwyżej 80 jazd na wywołanie – wołaj ponownie, dopóki `remaining` > 0.
+    // Historia ze Stravy wyłączona (docs/33 § 3): dane Stravy żyją 7 dni i nie mogą trafić do AI – historię daje Wahoo
+    // (`wahoo-push {mode: 'backfill'}`).
     case 'backfill': {
-      const token = await accessTokenFor(admin, user.id)
-      if (!token) return json({ error: 'not_connected' }, 400)
-      const days = Math.min(400, Math.max(1, body.days ?? 365))
-      const after = Math.floor(Date.now() / 1000) - days * 86400
-      const list = (await listActivities(token, after)).filter((a) => RIDE_TYPES.has(a.sport_type ?? a.type ?? ''))
-      const { data: have } = await admin.from('strava_activities').select('id').eq('user_id', user.id)
-      const known = new Set((have ?? []).map((r) => String(r.id)))
-      const missing = list.filter((a) => !known.has(String(a.id)))
-      let imported = 0
-      for (const a of missing.slice(0, 80)) {
-        const recent = Date.now() - new Date(a.start_date).getTime() < 90 * 86400 * 1000
-        const full = await fetchActivity(token, a.id, recent)
-        if (!full) continue
-        await upsertActivity(admin, user.id, full.activity, full.streams)
-        imported++
-      }
-      return json({ ok: true, imported, scanned: list.length, remaining: Math.max(0, missing.length - imported) })
+      return json({ error: 'gone', detail: 'historia z Wahoo: wahoo-push {mode: backfill}' }, 410)
     }
     default:
       return json({ error: 'unknown_action' }, 400)

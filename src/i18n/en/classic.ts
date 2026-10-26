@@ -2,6 +2,9 @@ import { enCount } from '../core'
 import type pl from '../pl/classic'
 
 const en: typeof pl = {
+  rideSource: {
+    stravaExpires: 'Strava · removed after 7 days',
+  },
   nav: {
     mainLabel: 'Main navigation',
     today: 'Today',
@@ -204,7 +207,7 @@ const en: typeof pl = {
     fromHr: 'from heart rate',
     fromRpe: 'from RPE',
     decouplingTitle: 'Heart-rate drift against power – under 5% means a solid aerobic base',
-    noStreams: 'This ride has no second-by-second data. In Settings → Integrations, tap “Fetch last 30 days”.',
+    noStreams: 'This ride has no second-by-second data. In Settings → Integrations, tap “Fetch last 7 days”.',
     failed: 'Analysis failed.',
     score: (pct: number) => `${pct}% match`,
     analyzing: 'Analysing…',

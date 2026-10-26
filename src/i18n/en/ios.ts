@@ -249,7 +249,7 @@ const en: typeof pl = {
     best20: 'Best 20 min',
     fullHour: 'Full hour',
     recent: 'Recent rides',
-    recentFooter: 'Rides appear after syncing with Strava.',
+    recentFooter: 'Rides appear after syncing with Wahoo or Strava.',
     match: (pct: number) => `${pct}% match`,
     noRides: 'No rides in the last 4 weeks',
     fullFooter: 'Power curve, form chart, cadence and weekly reports are in the full app.',

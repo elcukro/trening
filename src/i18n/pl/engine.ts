@@ -1,4 +1,6 @@
 import type { Weekday } from '../../engine/dates'
+import { plCount } from '../core'
+import { num } from '../../lib/format'
 
 /**
  * Teksty: engine (docs/34) – ostrzeżenia reguł, pogoda, żywienie, punkt wyjścia, generator planów.
@@ -275,7 +277,21 @@ export default {
       noCalibrationDay: 'Żaden z dostępnych dni nie mieści testu kalibracyjnego – strefy zostają szacunkiem do pierwszego testu w planie.',
       rolling: 'Data celu jest dalej niż rok – plan obejmuje pierwsze 52 tygodnie i zostanie przedłużony.',
     },
+    why: {
+      volumeAll: (h: number) => `Plan wykorzystuje cały czas, który podałeś (${num(h)} h w tygodniu).`,
+      volumePart: (pct: number, h: number) => `Plan bierze ${pct} % podanego czasu (${num(h)} h w tygodniu) – zapas na życie i regenerację.`,
+      ramp: (pct: number, gentle: boolean) => `Objętość rośnie najwyżej o ${pct} % z tygodnia na tydzień${gentle ? ' – spokojniej, bo organizm dopiero się przyzwyczaja' : ''}.`,
+      blocks: (weeks: number, tests: number) => `Co ${weeks}. tydzień rozładowanie, test co ${tests === 1 ? 'blok' : plCount(tests, 'blok', 'bloki', 'bloków')}.`,
+      keys0: 'Bez akcentów – na razie tylko spokojne jazdy.',
+      keys1: 'Jeden akcent w tygodniu – reszta spokojnie, żeby akcent był jakościowy.',
+      keys2: 'Dwa akcenty w tygodniu, nigdy dzień po dniu.',
+      days: (long: string, keys: string[]) => `Długa jazda: ${long}${keys.length ? `, akcenty: ${keys.join(' i ')}` : ''}.`,
+      daysAuto: 'Dni dobiera generator: długa w dniu z największym zapasem czasu, akcenty z dala od niej.',
+    },
     library: {
+      set30Hard: '30 s mocno',
+      set30Easy: '30 s luźno',
+      betweenSets: 'Luźno między seriami',
       zones: {
         Z1: 'Regeneracja',
         Z2: 'Wytrzymałość (baza)',

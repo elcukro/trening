@@ -3,6 +3,7 @@ import { useParams } from 'react-router'
 import { isValidISODate } from '@/engine/dates'
 import { zoneDistribution } from '@/engine/zones'
 import { useIosDay, useRideScore } from '@/day/useIos'
+import { rideSourceLabel } from '@/app/useRides'
 import { rideVerdict } from '@/day/dayState'
 import { useToast } from '@/components/Toast'
 import { fmtLong, todayISO } from '@/lib/dates'
@@ -76,7 +77,7 @@ export function SummaryScreen() {
       {d.activities.length > 1 && (
         <div className="flex gap-2">
           {d.activities.map((x, i) => (
-            <button key={x.id} className="m-chip" style={i === idx ? { background: 'var(--accent)', color: '#fff' } : undefined} onClick={() => setIdx(i)}>
+            <button key={x.key} className="m-chip" style={i === idx ? { background: 'var(--accent)', color: '#fff' } : undefined} onClick={() => setIdx(i)}>
               {x.name ?? ts.rideN(i + 1)}
             </button>
           ))}
@@ -87,7 +88,8 @@ export function SummaryScreen() {
         <p className="m-eyebrow" style={{ color: verdict ? TONE_COLOR[verdict.tone] : 'var(--day)' }}>
           {verdict?.text ?? t.m.me.rides.fallbackName}
         </p>
-        <p className="m-title mt-1">{a.name ?? t.m.me.rides.fallbackName}</p>
+        <p className="m-title mt-1">{a.name}</p>
+        <p className="m-foot m-dim">{rideSourceLabel(a)}</p>
         <div className="mt-3 grid grid-cols-3 gap-2">
           <Stat value={score != null ? `${score} %` : '—'} label={tt.after.compliance} />
           <Stat value={load ? String(Math.round(load.tss)) : '—'} label="TSS" />

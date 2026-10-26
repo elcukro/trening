@@ -1,11 +1,12 @@
 import { useEffect, useMemo, useState } from 'react'
 import { useLiveQuery } from 'dexie-react-hooks'
-import { db, type KeyValueRow, type StravaActivity } from '@/db'
+import { db, type KeyValueRow } from '@/db'
+import type { RideRow } from '@/app/useRides'
 import { saveTestResult } from '@/db/repo'
 import type { Engine } from '@/app/useSettings'
 import { effectiveFtp } from '@/engine/progress'
 import { lthrFromRide, suggestFtp, type FtpSuggestion } from '@/engine/power'
-import { loadStreams } from '@/sync/strava'
+import { loadRideStreams } from '@/sync/strava'
 import { Actions, Button, Card, CardTitle } from '@/components/ui'
 import { useToast } from '@/components/Toast'
 import { fmtDayMonth, todayISO } from '@/lib/dates'
@@ -14,14 +15,15 @@ import { useT } from '@/i18n/react'
 const DISMISS_PREFIX = 'ftp_dismiss:'
 
 /** Hook: propozycja nowego FTP z ostatnich jazd z miernikiem (po ostatnim teście), z odrzuceniami z `kv`. */
-export function useFtpSuggestion(engine: Engine, acts: StravaActivity[]): FtpSuggestion | null {
+export function useFtpSuggestion(engine: Engine, acts: RideRow[]): FtpSuggestion | null {
   const dismissed = useLiveQuery(async () => (await db.kv.where('key').startsWith(DISMISS_PREFIX).toArray()) as KeyValueRow[], [], [] as KeyValueRow[])
   return useMemo(() => {
     const today = todayISO()
     const tests = engine.ctx.tests ?? []
     const eff = effectiveFtp(today, engine.ctx.settings.ftp_w_estimate, tests)
     const since = eff.source === 'test' ? (eff.test_date ?? null) : null
-    const rides = acts.filter((a) => !a.deleted_at && a.is_ride)
+    // tylko Wahoo: zapisane FTP trafia do danych, które widzi AI, więc nie może pochodzić ze Stravy (docs/33)
+    const rides = acts.filter((a) => a.source === 'wahoo')
     return suggestFtp(rides, eff.ftp, since, new Set(dismissed.map((d) => d.key.slice(DISMISS_PREFIX.length))))
   }, [engine, acts, dismissed])
 }
@@ -30,7 +32,7 @@ export function useFtpSuggestion(engine: Engine, acts: StravaActivity[]): FtpSug
  * „Zaktualizować FTP do X W?” – jedno dotknięcie zapisuje wynik jak test (protokół FTP_TEST, data jazdy),
  * więc strefy obowiązują od następnego dnia (R11). LTHR dokładamy z tej samej jazdy, jeśli wysiłek był progowy.
  */
-export function FtpSuggestionCard({ engine, acts }: { engine: Engine; acts: StravaActivity[] }) {
+export function FtpSuggestionCard({ engine, acts }: { engine: Engine; acts: RideRow[] }) {
   const toast = useToast()
   const tp = useT().progress
   const tf = tp.ftpSuggestion
@@ -39,12 +41,13 @@ export function FtpSuggestionCard({ engine, acts }: { engine: Engine; acts: Stra
   const [lthrFor, setLthrFor] = useState<{ ride_id: string; value: { lthr: number; effort_w: number } | null } | null>(null)
   const [busy, setBusy] = useState(false)
   const rideId = s?.ride_id ?? null
+  const ride = rideId ? acts.find((a) => a.key === rideId) : undefined
   const currentFtp = s?.current_ftp ?? null
 
   useEffect(() => {
-    if (!rideId || !currentFtp) return
+    if (!rideId || !ride || !currentFtp) return
     let alive = true
-    loadStreams(rideId)
+    loadRideStreams(ride)
       .then((samples) => {
         if (alive) setLthrFor({ ride_id: rideId, value: samples ? lthrFromRide(samples, currentFtp) : null })
       })
@@ -52,7 +55,7 @@ export function FtpSuggestionCard({ engine, acts }: { engine: Engine; acts: Stra
     return () => {
       alive = false
     }
-  }, [rideId, currentFtp])
+  }, [rideId, ride, currentFtp])
 
   if (!s) return null
   const lthr = lthrFor?.ride_id === s.ride_id ? lthrFor.value : null

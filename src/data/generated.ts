@@ -14,7 +14,7 @@ let cache: { key: string; program: Program } | null = null
 export function generatedProgram(row: PlanRow, lang: Lang = getLang()): Program {
   const key = `${row.id}|${row.updated_at}|${GENERATOR_VERSION}|${lang}`
   if (cache?.key === key) return cache.program
-  const program = generateFromInputs(row.inputs, row.extras, row.generated_for).program
+  const program = generateFromInputs(row.inputs, row.extras, row.generated_for, row.tuning).program
   cache = { key, program }
   return program
 }

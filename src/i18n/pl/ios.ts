@@ -250,7 +250,7 @@ export default {
     best20: 'Najlepsze 20 min',
     fullHour: 'Pełna godzina',
     recent: 'Ostatnie jazdy',
-    recentFooter: 'Jazdy pojawią się po synchronizacji ze Stravą.',
+    recentFooter: 'Jazdy pojawią się po synchronizacji z Wahoo albo Stravą.',
     match: (pct: number) => `zgodność ${pct} %`,
     noRides: 'Brak jazd z ostatnich 4 tygodni',
     fullFooter: 'Krzywa mocy, wykres formy, kadencja i raporty tygodniowe są w pełnej aplikacji.',

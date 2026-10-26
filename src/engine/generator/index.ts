@@ -4,9 +4,10 @@ import { buildCalendar, seasonSummary } from '../calendar'
 import type { ISODate } from '../dates'
 import { planInputs, type AthleteProfile, type PlanInputs } from '../onboarding'
 import { hrZones, POWER_ZONES, buildLibrary, testIdFor } from './library'
-import { buildSkeleton, fillWeek, keyCountFor, layoutDays, type DayLayout, type Skeleton, type WeekSkeleton } from './structure'
+import { clampTuning, defaultTuning, type PlanTuning } from './tuning'
+import { buildSkeleton, fillWeek, layoutDays, type DayLayout, type Skeleton, type WeekSkeleton } from './structure'
 import { bikes, cadence, nutrition, phases, programGoal, programMeta, rules } from './texts'
-import { t } from '../../i18n'
+import { t as tr } from '../../i18n'
 
 /**
  * Generator planów (docs/32): z danych onboardingu (`planInputs`) buduje program w formacie `data/program.json`
@@ -34,6 +35,8 @@ export interface GeneratedPlan {
   layout: DayLayout
   /** uwagi generatora dla człowieka (np. „plan przyjął 6 h zamiast 8 h”) */
   notes: string[]
+  /** dopasowanie po clampie – to, z czym plan naprawdę powstał (docs/33 § 8.2) */
+  tuning: PlanTuning
 }
 
 /** Szacunek FTP, gdy zawodnik go nie zna: W/kg wg doświadczenia (albo stała bez masy). Tylko do stref przed testem. */
@@ -45,7 +48,7 @@ export function estimateFtp(weightKg: number | null, experience: PlanInputs['exp
 const KIT_KG = { road: 9, gravel: 10, mtb: 13 } as const
 
 function weekNotes(inp: PlanInputs, sk: Skeleton, wk: WeekSkeleton, lay: DayLayout, tpl: WeekTemplate): string | undefined {
-  const N = t().engine.generator.weekNotes
+  const N = tr().engine.generator.weekNotes
   const testName = N.testName[inp.measure]
   if (wk.index === 0) {
     if (lay.calibration && wk.test) return N.calibration(lay.calibration, testName)
@@ -68,18 +71,20 @@ function weekNotes(inp: PlanInputs, sk: Skeleton, wk: WeekSkeleton, lay: DayLayo
 }
 
 /** Plan z gotowych wejść generatora (testy, podgląd bez konta). */
-export function generateFromInputs(inp: PlanInputs, extras: GeneratorExtras, today: ISODate): GeneratedPlan {
+export function generateFromInputs(inp: PlanInputs, extras: GeneratorExtras, today: ISODate, tuning?: PlanTuning | null): GeneratedPlan {
+  // dopasowanie zawsze przez clamp – nawet zapisane w bazie (inna wersja granic, ręczna zmiana)
+  const t = tuning ? clampTuning(inp, tuning).tuning : defaultTuning(inp)
   const notes: string[] = []
   const lib = buildLibrary({ discipline: inp.discipline, level: inp.measure, indoor: inp.indoor })
   const testId = testIdFor(inp.measure)
-  const sk = buildSkeleton(inp, today)
-  const lay = layoutDays(inp, keyCountFor(inp), lib[testId]!.duration_min)
+  const sk = buildSkeleton(inp, today, t)
+  const lay = layoutDays(inp, t.key_sessions, lib[testId]!.duration_min, t)
   if (sk.weeks[0]!.test && !lay.calibration) {
     sk.weeks[0]!.test = false
     sk.weeks[0]!.type = 'prep'
-    notes.push(t().engine.generator.notes.noCalibrationDay)
+    notes.push(tr().engine.generator.notes.noCalibrationDay)
   }
-  const ctx = { inp, layout: lay, lib, state: { lastLong: Math.max(60, Math.min(extras.longest_ride_min, inp.day_caps_min[lay.long ?? 'sat'])), lastKeySunday: false } }
+  const ctx = { inp, template: t.template, layout: lay, lib, state: { lastLong: Math.max(60, Math.min(extras.longest_ride_min, inp.day_caps_min[lay.long ?? 'sat'])), lastKeySunday: false } }
   const weeks: Record<string, WeekTemplate> = {}
   for (const wk of sk.weeks) {
     const tpl = fillWeek(ctx, wk)
@@ -87,7 +92,7 @@ export function generateFromInputs(inp: PlanInputs, extras: GeneratorExtras, tod
     if (note) tpl.notes = note
     weeks[String(wk.index)] = tpl
   }
-  if (sk.horizon === 'rolling' && 'date' in inp.goal && inp.goal.date) notes.push(t().engine.generator.notes.rolling)
+  if (sk.horizon === 'rolling' && 'date' in inp.goal && inp.goal.date) notes.push(tr().engine.generator.notes.rolling)
 
   const phaseIds = [...new Set(sk.weeks.map((w) => w.phase))] as PhaseId[]
   const weight = extras.weight_kg ?? 75
@@ -133,7 +138,7 @@ export function generateFromInputs(inp: PlanInputs, extras: GeneratorExtras, tod
   const days = buildCalendar({ program: draft, settings })
   if (draft.nutrition.weight_based) draft.nutrition = nutrition(inp, phaseIds, deficitSharesPerWeek(days, draft))
   draft.week_summary = seasonSummary({ program: draft, settings }, days)
-  return { program: parseProgram(draft), skeleton: sk, layout: lay, notes }
+  return { program: parseProgram(draft), skeleton: sk, layout: lay, notes, tuning: t }
 }
 
 /** Średnia suma udziałów dni w tygodniach z deficytem – mianownik rozkładu puli tygodniowej (jak w generatorach). */
@@ -148,10 +153,12 @@ function deficitSharesPerWeek(days: CalendarDay[], program: Program): number {
 }
 
 /** Plan z profilu onboardingu (docs/31) – wejście dla ekranu „Gotowe!” i dla zapisu programu konta. */
-export function generateProgram(profile: AthleteProfile, today: ISODate): GeneratedPlan {
-  return generateFromInputs(planInputs(profile, today), { weight_kg: profile.body.weight_kg, hr_max_bpm: profile.measure.hr_max_bpm, longest_ride_min: profile.current.longest_ride_min }, today)
+export function generateProgram(profile: AthleteProfile, today: ISODate, tuning?: PlanTuning | null): GeneratedPlan {
+  return generateFromInputs(planInputs(profile, today), { weight_kg: profile.body.weight_kg, hr_max_bpm: profile.measure.hr_max_bpm, longest_ride_min: profile.current.longest_ride_min }, today, tuning)
 }
 
 export { buildLibrary, testIdFor, LADDERS } from './library'
 export { buildSkeleton, layoutDays, keyCountFor, programStart, MAX_WEEKS } from './structure'
+export { allowedTemplates, PLAN_TEMPLATES, templateById, templateText, TEMPLATE_IDS, type PlanTemplate, type TemplateId } from './templates'
+export { clampTuning, defaultTuning, isDefaultTuning, planTuningSchema, ruleWhy, tuningBounds, type PlanTuning, type TuningKey } from './tuning'
 export type { Skeleton, WeekSkeleton, DayLayout } from './structure'

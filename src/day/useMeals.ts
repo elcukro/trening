@@ -1,5 +1,6 @@
 import { useLiveQuery } from 'dexie-react-hooks'
-import { db, type MealRow, type SessionLog, type StravaActivity } from '@/db'
+import { db, type MealRow, type SessionLog } from '@/db'
+import type { RideRow } from '@/app/useRides'
 import { useEngine } from '@/app/useSettings'
 import { dayIntake, type DayIntake } from '@/engine/intake'
 import { plannedTss } from '@/engine/pmc'
@@ -14,9 +15,9 @@ export interface MealsDay {
 
 /**
  * Jedzenie dnia (docs/25): posiłki z Dexie + budżet z `intake.ts`. Wspólne dla `/m` (karta Jedzenie) i przyszłego kontekstu trenera.
- * Energia jazdy: jazdy dnia ze Stravy, a przed nimi plan; pominięty trening nie dolicza nic.
+ * Energia jazdy: jazdy dnia (Wahoo, Strava), a przed nimi plan; pominięty trening nie dolicza nic.
  */
-export function useMeals(date: ISODate, day: DayPlan | null, d: { activities: StravaActivity[]; rideLog: SessionLog | undefined; ftp: number | null }): MealsDay {
+export function useMeals(date: ISODate, day: DayPlan | null, d: { activities: RideRow[]; rideLog: SessionLog | undefined; ftp: number | null }): MealsDay {
   const engine = useEngine()
   const { settings, program } = engine.ctx
   const enabled = !!settings.diet_enabled
@@ -33,7 +34,7 @@ export function useMeals(date: ISODate, day: DayPlan | null, d: { activities: St
     nutrition: day.nutrition,
     aboveTarget: weightKg > settings.body_weight_target_kg,
     ride: {
-      rides: d.activities.filter((a) => a.is_ride),
+      rides: d.activities,
       planned: day.bike ? { duration_min: day.bike.duration_min, tss: plannedTss(day, program) } : null,
       ftp,
       skipped: d.rideLog?.status === 'skipped',

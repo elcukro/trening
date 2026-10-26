@@ -1,4 +1,5 @@
 import type { Weekday } from '../../engine/dates'
+import { num } from '../../lib/format'
 import type pl from '../pl/engine'
 
 /** one decimal place, decimal point */
@@ -262,7 +263,21 @@ const en: typeof pl = {
       noCalibrationDay: 'None of your available days fits the calibration test – zones stay estimated until the first test in the plan.',
       rolling: 'Your goal date is more than a year away – the plan covers the first 52 weeks and will be extended.',
     },
+    why: {
+      volumeAll: (h: number) => `The plan uses all the time you gave (${num(h)} h a week).`,
+      volumePart: (pct: number, h: number) => `The plan uses ${pct} % of the time you gave (${num(h)} h a week) – leaving room for life and recovery.`,
+      ramp: (pct: number, gentle: boolean) => `Volume grows by at most ${pct} % from week to week${gentle ? ' – more gently, because your body is still adapting' : ''}.`,
+      blocks: (weeks: number, tests: number) => `A recovery week every ${weeks} weeks, a test every ${tests === 1 ? 'block' : `${tests} blocks`}.`,
+      keys0: 'No key sessions – easy rides only for now.',
+      keys1: 'One key session a week – the rest easy, so the key session is high quality.',
+      keys2: 'Two key sessions a week, never on consecutive days.',
+      days: (long: string, keys: string[]) => `Long ride: ${long}${keys.length ? `, key sessions: ${keys.join(' and ')}` : ''}.`,
+      daysAuto: 'The generator picks the days: the long ride on the day with the most time, key sessions away from it.',
+    },
     library: {
+      set30Hard: '30 s hard',
+      set30Easy: '30 s easy',
+      betweenSets: 'Easy between sets',
       zones: {
         Z1: 'Recovery',
         Z2: 'Endurance (base)',

@@ -1,16 +1,16 @@
 import { useMemo } from 'react'
 import { Bar, BarChart, CartesianGrid, ReferenceLine, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts'
-import type { StravaActivity } from '@/db'
+import type { RideRow } from '@/app/useRides'
 import type { CadencePolicy } from '@/engine/schema'
 import { cadenceTrend, lowCadenceWarning } from '@/engine/cadence'
 import { Card, CardTitle, Inset, Metric } from '@/components/ui'
 import { fmtDayMonth } from '@/lib/dates'
 import { useT } from '@/i18n/react'
 
-/** Kadencja tygodniami (średnia ważona czasem z jazd ze Stravy) z celem i progiem z programu (`program.cadence`). */
-export function CadenceCard({ acts, today, policy }: { acts: StravaActivity[]; today: string; policy: CadencePolicy }) {
+/** Kadencja tygodniami (średnia ważona czasem z jazd) z celem i progiem z programu (`program.cadence`). */
+export function CadenceCard({ acts, today, policy }: { acts: RideRow[]; today: string; policy: CadencePolicy }) {
   const tc = useT().progress.cadence
-  const trend = useMemo(() => cadenceTrend(acts.filter((a) => !a.deleted_at && a.is_ride), today, 8), [acts, today])
+  const trend = useMemo(() => cadenceTrend(acts, today, 8), [acts, today])
   const warning = useMemo(() => lowCadenceWarning(trend, policy), [trend, policy])
   const last = trend.filter((w) => w.avg_rpm != null).at(-1)
   const hasData = trend.some((w) => w.avg_rpm != null)

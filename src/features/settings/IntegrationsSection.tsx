@@ -117,7 +117,7 @@ function StravaCard() {
               disabled={busy}
               onClick={() =>
                 run(ts.fetching, async () => {
-                  const r = await strava.sync(30)
+                  const r = await strava.sync(7)
                   await runSync({ programVersion: engine.ctx.program.version })
                   return ts.fetched(r.imported, r.scanned)
                 })
