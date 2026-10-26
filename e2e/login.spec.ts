@@ -35,7 +35,8 @@ async function providers(page: Page, google: boolean, strava: boolean) {
 test('przyciski pojawiają się tylko dla włączonych dostawców', async ({ page }) => {
   await providers(page, false, false)
   await page.goto(`/m${DAY}`)
-  await expect(page.getByRole('button', { name: 'Wyślij kod na maila' })).toBeVisible()
+  // /m ma własny ekran logowania (docs/27 § 7)
+  await expect(page.getByRole('button', { name: 'Wyślij kod', exact: true })).toBeVisible()
   await expect(page.getByRole('button', { name: /przez Google/ })).toHaveCount(0)
   await expect(page.getByRole('button', { name: /przez Stravę/ })).toHaveCount(0)
 
@@ -120,5 +121,17 @@ test('Google z adresu spoza listy dozwolonych: komunikat zamiast pustej aplikacj
   await providers(page, true, true)
   await page.goto(`/m${DAY}&error=server_error&error_code=signup_disabled&error_description=Signups+not+allowed+for+this+instance`)
   await expect(page.getByText(/Ten adres e-mail nie ma dostępu do aplikacji/)).toBeVisible()
-  await expect(page.getByRole('button', { name: 'Wyślij kod na maila' })).toBeVisible()
+  await expect(page.getByRole('button', { name: 'Wyślij kod', exact: true })).toBeVisible()
+})
+
+test('/m: ekran logowania w stylu aplikacji – e-mail włącza „Wyślij kod”, „Bez konta” otwiera plan', async ({ page }) => {
+  await providers(page, false, false)
+  await page.goto(`/m${DAY}`)
+  const send = page.getByRole('button', { name: 'Wyślij kod', exact: true })
+  await expect(send).toBeDisabled()
+  await page.getByLabel('Adres e-mail').fill('zawodnik@example.com')
+  await expect(send).toBeEnabled()
+  expect((await send.boundingBox())!.height).toBeGreaterThanOrEqual(44)
+  await page.getByRole('button', { name: 'Bez konta' }).click()
+  await expect(page.getByRole('button', { name: 'Wyślij kod', exact: true })).toHaveCount(0)
 })

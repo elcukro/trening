@@ -1,0 +1,187 @@
+/* Logowanie w /m i aplikacji iOS (LoginScreen, docs/27 § 7) – w korzeniu `.m`, przewija się samo (jak `.m-scroll`). */
+
+.m-login {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow-y: auto;
+  overflow-x: hidden;
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior-y: contain;
+  display: flex;
+  flex-direction: column;
+}
+
+/* ilustracja od krawędzi do krawędzi, także pod paskiem statusu; dół rozpływa się w tło */
+.m-login-hero {
+  position: relative;
+  flex: none;
+  height: min(44vh, 380px);
+  overflow: hidden;
+}
+.m-login-hero img {
+  position: absolute;
+  inset: auto 0 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: 50% 85%;
+}
+/* dół rozpływa się w tło nakładką z gradientem – maska (mask-image) w WKWebView zostawiała ostrą krawędź */
+.m-login-hero::after {
+  content: '';
+  position: absolute;
+  inset: auto 0 0;
+  height: 55%;
+  background: linear-gradient(to bottom, rgb(242 242 247 / 0), rgb(242 242 247 / 0.6) 45%, var(--bg) 80%);
+  pointer-events: none;
+}
+.m-login-body {
+  position: relative;
+  z-index: 1; /* tytuł nachodzi na dół ilustracji */
+  flex: 1 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  margin-top: -28px;
+  padding: 0 20px calc(env(safe-area-inset-bottom, 0px) + 12px);
+  max-width: 480px;
+  width: 100%;
+  align-self: center;
+}
+.m-login-title {
+  margin: 0;
+  font-size: 40px;
+  line-height: 44px;
+  font-weight: 800;
+  letter-spacing: -1.2px;
+}
+.m-login-lead {
+  margin: -8px 0 6px;
+  font-size: 17px;
+  line-height: 23px;
+  color: var(--label-2);
+}
+.m-login-oauth {
+  display: flex;
+  flex-direction: column;
+}
+.m-login-or {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin: 2px 0;
+  font-size: 13px;
+  color: var(--label-2);
+}
+.m-login-or::before,
+.m-login-or::after {
+  content: '';
+  flex: 1;
+  height: 0.5px;
+  background: var(--separator);
+}
+
+.m-login-field {
+  width: 100%;
+  min-height: 50px;
+  padding: 0 16px;
+  border: 0;
+  border-radius: 14px;
+  background: var(--card);
+  box-shadow: var(--shadow);
+  font: inherit;
+  font-size: 17px;
+  color: var(--label);
+  outline: none;
+}
+.m-login-field::placeholder {
+  color: var(--label-3);
+}
+.m-login-field:focus {
+  box-shadow: 0 0 0 2px var(--accent), var(--shadow);
+}
+
+/* kod jednorazowy: przezroczyste pole na całej szerokości, pod nim sześć kafelków */
+.m-login-code {
+  position: relative;
+  display: grid;
+  grid-template-columns: repeat(6, 1fr);
+  gap: 8px;
+}
+.m-login-code input {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  opacity: 0;
+  font-size: 16px; /* < 16 px = iOS powiększa stronę przy fokusie */
+  caret-color: transparent;
+}
+.m-login-digit {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 58px;
+  border-radius: 12px;
+  background: var(--card);
+  box-shadow: var(--shadow);
+  font-size: 26px;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+.m-login-code:focus-within .m-login-digit[data-active] {
+  box-shadow: 0 0 0 2px var(--accent), var(--shadow);
+}
+
+.m-login-error {
+  margin: 0;
+  padding: 10px 14px;
+  border-radius: 12px;
+  background: rgb(255 59 48 / 0.1);
+  color: #c4161c;
+  font-size: 15px;
+  line-height: 20px;
+}
+.m-login-link {
+  align-self: center;
+  min-height: 44px;
+  border: 0;
+  background: none;
+  color: var(--accent);
+  font-size: 15px;
+  font-weight: 600;
+}
+.m-login-link:disabled {
+  opacity: 0.4;
+}
+.m-login-skip {
+  position: absolute;
+  top: calc(env(safe-area-inset-top, 0px) + 8px);
+  right: 16px;
+  z-index: 2;
+  min-height: 36px;
+  padding: 0 14px;
+  border: 0;
+  border-radius: 999px;
+  background: rgb(255 255 255 / 0.6);
+  -webkit-backdrop-filter: saturate(180%) blur(20px);
+  backdrop-filter: saturate(180%) blur(20px);
+  color: var(--label);
+  font-size: 15px;
+  font-weight: 600;
+}
+/* obszar dotyku 44 pt przy niższej pigułce */
+.m-login-skip::after {
+  content: '';
+  position: absolute;
+  inset: -4px -2px;
+}
+.m-login-foot {
+  margin: auto 0 0;
+  padding-top: 12px;
+  text-align: center;
+  font-size: 13px;
+  line-height: 18px;
+  color: var(--label-2);
+}
+

@@ -5,7 +5,7 @@ import { useWahooAutoPush } from '@/sync/useWahoo'
 import { useEmailSnapshots } from '@/sync/emailSnapshots'
 import { usePushKeepalive } from '@/sync/usePush'
 import { NO_ACCOUNT } from '@/day/useIos'
-import { LoginScreen } from '@/ios/screens/LoginScreen'
+import { LoginScreen } from './LoginScreen'
 // ekran logowania jest wspólny z /i i potrzebuje jego arkusza (reszta /m ma własny m.css)
 import '@/ios/ios.css'
 import { mobilePathFor } from '@/app/pushNav'
@@ -62,9 +62,9 @@ export function MobileApp() {
   })
 
   if (auth.configured && !auth.session && !skipped) {
-    // ekran logowania jest wspólny z `/i` (do przeniesienia do src/day po doszlifowaniu v2)
+    // własny ekran logowania w stylu /m (docs/27 § 7); `/i` ma swój
     return (
-      <div className="ios">
+      <div className="m">
         {!auth.loading && (
           <LoginScreen
             auth={auth}

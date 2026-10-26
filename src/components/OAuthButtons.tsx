@@ -7,7 +7,7 @@ import { loginProviders, type LoginProviders } from '@/sync/oauth'
  * Wygląd wg wytycznych marek: Google – białe tło, szara ramka, kolorowe „G”; Strava – pomarańcz #FC5200 z logo.
  * Przycisk pojawia się dopiero, gdy dostawca działa (Google włączony w Supabase, funkcja `strava-login` wdrożona).
  */
-export function OAuthButtons({ auth, returnPath, onError }: { auth: AuthState; returnPath: string; onError: (msg: string | null) => void }) {
+export function OAuthButtons({ auth, returnPath, onError, large }: { auth: AuthState; returnPath: string; onError: (msg: string | null) => void; /** rozmiar przycisków `/m` (50 pt, 17 pt tekstu) */ large?: boolean }) {
   const [busy, setBusy] = useState(false)
   const [ready, setReady] = useState<LoginProviders | null>(null)
 
@@ -36,6 +36,7 @@ export function OAuthButtons({ auth, returnPath, onError }: { auth: AuthState; r
     }
   }
 
+  const size = large ? 'min-h-[50px] rounded-[14px] text-[17px]' : 'min-h-11 rounded-xl text-[15px]'
   return (
     <div className="space-y-3">
       {ready.google && (
@@ -43,7 +44,7 @@ export function OAuthButtons({ auth, returnPath, onError }: { auth: AuthState; r
           type="button"
           disabled={busy}
           onClick={() => void go(auth.signInWithGoogle)}
-          className="flex min-h-11 w-full items-center justify-center gap-3 rounded-xl border border-[#747775] bg-white px-4 py-2.5 text-[15px] font-medium text-[#1f1f1f] active:bg-[#f2f2f2] disabled:opacity-50"
+          className={`flex w-full items-center justify-center gap-3 border border-[#747775] bg-white px-4 py-2.5 font-medium text-[#1f1f1f] active:bg-[#f2f2f2] disabled:opacity-50 ${size}`}
         >
           <GoogleG />
           Zaloguj się przez Google
@@ -54,7 +55,7 @@ export function OAuthButtons({ auth, returnPath, onError }: { auth: AuthState; r
           type="button"
           disabled={busy}
           onClick={() => void go(auth.signInWithStrava)}
-          className="flex min-h-11 w-full items-center justify-center gap-3 rounded-xl bg-[#FC5200] px-4 py-2.5 text-[15px] font-semibold text-white active:bg-[#e04a00] disabled:opacity-50"
+          className={`flex w-full items-center justify-center gap-3 bg-[#FC5200] px-4 py-2.5 font-semibold text-white active:bg-[#e04a00] disabled:opacity-50 ${size}`}
         >
           <StravaMark />
           Zaloguj się przez Stravę

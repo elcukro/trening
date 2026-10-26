@@ -327,3 +327,24 @@ to ok. 2,3×). Przy „ogranicz ruch” `<picture>` podaje `wait-clip-still.webp
 
 **Nie sprawdzone na telefonie:** haptyka (symulator jej nie ma), wygląd systemowego arkusza akcji w ciemnym motywie
 telefonu, VoiceOver na prawdziwym urządzeniu (sprawdzone tylko role/`aria-live` w kodzie i drzewie dostępności).
+
+## 7. Ekran logowania `/m` (26.10.2026)
+
+Uwaga użytkownika: dotychczasowy ekran (wspólny z `/i`, styl `ios.css`, mała ikona roweru, szare sekcje) nie pasował do
+reszty `/m`. Nowy ekran: `src/m/LoginScreen.tsx` + `src/m/login.css`; `/i` zostaje przy swoim (`ios/screens/LoginScreen.tsx`).
+
+- **Ilustracja** `public/m/art/login-hero.webp` (33 KB, fal.ai `login-hero` w `scripts/fal-art.mjs` – trener na rowerze
+  wśród wzgórz, styl grafik `/m`) od krawędzi do krawędzi, także pod paskiem statusu; dół rozpływa się w tło nakładką
+  z gradientem (`::after`; `mask-image` w WKWebView zostawiał ostrą krawędź). Bez animacji obrazka – w WKWebView animowany obrazek
+  dostawał własną warstwę i przykrywał nakładkę gradientu. Precache PWA
+  (`m/art/*.webp`).
+- **Układ:** tytuł 40 pt, jedno zdanie o aplikacji, Google i Strava jako przyciski 50 pt (`OAuthButtons large`), linia
+  „albo kodem z maila”, pole e-mail w karcie (`enterKeyHint="send"`, Return wysyła), „Wyślij kod” z kółkiem w przycisku.
+  „Bez konta” – szklana pigułka w rogu ilustracji (jak „Pomiń”), pod spodem jedno zdanie, co to znaczy.
+- **Kod:** sześć kafelków nad jednym niewidocznym polem (`inputMode=numeric`, `autocomplete=one-time-code` – podpowiedź
+  kodu z Poczty nad klawiaturą, wklejanie), logowanie samo po szóstej cyfrze, „Zmień” adres, „Nie doszedł? Wyślij
+  ponownie”. Podgląd bez wysyłania maila: `/m?kod` (tylko build deweloperski).
+- **Błędy** pod formularzem po polsku (`friendlyError`), haptyka sukcesu/błędu; bez komunikatów u góry.
+- „Mam link z maila” tylko w przeglądarce – w aplikacji iOS link z maila nie otworzy aplikacji do czasu Universal Links.
+- **Nie sprawdzone:** prawdziwe logowanie kodem i przez Google/Stravę na nowym ekranie (logika bez zmian – te same
+  `auth.signIn*` i `OAuthButtons`), podpowiedź kodu z Poczty na telefonie.
