@@ -104,11 +104,10 @@ export async function syncCompleted(admin: SupabaseClient, userId: string, days:
  * Historia z Wahoo (zamiast 400 dni ze Stravy – docs/33 § 3): strony `/v1/workouts` od najnowszych, aż do `days` wstecz.
  * Plik FIT tylko dla jazd z ostatnich `fitDays` dni (pobranie pliku nie liczy się do limitu, ale trwa).
  */
-export async function backfillWahoo(admin: SupabaseClient, userId: string, opts: { days: number; fitDays: number; maxPages: number }): Promise<{ pages: number; saved: number; fit: Record<string, number> }> {
+export async function backfillWahoo(admin: SupabaseClient, userId: string, opts: { days: number; fitDays: number; maxPages: number; fitLimit: number }): Promise<{ pages: number; saved: number; fit: Record<string, number> }> {
   const tok = await accessTokenFor(admin, userId)
   if (!tok) throw new Error('not_connected')
   const from = warsawDate(new Date(Date.now() - opts.days * 86400000).toISOString())
-  const fitFrom = warsawDate(new Date(Date.now() - opts.fitDays * 86400000).toISOString())
   const all: WahooWorkoutRaw[] = []
   let pages = 0
   for (let page = 1; page <= opts.maxPages; page++) {
@@ -120,13 +119,23 @@ export async function backfillWahoo(admin: SupabaseClient, userId: string, opts:
   }
   const rows = all.map(summaryToRow).filter((r): r is NonNullable<typeof r> => !!r && r.date >= from)
   await saveCompleted(admin, userId, rows)
+  const fit = await fillMissingFit(admin, userId, opts.fitDays, opts.fitLimit)
+  return { pages, saved: rows.length, fit }
+}
+
+/**
+ * Brakujące pliki FIT z ostatnich `fitDays` dni, najwyżej `limit` na wywołanie (czas funkcji) – reszta przy następnym
+ * odpytaniu. Plik, którego nie da się odczytać, dostaje `fit_error` i nie wraca.
+ */
+export async function fillMissingFit(admin: SupabaseClient, userId: string, fitDays: number, limit: number): Promise<Record<string, number>> {
+  const fitFrom = warsawDate(new Date(Date.now() - fitDays * 86400000).toISOString())
   const fit: Record<string, number> = {}
-  const { data: need } = await admin.from('wahoo_workouts').select('id, summary').eq('user_id', userId).eq('has_streams', false).is('fit_error', null).gte('date', fitFrom).is('deleted_at', null)
+  const { data: need } = await admin.from('wahoo_workouts').select('id, summary').eq('user_id', userId).eq('has_streams', false).is('fit_error', null).gte('date', fitFrom).is('deleted_at', null).order('date', { ascending: false }).limit(limit)
   for (const w of need ?? []) {
     const r = await ingestFit(admin, userId, Number(w.id), w.summary as WahooSummary)
     fit[r] = (fit[r] ?? 0) + 1
   }
-  return { pages, saved: rows.length, fit }
+  return fit
 }
 
 async function listPage(token: string, page: number): Promise<WahooWorkoutRaw[]> {
