@@ -12,6 +12,7 @@ import { timingSafeEqual } from '../_shared/crypto.ts'
 import { adminClient } from '../_shared/supabase.ts'
 import { accessTokenFor, wahooUser } from '../_shared/wahoo.ts'
 import { processWahooRides } from '../_shared/ride_pipeline.ts'
+import { redact } from '../_shared/provenance.ts'
 import { saveCompleted } from '../_shared/wahoo_sync.ts'
 import { summaryToRow, type WahooSummary, type WahooWorkoutRaw } from '../_shared/wahoo_summary.ts'
 import type { SupabaseClient } from 'npm:@supabase/supabase-js@2'
@@ -70,7 +71,7 @@ Deno.serve(async (req) => {
   const runtime = (globalThis as { EdgeRuntime?: { waitUntil(p: Promise<unknown>): void } }).EdgeRuntime
   const work = handle(ev)
     .then((r) => console.log('wahoo-webhook:', r))
-    .catch((e) => console.error('wahoo-webhook error', e))
+    .catch((e) => console.error('wahoo-webhook error', redact(e)))
   if (runtime?.waitUntil) runtime.waitUntil(work)
   else await work
   return json({ ok: true })

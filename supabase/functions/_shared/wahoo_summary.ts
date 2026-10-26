@@ -96,8 +96,25 @@ export function completedInRange(list: WahooWorkoutRaw[], from: string, to: stri
   return out
 }
 
-/** Adres pliku FIT z podsumowania (pole `file.url`), gdy Wahoo go podał. */
+/** Hosty, z których wolno pobrać plik FIT (Wahoo i jego magazyn plików) – adres przychodzi z API albo z webhooka. */
+export const FIT_HOSTS = [/(^|\.)wahooligan\.com$/, /(^|\.)wahoofitness\.com$/, /\.amazonaws\.com$/, /\.cloudfront\.net$/]
+
+/** Czy adres jest bezpiecznym źródłem pliku FIT: https, host z listy, bez adresu IP i bez danych logowania w adresie. */
+export function isFitHost(raw: string): boolean {
+  let u: URL
+  try {
+    u = new URL(raw)
+  } catch {
+    return false
+  }
+  if (u.protocol !== 'https:' || u.username || u.password || u.port) return false
+  const host = u.hostname.toLowerCase()
+  if (/^[\d.]+$/.test(host) || host.includes(':')) return false
+  return FIT_HOSTS.some((re) => re.test(host))
+}
+
+/** Adres pliku FIT z podsumowania (pole `file.url`), gdy Wahoo go podał i host jest dozwolony. */
 export function fitUrl(s: WahooSummary | null | undefined): string | null {
   const u = s?.file?.url
-  return typeof u === 'string' && /^https:\/\//.test(u) ? u : null
+  return typeof u === 'string' && isFitHost(u) ? u : null
 }

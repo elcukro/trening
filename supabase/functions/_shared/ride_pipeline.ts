@@ -5,6 +5,7 @@
 import type { SupabaseClient } from 'npm:@supabase/supabase-js@2'
 import { loadRide, writeNote, writeStravaTitle } from './ai_note.ts'
 import { sendWorkout, warsawNow } from './email_send.ts'
+import { redact } from './provenance.ts'
 import { fromWahoo, sameRide } from './rides.ts'
 import { ingestFit, syncCompleted } from './wahoo_sync.ts'
 import type { WahooSummary } from './wahoo_summary.ts'
@@ -18,7 +19,7 @@ function daysAgo(n: number): string {
   return d.toISOString().slice(0, 10)
 }
 
-const errText = (e: unknown) => `błąd: ${e instanceof Error ? e.message : e}`
+const errText = (e: unknown) => `błąd: ${redact(e)}`
 
 /** Jazdy z Wahoo po zapisie: plik FIT, potem (dla świeżych) notatka i mail. */
 export async function processWahooRides(admin: SupabaseClient, userId: string, ids: number[]): Promise<Record<string, string>> {
