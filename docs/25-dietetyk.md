@@ -176,5 +176,7 @@ przepisywanie tekstu, sprawdzimy na pierwszych produktach. Skrypt i dane: scratc
   zapis i usunięcie z „Cofnij”). Wzrost i rok urodzenia: Ustawienia → Profil oraz arkusz „Progi i miernik” w `/m`.
 - `diet_enabled` nie ma przełącznika w UI – włączane SQL-em (`update profiles set diet_enabled = true …`); włączone na koncie
   Łukasza 26.10.2026. Bez wzrostu i roku urodzenia karta pokazuje tylko sumy.
+- Wzrost z listy (140–220 cm), data urodzenia z kalendarza (`profiles.birth_date`, migracja `20261026140000_birth_date.sql`;
+  `birth_year` zapisywany razem z nią) – bez klawiatury, bo na iOS klawiatura w arkuszu chowała pola. Wiek liczony co do dnia.
 - E2E: `e2e/diet.spec.ts` (odpowiedź `meal-parse` podstawiona).
 - Do sprawdzenia: pierwsze 10 posiłków ręcznie (§ 7 pkt 2), odczyt etykiet na prawdziwych opakowaniach.
