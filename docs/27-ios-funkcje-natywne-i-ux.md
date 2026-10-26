@@ -53,6 +53,12 @@ interfejsu `/m`. Założenia bez zmian: jeden kod ekranów dla webu i iOS, wtycz
   uprawnienie HealthKit; ostrzeżenie R6 z HRV na ekranie (w `/m` widać tylko `warn` – na dzień wolny/spokojny R6 jest
   `info`; logikę pokrywa test `readiness.test.ts`). Zapis posiłków do Zdrowia (v1.1) – nie zrobiony.
 
+**Lokalizacja do pogody (§ 1 pkt 12, 26.10.2026):** Ja → Pogoda → „Użyj mojej lokalizacji” – `src/native/location.ts`
+(`@capacitor/geolocation`, jednorazowo, dokładność ~1 km, na webie `navigator.geolocation`), opis
+`NSLocationWhenInUseUsageDescription` po polsku; pytanie o zgodę dopiero przy dotknięciu przycisku. Zapis jak dotąd w kv
+`weather_location` z nazwą „Moja lokalizacja (lat, lon)” – bez geokodowania odwrotnego (Open-Meteo go nie ma). Sprawdzone
+w symulatorze (systemowe pytanie, zapis, komunikat).
+
 Zostaje z § 3.1: nic. Z § 3.2/3.3 – etap 1b i osobne zadania (Dynamic Type, VoiceOver, przejścia między ekranami).
 
 ## 1. Co daje natywna aplikacja, czego PWA nie umie

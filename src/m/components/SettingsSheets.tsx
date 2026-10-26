@@ -4,7 +4,8 @@ import { geocode, setLocation, type WeatherLocation } from '@/sync/weather'
 import { useToast } from '@/components/Toast'
 import { fmtDate } from '@/lib/dates'
 import { Btn, Sheet } from './Chrome'
-import { haptic } from '@/native'
+import { currentPosition, haptic } from '@/native'
+import { num } from '@/lib/format'
 
 /** Przełącznik w stylu systemowym. */
 export function Switch({ on, label, onChange, disabled }: { on: boolean; label: string; onChange: (v: boolean) => void; disabled?: boolean }) {
@@ -142,6 +143,15 @@ export function LocationSheet({ onClose }: { onClose: () => void }) {
   const toast = useToast()
   const [query, setQuery] = useState('')
   const [found, setFound] = useState<WeatherLocation[]>([])
+  /** Pozycja telefonu zamiast wpisywania – pytanie o zgodę dopiero teraz, przy użyciu funkcji (docs/26 § 5). */
+  async function useMyLocation() {
+    const r = await toast.run('Ustalam lokalizację…', async () => {
+      const pos = await currentPosition()
+      // nazwy miejscowości nie zgadujemy (Open-Meteo nie ma geokodowania odwrotnego) – współrzędne w podpisie wystarczą
+      await setLocation({ name: `Moja lokalizacja (${num(pos.lat, 2)}, ${num(pos.lon, 2)})`, ...pos })
+    }, () => 'Prognoza dla Twojej lokalizacji')
+    if (r !== null) onClose()
+  }
   async function search() {
     if (!query.trim()) return
     const r = await toast.run('Szukam…', () => geocode(query), (list) => (list.length ? `Znaleziono ${list.length}` : 'Nic nie znaleziono'))
@@ -150,6 +160,10 @@ export function LocationSheet({ onClose }: { onClose: () => void }) {
   return (
     <Sheet title="Pogoda" onClose={onClose}>
       <div className="flex flex-col gap-3">
+        <Btn onClick={() => void useMyLocation()} className="w-full">
+          Użyj mojej lokalizacji
+        </Btn>
+        <p className="m-foot m-dim -mt-1 px-1">albo wyszukaj miejscowość:</p>
         <form
           className="flex items-center gap-2"
           onSubmit={(e) => {
