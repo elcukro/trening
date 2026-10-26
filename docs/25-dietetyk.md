@@ -54,6 +54,17 @@ obiad 13:40 · kurczak z ryżem · 720 kcal
    Przyciski porcji: „mniej” (×0,75) / „więcej” (×1,25) / „podwójna”. Nazwa edytowalna.
 3. „Zapisz” → wpis w `meals`, karta na Dziś odświeża się, toast „Zapisane: 720 kcal · białko 42 g” z „Cofnij”.
 
+### Produkt z etykietą (żelki, napój, baton)
+Przy produktach z opakowania kalorie są wydrukowane – model ich nie szacuje, tylko **przepisuje z etykiety**.
+1. Ten sam przycisk aparatu; zdjęcie tabeli wartości odżywczych (opcjonalnie drugie: przód opakowania, dla nazwy).
+   Arkusz przyjmuje 1–2 zdjęcia w jednym wywołaniu.
+2. Model rozpoznaje, że to etykieta (`kind: 'label'`), i zwraca wartości **na 100 g / 100 ml** (oraz na porcję, jeśli jest),
+   masę opakowania i wielkość porcji z etykiety. Nic nie zgaduje: pole nieczytelne = `null`.
+3. Podgląd pyta tylko o ilość: „Całe opakowanie (200 g)”, „Połowa”, „Porcja z etykiety (25 g)” albo pole „g / ml”.
+   Kcal i makro **liczy kod** (`wartość_na_100 × ilość / 100`), nie model.
+4. Etykieta nieczytelna albo brak kcal → „Nie widzę tabeli kalorii – zrób zdjęcie bliżej” zamiast szacunku.
+5. Beta 2: zapisany produkt trafia do „Ostatnie produkty” (tabela `products` per konto) – drugi raz bez zdjęcia, jednym dotknięciem.
+
 ### Trener (czat)
 - Nowy chip w fazach `after`/`evening`: **„Zjadłem…”** – tekst bez zdjęcia („zjadłem 2 jajka, 2 kromki, masło”) → narzędzie
   `log_meal` (model sam szacuje kcal i białko ze słów; źródło `text`).
@@ -69,8 +80,9 @@ obiad 13:40 · kurczak z ryżem · 720 kcal
 ### 4.1 Tabela `meals` (synchronizowana, per konto)
 ```
 id uuid pk, user_id, date, time (HH:MM), name text, kcal int, protein_g int, carbs_g int, fat_g int,
-items jsonb [{name, grams, kcal, protein_g}], source text ('photo'|'text'|'manual'), confidence numeric,
-portion_factor numeric default 1, note text, deleted_at, created_at, updated_at, server_updated_at
+items jsonb [{name, grams, kcal, protein_g}], source text ('photo'|'label'|'text'|'manual'), confidence numeric,
+portion_factor numeric default 1, note text,
+label jsonb null {per_100:{kcal,protein_g,carbs_g,fat_g}, unit:'g'|'ml', package, serving}, amount numeric null (g/ml zjedzone), deleted_at, created_at, updated_at, server_updated_at
 ```
 Dexie `version(9).stores({ meals: 'id, date, updated_at' })`, `SYNC_TABLES` + `meals`, repo `addMeal/updateMeal/deleteMeal`
 przez `putSynced`/`softDelete`. Migracja wg wzoru `bikes.sql` (RLS „all own”, `lww_guard`, `revoke anon`).
@@ -92,11 +104,14 @@ Bilans tygodnia = Σ(budżet − zjedzone); oczekiwana zmiana masy = bilans / 77
 bez roweru (liczone z 3 tygodni)”. To jedyna rzecz, która robi z szacunków ±20 % użyteczne narzędzie.
 
 ### 4.4 Edge Function `meal-parse`
-- `POST {image_b64?, text?, note?, hint:{protein_target}}` + JWT; limity jak `checkin-parse` (30/dzień/konto).
-- Dostawca przez sekret `MEAL_PROVIDER`: `openrouter` (beta – kredyty 7,85 USD; model `google/gemini-2.5-flash`, tani i dobry
-  w jedzeniu) albo `anthropic` (Claude z obrazem, z puli 100 USD/mies.). Klucz `OPENROUTER_API_KEY` w sekretach Supabase.
-- Odpowiedź JSON: `{name, items[], total:{kcal,protein_g,carbs_g,fat_g}, confidence, question?}`; walidacja zakresów w czystym
-  `_shared/meal_parse.ts` (kcal 20–3000, białko ≤ kcal/4, suma składników ≈ total ±15 %), testy Vitest.
+- `POST {images_b64?: [1–2], text?, note?, hint:{protein_target}}` + JWT; limity jak `checkin-parse` (30/dzień/konto).
+- Model przez OpenRouter (klucz `OPENROUTER_API_KEY`), nazwa modelu w sekrecie `MEAL_MODEL` – domyślnie
+  `google/gemini-3.8-flash`, zapas `anthropic/claude-sonnet-5.5` (wynik próby w § 6). Zmiana modelu = zmiana sekretu, bez wdrożenia.
+- Odpowiedź JSON: `{kind:'dish'|'label', name, items[], total:{kcal,protein_g,carbs_g,fat_g}, confidence, question?,
+  label?:{unit, per_100:{…}, per_serving?, package?, serving?}}`; walidacja w czystym `_shared/meal_parse.ts` (danie: kcal
+  20–3000, białko ≤ kcal/4, suma składników ≈ total ±15 %; etykieta: kcal/100 ≤ 900, 4·B + 4·W + 9·T ≈ kcal ±15 %), testy Vitest.
+  Odpowiedź w trybie JSON; zepsuty JSON → jedna ponowna próba.
+- Czas odpowiedzi Gemini 3.8 Flash ~10 s – arkusz pokazuje wyraźny stan „Analizuję zdjęcie…”.
 - Prompt: polskie nazwy dań, porcje „domowe” (talerz, kromka, łyżka), zawsze podaj gramy, nie zgaduj przy pewności < 0,5 – zadaj
   jedno pytanie.
 
@@ -114,18 +129,33 @@ bez roweru (liczone z 3 tygodni)”. To jedyna rzecz, która robi z szacunków �
 
 | Faza | Zakres | Czas |
 |---|---|---|
-| **Beta 1** | migracja `meals` + Dexie + repo; `intake.ts` z testami; `height_cm`/`birth_year`; `meal-parse` (OpenRouter) + `_shared/meal_parse.ts`; karta Jedzenie na Dziś; arkusz Posiłek (aparat, podgląd, porcja, zapis); `diet_enabled` | 2 dni |
-| **Beta 2** | `log_meal` + chip „Zjadłem…” + `nutrition_today` w kontekście trenera; „Dzień w liczbach”; kafelek Ja 7 dni | 1 dzień |
+| **Beta 1** | migracja `meals` + Dexie + repo; `intake.ts` z testami; `height_cm`/`birth_year`; `meal-parse` (OpenRouter) + `_shared/meal_parse.ts`; karta Jedzenie na Dziś; arkusz Posiłek (aparat, podgląd, porcja, zapis; etykieta produktu → ilość g/ml); `diet_enabled` | 2 dni |
+| **Beta 2** | „Ostatnie produkty” (`products`); `log_meal` + chip „Zjadłem…” + `nutrition_today` w kontekście trenera; „Dzień w liczbach”; kafelek Ja 7 dni | 1 dzień |
 | **Beta 3** | kalibracja TDEE z masy; list tygodnia; zdjęcia w czacie; wybór dostawcy Anthropic | 1 dzień |
 
-## 6. Próba przed Beta 1 (tydzień)
-Zanim powstanie UI: skrypt w scratchpadzie wysyła 10–15 zdjęć posiłków o znanym składzie do 2–3 modeli przez OpenRouter
-(Gemini 2.5 Flash, GPT-5 mini, Claude Sonnet) i porównuje błąd kcal. Wynik decyduje o modelu i o progu pewności. Koszt < 2 USD.
+## 6. Próba modeli (26.10.2026)
+Pięć modeli przez OpenRouter, ten sam prompt, temperatura 0. Dwa zestawy: **Nutrition5k** (Google, 14 dań ze stołówki, każdy
+składnik zważony – twarda prawda) i **13 polskich posiłków** z diety.nfz.gov.pl i ncez.pzh.gov.pl (kcal na porcję z przepisu,
+zdjęcia często poglądowe – prawda przybliżona). Błąd = średni bezwzględny błąd kcal.
+
+| Model | Nutrition5k: błąd / skrzywienie | Polskie: błąd / skrzywienie | ≤ 20 % (oba) | Czas | Koszt/posiłek |
+|---|---|---|---|---|---|
+| **google/gemini-3.8-flash** | **21 % / +1 %** | **23 % / −4 %** | **17/27** | 10–11 s | 0,005 USD |
+| anthropic/claude-sonnet-5.5 | 44 % / +33 % | 26 % / +6 % | 11/27 | 4 s | 0,004 USD |
+| anthropic/claude-haiku-5.5 | 62 % / +53 % | 27 % / +14 % | 11/27 | 5–6 s | 0,0005 USD |
+| openai/gpt-6.1-sol | 68 % / +67 % | 30 % / +25 % | 12/27 | 13–15 s | 0,006 USD |
+| google/gemini-2.5-flash | 34 % / +28 % | 36 % / +22 % | 9/27 | 3–4 s | 0,0008 USD |
+
+Wniosek: Gemini 3.8 Flash jako jedyny trzyma ~20 % bez systematycznego zawyżania w obu zestawach; pozostałe zawyżają kcal.
+Ograniczenia: mała próba, brak klasyków (schabowy, pierogi), zdjęcia z góry albo poglądowe. Etykiet nie testowaliśmy – to
+przepisywanie tekstu, sprawdzimy na pierwszych produktach. Skrypt i dane: scratchpad sesji (`mealbench/`), nie w repo.
 
 ## 7. Decyzje (26.10.2026)
 1. **Wzrost i rok urodzenia** wchodzą do profilu (`height_cm`, `birth_year`).
-2. **Budujemy od razu Beta 1**, bez tygodniowej próby. Model rozpoznawania: w becie `google/gemini-2.5-flash` przez OpenRouter
-   (sekret `OPENROUTER_API_KEY` wgrany 26.10), zapas: Claude przez `ANTHROPIC_API_KEY` (`MEAL_PROVIDER=anthropic`). Inne klucze
+2. **Budujemy od razu Beta 1**, bez tygodniowej próby. Model rozpoznawania (po próbie z § 6): `google/gemini-3.8-flash` przez
+   OpenRouter (sekret `OPENROUTER_API_KEY` wgrany 26.10, model w sekrecie `MEAL_MODEL`), zapas `anthropic/claude-sonnet-5.5`. Inne klucze
    w `~/code` (fal.ai, Replicate – generowanie obrazów; stary klucz OpenAI w `clipblossom`) nie nadają się albo nie są potrzebne.
    Pierwsze 10 posiłków porównujemy ręcznie: jeśli Gemini myli się > 30 % na kcal, przełączamy sekretem na Claude bez wdrożenia.
+4. **Produkty z etykietą** (26.10.2026): zdjęcie tabeli wartości odżywczych → model przepisuje wartości na 100 g/ml, ilość
+   podaje zawodnik, kcal liczy kod (§ 3 „Produkt z etykietą”).
 3. Miniatur zdjęć nie zapisujemy (prywatność); drugie konto dostaje funkcję przez przełącznik `diet_enabled`, domyślnie wyłączony.
