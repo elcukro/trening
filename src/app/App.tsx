@@ -257,8 +257,8 @@ class ErrorBoundary extends Component<{ children: ReactNode }, { error: Error | 
 }
 
 /** Ekran oczekiwania bez danych programu: nie wiadomo jeszcze, czyje ustawienia pokazać. */
-function WaitingScreen({ waiting, sync }: { waiting: 'settings' | 'session' | 'profile'; sync: { state: string; error?: string } }) {
-  const text = waiting === 'profile' ? (sync.state === 'syncing' ? 'Pobieram ustawienia konta…' : 'Czekam na ustawienia konta…') : waiting === 'session' ? 'Sprawdzam logowanie…' : 'Wczytuję…'
+function WaitingScreen({ waiting, sync }: { waiting: 'settings' | 'session' | 'profile' | 'plan'; sync: { state: string; error?: string } }) {
+  const text = waiting === 'profile' ? (sync.state === 'syncing' ? 'Pobieram ustawienia konta…' : 'Czekam na ustawienia konta…') : waiting === 'plan' ? 'Pobieram Twój plan…' : waiting === 'session' ? 'Sprawdzam logowanie…' : 'Wczytuję…'
   return (
     <div className="flex min-h-dvh w-full items-center justify-center bg-slate-50 px-6 text-center dark:bg-slate-900" role="status" aria-live="polite">
       <div>

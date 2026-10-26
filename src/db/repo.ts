@@ -1,6 +1,7 @@
-import { db, newId, nowISO, type BaselineEntry, type BikeRow, type Checkin, type GearTaskState, type MealRow, type OnboardingRow, type PackingState, type PlanOverrideRow, type ServiceLogRow, type SessionLog, type SyncTable, type SyncedRow, type TestResult } from './index'
+import { db, newId, nowISO, type PlanRow, type BaselineEntry, type BikeRow, type Checkin, type GearTaskState, type MealRow, type OnboardingRow, type PackingState, type PlanOverrideRow, type ServiceLogRow, type SessionLog, type SyncTable, type SyncedRow, type TestResult } from './index'
 import { addDays } from '@/engine/dates'
-import { ONBOARDING_ID, ONBOARDING_SCHEMA_VERSION, type AthleteProfile, type Draft } from '@/engine/onboarding'
+import { ONBOARDING_ID, ONBOARDING_SCHEMA_VERSION, planInputs, type AthleteProfile, type Draft } from '@/engine/onboarding'
+import { GENERATOR_VERSION, programStart } from '@/engine/generator'
 import { swapToUndo } from '@/engine/rules'
 import { healthPatch, sourcesAfterManual, type HealthDay } from '@/day/health'
 
@@ -208,4 +209,25 @@ export async function saveOnboardingDraft(draft: Draft, step: string): Promise<O
 export async function completeOnboarding(profile: AthleteProfile): Promise<OnboardingRow> {
   const row = (await db.onboarding.get(ONBOARDING_ID)) ?? blankOnboarding()
   return putSynced('onboarding', { ...row, status: 'done', step: null, draft: null, data: profile, schema_version: profile.version, consent_health_at: profile.consent.at, consent_version: profile.consent.version, completed_at: row.completed_at && row.status === 'done' ? row.completed_at : nowISO(), deleted_at: null })
+}
+
+// ---------------------------------------------------------------- plan z generatora (docs/32 § 7)
+export const PLAN_ID = 'current'
+
+/**
+ * Zapis parametrów planu z profilu onboardingu. Program nie jest zapisywany – `generatedProgram` liczy go z wiersza
+ * na każdym urządzeniu tak samo (ta sama wersja generatora i ta sama data `generated_for`).
+ */
+export async function savePlanFromProfile(profile: AthleteProfile, today: string, source: PlanRow['source']): Promise<PlanRow> {
+  const existing = await db.plans.get(PLAN_ID)
+  return putSynced('plans', {
+    ...(existing ?? { id: PLAN_ID, updated_at: nowISO() }),
+    inputs: planInputs(profile, today),
+    extras: { weight_kg: profile.body.weight_kg, hr_max_bpm: profile.measure.hr_max_bpm, longest_ride_min: profile.current.longest_ride_min },
+    generator_version: GENERATOR_VERSION,
+    program_start: programStart(today),
+    generated_for: today,
+    source,
+    deleted_at: null,
+  })
 }

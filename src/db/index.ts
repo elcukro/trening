@@ -1,6 +1,7 @@
 import Dexie, { type EntityTable } from 'dexie'
 import type { Settings } from '@/engine/schema'
-import type { AthleteProfile, Draft } from '@/engine/onboarding'
+import type { AthleteProfile, Draft, PlanInputs } from '@/engine/onboarding'
+import type { GeneratorExtras } from '@/engine/generator'
 
 /**
  * Lokalna baza (IndexedDB) – źródło prawdy dla UI, działa offline.
@@ -250,6 +251,20 @@ export interface OnboardingRow extends SyncedRow {
   completed_at: string | null
 }
 
+/**
+ * Plan z generatora (docs/32 § 7): parametry, nie gotowy program – aplikacja regeneruje go deterministycznie
+ * (`generatedProgram` w src/data/generated.ts). Jeden aktywny wiersz na konto, `id` = 'current'.
+ */
+export interface PlanRow extends SyncedRow {
+  inputs: PlanInputs
+  extras: GeneratorExtras
+  generator_version: string
+  program_start: string
+  /** „dziś” użyte przy generowaniu */
+  generated_for: string
+  source: 'onboarding' | 'change' | 'coach'
+}
+
 export interface OutboxItem {
   seq?: number
   table: SyncTable
@@ -257,7 +272,7 @@ export interface OutboxItem {
   ts: string
 }
 
-export const SYNC_TABLES = ['bikes', 'checkins', 'session_logs', 'test_results', 'plan_overrides', 'gear_task_state', 'service_log', 'packing_state', 'strava_activities', 'baseline_entries', 'wahoo_pushes', 'wahoo_workouts', 'meals', 'onboarding'] as const
+export const SYNC_TABLES = ['bikes', 'checkins', 'session_logs', 'test_results', 'plan_overrides', 'gear_task_state', 'service_log', 'packing_state', 'strava_activities', 'baseline_entries', 'wahoo_pushes', 'wahoo_workouts', 'meals', 'onboarding', 'plans'] as const
 /** Tabele, do których klient nie wstawia wierszy – tylko aktualizuje wybrane pola (RLS: update own). */
 export const UPDATE_ONLY_TABLES: Record<string, string[]> = { strava_activities: ['date', 'is_ride', 'updated_at'], wahoo_pushes: [], wahoo_workouts: [] }
 export type SyncTable = (typeof SYNC_TABLES)[number]
@@ -265,7 +280,7 @@ export type SyncTable = (typeof SYNC_TABLES)[number]
  * Tabele z deterministycznym `id` (np. identyfikator zadania) – klucz główny na serwerze to (user_id, id),
  * żeby dwa konta mogły odhaczyć to samo zadanie bez kolizji wierszy.
  */
-export const USER_SCOPED_ID_TABLES: readonly SyncTable[] = ['gear_task_state', 'packing_state', 'onboarding']
+export const USER_SCOPED_ID_TABLES: readonly SyncTable[] = ['gear_task_state', 'packing_state', 'onboarding', 'plans']
 
 export class TreningDB extends Dexie {
   settings!: EntityTable<SettingsRow, 'key'>
@@ -285,6 +300,7 @@ export class TreningDB extends Dexie {
   wahoo_workouts!: EntityTable<WahooWorkout, 'id'>
   meals!: EntityTable<MealRow, 'id'>
   onboarding!: EntityTable<OnboardingRow, 'id'>
+  plans!: EntityTable<PlanRow, 'id'>
   outbox!: EntityTable<OutboxItem, 'seq'>
 
   constructor() {
@@ -325,6 +341,9 @@ export class TreningDB extends Dexie {
     })
     this.version(10).stores({
       onboarding: 'id, updated_at',
+    })
+    this.version(11).stores({
+      plans: 'id, updated_at',
     })
   }
 }

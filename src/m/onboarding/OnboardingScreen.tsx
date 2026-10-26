@@ -2,7 +2,7 @@ import { useMemo, useRef, useState } from 'react'
 import { useLiveQuery } from 'dexie-react-hooks'
 import { useNavigate } from 'react-router'
 import { db, type OnboardingRow } from '@/db'
-import { completeOnboarding, saveOnboardingDraft, softDelete } from '@/db/repo'
+import { completeOnboarding, saveOnboardingDraft, savePlanFromProfile, softDelete } from '@/db/repo'
 import { useEngine } from '@/app/useSettings'
 import { useToast } from '@/components/Toast'
 import { ONBOARDING_ID, SKIPPABLE, STEPS, checks, finalize, firstIncomplete, healthScreen, nextStep, prevStep, stepNumber, stepValid, type AthleteProfile, type Draft, type Step } from '@/engine/onboarding'
@@ -105,6 +105,12 @@ function Flow({ row, settings, home, me }: { row: OnboardingRow | null; settings
       const patch: Partial<Settings> = {}
       if (r.profile.body.height_cm != null && r.profile.body.height_cm !== settings.height_cm) patch.height_cm = r.profile.body.height_cm
       if (r.profile.body.birth_date && r.profile.body.birth_date !== settings.birth_date) patch.birth_date = r.profile.body.birth_date
+      // nowe konto (bez wiersza `legacy`) albo konto już na planie z generatora: zapis parametrów planu
+      // i przełączenie profilu na program `generated` (docs/32 § 7); konta z programami z `data/` zostają przy swoich
+      if (row?.status !== 'legacy' || settings.program_id === 'generated') {
+        await savePlanFromProfile(r.profile, today, editing ? 'change' : 'onboarding')
+        if (settings.program_id !== 'generated') patch.program_id = 'generated'
+      }
       if (Object.keys(patch).length) await engine.settingsApi.update(patch)
       haptic.success()
       if (editing) {

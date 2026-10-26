@@ -149,6 +149,27 @@ test('pełny onboarding: kroki, czerwona flaga, podsumowanie z poprawką, zapis,
 
   await page.getByRole('button', { name: 'Do aplikacji' }).click()
   await expect(page).toHaveURL(/\/m$/)
+  // konto dostało plan z generatora (docs/32 § 7): wiersz `plans` i program `generated` w profilu, a Dziś pokazuje jego treść
+  const plan = await page.evaluate(
+    () =>
+      new Promise<{ plan?: Record<string, unknown>; program_id?: string }>((resolve, reject) => {
+        const open = indexedDB.open('trening')
+        open.addEventListener('error', () => reject(open.error))
+        open.addEventListener('success', () => {
+          const tx = open.result.transaction(['plans', 'settings'])
+          const a = tx.objectStore('plans').get('current')
+          const b = tx.objectStore('settings').get('user')
+          tx.addEventListener('complete', () => resolve({ plan: a.result as Record<string, unknown>, program_id: (b.result as { value?: { program_id?: string } })?.value?.program_id }))
+          tx.addEventListener('error', () => reject(tx.error))
+        })
+      }),
+  )
+  expect(plan.program_id).toBe('generated')
+  expect(plan.plan).toMatchObject({ id: 'current', source: 'onboarding', generated_for: '2026-10-26', program_start: '2026-10-26' })
+  await page.goto('/m/dzien/2026-11-01?today=2026-10-26')
+  await expect(page.getByRole('heading', { name: 'Niedziela' })).toBeVisible()
+  await expect(page.getByText('Test FTP 20 min (moc)')).toBeVisible()
+  await shot(page, '13-plan-dzien-testu')
   await page.goto('/m/ja?today=2026-10-26')
   const entry = page.getByRole('button', { name: /Zmień swoje potrzeby/ })
   await expect(entry).toContainText('160 km')

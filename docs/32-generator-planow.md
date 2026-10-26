@@ -149,9 +149,9 @@ nagłówek z liczbą tygodni i docelowymi godzinami, lista pierwszego tygodnia (
 teście), lista faz z długościami, uwagi generatora (`notes`, np. cel dalej niż rok). Bez profilu w stanie (odświeżenie)
 zostaje dotychczasowy komunikat. Program **nie jest jeszcze zapisywany ani przypisywany do konta** – § 7.
 
-## 7. Gdzie liczyć i przechowywać program konta – opcje i rekomendacja
+## 7. Gdzie liczyć i przechowywać program konta – decyzja i wdrożenie (26.10.2026)
 
-Dziś `settings.program_id` wskazuje plik z `data/` (`src/data/program.ts`). Dla wygenerowanego planu są trzy drogi:
+Rozważane były trzy drogi:
 
 | | A. Liczony w aplikacji z profilu, bez zapisu | B. Liczony w aplikacji, zapisany jako wiersz | C. Liczony w Edge Function |
 |---|---|---|---|
@@ -161,22 +161,32 @@ Dziś `settings.program_id` wskazuje plik z `data/` (`src/data/program.ts`). Dla
 | maile / Edge Functions | serwer nie zna planu (migawki `email_days` wgrywa aplikacja – jak dziś) | serwer czyta wiersz | serwer ma plan |
 | koszt | zero migracji | migracja + Dexie + sync | dubluje silnik w Deno (odrzucone już przy Wahoo, docs/11) |
 
-**Rekomendacja: B w wariancie „parametry, nie JSON”.** Nowa tabela `plans` (jeden aktywny wiersz na konto,
-`(user_id, id)`, `USER_SCOPED_ID_TABLES`): `inputs` (`PlanInputs` + masa/HRmax/najdłuższa jazda), `generator_version`,
-`program_start`, `today` użyte przy generowaniu, `created_at`, `source` (`onboarding` / `change` / `coach`).
-Aplikacja regeneruje program deterministycznie z wiersza (kilka ms, wynik w pamięci jak `loadProgram`), więc:
-- plan jest stabilny (wersja generatora zapisana z wierszem; nowa wersja = propozycja „przelicz plan”, nie cicha zmiana);
-- wiersz jest mały (kilobajt), synchronizuje się jak reszta i działa offline;
-- „Coś się zmieniło” (etap 8) to nowy wiersz z nowym `today` – stare tygodnie zostają w historii;
-- `program_id = 'generated'` w profilu kieruje `useSettings` do rejestru dynamicznego (`loadProgram` dostaje wiersz
-  `plans`), reszta kodu bez zmian;
-- maile: `email_days` wgrywa aplikacja (jak dziś), a `strava-webhook`/`week_facts` czytają migawki – serwer nie musi
-  liczyć planu. Gdyby kiedyś musiał, ten sam moduł TS da się zbudować do Deno (czysty TS bez zależności).
+**Wdrożone: B w wariancie „parametry, nie JSON”** (decyzja użytkownika 26.10.2026).
 
-Do zrobienia po decyzji (nie w tej zmianie): migracja `plans`, Dexie v11, wpis w `SYNC_TABLES`, zapis wiersza po
-„Zapisz” w onboardingu, `program_id: 'generated'` w profilu nowego konta, obsługa w `useSettings`/`loadProgram`,
-pokazanie planu w zakładce Plan, przycisk „Przelicz plan” przy nowej wersji generatora. Migracja na produkcję tylko po
-zgodzie użytkownika.
+- **Tabela `plans`** (migracja `20261026210000_plans.sql`, Dexie v11, `SYNC_TABLES` + `USER_SCOPED_ID_TABLES`): jeden
+  aktywny wiersz na konto, `id = 'current'`; kolumny `inputs` (`PlanInputs`), `extras` (masa, HRmax, najdłuższa jazda),
+  `generator_version`, `program_start`, `generated_for` („dziś” użyte przy generowaniu), `source`
+  (`onboarding` / `change` / `coach`). LWW przez `lww_guard`, RLS „all own”. **Migracja nie jest jeszcze wgrana na
+  produkcję** – `supabase db push` dopiero po zgodzie użytkownika; do tego czasu wiersz żyje lokalnie (Dexie) i czeka
+  w outboxie.
+- **Regeneracja w aplikacji** (`src/data/generated.ts`): `generatedProgram(row)` liczy program deterministycznie
+  z wiersza (pamięć podręczna po `updated_at`), `resolveProgram(programId, row)` daje program dla identyfikatora
+  z profilu: `generated` → z wiersza, inaczej plik z `data/`. `generated` bez wiersza spada na program domyślny.
+- **`useSettings`** czyta wiersz `plans` jednym zapytaniem na żywo i podaje `program`, `plan` i `plan_outdated`
+  (wiersz liczony inną wersją generatora – do propozycji „przelicz plan”, jeszcze bez przycisku). `useEngine` bierze
+  program z `useSettings`, nie z `loadProgram`. Nowy stan oczekiwania `waiting: 'plan'` („Pobieram Twój plan…”): profil
+  wskazuje `generated`, a wiersza jeszcze nie ma i tabela `plans` nie przeszła pełnego pobrania (kv `synced_tables`).
+- **Onboarding** (`OnboardingScreen.save`): po `completeOnboarding` konto **bez wiersza `legacy`** (czyli nowe) albo
+  konto już na `generated` zapisuje parametry planu (`savePlanFromProfile`, źródło `onboarding` przy pierwszym zapisie,
+  `change` przy poprawkach z Ja) i dostaje `program_id: 'generated'` w profilu. Dwa istniejące konta (wiersz `legacy`)
+  zostają przy programach alpejskim i FTP 300 – ich poprawki potrzeb nie zmieniają planu.
+- Ustawienia → „Program treningowy” pokazuje pozycję `generated` z nazwą planu, gdy konto na nim jest; przełączenie na
+  program z `data/` działa jak dawniej (i z powrotem tylko przez onboarding).
+- E2E: `onboarding.spec.ts` sprawdza wiersz `plans`, `program_id` i dzień testu kalibracyjnego w Dziś po zapisie.
+
+Do zrobienia później: przycisk „Przelicz plan” przy `plan_outdated`, „Coś się zmieniło” jako nowy wiersz z nowym
+`generated_for` (etap 8), kasowanie wiersza przy wycofaniu zgody w onboardingu (dziś profil zostaje na `generated`
+i spada na program domyślny).
 
 ## 8. Czego generator jeszcze nie robi
 

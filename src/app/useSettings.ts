@@ -1,7 +1,9 @@
 import React, { createContext, createElement, useCallback, useContext, useMemo, type ReactNode } from 'react'
 import { useLiveQuery } from 'dexie-react-hooks'
-import { db, type Checkin, type TestResult } from '@/db'
-import { DEFAULT_PROGRAM_ID, loadProgram } from '@/data/program'
+import { db, type Checkin, type PlanRow, type TestResult } from '@/db'
+import { DEFAULT_PROGRAM_ID } from '@/data/program'
+import { GENERATED_PROGRAM_ID, planOutdated, resolveProgram } from '@/data/generated'
+import { SYNCED_TABLES_KEY } from '@/sync/sync'
 import type { Program } from '@/engine/schema'
 import { useAuth } from '@/sync/auth'
 import { useSyncRunner } from '@/sync/useSync'
@@ -24,7 +26,11 @@ export interface SettingsApi {
    */
   ready: boolean
   /** dlaczego jeszcze nie `ready` – do ekranu oczekiwania */
-  waiting: 'settings' | 'session' | 'profile' | null
+  waiting: 'settings' | 'session' | 'profile' | 'plan' | null
+  /** wiersz planu z generatora (docs/32 § 7); `null` = brak, `undefined` = jeszcze nie wczytany */
+  plan: PlanRow | null | undefined
+  /** plan liczony starszą wersją generatora – warto zaproponować przeliczenie */
+  plan_outdated: boolean
   sync: SyncStatus
   update: (patch: Partial<Settings>) => Promise<void>
   reset: () => Promise<void>
@@ -61,7 +67,9 @@ function useSettingsSource(): SettingsApi {
   // identyfikator programu czytamy z zapisu użytkownika, a nie z domyślnych ustawień programu –
   // inaczej nie dałoby się wyjść z programu domyślnego
   const programId = (row?.value?.program_id as string | undefined) ?? DEFAULT_PROGRAM_ID
-  const program = loadProgram(programId)
+  // plan z generatora: program liczony z wiersza `plans` (regeneracja deterministyczna, pamięć podręczna po `updated_at`)
+  const plan = useLiveQuery(async () => (await db.plans.get('current')) ?? null, [], undefined)
+  const program = resolveProgram(programId, plan)
   const settings = useMemo<Settings>(() => ({ ...program.default_settings, ...row?.value, program_id: programId }), [program, row, programId])
   const update = useCallback(
     async (patch: Partial<Settings>) => {
@@ -69,7 +77,7 @@ function useSettingsSource(): SettingsApi {
       const current = row?.value ?? {}
       // znacznik tylko dla pól, które naprawdę się zmieniły – zapis całego formularza nie może „odświeżyć”
       // pól, których użytkownik nie ruszał, bo nadpisałby nowszą wartość z innego urządzenia (docs/18, krok 5)
-      const effective = { ...loadProgram((current.program_id as string | undefined) ?? DEFAULT_PROGRAM_ID).default_settings, ...current }
+      const effective = { ...resolveProgram((current.program_id as string | undefined) ?? DEFAULT_PROGRAM_ID, await db.plans.get('current')).default_settings, ...current }
       const keys = changedKeys(current, effective, patch) as (keyof Settings)[]
       if (keys.length === 0) return
       const now = new Date().toISOString()
@@ -93,8 +101,15 @@ function useSettingsSource(): SettingsApi {
   // (albo na błąd – wtedy ekran oczekiwania pokazuje przyczynę zamiast cudzych wartości domyślnych)
   const freshAccount = loaded && row === null && !!auth.session
   const firstPullPending = freshAccount && sync.last_sync === null && sync.state !== 'error' && sync.state !== 'disabled' && sync.state !== 'offline'
-  const waiting: SettingsApi['waiting'] = !loaded ? 'settings' : auth.loading ? 'session' : firstPullPending ? 'profile' : null
-  return { settings, program, loaded, ready: waiting === null, waiting, sync, update, reset }
+  // profil wskazuje plan z generatora, ale wiersza jeszcze nie ma: czekamy na pełne pobranie tabeli `plans`
+  // (świeże urządzenie); po pobraniu bez wiersza spadamy na program domyślny – onboarding pokaże się sam
+  const plansSynced = useLiveQuery(async () => {
+    const v = (await db.kv.get(SYNCED_TABLES_KEY))?.value
+    return Array.isArray(v) && v.includes('plans')
+  }, [], false)
+  const planPending = programId === GENERATED_PROGRAM_ID && plan === null && !!auth.session && !plansSynced && sync.state !== 'error' && sync.state !== 'disabled' && sync.state !== 'offline'
+  const waiting: SettingsApi['waiting'] = !loaded || plan === undefined ? 'settings' : auth.loading ? 'session' : firstPullPending ? 'profile' : planPending ? 'plan' : null
+  return { settings, program, loaded, ready: waiting === null, waiting, plan, plan_outdated: planOutdated(plan), sync, update, reset }
 }
 
 export interface Engine {
@@ -108,8 +123,7 @@ export interface Engine {
 /** Kontekst silnika zmemoizowany po ustawieniach. */
 export function useEngine(): Engine {
   const settingsApi = useSettings()
-  const program = loadProgram(settingsApi.settings.program_id)
-  const { settings } = settingsApi
+  const { settings, program } = settingsApi
   const testRows = useLiveQuery(() => db.test_results.where('date').above('').toArray(), [], [] as TestResult[])
   const tests = useMemo(() => testRows.filter((t) => !t.deleted_at && (t.lthr_bpm || t.ftp_w)).map((t) => ({ date: t.date, lthr_bpm: t.lthr_bpm ?? null, ftp_w: t.ftp_w ?? null })), [testRows])
   // ostatnia zmierzona masa – z niej program z `weight_based` dobiera deficyt
