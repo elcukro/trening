@@ -317,6 +317,7 @@ function ProgramCard() {
           value={current}
           onChange={(e) => void toast.run('Przełączam program…', () => engine.settingsApi.update({ program_id: e.target.value }), () => 'Program przełączony')}
         >
+          {current === 'generated' && <option value="generated">{program.meta.name} (z Twoich potrzeb)</option>}
           {programOptions().map((p) => (
             <option key={p.id} value={p.id}>
               {p.name}
