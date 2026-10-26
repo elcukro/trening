@@ -25,8 +25,7 @@ import {
   type LoginTicket,
 } from '../_shared/strava_login.ts'
 
-// ten sam zakres co integracja (strava-oauth): gdy zgoda już jest, Strava wraca od razu, a odświeżone tokeny
-// zastępują stare bez zawężania uprawnień
+// ten sam zakres co integracja (strava-oauth) – odświeżone tokeny zastępują stare bez zawężania uprawnień
 const SCOPE = 'read,activity:read_all,activity:write'
 
 function functionsBase(): string {
@@ -48,7 +47,9 @@ Deno.serve(async (req) => {
       client_id: env('STRAVA_CLIENT_ID'),
       redirect_uri: `${functionsBase()}/strava-login/callback`,
       response_type: 'code',
-      approval_prompt: 'auto',
+      // zawsze ekran zgody Stravy: logowania nie da się dokończyć po cichu. Inaczej obca aplikacja z przejętym
+      // schematem trening:// mogłaby sama zacząć logowanie ze swoim weryfikatorem i odebrać bilet (docs/28 § 1)
+      approval_prompt: 'force',
       scope: SCOPE,
       state: await sign(JSON.stringify(state)),
     })

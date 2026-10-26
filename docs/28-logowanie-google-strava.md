@@ -39,7 +39,7 @@ Supabase nie ma dostawcy Strava, więc:
 3. `callback`: wymiana kodu → `athlete.id` → konto, które ma już połączoną Stravę (`integration_tokens`,
    `provider = 'strava'`). Brak konta → powrót z `#strava_error=not_linked` i komunikatem „Zaloguj się kodem z maila,
    a potem połącz Stravę w Ustawieniach → Integracje”. Jest konto → odświeżone tokeny Stravy zapisane (ten sam zakres
-   co integracja, więc przy istniejącej zgodzie Strava nie pyta drugi raz) i powrót z **biletem** `#strava_ticket`
+   co integracja) i powrót z **biletem** `#strava_ticket`
    (podpis HMAC: konto + wyzwanie, ważny 2 min).
 4. Aplikacja wysyła bilet **z weryfikatorem** (`POST strava-login {action:'redeem'}`). Funkcja sprawdza podpis, termin
    i `SHA-256(weryfikator) = wyzwanie`, po czym `auth.admin.generateLink({ type: 'magiclink' })` – **bez wysyłki maila** –
@@ -51,6 +51,15 @@ przechodzi przez adres powrotu, nie wystarcza do zalogowania – bilet bez weryf
 nie opuszcza aplikacji przed wymianą. Parametry są we fragmencie adresu (nie trafiają do logów serwera ani `Referer`),
 aplikacja usuwa je z adresu zaraz po odczytaniu. Stan logowania i bilet mają pole `p`, więc nie da się ich podać do
 callbacku integracji (`strava-oauth` odrzuca podpisane dane z `p`) ani odwrotnie.
+
+**Zawsze ekran zgody Stravy (`approval_prompt=force`)**: weryfikator chroni przed kimś, kto tylko podsłuchał powrót,
+ale nie przed kimś, kto sam zaczął logowanie ze swoim weryfikatorem. W przeglądarce to nic nie daje – bilet wraca
+tylko na nasze domeny, czyli do przeglądarki ofiary. Na telefonie obca aplikacja, która zarejestruje schemat
+`trening://`, mogłaby otworzyć `start?return=trening://auth` i – gdyby Strava przy istniejącej zgodzie wracała po
+cichu – odebrać bilet konta. Dlatego każde logowanie pokazuje stronę „Autoryzuj” Stravy (jedno dotknięcie więcej),
+tak jak Google pokazuje wybór konta. Wiązanie ciasteczkiem nic tu nie zmienia (taka aplikacja prowadzi tę samą
+przeglądarkę od `start`). Pełne powiązanie z aplikacją dają dopiero Universal Links (płatne konto Apple) – wtedy
+powrót przejdzie na `https://trening.felsztukier.pl/…`, którego inna aplikacja nie przejmie.
 
 Kod: `supabase/functions/strava-login/index.ts`, czysta logika `supabase/functions/_shared/strava_login.ts`
 (testy `src/engine/__tests__/strava_login.test.ts`), klient `src/sync/oauth.ts` i `src/sync/authReturn.ts`
@@ -134,7 +143,7 @@ pojawi się na ekranie logowania sam.
 1. Web (`https://trening.felsztukier.pl/m` w oknie prywatnym): „Zaloguj się przez Google” → konto `elcukro@gmail.com`
    → wracasz zalogowany, dane jak dotąd (w Authentication → Users przy koncie pojawia się tożsamość `google`).
 2. To samo z innym kontem Google spoza listy → „Ten adres e-mail nie ma dostępu do aplikacji”.
-3. „Zaloguj się przez Stravę” → Strava (przy istniejącej zgodzie wraca od razu) → zalogowany na konto z połączoną Stravą.
+3. „Zaloguj się przez Stravę” → strona „Autoryzuj” Stravy (za każdym razem) → zalogowany na konto z połączoną Stravą.
 4. Strava kogoś bez połączenia (albo po „Odłącz Stravę”) → komunikat „…zaloguj się kodem z maila, a potem połącz Stravę”.
 5. Symulator iOS: oba przyciski otwierają systemowe okno („Trening chce użyć … do logowania” → Kontynuuj), po
    zalogowaniu okno się zamyka i `/m` pokazuje Dziś. Zamknięcie okna = nic się nie dzieje (bez komunikatu błędu).
