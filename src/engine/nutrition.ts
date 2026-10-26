@@ -108,7 +108,7 @@ export function personalizeNutrition(n: Nutrition, policy: NutritionPolicy, inp:
   if (!wb || !n.energy.startsWith('deficit')) return n
   const d = weightBasedDeficit({ ...inp, maxKcalPerDay: wb.max_kcal_per_day, maxLossPctPerWeek: wb.max_loss_pct_per_week, sharesPerWeek: wb.deficit_shares_per_week, share: n.deficit_share ?? 1 })
   const kind = n.label.split(':')[0] ?? 'Dzień'
-  if (d.kcal < 100) return { ...n, energy: 'maintenance', label: inp.currentKg <= inp.targetKg ? `${kind}: bilans zerowy – masa docelowa osiągnięta` : `${kind}: bilans zerowy – do celu zostało niewiele` }
+  if (d.kcal < 100) return { ...n, energy: 'maintenance', deficit_kcal: 0, label: inp.currentKg <= inp.targetKg ? `${kind}: bilans zerowy – masa docelowa osiągnięta` : `${kind}: bilans zerowy – do celu zostało niewiele` }
   const fmt = (x: number) => x.toLocaleString('pl-PL', { maximumFractionDigits: 2 })
   const kgLabel = inp.targetKg.toLocaleString('pl-PL', { maximumFractionDigits: 1 })
   // punkt kontrolny ma datę w etykiecie („do 91 kg na 1.03”), cel końcowy – nie
@@ -121,6 +121,7 @@ export function personalizeNutrition(n: Nutrition, policy: NutritionPolicy, inp:
   return {
     ...n,
     energy: d.kcal >= 400 ? 'deficit_500' : 'deficit_300',
+    deficit_kcal: d.kcal,
     label: `${kind}: deficyt ok. ${d.kcal} kcal (${week})`,
   }
 }

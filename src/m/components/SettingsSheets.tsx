@@ -31,6 +31,8 @@ function NumbersSheetLoaded({ onClose }: { onClose: () => void }) {
   const [ftp, setFtp] = useState(String(settings.ftp_w_estimate))
   const [lthr, setLthr] = useState(settings.lthr_bpm != null ? String(settings.lthr_bpm) : '')
   const [power, setPower] = useState(settings.power_meter)
+  const [height, setHeight] = useState(settings.height_cm != null ? String(settings.height_cm) : '')
+  const [born, setBorn] = useState(settings.birth_year != null ? String(settings.birth_year) : '')
   const [busy, setBusy] = useState(false)
 
   async function save() {
@@ -38,7 +40,14 @@ function NumbersSheetLoaded({ onClose }: { onClose: () => void }) {
     try {
       const f = Number(ftp)
       const l = Number(lthr)
+      const intIn = (v: string, lo: number, hi: number, old: number | null | undefined) => {
+        if (!v.trim()) return null
+        const n = Math.round(Number(v))
+        return Number.isFinite(n) && n >= lo && n <= hi ? n : (old ?? null)
+      }
       await engine.settingsApi.update({
+        height_cm: intIn(height, 120, 230, settings.height_cm),
+        birth_year: intIn(born, 1920, 2020, settings.birth_year),
         ftp_w_estimate: Number.isFinite(f) && f > 0 ? Math.round(f) : settings.ftp_w_estimate,
         lthr_bpm: lthr.trim() && Number.isFinite(l) && l > 0 ? Math.round(l) : null,
         power_meter: power,
@@ -62,6 +71,18 @@ function NumbersSheetLoaded({ onClose }: { onClose: () => void }) {
             <span className="m-eyebrow block">Tętno progowe</span>
             <input className="m-big mt-1 w-full bg-transparent outline-none" inputMode="numeric" placeholder="—" value={lthr} onChange={(e) => setLthr(e.target.value)} aria-label="Tętno progowe" />
             <span className="m-foot m-dim">bpm</span>
+          </label>
+        </div>
+        <div className="grid grid-cols-2 gap-3">
+          <label className="m-list p-3">
+            <span className="m-eyebrow block">Wzrost</span>
+            <input className="m-big mt-1 w-full bg-transparent outline-none" inputMode="numeric" placeholder="—" value={height} onChange={(e) => setHeight(e.target.value)} aria-label="Wzrost w cm" />
+            <span className="m-foot m-dim">cm</span>
+          </label>
+          <label className="m-list p-3">
+            <span className="m-eyebrow block">Rok urodzenia</span>
+            <input className="m-big mt-1 w-full bg-transparent outline-none" inputMode="numeric" placeholder="—" value={born} onChange={(e) => setBorn(e.target.value)} aria-label="Rok urodzenia" />
+            <span className="m-foot m-dim">do budżetu kcal</span>
           </label>
         </div>
         <div className="m-list">

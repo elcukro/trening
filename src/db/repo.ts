@@ -1,4 +1,4 @@
-import { db, newId, nowISO, type BaselineEntry, type BikeRow, type Checkin, type GearTaskState, type PackingState, type PlanOverrideRow, type ServiceLogRow, type SessionLog, type SetLog, type SyncTable, type SyncedRow, type TestResult } from './index'
+import { db, newId, nowISO, type BaselineEntry, type BikeRow, type Checkin, type GearTaskState, type MealRow, type PackingState, type PlanOverrideRow, type ServiceLogRow, type SessionLog, type SetLog, type SyncTable, type SyncedRow, type TestResult } from './index'
 import { addDays } from '@/engine/dates'
 import { swapToUndo } from '@/engine/rules'
 
@@ -172,4 +172,30 @@ export async function resetPacking(tripKey: string): Promise<void> {
 // ---------------------------------------------------------------- punkt wyjścia
 export async function addBaselineEntry(entry: Omit<BaselineEntry, 'id' | 'updated_at'>): Promise<BaselineEntry> {
   return putSynced('baseline_entries', { id: newId(), updated_at: nowISO(), ...entry })
+}
+
+// ---------------------------------------------------------------- posiłki (docs/25)
+export async function addMeal(meal: Omit<MealRow, 'id' | 'updated_at'> & { id?: string }): Promise<MealRow> {
+  return putSynced('meals', { ...meal, id: meal.id ?? newId(), updated_at: nowISO() })
+}
+
+export async function updateMeal(id: string, patch: Partial<Omit<MealRow, 'id'>>): Promise<MealRow | undefined> {
+  const row = await db.meals.get(id)
+  if (!row) return undefined
+  return putSynced('meals', { ...row, ...patch })
+}
+
+export async function deleteMeal(id: string): Promise<void> {
+  await softDelete('meals', id)
+}
+
+/** Przywraca posiłek usunięty przez „Cofnij”. */
+export async function restoreMeal(id: string): Promise<void> {
+  const row = await db.meals.get(id)
+  if (row) await putSynced('meals', { ...row, deleted_at: null })
+}
+
+export async function mealsFor(date: string): Promise<MealRow[]> {
+  const rows = await db.meals.where('date').equals(date).toArray()
+  return rows.filter((m) => !m.deleted_at).toSorted((a, b) => (a.time ?? '').localeCompare(b.time ?? ''))
 }

@@ -31,6 +31,8 @@ type Form = {
   gym_a: Settings['gym_days']['A']
   gym_enabled: boolean
   volume_scale: string
+  height_cm: string
+  birth_year: string
 }
 
 type FieldErrors = Partial<Record<keyof Form, string>>
@@ -51,6 +53,8 @@ function toForm(s: Settings): Form {
     gym_a: s.gym_days.A,
     gym_enabled: s.gym_enabled,
     volume_scale: String(s.volume_scale),
+    height_cm: s.height_cm != null ? String(s.height_cm) : '',
+    birth_year: s.birth_year != null ? String(s.birth_year) : '',
   }
 }
 
@@ -59,6 +63,8 @@ function num(v: string): number | null {
   const n = Number(v.replace(',', '.'))
   return Number.isFinite(n) ? n : null
 }
+
+const intOrNull = (n: number | null): number | null => (n == null || Number.isNaN(n) ? null : Math.round(n))
 
 /** Walidacja: błędy przypisane do pól (wyświetlane pod polem). */
 function fromForm(f: Form, base: Settings): { settings: Settings; errors: FieldErrors } {
@@ -93,6 +99,8 @@ function fromForm(f: Form, base: Settings): { settings: Settings; errors: FieldE
     gym_days: { ...base.gym_days, A: f.gym_a, C: f.gym_a },
     gym_enabled: f.gym_enabled,
     volume_scale: Math.round(req('volume_scale', f.volume_scale, 0.7, 1) * 100) / 100,
+    height_cm: intOrNull(opt('height_cm', f.height_cm, 120, 230)),
+    birth_year: intOrNull(opt('birth_year', f.birth_year, 1920, 2020)),
   }
   return { settings, errors }
 }
@@ -180,6 +188,8 @@ function SettingsForm({ engine, saved, setSaved }: { engine: ReturnType<typeof u
                 {numField('ftp_w_estimate', 'FTP szacunek (W)', 'numeric')}
                 {numField('ftp_w_goal', 'Cel FTP (W)', 'numeric')}
                 {numField('bike_and_kit_kg', 'Rower + bagaż (kg)', 'decimal', 'do kalkulatora podjazdu')}
+                {numField('height_cm', 'Wzrost (cm)', 'numeric', 'do budżetu kcal')}
+                {numField('birth_year', 'Rok urodzenia', 'numeric', 'do budżetu kcal')}
               </div>
             </div>
             <CardSection>

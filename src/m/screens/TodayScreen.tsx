@@ -13,6 +13,11 @@ import { minutes, num } from '@/lib/format'
 import { DAY_TYPE_LABEL } from '@/lib/labels'
 import { Btn, Card, Group, Row, Screen } from '../components/Chrome'
 import { CheckinSheet } from '../components/CheckinSheet'
+import { FoodCard } from '../components/FoodCard'
+import { MealSheet } from '../components/MealSheet'
+import { NumbersSheet } from '../components/SettingsSheets'
+import { useMeals } from '@/day/useMeals'
+import type { MealRow } from '@/db'
 import { RpeRow, Stat, Targets, TONE_COLOR } from '../components/Bits'
 import { dayColor } from '../dayColor'
 import { useLastRide, useWeekState } from '../useWeek'
@@ -38,7 +43,9 @@ export function TodayScreen() {
   const toast = useToast()
   const navigate = useNavigate()
   const openCoach = useOpenCoach()
-  const [sheet, setSheet] = useState<'checkin' | null>(null)
+  const [sheet, setSheet] = useState<'checkin' | 'meal' | 'numbers' | null>(null)
+  const [openMeal, setOpenMeal] = useState<MealRow | undefined>(undefined)
+  const food = useMeals(date, day, d)
   const brief = useBriefing(day, d.view.overrides.some((o) => o.kind === 'indoor'))
   const activity = d.activities[0]
   const score = useRideScore(activity, day, d.ftp)
@@ -101,6 +108,22 @@ export function TodayScreen() {
 
       {day && isToday && <WeekStrip week={week} today={today} compact />}
 
+      {day && food.enabled && (
+        <FoodCard
+          food={food}
+          label={day.nutrition.label}
+          onAdd={() => {
+            setOpenMeal(undefined)
+            setSheet('meal')
+          }}
+          onOpen={(m) => {
+            setOpenMeal(m)
+            setSheet('meal')
+          }}
+          onProfile={() => setSheet('numbers')}
+        />
+      )}
+
       {day && (
         <Group>
           <Row title="Żywienie" sub={day.nutrition.label} value={`${day.protein_g} g białka`} icon={<img src={ART.scale} alt="" width={28} height={28} className="h-7 w-7 object-contain" />} />
@@ -117,6 +140,8 @@ export function TodayScreen() {
         </Group>
       )}
 
+      {sheet === 'meal' && day && <MealSheet key={openMeal?.id ?? 'new'} date={date} meal={openMeal} proteinTarget={day.protein_g} onClose={() => setSheet(null)} />}
+      {sheet === 'numbers' && <NumbersSheet onClose={() => setSheet(null)} />}
       {sheet === 'checkin' && <CheckinSheet checkin={d.checkin} lastWeight={d.lastWeight} onClose={() => setSheet(null)} onSave={d.saveCheckin} />}
     </Screen>
   )

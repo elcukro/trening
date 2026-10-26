@@ -21,6 +21,8 @@ export interface Nutrition {
   post_workout?: string | null
   /** udział w tygodniowym deficycie (tylko programy z `weight_based`) */
   deficit_share?: number
+  /** deficyt dnia w kcal policzony z masy (`personalizeNutrition`); brak = wg `energy` (docs/25 § 4.2) */
+  deficit_kcal?: number
 }
 
 export interface BikeDay {

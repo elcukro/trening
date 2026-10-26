@@ -159,3 +159,22 @@ przepisywanie tekstu, sprawdzimy na pierwszych produktach. Skrypt i dane: scratc
 4. **Produkty z etykietą** (26.10.2026): zdjęcie tabeli wartości odżywczych → model przepisuje wartości na 100 g/ml, ilość
    podaje zawodnik, kcal liczy kod (§ 3 „Produkt z etykietą”).
 3. Miniatur zdjęć nie zapisujemy (prywatność); drugie konto dostaje funkcję przez przełącznik `diet_enabled`, domyślnie wyłączony.
+
+## 8. Stan wdrożenia
+
+**Beta 1 – wdrożona 26.10.2026.**
+- Dane: migracja `20261026120000_meals.sql` (tabela `meals`: RLS „all own”, `lww_guard`, `revoke anon`; kolumny profilu
+  `height_cm`, `birth_year`, `diet_enabled`), Dexie v9 (`meals`, `MealRow`/`MealLabel`), repo `addMeal/updateMeal/deleteMeal/restoreMeal/mealsFor`.
+- Silnik: `src/engine/intake.ts` (`bmr`, `deficitKcal`, `rideKcal`, `dayIntake`, `labelTotals`, `scaleMeal`; testy `intake.test.ts`);
+  `personalizeNutrition` wystawia `Nutrition.deficit_kcal`. Energia jazdy: kJ ze Stravy (bez mocy 60 % FTP), przed jazdą plan
+  (IF z `plannedTss` × FTP × czas), dzień pominięty – 0.
+- Edge Function `meal-parse` (JWT sprawdzany w kodzie, `diet_enabled` wymagane, limity `underLimit`/`underUserDailyLimit` i wpis
+  w `ai_calls` jak `checkin-parse`; tryb JSON + jedna ponowna próba). Model z sekretu `MEAL_MODEL`, domyślnie
+  `google/gemini-3.8-flash`. Walidacja w `_shared/meal_parse.ts` (testy `meal_parse.test.ts`).
+- Klient: `src/sync/mealParse.ts` (zdjęcie → JPEG ≤ 1024 px na telefonie), `src/day/useMeals.ts`, w `/m`: `FoodCard` na Dziś
+  i `MealSheet` (aparat/galeria, 1–2 zdjęcia, notatka, podgląd z pewnością, porcja ×0,75/×1/×1,25/×2, etykieta → ilość g/ml,
+  zapis i usunięcie z „Cofnij”). Wzrost i rok urodzenia: Ustawienia → Profil oraz arkusz „Progi i miernik” w `/m`.
+- `diet_enabled` nie ma przełącznika w UI – włączane SQL-em (`update profiles set diet_enabled = true …`); włączone na koncie
+  Łukasza 26.10.2026. Bez wzrostu i roku urodzenia karta pokazuje tylko sumy.
+- E2E: `e2e/diet.spec.ts` (odpowiedź `meal-parse` podstawiona).
+- Do sprawdzenia: pierwsze 10 posiłków ręcznie (§ 7 pkt 2), odczyt etykiet na prawdziwych opakowaniach.

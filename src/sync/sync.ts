@@ -120,6 +120,9 @@ const PROFILE_MAP: [keyof Settings, string][] = [
   ['email_workout', 'email_workout'],
   ['email_weekly', 'email_weekly'],
   ['strava_write', 'strava_write'],
+  ['height_cm', 'height_cm'],
+  ['birth_year', 'birth_year'],
+  ['diet_enabled', 'diet_enabled'],
 ]
 
 const PROFILE_TEXT_KEYS = new Set(['program_start', 'trip_start', 'program_id', 'athlete_name'])

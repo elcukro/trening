@@ -188,6 +188,43 @@ export interface PackingState extends SyncedRow {
   checked: boolean
 }
 
+/** Pozycja posiłku (danie ze zdjęcia: składniki z gramami; etykieta: jeden produkt). */
+export interface MealItem {
+  name: string
+  grams: number | null
+  kcal: number
+  protein_g: number
+}
+
+/** Wartości z etykiety na 100 g / 100 ml – kcal posiłku liczy kod z ilości (`labelTotals`). */
+export interface MealLabel {
+  unit: 'g' | 'ml'
+  per_100: { kcal: number; protein_g: number | null; carbs_g: number | null; fat_g: number | null }
+  /** masa/objętość opakowania i porcji z etykiety (g albo ml) */
+  package: number | null
+  serving: number | null
+}
+
+/** Posiłek (docs/25 § 4.1). Zdjęć nie przechowujemy – tylko wynik rozpoznania po korekcie zawodnika. */
+export interface MealRow extends SyncedRow {
+  date: string
+  /** HH:MM czasu lokalnego */
+  time: string | null
+  name: string
+  kcal: number
+  protein_g: number
+  carbs_g: number | null
+  fat_g: number | null
+  items: MealItem[]
+  source: 'photo' | 'label' | 'text' | 'manual'
+  confidence: number | null
+  portion_factor: number
+  label: MealLabel | null
+  /** zjedzona ilość produktu z etykiety (g albo ml) */
+  amount: number | null
+  note: string | null
+}
+
 export interface OutboxItem {
   seq?: number
   table: SyncTable
@@ -195,7 +232,7 @@ export interface OutboxItem {
   ts: string
 }
 
-export const SYNC_TABLES = ['bikes', 'checkins', 'session_logs', 'set_logs', 'test_results', 'plan_overrides', 'gear_task_state', 'service_log', 'packing_state', 'strava_activities', 'baseline_entries', 'wahoo_pushes', 'wahoo_workouts'] as const
+export const SYNC_TABLES = ['bikes', 'checkins', 'session_logs', 'set_logs', 'test_results', 'plan_overrides', 'gear_task_state', 'service_log', 'packing_state', 'strava_activities', 'baseline_entries', 'wahoo_pushes', 'wahoo_workouts', 'meals'] as const
 /** Tabele, do których klient nie wstawia wierszy – tylko aktualizuje wybrane pola (RLS: update own). */
 export const UPDATE_ONLY_TABLES: Record<string, string[]> = { strava_activities: ['date', 'is_ride', 'updated_at'], wahoo_pushes: [], wahoo_workouts: [] }
 export type SyncTable = (typeof SYNC_TABLES)[number]
@@ -221,6 +258,7 @@ export class TreningDB extends Dexie {
   baseline_entries!: EntityTable<BaselineEntry, 'id'>
   wahoo_pushes!: EntityTable<WahooPushRow, 'id'>
   wahoo_workouts!: EntityTable<WahooWorkout, 'id'>
+  meals!: EntityTable<MealRow, 'id'>
   outbox!: EntityTable<OutboxItem, 'seq'>
 
   constructor() {
@@ -255,6 +293,9 @@ export class TreningDB extends Dexie {
     })
     this.version(8).stores({
       bikes: 'id, updated_at',
+    })
+    this.version(9).stores({
+      meals: 'id, date, updated_at',
     })
   }
 }

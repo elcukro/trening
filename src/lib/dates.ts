@@ -23,6 +23,11 @@ export function nowHour(): number {
   return new TZDate(Date.now(), TIMEZONE).getHours()
 }
 
+/** Bieżący czas w Warszawie jako HH:MM (godzina posiłku). */
+export function nowHHMM(): string {
+  return format(new TZDate(Date.now(), TIMEZONE), 'HH:mm')
+}
+
 /** Godzina lokalna w Warszawie danego dnia jako ISO w UTC (np. start treningu 6:00 na Bolcie). */
 export function localTimeISO(date: ISODate, hour = 6): string {
   const d = new Date(toUtc(date))

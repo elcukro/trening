@@ -138,6 +138,11 @@ export const SettingsSchema = z.object({
   email_weekly: z.boolean().optional(),
   /** Strava: tytuł i opis jazdy po imporcie (docs/20); wymaga zgody `activity:write` */
   strava_write: z.boolean().optional(),
+  /** Dietetyk (docs/25): wzrost i rok urodzenia do budżetu kcal; bez nich karta Jedzenie pokazuje tylko sumy */
+  height_cm: z.number().int().min(120).max(230).nullable().optional(),
+  birth_year: z.number().int().min(1920).max(2020).nullable().optional(),
+  /** karta Jedzenie i zdjęcia posiłków – beta, domyślnie wyłączona */
+  diet_enabled: z.boolean().nullable().optional(),
   units: z.string(),
   language: z.string(),
 })
