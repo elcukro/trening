@@ -33,10 +33,21 @@ Supabase), Edge Functions i wersja webowa zostają bez zmian – aplikacja iOS t
 - Sprawdzone w symulatorze: start z lokalnego bundla prosto do logowania `/m`, „Zobacz tylko plan, bez konta” → Dziś,
   zakładki Dziś/Plan/Ja, arkusz „Progi i miernik”, czat Trenera z klawiaturą, długie przytrzymanie tekstu bez menu.
 
-**Nie sprawdzone:** prawdziwy telefon (wymaga Apple ID w Xcode → Signing & Capabilities → Team; darmowe konto = instalacja
-ważna 7 dni), praca przy faktycznie odciętej sieci (symulator korzysta z sieci Maca; ścieżka bez konta nie wysyła zapytań,
-a bundle jest lokalny), logowanie kodem i synchronizacja z `capacitor://localhost` (etap 1), przybliżanie szczypnięciem,
-build Release i rozmiar aplikacji.
+**Na telefonie i z kontem (26.10.2026):** aplikacja zainstalowana na iPhonie z Xcode 27.1 (darmowe konto Apple, Personal
+Team – instalacja ważna 7 dni). **Logowanie kodem z maila działa** w aplikacji natywnej (telefon i symulator), sesja
+przetrwa przeładowanie WebView i ponowne uruchomienie aplikacji. Synchronizacja spod `capacitor://localhost` pobiera
+wszystko: check-in (waga), posiłki z budżetem, jazdy ze Stravy z notatką trenera, przeniesienia i stan „na Bolcie”, FTP
+i LTHR z testu; Edge Functions (`strava-oauth`/`wahoo-oauth` status) odpowiadają – CORS nie blokuje tego originu.
+
+**Do poprawy (etap 1):**
+- `public/pomoc.html` mówi o Safari i „Dodaj do ekranu początkowego”; „Wróć” przeładowuje aplikację i ląduje na Dziś
+  zamiast na Ja – instrukcja ma być ekranem w aplikacji (§ 2, § 3 pkt 9).
+- Kafelek formy w Ja: „Przeciążony” łamie się w środku słowa przy szerokości 390 pt (dotyczy też `/m` w webie).
+- Po przewinięciu, które zaczęło się na wierszu listy, wiersz bywa jeszcze chwilę podświetlony (stan `:active`) –
+  sprawdzić na telefonie.
+
+**Nie sprawdzone:** praca przy faktycznie odciętej sieci (symulator korzysta z sieci Maca; bundle jest lokalny),
+przybliżanie szczypnięciem, wznowienie z tła z otwartą klawiaturą na telefonie, build Release i rozmiar aplikacji.
 
 ## 1. Architektura
 
