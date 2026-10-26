@@ -31,6 +31,8 @@ h1{font-size:34px;line-height:40px;font-weight:800;letter-spacing:-.8px;margin:8
 .hero b{display:block;color:var(--label);font-size:17px;margin-bottom:2px}
 h2{font-size:12px;line-height:16px;font-weight:600;letter-spacing:.4px;text-transform:uppercase;color:var(--label-2);margin:24px 4px 8px}
 h2:first-of-type{margin-top:0}
+/* skok z chipów sekcji: nagłówek pod przyklejonym paskiem „Wróć” (44 pt + safe area) */
+h2[id]{scroll-margin-top:calc(env(safe-area-inset-top,0px) + 56px)}
 h3{font-size:17px;line-height:22px;font-weight:600;margin:16px 4px 6px}
 p{margin:0 4px 10px}
 .card{background:var(--card);border-radius:var(--radius);box-shadow:var(--shadow);padding:16px 18px;margin-bottom:12px}
@@ -40,6 +42,15 @@ p{margin:0 4px 10px}
 .row + .row{box-shadow:inset 0 .5px 0 var(--separator)}
 .row img{width:30px;height:30px;object-fit:contain;flex:none;margin-top:1px}
 .row .n{width:30px;height:30px;flex:none;border-radius:50%;background:var(--accent-soft);color:var(--accent);font-weight:700;font-size:15px;display:grid;place-items:center}
+/* numery kroków z licznika – ukryty krok (display:none) nie zabiera numeru */
+.steps{counter-reset:krok}
+.steps .row{counter-increment:krok}
+.steps .n::before{content:counter(krok)}
+/* wariant w aplikacji iOS (docs/26): klasa `in-app` na <html> – bez Safari, ekranu początkowego i pełnej aplikacji na telefonie */
+html:not(.in-app) .only-app,html.in-app .only-web{display:none!important}
+/* aplikacja ma wyłączone przewijanie dokumentu (capacitor.config.ts `ios.scrollEnabled: false`) – przewija się body */
+html.in-app{height:100%;overflow:hidden}
+html.in-app body{height:100%;overflow-y:auto;-webkit-overflow-scrolling:touch;overscroll-behavior-y:contain}
 .row div{min-width:0}
 .row b{display:block;font-weight:600}
 .row span{display:block;color:var(--label-2);font-size:15px;line-height:20px;margin-top:2px}
@@ -64,6 +75,10 @@ a{color:var(--accent)}
 .toc a{text-decoration:none;font-size:13px;font-weight:600;padding:6px 12px;border-radius:999px;background:var(--card);box-shadow:var(--shadow)}
 @media (prefers-reduced-motion:no-preference){html{scroll-behavior:smooth}}
 </style>
+<script>
+// powłoka Capacitora wstrzykuje `window.Capacitor` do każdej strony w WebView – na webie go nie ma
+if (window.Capacitor && window.Capacitor.isNativePlatform && window.Capacitor.isNativePlatform()) document.documentElement.classList.add('in-app')
+</script>
 </head>
 <body>
 
@@ -86,12 +101,12 @@ a{color:var(--accent)}
 </div>
 
 <h2 id="start">Pierwsze uruchomienie</h2>
-<div class="list">
-  <div class="row"><span class="n">1</span><div><b>Otwórz adres aplikacji w Safari</b><span>Adres dostaniesz od osoby, która założyła Ci konto. Na telefonie otwiera się widok z trzema zakładkami: Dziś, Plan, Ja – i przyciskiem Trener.</span></div></div>
-  <div class="row"><span class="n">2</span><div><b>Dodaj do ekranu początkowego</b><span>Safari → Udostępnij → „Do ekranu początkowego”. Aplikacja działa wtedy jak natywna, na pełnym ekranie, bez sieci i z powiadomieniami.</span></div></div>
-  <div class="row"><span class="n">3</span><div><b>Zaloguj się kodem z maila</b><span>Wpisz adres e-mail konta. Przyjdzie 8-cyfrowy kod, wpisz go w aplikacji. Hasła nie ma. Gdy sesja wygaśnie, ekran Dziś pokaże żółty pasek z prośbą o ponowne zalogowanie.</span></div></div>
-  <div class="row"><span class="n">4</span><div><b>Sprawdź progi</b><span>Ja → „Progi i miernik”: FTP, tętno progowe, czy masz miernik mocy. Od tych liczb zależą strefy w każdym treningu.</span></div></div>
-  <div class="row"><span class="n">5</span><div><b>Połącz Stravę i Bolta</b><span>Opisane niżej. Bez nich aplikacja działa, ale jazdy trzeba wpisywać ręcznie.</span></div></div>
+<div class="list steps">
+  <div class="row only-web"><span class="n"></span><div><b>Otwórz adres aplikacji w Safari</b><span>Adres dostaniesz od osoby, która założyła Ci konto. Na telefonie otwiera się widok z trzema zakładkami: Dziś, Plan, Ja – i przyciskiem Trener.</span></div></div>
+  <div class="row only-web"><span class="n"></span><div><b>Dodaj do ekranu początkowego</b><span>Safari → Udostępnij → „Do ekranu początkowego”. Aplikacja działa wtedy jak natywna, na pełnym ekranie, bez sieci i z powiadomieniami.</span></div></div>
+  <div class="row"><span class="n"></span><div><b>Zaloguj się kodem z maila</b><span>Wpisz adres e-mail konta. Przyjdzie 8-cyfrowy kod, wpisz go w aplikacji. Hasła nie ma. Gdy sesja wygaśnie, ekran Dziś pokaże żółty pasek z prośbą o ponowne zalogowanie.</span></div></div>
+  <div class="row"><span class="n"></span><div><b>Sprawdź progi</b><span>Ja → „Progi i miernik”: FTP, tętno progowe, czy masz miernik mocy. Od tych liczb zależą strefy w każdym treningu.</span></div></div>
+  <div class="row"><span class="n"></span><div><b>Połącz Stravę i Bolta</b><span>Opisane niżej. Bez nich aplikacja działa, ale jazdy trzeba wpisywać ręcznie.</span></div></div>
 </div>
 
 <h2>Nawigacja</h2>
@@ -142,15 +157,17 @@ a{color:var(--accent)}
 <div class="list">
   <div class="row"><img src="/m/art/test.png" alt=""><div><b>Trzy liczby</b><span>FTP i ile watów brakuje do celu programu, masa z trendem na tydzień i celem, forma słownie z CTL (kondycja) i TSB (świeżość). Gdy jazdy pokazują moc wyraźnie wyższą niż FTP, pojawia się propozycja nowej wartości.</span></div></div>
   <div class="row"><img src="/m/art/ride-key.png" alt=""><div><b>Test FTP i ostatnie jazdy</b><span>Ostatni test z wynikiem, następny z planu (ostatnie 2–3 dni przed nim lekko), jazdy z czterech tygodni z TSS – każda prowadzi do podsumowania.</span></div></div>
-  <div class="row"><img src="/m/art/bolt.png" alt=""><div><b>Ustawienia</b><span>Progi i miernik mocy, miejscowość prognozy, powiadomienia na ten telefon, maile (odprawa rano, podsumowanie po treningu, list w niedzielę), stan połączeń Strava i Wahoo, konto (synchronizacja, wylogowanie).</span></div></div>
+  <div class="row only-app"><img src="/m/art/bolt.png" alt=""><div><b>Ustawienia</b><span>Progi i miernik mocy, miejscowość prognozy, maile (odprawa rano, podsumowanie po treningu, list w niedzielę), stan połączeń Strava i Wahoo, konto (synchronizacja, wylogowanie).</span></div></div>
+  <div class="row only-web"><img src="/m/art/bolt.png" alt=""><div><b>Ustawienia</b><span>Progi i miernik mocy, miejscowość prognozy, powiadomienia na ten telefon, maile (odprawa rano, podsumowanie po treningu, list w niedzielę), stan połączeń Strava i Wahoo, konto (synchronizacja, wylogowanie).</span></div></div>
 </div>
-<p>Reszta ustawień (profil, daty, kopia danych) i łączenie Stravy i Wahoo są w pełnej aplikacji: Ja → „Otwórz pełną aplikację”.</p>
+<p class="only-web">Reszta ustawień (profil, daty, kopia danych) i łączenie Stravy i Wahoo są w pełnej aplikacji: Ja → „Otwórz pełną aplikację”.</p>
+<p class="only-app">Reszta ustawień (profil, daty, kopia danych) i łączenie Stravy i Wahoo są na stronie trening.felsztukier.pl (najwygodniej na komputerze) – konto jest wspólne, zmiany wracają do aplikacji same.</p>
 
 <h2 id="strava">Strava</h2>
 <div class="card">
-  <p>Strava jest źródłem wykonanych jazd. Połączenie: pełna aplikacja → Więcej → Ustawienia → Integracje → „Połącz ze Stravą”. Od tej chwili każda jazda wgrana na Stravę pojawia się w aplikacji w ciągu kilku minut, z mocą, tętnem, kadencją i czasem w strefach.</p>
+  <p>Strava jest źródłem wykonanych jazd. Połączenie: <span class="only-web">pełna aplikacja</span><span class="only-app">trening.felsztukier.pl</span> → Więcej → Ustawienia → Integracje → „Połącz ze Stravą”. Od tej chwili każda jazda wgrana na Stravę pojawia się w aplikacji w ciągu kilku minut, z mocą, tętnem, kadencją i czasem w strefach.</p>
   <p><b>Notatka trenera.</b> Po każdej jeździe trener AI pisze kilka zdań: co było planem, jak poszło, porównanie z poprzednimi razami, co z tego wynika na jutro. Każda liczba w notatce pochodzi z danych jazdy.</p>
-  <p><b>Tytuł i opis na Stravie.</b> Opcjonalnie trener nadaje jeździe tytuł i krótki opis z podpisem „Notatki: Kolarski Trener AI”. Włączasz to w karcie Strava w pełnej aplikacji; przy pierwszym włączeniu trzeba połączyć się ponownie, bo potrzebna jest zgoda na zapis. Twoje własne tytuły zostają. „Pobierz ostatnie 30 dni” ściąga jazdy wstecz.</p>
+  <p><b>Tytuł i opis na Stravie.</b> Opcjonalnie trener nadaje jeździe tytuł i krótki opis z podpisem „Notatki: Kolarski Trener AI”. Włączasz to w karcie Strava <span class="only-web">w pełnej aplikacji</span><span class="only-app">na trening.felsztukier.pl</span>; przy pierwszym włączeniu trzeba połączyć się ponownie, bo potrzebna jest zgoda na zapis. Twoje własne tytuły zostają. „Pobierz ostatnie 30 dni” ściąga jazdy wstecz.</p>
 </div>
 
 <h2 id="bolt">Wahoo ELEMNT Bolt</h2>
@@ -167,9 +184,9 @@ a{color:var(--accent)}
 <tr><td>Po treningu</td><td>Kilka minut po imporcie</td><td>Dla jazdy wypełniającej plan (≥ 80 % czasu): plan a wykonanie, strefy, notatka; linki RPE 1–10.</td></tr>
 <tr><td>Dzień w liczbach</td><td>21:00</td><td>Krótsze i dodatkowe jazdy dnia w jednym mailu; nie przychodzi bez nowych jazd.</td></tr>
 <tr><td>List trenera</td><td>Niedziela 19:00</td><td>Tydzień w kilku akapitach: co się wydarzyło, ciało, na czym skupić się w następnym.</td></tr>
-<tr><td>Powiadomienia</td><td>Rano, wieczorem, w niedzielę</td><td>Plan dnia, podsumowanie, raport tygodnia. Na iPhonie tylko z ekranu początkowego.</td></tr>
+<tr class="only-web"><td>Powiadomienia</td><td>Rano, wieczorem, w niedzielę</td><td>Plan dnia, podsumowanie, raport tygodnia. Na iPhonie tylko z ekranu początkowego.</td></tr>
 </table></div>
-<p>Włączasz w Ja → E-mail (trzy przełączniki) i Ja → Powiadomienia.</p>
+<p>Włączasz w Ja → E-mail (trzy przełączniki)<span class="only-web"> i Ja → Powiadomienia</span>.</p>
 
 <h2 id="zywienie">Żywienie</h2>
 <div class="card">
@@ -178,14 +195,15 @@ a{color:var(--accent)}
 
 <h2 id="komputer">Pełna aplikacja na komputerze</h2>
 <div class="card">
-  <p>Ten sam adres na komputerze otwiera pełny widok z boczną nawigacją; na telefonie: Ja → „Otwórz pełną aplikację”. Dodatkowe ekrany: Kalendarz z przenoszeniem treningów przeciągnięciem, Sezon (wszystkie tygodnie programu), Biblioteka (treningi, strefy, zasady), Postęp z krzywą mocy, wykresem formy i raportami, Sprzęt i serwis, Wyjazd, kopia danych.</p>
-  <p>Poprzedni widok na telefon (<code>/i</code>) zostaje jako zapas: Ja → „Wróć do poprzedniego wyglądu”; w nim Więcej → „Wypróbuj nowy wygląd”.</p>
+  <p><span class="only-web">Ten sam adres na komputerze otwiera pełny widok z boczną nawigacją; na telefonie: Ja → „Otwórz pełną aplikację”.</span><span class="only-app">Na komputerze trening.felsztukier.pl otwiera pełny widok z boczną nawigacją – to samo konto co w aplikacji.</span> Dodatkowe ekrany: Kalendarz z przenoszeniem treningów przeciągnięciem, Sezon (wszystkie tygodnie programu), Biblioteka (treningi, strefy, zasady), Postęp z krzywą mocy, wykresem formy i raportami, Sprzęt i serwis, Wyjazd, kopia danych.</p>
+  <p class="only-web">Poprzedni widok na telefon (<code>/i</code>) zostaje jako zapas: Ja → „Wróć do poprzedniego wyglądu”; w nim Więcej → „Wypróbuj nowy wygląd”.</p>
 </div>
 
 <h2 id="problemy">Gdy coś nie działa</h2>
 <div class="list">
   <div class="row"><img src="/m/art/night.png" alt=""><div><b>Żółty pasek „sesja wygasła”</b><span>Ja → Wyloguj, zaloguj kodem ponownie. Dane lokalne zostają.</span></div></div>
-  <div class="row"><img src="/m/art/heart.png" alt=""><div><b>Jazda nie pojawia się ze Stravy</b><span>Odczekaj 10 minut; potem w pełnej aplikacji Integracje → „Sprawdź webhook” i „Pobierz ostatnie 30 dni”.</span></div></div>
+  <div class="row only-app"><img src="/m/art/heart.png" alt=""><div><b>Jazda nie pojawia się ze Stravy</b><span>Odczekaj 10 minut; potem na trening.felsztukier.pl: Więcej → Ustawienia → Integracje → „Sprawdź webhook” i „Pobierz ostatnie 30 dni”.</span></div></div>
+  <div class="row only-web"><img src="/m/art/heart.png" alt=""><div><b>Jazda nie pojawia się ze Stravy</b><span>Odczekaj 10 minut; potem w pełnej aplikacji Integracje → „Sprawdź webhook” i „Pobierz ostatnie 30 dni”.</span></div></div>
   <div class="row"><img src="/m/art/bolt.png" alt=""><div><b>Treningu nie ma na Bolcie</b><span>Karta dnia → „Wyślij na Bolta”; na Bolcie odśwież Planned Workouts (synchronizacja z aplikacją ELEMNT).</span></div></div>
   <div class="row"><img src="/m/art/sun.png" alt=""><div><b>Brak pogody na karcie</b><span>Ja → Pogoda → ustaw miejscowość. Prognoza jest na godzinę jazdy z ustawień.</span></div></div>
   <div class="row"><img src="/m/art/test.png" alt=""><div><b>Strefy wyglądają źle</b><span>Sprawdź FTP i tętno progowe w Ja → „Progi i miernik”; po teście wpisz nowe wartości.</span></div></div>
@@ -193,6 +211,11 @@ a{color:var(--accent)}
 </div>
 </main>
 <script>
+// skąd przyszliśmy (np. `/m/ja`) – zapisuje ekran, który otwiera pomoc; w WKWebView `document.referrer` bywa pusty
+try {
+  var wroc = sessionStorage.getItem('trening:pomoc-wroc')
+  if (wroc && wroc.charAt(0) === '/' && wroc.charAt(1) !== '/') document.getElementById('back').setAttribute('href', wroc)
+} catch (e) { /* brak pamięci sesji */ }
 document.getElementById('back').addEventListener('click', function (e) {
   if (history.length > 1 && document.referrer && new URL(document.referrer).origin === location.origin) { e.preventDefault(); history.back() }
 })

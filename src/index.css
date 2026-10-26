@@ -28,6 +28,8 @@ html.dark .shadow-card {
  */
 html.native,
 html.native body {
+  /* tło jak ekran startowy i `/m` – bez zmiany odcienia przed pierwszym rysunkiem */
+  background: #f2f2f7;
   -webkit-user-select: none;
   user-select: none;
   -webkit-touch-callout: none;

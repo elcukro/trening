@@ -211,8 +211,16 @@ html:has(.m) body {
 .m-row + .m-row {
   box-shadow: inset 0 0.5px 0 var(--separator);
 }
+/*
+ * Podświetlenie jak w UITableView: pojawia się z opóźnieniem, więc dotyk, który zaczyna przewijanie, nie zapala wiersza
+ * (WebKit odbiera `:active`, gdy przewijanie przejmie gest), a po puszczeniu gaśnie płynnie.
+ */
+button.m-row {
+  transition: background-color 0.25s ease;
+}
 button.m-row:active {
   background: var(--fill);
+  transition: background-color 0s 0.09s;
 }
 .m-btn {
   display: inline-flex;

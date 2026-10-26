@@ -18,3 +18,8 @@ Dziś – karta dnia, jazda i podsumowanie, Plan z przytrzymaniem dnia, Trener, 
 problemy) i wygląd jak ekran aplikacji – te same tokeny co `src/m/m.css`, karty, wiersze z ikonami 3D z `public/m/art`,
 pasek „Wróć”, tylko jasny motyw. Stary widok `/i` ma w pomocy jedno zdanie (zapas pod przełącznikiem). Przy zmianach w `/m`
 aktualizuj odpowiednią sekcję; przy nowej ikonie w `public/m/art` można jej użyć w wierszu pomocy.
+
+**Aplikacja iOS (26.10.2026, docs/26):** ta sama strona ma wariant „w aplikacji” – klasa `in-app` na `<html>` (gdy jest
+`window.Capacitor`) chowa elementy `.only-web` (Safari, ekran początkowy, pełna aplikacja na telefonie, Web Push)
+i pokazuje `.only-app`. Nowy tekst o przeglądarce albo pełnej aplikacji dostaje `only-web` i, jeśli trzeba, odpowiednik
+`only-app`. Kroki „Pierwsze uruchomienie” są numerowane licznikiem CSS (`.steps`), więc ukryty krok nie zostawia luki.

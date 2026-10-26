@@ -30,6 +30,15 @@ const SYNC_FOOTER: Record<string, string> = {
   disabled: 'Aplikacja działa lokalnie – bez Supabase nie ma synchronizacji.',
   error: 'Ostatnia synchronizacja się nie udała.',
 }
+/** Pomoc to statyczna strona poza routerem – zapisujemy ekran powrotu, bo w WKWebView `document.referrer` bywa pusty. */
+function openHelp() {
+  try {
+    sessionStorage.setItem('trening:pomoc-wroc', window.location.pathname)
+  } catch {
+    /* brak pamięci sesji – „Wróć” prowadzi na start */
+  }
+  window.location.assign('/pomoc.html')
+}
 /** Aplikacja iOS nie ma ustawień pełnej aplikacji – „Zaloguj” wraca do ekranu logowania `/m` (cofa „bez konta”). */
 function backToLogin() {
   try {
@@ -190,7 +199,7 @@ export function MeScreen() {
       <p className="m-foot m-dim px-1">{sync.error ?? SYNC_FOOTER[sync.state]}</p>
 
       <Group label="Więcej">
-        <Row title="Jak korzystać z aplikacji" sub="Instrukcja, działa też bez sieci" onClick={() => window.location.assign('/pomoc.html')} />
+        <Row title="Jak korzystać z aplikacji" sub="Instrukcja, działa też bez sieci" onClick={openHelp} />
         {!IS_IOS_APP && <Row title="Otwórz pełną aplikację" sub="Kalendarz, wykresy, biblioteka, sprzęt, kopia, integracje" onClick={() => openFull('/')} />}
         {!IS_IOS_APP && <Row title="Wróć do poprzedniego wyglądu" sub="Uproszczony interfejs (/i) zostaje jako zapas" onClick={() => void ui.set('ios').then(() => navigate('/i'))} />}
       </Group>
@@ -208,7 +217,8 @@ function Tile({ art, value, unit, label, sub, color, small, onClick }: { art: st
   const body = (
     <>
       <img src={art} alt="" width={36} height={36} className="h-9 w-9 object-contain" />
-      <div className={`m-num mt-2 leading-tight font-bold ${small ? 'text-[17px]' : 'text-[24px]'}`} style={{ color }}>
+      {/* `small` (forma słownie): rozmiar od szerokości kafelka, żeby „Przeciążony” mieścił się w jednej linii także na 375 pt */}
+      <div className={`m-num mt-2 leading-tight font-bold ${small ? 'text-[length:min(17px,15.5cqi)]' : 'text-[24px]'}`} style={{ color }}>
         {value}
         {unit && <span className="m-foot m-dim ml-1 font-semibold">{unit}</span>}
       </div>
@@ -218,9 +228,9 @@ function Tile({ art, value, unit, label, sub, color, small, onClick }: { art: st
   )
   if (onClick)
     return (
-      <button className="m-card m-press flex flex-col p-3 text-left" onClick={onClick}>
+      <button className="m-card m-press flex flex-col p-3 text-left [container-type:inline-size]" onClick={onClick}>
         {body}
       </button>
     )
-  return <div className="m-card flex flex-col p-3">{body}</div>
+  return <div className="m-card flex flex-col p-3 [container-type:inline-size]">{body}</div>
 }
