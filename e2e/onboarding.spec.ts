@@ -127,6 +127,13 @@ test('pełny onboarding: kroki, czerwona flaga, podsumowanie z poprawką, zapis,
   await page.getByRole('button', { name: 'Zapisz', exact: true }).click()
 
   await expect(page.getByRole('heading', { name: 'Gotowe!' })).toBeVisible()
+  // podgląd planu z generatora (docs/32 § 6): pierwszy tydzień z testem FTP w ostatnim dostępnym dniu i lista faz
+  const preview = page.getByTestId('plan-preview')
+  await expect(preview).toBeVisible()
+  await expect(page.getByText(/Twój plan: \d+ tygodni, do 10 h jazdy tygodniowo/)).toBeVisible()
+  await expect(preview.getByText('Test FTP 20 min (moc)')).toBeVisible()
+  await expect(preview.getByText('test kalibracyjny – od niego liczą się strefy')).toBeVisible()
+  await expect(page.getByText('Kalibracja')).toBeVisible()
   await shot(page, '12-gotowe')
   const row = await readRow(page)
   expect(row).toMatchObject({ status: 'done', draft: null, consent_version: '2026-10-26' })

@@ -1,13 +1,15 @@
-import { useRef, useState } from 'react'
+import { useMemo, useRef, useState } from 'react'
 import { useLiveQuery } from 'dexie-react-hooks'
 import { useNavigate } from 'react-router'
 import { db, type OnboardingRow } from '@/db'
 import { completeOnboarding, saveOnboardingDraft, softDelete } from '@/db/repo'
 import { useEngine } from '@/app/useSettings'
 import { useToast } from '@/components/Toast'
-import { ONBOARDING_ID, SKIPPABLE, STEPS, checks, finalize, firstIncomplete, healthScreen, nextStep, prevStep, stepNumber, stepValid, type Draft, type Step } from '@/engine/onboarding'
+import { ONBOARDING_ID, SKIPPABLE, STEPS, checks, finalize, firstIncomplete, healthScreen, nextStep, prevStep, stepNumber, stepValid, type AthleteProfile, type Draft, type Step } from '@/engine/onboarding'
 import type { Settings } from '@/engine/schema'
 import { todayISO } from '@/lib/dates'
+import { minutes as fmtMinutes, num } from '@/lib/format'
+import { planPreview } from '@/day/planPreview'
 import { IconChevronLeft } from '@/ios/components/Icons'
 import { confirmAction, haptic } from '@/native'
 import { startFrom, type StartStep } from '@/day/onboarding'
@@ -16,7 +18,7 @@ import { ART } from '../art'
 import { useEdgeBack } from '../useEdgeBack'
 import { Btn } from '../components/Chrome'
 import { Notice, STEP_BODY, STEP_HEAD, type StepProps } from './steps'
-import { STEP_TITLE, stepSummary } from './labels'
+import { DAY_SHORT, STEP_TITLE, stepSummary } from './labels'
 
 type View = StartStep | 'done'
 
@@ -55,6 +57,8 @@ function Flow({ row, settings, home, me }: { row: OnboardingRow | null; settings
   const [fromSummary, setFromSummary] = useState(start.step === 'summary')
   const [dir, setDir] = useState<'fwd' | 'back'>('fwd')
   const [busy, setBusy] = useState(false)
+  // profil po `finalize` – z niego ekran „Gotowe!” liczy podgląd pierwszego tygodnia planu
+  const [saved, setSaved] = useState<AthleteProfile | null>(null)
   const root = useRef<HTMLDivElement>(null)
 
   const go = (v: View, d: 'fwd' | 'back') => {
@@ -106,7 +110,10 @@ function Flow({ row, settings, home, me }: { row: OnboardingRow | null; settings
       if (editing) {
         toast.notify('Zapisano zmiany')
         navigate(me, { replace: true })
-      } else go('done', 'fwd')
+      } else {
+        setSaved(r.profile)
+        go('done', 'fwd')
+      }
     } catch (e) {
       toast.notify('Nie udało się zapisać', 'error', e instanceof Error ? e.message : String(e))
     } finally {
@@ -171,7 +178,7 @@ function Flow({ row, settings, home, me }: { row: OnboardingRow | null; settings
                 setFromSummary(true)
                 go(s, 'fwd')
               }} onRemove={editing ? () => void remove() : undefined} />}
-          {view === 'done' && <Done draft={draft} />}
+          {view === 'done' && <Done draft={draft} profile={saved} today={today} />}
         </div>
       </div>
 
@@ -314,18 +321,72 @@ function Summary({ draft, today, editing, onEdit, onRemove }: { draft: Draft; to
   )
 }
 
-function Done({ draft }: { draft: Draft }) {
+/**
+ * „Gotowe!” z podglądem planu (docs/32 § 6): pierwszy tydzień dzień po dniu i liczby o całym planie, liczone
+ * generatorem z zapisanego profilu. Bez profilu (np. odświeżenie strony) zostaje sam komunikat.
+ */
+function Done({ draft, profile, today }: { draft: Draft; profile: AthleteProfile | null; today: string }) {
   const doctor = healthScreen(draft.health).level === 'doctor'
+  const preview = useMemo(() => {
+    if (!profile) return null
+    try {
+      return planPreview(profile, today)
+    } catch {
+      return null
+    }
+  }, [profile, today])
   return (
-    <div className="ob-hero ob-done">
-      <img src="/m/art/ob-done.png" alt="" width={140} height={140} />
-      <h1 className="m-display">Gotowe!</h1>
-      <p className="m-sub m-dim">Zapisaliśmy Twoje potrzeby. Z nich powstanie Twój plan. Zmienisz je w każdej chwili w Ja → Twoje potrzeby.</p>
+    <>
+      <div className="ob-hero ob-done">
+        <img src="/m/art/ob-done.png" alt="" width={140} height={140} />
+        <h1 className="m-display">Gotowe!</h1>
+        <p className="m-sub m-dim">
+          {preview
+            ? `Twój plan: ${preview.weeks} tygodni, do ${num(preview.hours_per_week)} h jazdy tygodniowo. Zmienisz potrzeby w każdej chwili w Ja → Twoje potrzeby.`
+            : 'Zapisaliśmy Twoje potrzeby. Z nich powstanie Twój plan. Zmienisz je w każdej chwili w Ja → Twoje potrzeby.'}
+        </p>
+      </div>
       {doctor && (
         <Notice tone="red" title="Najpierw lekarz">
           Do czasu rozmowy z lekarzem plan będzie tylko spokojny.
         </Notice>
       )}
-    </div>
+      {preview && (
+        <>
+          <section className="flex flex-col gap-2" data-testid="plan-preview">
+            <h2 className="m-eyebrow px-1">Pierwszy tydzień · {num(preview.first_week_hours)} h</h2>
+            <div className="m-list">
+              {preview.first_week.map((d) => (
+                <div key={d.weekday} className="m-row">
+                  <span className="m-num m-dim w-8 shrink-0 uppercase">{DAY_SHORT[d.weekday]}</span>
+                  <span className="min-w-0 flex-1">
+                    <span className={`block truncate ${d.name ? '' : 'm-dim'}`}>{d.name ?? 'Wolne'}</span>
+                    {d.test && <span className="m-foot m-dim block">test kalibracyjny – od niego liczą się strefy</span>}
+                  </span>
+                  {d.duration_min > 0 && <span className="m-num m-dim shrink-0">{fmtMinutes(d.duration_min)}</span>}
+                </div>
+              ))}
+            </div>
+          </section>
+          <section className="flex flex-col gap-2">
+            <h2 className="m-eyebrow px-1">Fazy planu</h2>
+            <div className="m-list">
+              {preview.phases.map((ph) => (
+                <div key={ph.name} className="m-row">
+                  <span className="min-w-0 flex-1 truncate">{ph.name}</span>
+                  <span className="m-num m-dim shrink-0">{ph.weeks} tyg.</span>
+                </div>
+              ))}
+            </div>
+          </section>
+          {preview.notes.map((n) => (
+            <Notice key={n} tone="blue" title="Dobrze wiedzieć">
+              {n}
+            </Notice>
+          ))}
+          <p className="m-foot m-dim px-1">Plan liczy kod z Twoich odpowiedzi – trener go tylko objaśnia. Kolejne tygodnie zobaczysz w zakładce Plan, gdy plan zostanie przypisany do konta.</p>
+        </>
+      )}
+    </>
   )
 }
