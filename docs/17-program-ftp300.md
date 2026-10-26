@@ -118,3 +118,6 @@ W tym programie oznacza to:
 - Z programu zniknęły `exercises`, `gym_prescriptions`, `gym_prescription_stages`, `gym_day_options`, `gym_stage`/`gym_week`
   w szablonach tygodni, ustawienia `gym_days`/`gym_enabled` i parametr `gym_catchup`.
 - `PROGRAM_VERSION` 2026.10.26-1 (było 2026.09.26-2).
+- **R1 (2026.10.26-2, decyzja tego samego dnia):** pominięty piątkowy akcent przechodzi na sobotę zamiast Z2 (wcześniej
+  przepadał, bo w sobotę była siłownia). Silnik robi to sam – sobota to dzień ze spokojną jazdą, a niedziela jest wolna,
+  więc nie wypadają dwa akcenty dzień po dniu. Środowy akcent dalej idzie na czwartek tylko w tygodniach z jednym akcentem.

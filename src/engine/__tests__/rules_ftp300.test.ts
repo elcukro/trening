@@ -30,11 +30,13 @@ describe('FTP 300 – pominięte treningi', () => {
     for (const d of ['2026-11-10', '2026-11-11', '2026-11-12']) expect(only('R2', d, w, rules({ today: d, logs }))).toHaveLength(0)
   })
 
-  it('pominięty piątkowy akcent przepada – nie przechodzi na sobotę (`accent_catchup_not_onto`)', () => {
+  it('pominięty piątkowy akcent przechodzi na sobotę zamiast Z2 (od 26.10.2026, bez sobotniej siłowni)', () => {
     const w = week('2026-11-07', 3, 2)
     const logs: LogLike[] = [{ date: '2026-11-06', kind: 'bike', status: 'skipped' }]
-    expect(only('R1', '2026-11-07', w, rules({ today: '2026-11-07', logs }))).toHaveLength(0)
-    expect(only('R1', '2026-11-06', w, rules({ today: '2026-11-07', logs }))).toHaveLength(0)
+    const sat = only('R1', '2026-11-07', w, rules({ today: '2026-11-07', logs }))
+    expect(sat).toHaveLength(1)
+    expect(sat[0]!.actions![0]).toMatchObject({ kind: 'move', date: '2026-11-06', payload: { to: '2026-11-07', what: 'bike' } })
+    expect(only('R1', '2026-11-06', w, rules({ today: '2026-11-07', logs }))[0]!.actions![0]).toMatchObject({ payload: { to: '2026-11-07' } })
   })
 
   it('środowy akcent przed piątkowym nie trafia na czwartek (dwa akcenty dzień po dniu)', () => {

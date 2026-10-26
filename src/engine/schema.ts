@@ -243,8 +243,7 @@ export const ProgramRulesSchema = z.object({
   tests: z.array(z.object({ id: z.string(), name: z.string(), when: z.string(), protocol: z.string(), result: z.string() })),
   /** strategia na przełęcz – tylko programy z wyjazdem w góry */
   pass_strategy: z.array(z.string()).optional(),
-  /** R1: dni tygodnia, na które nie przenosimy pominiętego akcentu (brak = każdy dzień ze spokojną jazdą) */
-  accent_catchup_not_onto: z.array(z.enum(['mon', 'tue', 'wed', 'thu', 'fri', 'sat', 'sun'])).optional(),
+
   /** R2: na jaki typ dnia po pominiętej długiej jeździe wolno ją przenieść (pusta lista = przepada) */
   long_catchup_onto: z.array(z.enum(['rest', 'easy', 'long', 'key', 'trip'])),
   /** R12: komunikat w tygodniu rozładowania */

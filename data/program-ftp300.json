@@ -1,5 +1,5 @@
 {
- "version": "2026.10.26-1",
+ "version": "2026.10.26-2",
  "meta": {
   "name": "FTP 300 – próg i VO2max",
   "short": "FTP 300",
@@ -89,7 +89,7 @@
    {
     "id": "R1",
     "title": "Pominięty akcent",
-    "text": "Środowy albo piątkowy akcent przenieś na najbliższy dzień ze spokojną jazdą i nie tuż przed kolejnym akcentem. W praktyce: środa → czwartek w tygodniach z jednym akcentem; piątkowy przepada. Nigdy dwóch akcentów dzień po dniu."
+    "text": "Środowy albo piątkowy akcent przenieś na najbliższy dzień ze spokojną jazdą i nie tuż przed kolejnym akcentem. W praktyce: środa → czwartek w tygodniach z jednym akcentem; piątkowy → sobota (zamiast Z2). Nigdy dwóch akcentów dzień po dniu."
    },
    {
     "id": "R2",
@@ -162,9 +162,6 @@
     "protocol": "Rozgrzewka z krótkimi przyspieszeniami, potem 20 min maksymalnie równego wysiłku – najlepiej na trenażerze w trybie wolnym (nie ERG), zawsze w tych samych warunkach. Pierwsze 5 min nie za mocno. Rozgrzewkowe „5 min mocno” w podanym zakresie watów – za mocno obniża wynik.",
     "result": "FTP = 0,95 × średnia moc z 20 min; tętno progowe ≈ 0,97 × średnie tętno z 20 min."
    }
-  ],
-  "accent_catchup_not_onto": [
-   "sat"
   ],
   "long_catchup_onto": [],
   "deload_note": "Tydzień lżejszy: bez interwałów, piątek wolny, długa krótsza. Nogi mają wyjść świeższe."

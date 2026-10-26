@@ -28,7 +28,7 @@ _spec.loader.exec_module(gen)
 sys.stdout = _stdout
 
 PROGRAM_ID = "ftp300"
-PROGRAM_VERSION = "2026.10.26-1"
+PROGRAM_VERSION = "2026.10.26-2"
 
 # dłuższy blok VO2max niż w programie alpejskim (6 powtórzeń) – przy trenażerze ERG da się utrzymać moc
 gen.add(gen.interval_workout("VO2_6x3", "VO2max 6×3 min", "vo2max", 6, 3, 3, "Z5b", [85, 95], gen.VO2_DESC, wu=20))
@@ -209,7 +209,7 @@ COACH_NOTES = [
 # sb Z2, wt i nd wolne. Silnik czyta parametry, człowiek teksty.
 RULES = {
     "text": [
-        {"id": "R1", "title": "Pominięty akcent", "text": "Środowy albo piątkowy akcent przenieś na najbliższy dzień ze spokojną jazdą i nie tuż przed kolejnym akcentem. W praktyce: środa → czwartek w tygodniach z jednym akcentem; piątkowy przepada. Nigdy dwóch akcentów dzień po dniu."},
+        {"id": "R1", "title": "Pominięty akcent", "text": "Środowy albo piątkowy akcent przenieś na najbliższy dzień ze spokojną jazdą i nie tuż przed kolejnym akcentem. W praktyce: środa → czwartek w tygodniach z jednym akcentem; piątkowy → sobota (zamiast Z2). Nigdy dwóch akcentów dzień po dniu."},
         {"id": "R2", "title": "Pominięta poniedziałkowa długa jazda", "text": "Przepada – wtorek jest wolny i ma nim zostać, a środa to akcent. Nie dokładaj jej w weekend."},
         {"id": "R4", "title": "Gołoledź, śnieg, poniżej −5 °C", "text": "Wszystko na trenażer w ERG: akcent bez zmian, Z2 45–60 min, długa jazda 90 min."},
         {"id": "R5", "title": "Choroba", "text": "Gorączka lub objawy „poniżej szyi” → zero treningu. Katar bez gorączki → tylko Z1 do 45 min. Po ≥ 3 dniach przerwy: 2 dni krótkiego Z2 przed akcentem."},
@@ -238,8 +238,7 @@ RULES = {
             "result": "FTP = 0,95 × średnia moc z 20 min; tętno progowe ≈ 0,97 × średnie tętno z 20 min.",
         },
     ],
-    # R1: piątkowy akcent nie przechodzi na sobotę – tak jak przed 26.10.2026 (wtedy w sobotę była siłownia)
-    "accent_catchup_not_onto": ["sat"],
+
     "long_catchup_onto": [],
     "deload_note": "Tydzień lżejszy: bez interwałów, piątek wolny, długa krótsza. Nogi mają wyjść świeższe.",
 }

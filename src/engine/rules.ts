@@ -250,9 +250,8 @@ export function restingHrAlarm(checkins: CheckinLike[], date: ISODate): boolean 
  * R1: akcent da się odrobić tylko na dzień ze spokojną jazdą i tak, żeby nie wypadły dwa akcenty
  * dzień po dniu. Bez znajomości dni tygodnia – o tym, który dzień jest akcentem, mówi kalendarz programu.
  */
-function canTakeAccent(program: Program, target: CalendarDay | undefined, next: CalendarDay | undefined): target is CalendarDay {
-  if (!target || program.rules.accent_catchup_not_onto?.includes(target.weekday)) return false
-  return !!target.bike && target.day_type === 'easy' && !isProtectedDay(target) && !(next && isKeyDay(next))
+function canTakeAccent(target: CalendarDay | undefined, next: CalendarDay | undefined): target is CalendarDay {
+  return !!target && !!target.bike && target.day_type === 'easy' && !isProtectedDay(target) && !(next && isKeyDay(next))
 }
 
 /**
@@ -268,7 +267,7 @@ export function warningsFor(date: ISODate, window: CalendarDay[], ctx: RuleConte
   // R1 – pominięty akcent rowerowy
   const yesterday = at(addDays(date, -1))
   const tomorrow = at(addDays(date, 1))
-  if (yesterday && isKeyDay(yesterday) && wasSkipped(ctx, yesterday.date) && canTakeAccent(ctx.program, day, tomorrow)) {
+  if (yesterday && isKeyDay(yesterday) && wasSkipped(ctx, yesterday.date) && canTakeAccent(day, tomorrow)) {
     out.push({
       rule: 'R1',
       severity: 'info',
@@ -278,7 +277,7 @@ export function warningsFor(date: ISODate, window: CalendarDay[], ctx: RuleConte
   }
   // przeniesienie tylko na dzień z lekką jazdą – nigdy na dzień wolny ani tuż przed kolejnym akcentem
   if (isKeyDay(day) && compareISO(date, ctx.today) < 0 && wasSkipped(ctx, date)) {
-    if (canTakeAccent(ctx.program, tomorrow, at(addDays(date, 2)))) {
+    if (canTakeAccent(tomorrow, at(addDays(date, 2)))) {
       out.push({ rule: 'R1', severity: 'info', message: `Akcent nie został wykonany. Przenieś go na jutro (zamiast ${tomorrow.bike!.name}) albo odpuść – nigdy dwóch akcentów dzień po dniu.`, actions: [{ kind: 'move', date, label: 'Przenieś na jutro', payload: { to: tomorrow.date, what: 'bike' } }] })
     }
   }
