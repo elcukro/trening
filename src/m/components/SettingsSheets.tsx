@@ -13,6 +13,10 @@ export function Switch({ on, label, onChange, disabled }: { on: boolean; label: 
   )
 }
 
+// wzrost i rok urodzenia z listy zamiast z klawiatury – na iOS klawiatura w arkuszu chowała pola (26.10.2026)
+const HEIGHTS = Array.from({ length: 81 }, (_, i) => String(140 + i))
+const YEARS = Array.from({ length: 71 }, (_, i) => String(2010 - i))
+
 /**
  * Progi i miernik – jedyne ustawienia zmieniane często (po każdym teście).
  * `useSettings` przy pierwszym renderze zwraca domyślne ustawienia programu (Dexie jeszcze nie odpowiedziała) – arkusz
@@ -76,12 +80,26 @@ function NumbersSheetLoaded({ onClose }: { onClose: () => void }) {
         <div className="grid grid-cols-2 gap-3">
           <label className="m-list p-3">
             <span className="m-eyebrow block">Wzrost</span>
-            <input className="m-big mt-1 w-full bg-transparent outline-none" inputMode="numeric" placeholder="—" value={height} onChange={(e) => setHeight(e.target.value)} aria-label="Wzrost w cm" />
+            <select className="m-big mt-1 w-full appearance-none bg-transparent outline-none" value={height} onChange={(e) => setHeight(e.target.value)} aria-label="Wzrost w cm">
+              <option value="">—</option>
+              {HEIGHTS.map((h) => (
+                <option key={h} value={h}>
+                  {h}
+                </option>
+              ))}
+            </select>
             <span className="m-foot m-dim">cm</span>
           </label>
           <label className="m-list p-3">
             <span className="m-eyebrow block">Rok urodzenia</span>
-            <input className="m-big mt-1 w-full bg-transparent outline-none" inputMode="numeric" placeholder="—" value={born} onChange={(e) => setBorn(e.target.value)} aria-label="Rok urodzenia" />
+            <select className="m-big mt-1 w-full appearance-none bg-transparent outline-none" value={born} onChange={(e) => setBorn(e.target.value)} aria-label="Rok urodzenia">
+              <option value="">—</option>
+              {YEARS.map((y) => (
+                <option key={y} value={y}>
+                  {y}
+                </option>
+              ))}
+            </select>
             <span className="m-foot m-dim">do budżetu kcal</span>
           </label>
         </div>

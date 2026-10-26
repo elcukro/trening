@@ -101,6 +101,7 @@ export function Btn({ children, onClick, soft, disabled, className = '', type = 
 
 export function Sheet({ title, onClose, children, action }: { title: string; onClose: () => void; children: ReactNode; action?: ReactNode }) {
   const panel = useRef<HTMLDivElement>(null)
+  const body = useRef<HTMLDivElement>(null)
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
       if (e.key === 'Escape') onClose()
@@ -116,7 +117,13 @@ export function Sheet({ title, onClose, children, action }: { title: string; onC
     const vv = window.visualViewport
     let pending: HTMLElement | null = null
     const reveal = () => {
-      if (pending && document.activeElement === pending) pending.scrollIntoView({ block: 'center', behavior: 'smooth' })
+      // tylko własny przewijany obszar arkusza – scrollIntoView przesuwał też stronę pod arkuszem (Ja „uciekało” pod pasek statusu)
+      const box = body.current
+      if (!pending || !box || document.activeElement !== pending) return
+      const f = pending.getBoundingClientRect()
+      const b = box.getBoundingClientRect()
+      if (f.top >= b.top + 8 && f.bottom <= b.bottom - 8) return
+      box.scrollTo({ top: box.scrollTop + (f.top - b.top) - (b.height - f.height) / 2, behavior: 'smooth' })
     }
     const onFocusIn = (e: FocusEvent) => {
       const t = e.target as HTMLElement | null
@@ -150,7 +157,7 @@ export function Sheet({ title, onClose, children, action }: { title: string; onC
             <span className="m-headline absolute left-1/2 -translate-x-1/2">{title}</span>
             <span className="min-w-11">{action}</span>
           </div>
-          <div className="min-h-0 flex-1 overflow-y-auto px-4 pt-2 pb-6">{children}</div>
+          <div ref={body} className="min-h-0 flex-1 overflow-y-auto overscroll-contain px-4 pt-2 pb-6">{children}</div>
         </div>
       </div>
     </>
