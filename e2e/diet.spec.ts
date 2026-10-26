@@ -74,6 +74,11 @@ test('Jedzenie: karta tylko po włączeniu, etykieta → ilość → zapis i Cof
   await page.getByRole('button', { name: 'Dodaj posiłek' }).click()
   await page.getByLabel('Zdjęcie z galerii').setInputFiles({ name: 'etykieta.png', mimeType: 'image/png', buffer: PIXEL })
   await expect(page.getByAltText('Zdjęcie 1')).toBeVisible()
+  // build bez VITE_SUPABASE_* (CI): rozpoznawanie wymaga konta – przycisk wyłączony z wyjaśnieniem, dalej nie ma czego sprawdzać
+  if (await page.getByText('Rozpoznawanie zdjęć wymaga konta.').isVisible()) {
+    await expect(page.getByRole('button', { name: 'Rozpoznaj' })).toBeDisabled()
+    return
+  }
   await page.getByRole('button', { name: 'Rozpoznaj' }).click()
 
   const sheet = page.getByRole('dialog', { name: 'Dodaj posiłek' })
