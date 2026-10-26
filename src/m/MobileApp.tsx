@@ -18,11 +18,14 @@ import { PlanScreen } from './screens/PlanScreen'
 import { MeScreen } from './screens/MeScreen'
 import { RideScreen } from './screens/RideScreen'
 import { SummaryScreen } from './screens/SummaryScreen'
+import { WaitPreview } from './screens/WaitPreview'
 import { CoachContext } from './coach'
 import { hideSplash } from '@/native'
 import { useHealthSync } from '@/day/useHealth'
 import { useOnboardingDue } from '@/day/useOnboarding'
 import { OnboardingScreen } from './onboarding/OnboardingScreen'
+import { useToastStyle } from '@/components/Toast'
+import { ActionSheetHost } from './components/ActionSheetHost'
 
 /**
  * Mobilny interfejs v2 (docs/24): trzy zakładki (Dziś, Plan, Ja) i przycisk Trener. Te same hooki konta,
@@ -34,6 +37,8 @@ export function MobileApp() {
   usePushKeepalive()
   useHealthSync()
   useViewport()
+  // komunikaty w stylu iOS (pigułka u góry, „Cofnij” nad paskiem zakładek – docs/27 § 6)
+  useToastStyle('ios')
   // aplikacja iOS: ekran startowy znika, gdy `/m` (albo logowanie) jest już na ekranie
   useEffect(hideSplash, [])
   const auth = useAuth()
@@ -82,6 +87,7 @@ export function MobileApp() {
     return (
       <div className="m">
         <OnboardingScreen />
+        <ActionSheetHost />
       </div>
     )
   }
@@ -99,11 +105,13 @@ export function MobileApp() {
             <Route path="jazda/:date" element={<RideScreen />} />
             <Route path="podsumowanie/:date" element={<SummaryScreen />} />
             <Route path="ja" element={<MeScreen />} />
+            <Route path="czekanie" element={<WaitPreview />} />
             <Route path="*" element={<Navigate to={mobilePathFor(location.pathname) ?? '/m'} replace />} />
           </Routes>
         </main>
         <TabBar onCoach={() => setCoach({})} />
         {coach && <CoachSheet prefill={coach.prefill} onClose={() => setCoach(false)} />}
+        <ActionSheetHost />
       </div>
     </CoachContext.Provider>
   )

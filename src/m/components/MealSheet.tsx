@@ -1,12 +1,15 @@
-import { useRef, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import type { MealItem, MealLabel, MealRow } from '@/db'
 import { addMeal, deleteMeal, restoreMeal, updateMeal } from '@/db/repo'
 import { labelTotals, scaleMeal } from '@/engine/intake'
 import { parseMealPhotos, shrinkPhoto, canParseMeal, type ParsedMeal } from '@/sync/mealParse'
 import { useToast } from '@/components/Toast'
+import { friendlyError } from '@/lib/errors'
+import { confirmAction, haptic } from '@/native'
 import { nowHHMM, todayISO } from '@/lib/dates'
 import { num } from '@/lib/format'
 import { Btn, Sheet } from './Chrome'
+import { Waiting } from './Waiting'
 
 const PORTIONS = [
   { f: 0.75, label: 'Mniej' },
@@ -82,16 +85,32 @@ export function MealSheet({ date, meal, proteinTarget, onClose }: { date: string
     }
   }
 
+  // rozpoznawanie trwa ok. 10 s – animacja na miejscu przycisku i „Anuluj” (docs/27 § 6)
+  const abort = useRef<AbortController | null>(null)
+  const [recognizing, setRecognizing] = useState(false)
+  useEffect(() => () => abort.current?.abort(), [])
   async function recognize() {
-    setBusy(true)
+    const ctl = new AbortController()
+    abort.current = ctl
+    setRecognizing(true)
     setError(null)
     try {
-      setDraft(fromParsed(await parseMealPhotos(photos, note, { protein_target: proteinTarget })))
+      const parsed = await parseMealPhotos(photos, note, { protein_target: proteinTarget }, ctl.signal)
+      if (ctl.signal.aborted) return
+      setDraft(fromParsed(parsed))
+      haptic.success()
     } catch (e) {
-      setError(e instanceof Error ? e.message : String(e))
+      if (ctl.signal.aborted) return
+      setError(`Nie rozpoznano posiłku. ${friendlyError(e).message}`)
+      haptic.error()
     } finally {
-      setBusy(false)
+      if (abort.current === ctl) abort.current = null
+      setRecognizing(false)
     }
+  }
+  function cancelRecognize() {
+    abort.current?.abort()
+    setRecognizing(false)
   }
 
   async function save() {
@@ -117,16 +136,24 @@ export function MealSheet({ date, meal, proteinTarget, onClose }: { date: string
         toast.notify(`Zapisane: ${kcal(t.kcal)} · białko ${t.protein_g} g`, 'success', undefined, { label: 'Cofnij', onClick: () => void deleteMeal(saved.id) })
       }
       onClose()
+    } catch (e) {
+      toast.notify('Nie zapisano posiłku', 'error', friendlyError(e).message)
     } finally {
       setBusy(false)
     }
   }
 
+  // usunięcie: systemowy arkusz z czerwonym „Usuń posiłek”, potem i tak „Cofnij” (docs/27 § 6)
   async function remove() {
     if (!meal) return
-    await deleteMeal(meal.id)
-    toast.notify(`Usunięte: ${meal.name}`, 'info', undefined, { label: 'Cofnij', onClick: () => void restoreMeal(meal.id) })
-    onClose()
+    if (!(await confirmAction({ title: `Usunąć „${meal.name}”?`, message: 'Posiłek zniknie z bilansu dnia.', action: 'Usuń posiłek' }))) return
+    try {
+      await deleteMeal(meal.id)
+      toast.notify(`Usunięto: ${meal.name}`, 'success', undefined, { label: 'Cofnij', onClick: () => void restoreMeal(meal.id) })
+      onClose()
+    } catch (e) {
+      toast.notify('Nie usunięto posiłku', 'error', friendlyError(e).message)
+    }
   }
 
   const t = draft ? totals(draft) : null
@@ -169,11 +196,19 @@ export function MealSheet({ date, meal, proteinTarget, onClose }: { date: string
               Talerz z góry albo z boku. Produkt z opakowania (żelki, napój, baton) – zrób zdjęcie <b>tabeli wartości odżywczych</b>; drugie zdjęcie może pokazać przód opakowania. Zdjęć nie zapisujemy.
             </p>
             <input className="m-input" placeholder="Notatka, np. „duża porcja”, „bez sosu”" value={note} onChange={(e) => setNote(e.target.value)} aria-label="Notatka do posiłku" />
-            {error && <p className="m-sub" style={{ color: 'var(--red)' }}>{error}</p>}
+            {error && (
+              <p className="m-sub" role="alert" style={{ color: 'var(--red)' }}>
+                {error}
+              </p>
+            )}
             {!canParseMeal && <p className="m-sub m-dim">Rozpoznawanie zdjęć wymaga konta.</p>}
-            <Btn onClick={() => void recognize()} disabled={busy || photos.length === 0 || !canParseMeal} className="w-full">
-              {busy ? 'Analizuję zdjęcie… (ok. 10 s)' : 'Rozpoznaj'}
-            </Btn>
+            {recognizing ? (
+              <Waiting label="Rozpoznaję posiłek…" detail="Zwykle ok. 10 sekund" onCancel={cancelRecognize} />
+            ) : (
+              <Btn onClick={() => void recognize()} disabled={busy || photos.length === 0 || !canParseMeal} className="w-full">
+                {error ? 'Spróbuj ponownie' : 'Rozpoznaj'}
+              </Btn>
+            )}
           </>
         )}
 
@@ -235,7 +270,7 @@ export function MealSheet({ date, meal, proteinTarget, onClose }: { date: string
               Zapisz
             </Btn>
             {meal ? (
-              <Btn soft onClick={() => void remove()} className="w-full">
+              <Btn soft onClick={() => void remove()} className="w-full" style={{ color: 'var(--red)' }}>
                 Usuń posiłek
               </Btn>
             ) : (

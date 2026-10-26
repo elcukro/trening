@@ -9,7 +9,7 @@ import { addDays, isValidISODate, mondayOf, type ISODate } from '@/engine/dates'
 import type { DayPlan } from '@/engine/plan'
 import type { CalendarDay } from '@/engine/types'
 import type { DayOutcome } from '@/day/weekState'
-import { useToast } from '@/components/Toast'
+import { useAction, useToast } from '@/components/Toast'
 import { fmtRange, fmtShort, todayISO } from '@/lib/dates'
 import { minutes } from '@/lib/format'
 import { DAY_TYPE_LABEL, WEEKDAY_SHORT } from '@/lib/labels'
@@ -47,6 +47,7 @@ export function PlanScreen() {
   const params = useParams()
   const navigate = useNavigate()
   const toast = useToast()
+  const push = useAction()
   const today = todayISO()
   const anchor = params.date && isValidISODate(params.date) ? params.date : today
   const monday = mondayOf(anchor)
@@ -61,14 +62,16 @@ export function PlanScreen() {
     const { items, remove } = await pushPayloadFor(from, 7, ctx, weeks)
     const res = await wahoo.push(items, 'update', remove)
     const errors = res.results.filter((r) => r.status === 'error')
-    if (errors.length) throw new Error(errors[0]!.error === 'not_connected' ? 'Wahoo nie jest połączone (Ustawienia → Integracje).' : (errors[0]!.error ?? 'błąd wysyłki'))
+    if (errors.length) throw new Error(errors[0]!.error === 'not_connected' ? 'Wahoo nie jest połączone. Połącz je w pełnej aplikacji: trening.felsztukier.pl → Ustawienia → Integracje.' : (errors[0]!.error ?? 'błąd wysyłki'))
     return res.pushed
   }
 
   async function act(h: Held, a: DayAction) {
     setHeld(null)
     const date = h.day.date
-    const undoBtn = (fn: () => Promise<unknown>) => ({ label: 'Cofnij', onClick: () => void toast.run('Cofam…', fn, () => 'Przywrócono plan') })
+    // zmiany planu są lokalne i natychmiastowe: bez „w toku”, wynik z „Cofnij” nad paskiem zakładek (docs/27 § 6)
+    const quiet = { quiet: true, errorTitle: 'Nie zmieniono planu' }
+    const undoBtn = (fn: () => Promise<unknown>) => ({ label: 'Cofnij', onClick: () => void toast.run('Cofam…', fn, () => 'Przywrócono plan', undefined, quiet) })
     switch (a.kind) {
       case 'move':
         await toast.run(
@@ -76,6 +79,7 @@ export function PlanScreen() {
           () => addOverride(date, 'move', { to: a.to, what: 'bike' }),
           () => `Przeniesione na ${fmtShort(a.to)} – pamiętaj o wysyłce na Bolta`,
           (row) => undoBtn(() => removeOverride(row.id)),
+          quiet,
         )
         break
       case 'swap':
@@ -84,6 +88,7 @@ export function PlanScreen() {
           () => swapDays(date, a.with),
           (r) => (r.outcome === 'undone' ? 'Zamiana cofnięta' : `Zamienione z ${fmtShort(a.with)} – pamiętaj o wysyłce na Bolta`),
           (r) => (r.outcome === 'swapped' ? undoBtn(() => removeOverride(r.id)) : undefined),
+          quiet,
         )
         break
       case 'indoor':
@@ -92,6 +97,7 @@ export function PlanScreen() {
           () => addOverride(date, 'indoor', {}),
           () => 'Wersja pod dachem',
           (row) => undoBtn(() => removeOverride(row.id)),
+          quiet,
         )
         break
       case 'skip': {
@@ -107,6 +113,7 @@ export function PlanScreen() {
               await removeOverride(row.id)
               await upsertSessionLog(date, 'bike', { status: 'planned' })
             }),
+          quiet,
         )
         break
       }
@@ -119,6 +126,8 @@ export function PlanScreen() {
             if (log?.status === 'skipped') await upsertSessionLog(date, 'bike', { status: 'planned' })
           },
           () => 'Przywrócono plan',
+          undefined,
+          quiet,
         )
         break
     }
@@ -138,7 +147,7 @@ export function PlanScreen() {
         </span>
       }
     >
-      <WeekPager monday={monday} onChange={go} renderWeek={(m, current) => <WeekPanel key={m} monday={m} today={today} current={current} onHold={setHeld} onPush={() => void toast.run('Wysyłam tydzień na Bolta…', () => pushWeek(m), (n) => `Wysłano ${n} dni. Zsynchronizuj licznik.`)} />} />
+      <WeekPager monday={monday} onChange={go} renderWeek={(m, current) => <WeekPanel key={m} monday={m} today={today} current={current} onHold={setHeld} pushing={push.pending} onPush={() => void push.run(() => pushWeek(m), (n) => `Wysłano ${n} dni. Zsynchronizuj licznik.`, { errorTitle: 'Nie wysłano tygodnia na Bolta' })} />} />
       <p className="m-foot m-dim px-1">Przesuń w bok, żeby zobaczyć inne tygodnie. Przytrzymaj dzień, żeby go przenieść, zamienić albo pominąć.</p>
       {held && <DayMenuSheet day={held.day} window={held.window} overrides={held.overrides} today={today} onClose={() => setHeld(null)} onAction={(a) => void act(held, a)} />}
     </Screen>
@@ -147,7 +156,7 @@ export function PlanScreen() {
 
 /* ------------------------------------------------------------------ jeden tydzień */
 
-function WeekPanel({ monday, today, current, onHold, onPush }: { monday: ISODate; today: ISODate; current: boolean; onHold: (h: Held) => void; onPush: () => void }) {
+function WeekPanel({ monday, today, current, onHold, onPush, pushing }: { monday: ISODate; today: ISODate; current: boolean; onHold: (h: Held) => void; onPush: () => void; pushing: boolean }) {
   const { days, window } = useWeekView(addDays(monday, 3))
   const week = useWeekState(monday, window, today)
   const { ctx } = useEngine()
@@ -172,7 +181,7 @@ function WeekPanel({ monday, today, current, onHold, onPush }: { monday: ISODate
         <div className="m-card flex items-center gap-3 p-3" style={{ background: 'rgb(255 149 0 / 0.12)' }}>
           <img src={ART.bolt} alt="" width={32} height={32} className="h-8 w-8 object-contain" />
           <span className="m-sub min-w-0 flex-1">Na Bolcie jest stara wersja: {stale.map((d) => WEEKDAY_SHORT[d.weekday]).join(', ')}</span>
-          <Btn soft onClick={onPush} className="shrink-0 !min-h-11 !px-3 text-[15px]">
+          <Btn soft onClick={onPush} busy={pushing && 'Wysyłam'} className="shrink-0 !min-h-11 !px-3 text-[15px]">
             Wyślij
           </Btn>
         </div>

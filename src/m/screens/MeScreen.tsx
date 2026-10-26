@@ -28,6 +28,7 @@ import { useOnboardingRow } from '@/day/useOnboarding'
 import { STEPS, firstIncomplete, stepNumber, type Step } from '@/engine/onboarding'
 import type { OnboardingRow } from '@/db'
 import { goalSummary } from '../onboarding/labels'
+import { WaitArt } from '../components/Waiting'
 
 /** Stan onboardingu jedną linią: cel po skończeniu, krok przy przerwanym, zachęta przy braku. */
 function onboardingSub(row: OnboardingRow | null | undefined): string | undefined {
@@ -126,9 +127,19 @@ export function MeScreen() {
       await setHealthEnabled(false)
       return
     }
-    await health.authorize()
-    await setHealthEnabled(true)
-    const day = await syncHealth(today, HEALTH_BACKFILL_DAYS)
+    // okno uprawnień i 28 dni wstecz – błąd mówi, co się stało, zamiast cichego „nic”
+    const day = await toast.run(
+      'Łączę ze Zdrowiem…',
+      async () => {
+        await health.authorize()
+        await setHealthEnabled(true)
+        return syncHealth(today, HEALTH_BACKFILL_DAYS)
+      },
+      () => '',
+      undefined,
+      { quiet: true, errorTitle: 'Nie połączono z Apple Health' },
+    )
+    if (day === null) return
     const line = healthLine(day)
     toast.notify(line ? `Ze Zdrowia: ${line}` : 'Zdrowie nie oddało dziś danych', line ? 'success' : 'info', line ? undefined : 'Sprawdź uprawnienia: Ustawienia → Zdrowie → Dostęp do danych i urządzenia → Trening. Dane pojawią się same, gdy waga albo zegarek je zapiszą.')
   }
@@ -223,6 +234,12 @@ export function MeScreen() {
         <Row title="Wahoo" sub={wh !== null && wh !== 'error' && wh.connected ? 'plany lecą na Bolta' : IS_IOS_APP ? 'łączenie na trening.felsztukier.pl' : 'łączenie w pełnej aplikacji'} value={linkLabel(wh)} onClick={IS_IOS_APP ? undefined : () => openFull('/wiecej/ustawienia')} />
       </Group>
 
+      {/* katalog komunikatów (docs/27 § 6) – tylko w buildzie deweloperskim albo podglądowym, do zrzutów z symulatora */}
+      {(import.meta.env.DEV || import.meta.env.VITE_FEEDBACK_PREVIEW) && (
+        <Group label="Podgląd">
+          <Row title="Komunikaty i czekanie" to="/m/czekanie" />
+        </Group>
+      )}
       <Group label="Konto">
         {!auth.configured ? (
           <Row title="Tryb lokalny" sub={`Bez konfiguracji Supabase dane zostają ${IS_IOS_APP ? 'na tym telefonie' : 'w tej przeglądarce'}`} />
@@ -231,7 +248,15 @@ export function MeScreen() {
         ) : (
           <Row title={auth.loading ? 'Sprawdzam konto…' : 'Nie jesteś zalogowany'} sub={auth.loading ? undefined : 'Jazdy, check-iny i zmiany planu nie pobierają się z konta'} onClick={IS_IOS_APP ? backToLogin : () => openFull('/wiecej/ustawienia')} />
         )}
-        {auth.session && <Row title={sync.state === 'syncing' ? 'Synchronizuję…' : 'Synchronizuj teraz'} onClick={sync.state === 'syncing' ? undefined : () => void toast.run('Synchronizuję…', () => runSync({ programVersion: engine.ctx.program.version }), () => 'Zsynchronizowano')} />}
+        {/* synchronizacja trwa kilka sekund – animacja w wierszu zamiast komunikatu (docs/27 § 6) */}
+        {auth.session && (
+          <Row
+            title={sync.state === 'syncing' ? 'Synchronizuję…' : 'Synchronizuj teraz'}
+            value={sync.state === 'syncing' ? <WaitArt size={52} /> : undefined}
+            chevron={false}
+            onClick={sync.state === 'syncing' ? undefined : () => void toast.run('Synchronizuję…', () => runSync({ programVersion: engine.ctx.program.version }), () => 'Zsynchronizowano', undefined, { quiet: true, errorTitle: 'Nie zsynchronizowano' })}
+          />
+        )}
         {auth.session && (
           <Row
             title={<span style={{ color: 'var(--red)' }}>Wyloguj</span>}
@@ -246,6 +271,8 @@ export function MeScreen() {
                   await resetSyncCursors()
                 },
                 () => 'Wylogowano',
+                undefined,
+                { quiet: true, errorTitle: 'Nie wylogowano' },
               )
             }}
           />

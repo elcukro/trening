@@ -87,6 +87,11 @@ trzy warstwy krajobrazu przesuwają się z różną prędkością (daleko ±4, b
 - **Propozycja (bez zmiany):** ikona aplikacji spójna ze sceną – trener na rowerze na tle gór zamiast samej twarzy;
   do decyzji użytkownika.
 
+**Informacja zwrotna w stylu iOS (26.10.2026, § 6):** pigułka potwierdzenia u góry, „Cofnij” nad paskiem zakładek, błędy
+z radą i „Ponów”, czekanie na miejscu akcji (przycisk/karta) z animacją rowerzysty z fal.ai przy dłuższych akcjach,
+„Anuluj” przy rozpoznawaniu posiłku i odpowiedzi trenera, arkusz akcji także w przeglądarce; inwentarz z werdyktami
+w § 6.3, katalog stanów pod `/m/czekanie`.
+
 Zostaje z § 3.1: nic. Z § 3.2/3.3 – etap 1b i osobne zadania (Dynamic Type, VoiceOver, przejścia między ekranami).
 
 ## 1. Co daje natywna aplikacja, czego PWA nie umie
@@ -237,3 +242,88 @@ w symulatorze i na telefonie (zrzuty z iPhone'a – ocena wyglądu wg zrzutów, 
 3. **Zapis posiłków do Zdrowia** – tak/nie (przydatne, jeśli patrzysz na bilans w Zdrowiu albo innej aplikacji).
 4. **Dynamic Type** – pełne skalowanie (osobne zadanie) czy tylko poprawki kontrastu i rozmiarów minimalnych.
 5. **Kolejność:** rekomendacja 1a → 2 (Health) → 1b → 3; Health wcześniej, bo to główny powód aplikacji natywnej.
+
+## 6. Informacja zwrotna: komunikaty, czekanie, potwierdzenia (26.10.2026)
+
+Przegląd wszystkich komunikatów, stanów oczekiwania i potwierdzeń osiągalnych z `/m` i aplikacji iOS
+(`VITE_TARGET=ios`) wobec HIG (Feedback, Alerts, Action sheets, Progress indicators) – i przebudowa. Ścieżki względem `src/`.
+
+### 6.1 Zasady
+
+- **Krótkie potwierdzenie** – pigułka u góry pod paskiem statusu (jak systemowe „Tryb cichy”, AirPods): ikona + jedno
+  zdanie, ok. 2 s, dotknięcie albo przesunięcie w górę zamyka; w aplikacji iOS haptyka `success`.
+- **Cofnij** – ciemny pasek nad pływającym paskiem zakładek (jak „Cofnij wysyłkę” w Poczcie), 7 s, przycisk ≥ 44 pt,
+  przesunięcie w dół zamyka. Przy otwartym arkuszu (pasek zakładek schowany) – 16 pt nad dolną krawędzią.
+- **Błąd** – baner u góry: tytuł „co się nie udało” (`errorTitle`, np. „Nie wysłano na Bolta”) + zdanie „dlaczego i co
+  zrobić” z `lib/errors.ts` (`friendlyError`: brak sieci, przekroczony czas, sesja, limit, błąd serwera; polskie
+  komunikaty z naszego kodu bez zmian, angielskie bibliotek zamienione na zdanie ogólne). Przy błędach przejściowych
+  przycisk **„Ponów”** powtarza tę samą akcję. 7 s, `role="alert"`, haptyka `error`.
+- **Czekanie na miejscu akcji** – `useAction()` (`components/Toast.tsx`) daje `pending`, a wynik i błąd idą przez
+  `toast.run(…, { quiet: true })`, więc nie ma globalnego „w toku”. Krótkie akcje: kółko aktywności w przycisku
+  (`Btn busy="Wysyłam"` – `aria-busy`, drugie dotknięcie nic nie robi). Dłuższe (≥ ~2 s): animacja z rysunkiem
+  (`Waiting`/`WaitArt` w `m/components/Waiting.tsx`) w karcie albo wierszu. Akcja bez stanu na miejscu (np. wspólne
+  `usePlan.applyAction`) pokazuje pigułkę „w toku” dopiero po 0,7 s – szybkie kończą się bez migania.
+- **Anulowanie** tam, gdzie czekanie jest długie i nic nie zmienia na serwerze: rozpoznawanie posiłku („Anuluj”) i
+  odpowiedź trenera („Zatrzymaj” – rozmowa wraca do stanu sprzed wiadomości, tekst wraca do pola). `AbortSignal` idzie
+  do `functions.invoke`. Wysyłki na Bolta i synchronizacji nie anulujemy (stan po stronie Wahoo/serwera byłby niepewny).
+- **Nieodwracalne** – `confirmAction` (`native/confirm.ts`): w aplikacji iOS systemowy arkusz akcji
+  (`@capacitor/action-sheet`) z czerwoną akcją i „Anuluj”; w `/m` w przeglądarce ten sam układ w HTML
+  (`m/components/ActionSheetHost.tsx`, rejestracja przez `setWebConfirm`, `role="alertdialog"`, fokus na „Anuluj”, Esc =
+  nie); poza `/m` – `window.confirm`. **Odwracalne** (pominięcie jazdy, przeniesienie, zamiana) – bez pytania, za to z
+  „Cofnij” (HIG: lepiej pozwolić cofnąć niż pytać).
+- **Miejsce i dostępność** – safe areas (`env(safe-area-inset-*)`), komunikaty nad arkuszami (z-60), arkusz akcji nad
+  nimi (z-70); regiony `aria-live="polite"`, błąd `role="alert"`; „ogranicz ruch” – komunikaty tylko się pojawiają
+  (bez wjazdu), animacja oczekiwania stoi (pierwsza klatka), kółko aktywności się kręci (jak systemowe).
+- Pełna aplikacja i `/i` zostają przy dotychczasowym wyglądzie (`web`); `/m` włącza wygląd `ios` na czas montowania
+  (`useToastStyle('ios')`), aplikacja iOS ma go od startu. API `toast.run`/`notify` bez zmian dla starych wywołań.
+
+### 6.2 Animacja oczekiwania
+
+Czarno-biały rysunek kreską z fal.ai (`scripts/fal-art.mjs`, zasoby `wait-*`, styl `LINE`; alfa z jasności:
+`scripts/line-art.py`). Trzy warianty do porównania na ukrytej stronie **`/m/czekanie`** (tam też katalog wszystkich
+stanów do zrzutów):
+
+| Wariant | Jak | Rozmiar |
+|---|---|---|
+| A · koło i wiatr | `wait-wheel.png` obracane w CSS, linie wiatru i drogi w SVG | 33 KB |
+| B · rowerzysta | `wait-rider.png` (puste koła) + szprychy SVG obracane w CSS, kołysanie, wiatr | 48 KB |
+| **C · klip (wybrany)** | Kling 2.1 (fal.ai) z rysunku rowerzysty, pierwsza = ostatnia klatka; wycięty jeden obrót korby (24 klatki → 12, pętla 1 s), alfa z jasności, animowany WebP bezstratny | **105 KB** + klatka statyczna 9 KB |
+
+Wybór: `WAIT_VARIANT` w `Waiting.tsx`. C ma prawdziwe pedałowanie i zostaje ostry na Retinie (260 px przy 96–112 pt
+to ok. 2,3×). Przy „ogranicz ruch” `<picture>` podaje `wait-clip-still.webp`. PWA trzyma klip w precache
+(`vite.config.ts`), rysunki A/B są tylko do podglądu (poza precache).
+
+### 6.3 Inwentarz i werdykty
+
+| # | Miejsce | Było | Werdykt → teraz |
+|---|---|---|---|
+| 1 | `components/Toast.tsx` | pasek postępu u góry, kolorowe prostokąty u dołu z „szczegóły” (angielski błąd biblioteki wprost) | **przebudowane**: wygląd `ios` (pigułka, baner błędu, pasek „Cofnij”), `friendlyError`, „Ponów”, `useAction`, haptyka też w `notify` |
+| 2 | Dziś → „Wyślij na Bolta” (`m/screens/TodayScreen.tsx`) | globalny „Wysyłam na Bolta…” + zielony prostokąt | **na miejscu**: animacja w karcie, potem pigułka „Wysłano na Bolta. Zsynchronizuj licznik.”; błąd „Nie wysłano na Bolta” + rada/„Ponów” |
+| 3 | Jazda → „Wyślij na Bolta” (`RideScreen.tsx`) | jak 2 | jak 2 (przy okazji: hook przed wczesnym `return`) |
+| 4 | Plan → „Wyślij” tydzień (`PlanScreen.tsx`) | globalny komunikat | **w przycisku**: kółko + „Wysyłam”; tekst „Wahoo nie jest połączone” wskazuje pełną aplikację (w `/m` nie ma Integracji) |
+| 5 | Plan → przenieś/zamień/pod dachem/pomiń/cofnij (menu dnia) | „Przenoszę…” + wynik z „Cofnij” | **bez „w toku”** (zapis lokalny), pasek „Cofnij”; cofnięcie → pigułka „Przywrócono plan”. Pominięcie bez pytania (odwracalne) |
+| 6 | Dziś → RPE, Podsumowanie → RPE | „Zapisuję RPE…” + wynik | pigułka „RPE 7 zapisane”, błąd „Nie zapisano RPE” |
+| 7 | Dziś → „Cofnij” na karcie pominiętej | „Przywracam…” | pigułka „Trening wrócił do planu” |
+| 8 | Dziś → „Oznacz jako pominięte” (dzień bez jazdy) | **bez żadnej informacji** | pigułka „Oznaczono jako pominięte” + „Cofnij” |
+| 9 | Dziś → ostrzeżenie z akcją (`app/usePlan.ts` `applyAction`) | globalny „Zmieniam plan…” | zostaje wspólne z pełną aplikacją; w `/m` pigułka „w toku” dopiero po 0,7 s |
+| 10 | Check-in → Zapisz (`CheckinSheet.tsx`) | zapis bez komunikatu, **błąd milczał** | pigułka „Check-in zapisany”; błąd – arkusz zostaje z danymi, baner z radą |
+| 11 | Ja → Progi i miernik → Zapisz (`SettingsSheets.tsx`) | **błąd milczał** | pigułka „Zapisano progi” / baner „Nie zapisano progów” |
+| 12 | Ja → Pogoda: „Użyj mojej lokalizacji”, „Szukaj” | globalne „Ustalam…”, „Znaleziono 3” | **w przycisku**; wynik widać w liście, „Nic nie znaleziono – sprawdź pisownię” pod polem; błąd z radą (np. zgoda na lokalizację) |
+| 13 | Ja → „Synchronizuj teraz” (`MeScreen.tsx`) | globalny „Synchronizuję…” | **w wierszu**: „Synchronizuję…” + animacja (także przy synchronizacji w tle); błąd „Nie zsynchronizowano” + „Ponów” |
+| 14 | Ja → Apple Health (włącznik) | **błąd uprawnień/odczytu milczał** | baner „Nie połączono z Apple Health” z radą; wynik jak dotąd (pigułka z danymi dnia albo rada o uprawnieniach) |
+| 15 | Ja → Powiadomienia (włącznik) | globalny komunikat | zostaje `toast.run` – pigułka „w toku” po 0,7 s (subskrypcja bywa szybka), wynik w pigułce |
+| 16 | Ja → Wyloguj | arkusz akcji ✓ (etap 1a) + „Wylogowuję…” | arkusz zostaje (nieodwracalne – trzeba się zalogować); bez „w toku”, pigułka „Wylogowano” |
+| 17 | Posiłek → „Rozpoznaj” (`MealSheet.tsx`, ok. 10 s) | napis w przycisku „Analizuję zdjęcie… (ok. 10 s)”, bez anulowania, błąd po angielsku możliwy | **animacja + „Anuluj”** na miejscu przycisku (zamknięcie arkusza też przerywa); błąd „Nie rozpoznano posiłku. …” + „Spróbuj ponownie”; haptyka |
+| 18 | Posiłek → Zapisz | prostokąt z „Cofnij”; **błąd zapisu milczał** | pasek „Cofnij” (nowy) / pigułka (edycja); błąd w banerze |
+| 19 | Posiłek → „Usuń posiłek” | usuwało od razu, „Cofnij” | **arkusz akcji** z czerwonym „Usuń posiłek” (dane wpisane ręcznie, arkusz znika), potem i tak „Cofnij”; przycisk czerwony |
+| 20 | Trener → odpowiedź (`CoachSheet.tsx`) | kropki pisania + „Trener odpowiada…”, błąd jako surowy tekst | **animacja + „Zatrzymaj”**; błąd „Trener nie odpowiedział. …” z radą; zmiany z narzędzi – pigułka jak dotąd |
+| 21 | Trener → „Wyczyść” | arkusz akcji ✓ | bez zmian (nieodwracalne) |
+| 22 | Arkusz z niezapisanymi zmianami (`Chrome.tsx`) | „Odrzucić zmiany?” ✓ | bez zmian; w przeglądarce teraz arkusz HTML zamiast `window.confirm` |
+| 23 | Onboarding: brak odpowiedzi, zapis, „Usuń odpowiedzi” | prostokąty, błąd surowy, podwójna haptyka | baner z listą braków, błąd z radą, pigułki sukcesu; arkusz akcji przy usuwaniu bez zmian |
+| 24 | Logowanie (`ios/screens/LoginScreen.tsx`, wspólne z `/i`) | `toast.run` „Wysyłam kod…”, „Sprawdzam kod…” | zostaje (ekran `/i` – osobne zadanie z § 3.2 „Logowanie”); w `/m` i iOS pigułka „w toku” po 0,7 s, błędy z radą |
+| 25 | Logowanie Google/Strava (`OAuthButtons.tsx`) | stan w przycisku, bez limitu 60 s ✓ | bez zmian |
+| 26 | `window.confirm` / `alert` | tylko w `confirmAction` (web) | w `/m` zastąpione arkuszem HTML; `alert` nie ma |
+| 27 | Ekran czekania na profil/plan (`SettingsGate` → `WaitingScreen` w `App.tsx`) | pełny ekran przy pierwszym pobraniu | zostaje – musi blokować (żaden ekran nie może zobaczyć cudzego programu, CLAUDE.md) |
+
+**Nie sprawdzone na telefonie:** haptyka (symulator jej nie ma), wygląd systemowego arkusza akcji w ciemnym motywie
+telefonu, VoiceOver na prawdziwym urządzeniu (sprawdzone tylko role/`aria-live` w kodzie i drzewie dostępności).

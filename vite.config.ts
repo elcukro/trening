@@ -39,7 +39,9 @@ export default defineConfig({
         ],
       },
       injectManifest: {
-        globPatterns: ['**/*.{js,css,html,svg,png,jpg,ico,json,woff2}'],
+        // animacja oczekiwania (docs/27 § 6) offline; rysunki wariantów A/B tylko do podglądu /m/czekanie
+        globPatterns: ['**/*.{js,css,html,svg,png,jpg,ico,json,woff2}', 'm/wait/wait-clip*.webp'],
+        globIgnores: ['m/wait/*.png'],
         maximumFileSizeToCacheInBytes: 4 * 1024 * 1024,
       },
       devOptions: { enabled: false },

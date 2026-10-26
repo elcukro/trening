@@ -11,6 +11,8 @@ import { IconCheck, IconClose } from '@/ios/components/Icons'
 import { useDayPhase } from '../useDayPhase'
 import { ART } from '../art'
 import { confirmAction } from '@/native'
+import { friendlyError } from '@/lib/errors'
+import { WaitArt } from './Waiting'
 
 const MAX_ROUNDS = 4
 const TOOL_LABEL: Record<string, string> = { save_checkin: 'zapis check-inu', set_rpe: 'zapis RPE', mark_skipped: 'oznaczenie pominięcia', move_ride: 'przeniesienie jazdy', push_wahoo: 'wysyłka na Bolta' }
@@ -64,6 +66,8 @@ export function CoachSheet({ prefill, onClose }: { prefill?: string; onClose: ()
   const [loaded, setLoaded] = useState(false)
   const [draft, setDraft] = useState(prefill ?? '')
   const [busy, setBusy] = useState<string | null>(null)
+  const abort = useRef<AbortController | null>(null)
+  useEffect(() => () => abort.current?.abort(), [])
   const [error, setError] = useState<string | null>(null)
   const bottom = useRef<HTMLDivElement>(null)
   const input = useRef<HTMLTextAreaElement>(null)
@@ -99,9 +103,12 @@ export function CoachSheet({ prefill, onClose }: { prefill?: string; onClose: ()
       let history: ChatMessage[] = [...messages, { role: 'user', content: t, at }]
       setMessages(history)
       setBusy('Trener czyta…')
+      const ctl = new AbortController()
+      abort.current = ctl
       try {
         for (let round = 0; round < MAX_ROUNDS; round++) {
-          const reply = await askCoach(history, context())
+          const reply = await askCoach(history, context(), ctl.signal)
+          if (ctl.signal.aborted) break
           history = [...history, { role: 'assistant', content: reply.content, at: new Date().toISOString() }]
           setMessages(history)
           if (reply.stop_reason !== 'tool_use' || !reply.tools.length) break
@@ -117,8 +124,16 @@ export function CoachSheet({ prefill, onClose }: { prefill?: string; onClose: ()
           setBusy('Trener odpowiada…')
         }
       } catch (e) {
-        setError(e instanceof Error ? e.message : 'Trener nie odpowiada')
+        if (!ctl.signal.aborted) setError(`Trener nie odpowiedział. ${friendlyError(e).message}`)
       } finally {
+        abort.current = null
+        // „Zatrzymaj”: rozmowa wraca do stanu sprzed wiadomości, a tekst do pola – można go poprawić i wysłać jeszcze raz
+        // (zmiany zrobione już przez narzędzia zostają – każda miała swój komunikat)
+        if (ctl.signal.aborted) {
+          history = messages
+          setMessages(messages)
+          setDraft(t)
+        }
         setBusy(null)
         await saveThread(history)
       }
@@ -189,12 +204,21 @@ export function CoachSheet({ prefill, onClose }: { prefill?: string; onClose: ()
           )
         })}
         {busy && (
-          <div className="m-foot m-dim flex items-center gap-2 self-start px-2">
-            <span className="m-typing" aria-hidden />
-            {busy}
+          <div className="m-foot m-dim flex items-center gap-3 self-start px-2" role="status">
+            <WaitArt size={64} />
+            <span className="flex flex-col items-start">
+              {busy}
+              <button type="button" className="m-hit font-semibold" style={{ color: 'var(--accent)' }} onClick={() => abort.current?.abort()}>
+                Zatrzymaj
+              </button>
+            </span>
           </div>
         )}
-        {error && <div className="m-foot self-start px-2" style={{ color: 'var(--red)' }}>{error}</div>}
+        {error && (
+          <div className="m-foot self-start px-2" role="alert" style={{ color: 'var(--red)' }}>
+            {error}
+          </div>
+        )}
         <div ref={bottom} />
       </div>
 

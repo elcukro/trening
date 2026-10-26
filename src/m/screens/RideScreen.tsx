@@ -3,12 +3,13 @@ import { isValidISODate } from '@/engine/dates'
 import type { ResolvedWorkout } from '@/engine/types'
 import { useIosDay } from '@/day/useIos'
 import { structureLabel } from '@/day/summary'
-import { useToast } from '@/components/Toast'
+import { useAction } from '@/components/Toast'
 import { fmtLong, todayISO } from '@/lib/dates'
 import { minutes } from '@/lib/format'
 import { DAY_TYPE_LABEL, INTENSITY_LABEL } from '@/lib/labels'
 import { zoneColor } from '@/lib/zones'
 import { Btn, Card, Group, Screen } from '../components/Chrome'
+import { Waiting } from '../components/Waiting'
 import { StructureBar, Targets } from '../components/Bits'
 import { dayColor } from '../dayColor'
 import { ART, dayArt } from '../art'
@@ -46,13 +47,15 @@ export function StepsList({ workout }: { workout: ResolvedWorkout }) {
 export function RideScreen() {
   const params = useParams()
   const navigate = useNavigate()
-  const toast = useToast()
   const today = todayISO()
   const date = params.date && isValidISODate(params.date) ? params.date : today
   const d = useIosDay(date)
   const day = d.day
   const w = day?.workout
   const back = date === today ? '/m' : `/m/dzien/${date}`
+  // wysyłka trwa kilka sekund – animacja w miejscu przycisku (docs/27 § 6)
+  const bolt = useAction()
+  const sendBolt = () => void bolt.run(d.sendToBolt, (s) => (s === 'updated' ? 'Zaktualizowano na Bolcie. Zsynchronizuj licznik.' : 'Wysłano na Bolta. Zsynchronizuj licznik.'), { errorTitle: 'Nie wysłano na Bolta' })
 
   if (!day || !day.bike || !w) {
     return (
@@ -68,7 +71,6 @@ export function RideScreen() {
   const indoorOn = d.view.overrides.some((o) => o.kind === 'indoor')
   const indoorOverride = d.view.overrides.find((o) => o.kind === 'indoor')
   const structure = structureLabel(w)
-  const sendBolt = () => void toast.run('Wysyłam na Bolta…', d.sendToBolt, (s) => (s === 'updated' ? 'Zaktualizowano na Bolcie. Zsynchronizuj licznik.' : 'Wysłano na Bolta. Zsynchronizuj licznik.'))
 
   return (
     <Screen title={w.name} subtitle={`${fmtLong(date)} · ${minutes(day.bike.duration_min)}`} back={back} day={color}>
@@ -96,11 +98,14 @@ export function RideScreen() {
           </p>
         )}
         <div className="mt-4 flex flex-col gap-2">
-          {d.bolt.kind !== 'na' && d.bolt.kind !== 'ok' && date >= today && (
-            <Btn onClick={sendBolt} className="w-full">
-              Wyślij na Bolta
-            </Btn>
-          )}
+          {d.bolt.kind !== 'na' && (d.bolt.kind !== 'ok' || bolt.pending) && date >= today &&
+            (bolt.pending ? (
+              <Waiting label="Wysyłam na Bolta…" detail="Zwykle kilka sekund" size={96} />
+            ) : (
+              <Btn onClick={sendBolt} className="w-full">
+                Wyślij na Bolta
+              </Btn>
+            ))}
           {day.fallback_workout && !indoorOn && (
             <Btn soft onClick={() => void d.view.applyAction({ kind: 'indoor', date, label: '', payload: {} })} className="w-full">
               Wersja pod dachem

@@ -50,13 +50,13 @@ function isNetworkError(e: unknown): boolean {
   return !((e as { context?: unknown }).context instanceof Response)
 }
 
-export async function askCoach(messages: ChatMessage[], context: unknown): Promise<ChatReply> {
+export async function askCoach(messages: ChatMessage[], context: unknown, signal?: AbortSignal): Promise<ChatReply> {
   if (!supabase) throw new Error('Bez konta trener nie odpowiada')
-  const call = () => supabase!.functions.invoke<ChatReply & { error?: string }>('coach-chat', { body: { messages, context } })
+  const call = () => supabase!.functions.invoke<ChatReply & { error?: string }>('coach-chat', { body: { messages, context }, signal })
   let { data, error } = await call()
   // iOS po wybudzeniu aplikacji potrafi zerwać pierwsze żądanie, zanim wyjdzie z telefonu (21.10.2026: serwer nie dostał nic) –
   // jedna ponowna próba po chwili, potem komunikat po polsku zamiast „Failed to send a request to the Edge Function”
-  if (error && isNetworkError(error)) {
+  if (error && isNetworkError(error) && !signal?.aborted) {
     await new Promise((r) => setTimeout(r, 1500))
     ;({ data, error } = await call())
     if (error && isNetworkError(error)) throw new Error('Brak połączenia z trenerem – sprawdź sieć i wyślij jeszcze raz.')

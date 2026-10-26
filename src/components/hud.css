@@ -1,0 +1,147 @@
+/*
+ * Komunikaty w stylu iOS (`ToastProvider` w wyglądzie `ios` – `/m` i aplikacja iOS, docs/27 § 6). Kolory systemowe
+ * na sztywno: komunikat żyje poza korzeniem `.m`, więc nie widzi jego tokenów. Tylko jasny wygląd (decyzja docs/24).
+ */
+.hud-top,
+.hud-bottom {
+  position: fixed;
+  left: 0;
+  right: 0;
+  z-index: 60; /* nad arkuszami /m (z-50/51) */
+  display: flex;
+  justify-content: center;
+  padding: 0 16px;
+  pointer-events: none;
+}
+.hud-top {
+  top: calc(env(safe-area-inset-top, 0px) + 8px);
+}
+/* nad pływającym paskiem zakładek (12 + 64 pt); przy otwartym arkuszu pasek znika, więc niżej */
+.hud-bottom {
+  bottom: calc(env(safe-area-inset-bottom, 0px) + 88px);
+}
+body.m-sheet-open .hud-bottom {
+  bottom: calc(env(safe-area-inset-bottom, 0px) + 16px);
+}
+
+.hud-pill,
+.hud-undo {
+  pointer-events: auto;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  max-width: 420px;
+  font: -apple-system-body;
+  font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Text', system-ui, sans-serif;
+  touch-action: none;
+  transition: transform 0.25s cubic-bezier(0.32, 0.72, 0, 1);
+}
+.hud-pill {
+  min-height: 44px;
+  padding: 8px 18px 8px 12px;
+  border-radius: 999px;
+  background: rgb(255 255 255 / 0.9);
+  -webkit-backdrop-filter: saturate(180%) blur(24px);
+  backdrop-filter: saturate(180%) blur(24px);
+  color: #0b0b0f;
+  box-shadow: 0 8px 28px rgb(0 0 0 / 0.14), 0 0 0 0.5px rgb(0 0 0 / 0.06);
+  animation: hud-in-top 0.38s cubic-bezier(0.32, 0.72, 0, 1);
+}
+/* błąd i komunikat z radą: dwie linie – zaokrąglony prostokąt jak baner powiadomienia */
+.hud-banner {
+  width: 100%;
+  border-radius: 22px;
+  padding: 10px 10px 10px 14px;
+  align-items: flex-start;
+}
+.hud-banner .hud-icon {
+  margin-top: 1px;
+}
+.hud-undo {
+  width: 100%;
+  min-height: 52px;
+  padding: 4px 6px 4px 14px;
+  border-radius: 18px;
+  background: rgb(28 28 30 / 0.92);
+  -webkit-backdrop-filter: saturate(180%) blur(24px);
+  backdrop-filter: saturate(180%) blur(24px);
+  color: #fff;
+  box-shadow: 0 10px 30px rgb(0 0 0 / 0.22);
+  animation: hud-in-bottom 0.38s cubic-bezier(0.32, 0.72, 0, 1);
+}
+.hud-text {
+  min-width: 0;
+  flex: 1;
+}
+.hud-title {
+  margin: 0;
+  font-size: 15px;
+  font-weight: 600;
+  letter-spacing: -0.2px;
+  line-height: 1.3;
+}
+.hud-detail {
+  margin: 2px 0 0;
+  font-size: 14px;
+  line-height: 1.3;
+  color: rgb(60 60 67 / 0.75);
+}
+.hud-icon {
+  flex: none;
+}
+.hud-action {
+  flex: none;
+  min-height: 44px;
+  min-width: 44px;
+  padding: 0 12px;
+  border: 0;
+  border-radius: 12px;
+  background: transparent;
+  color: #0a7aff;
+  font-size: 15px;
+  font-weight: 600;
+}
+.hud-undo .hud-action {
+  color: #5ac8fa;
+}
+.hud-action:active {
+  opacity: 0.5;
+}
+.hud-spinner {
+  flex: none;
+  animation: hud-spin 0.8s steps(8) infinite;
+}
+.hud-spinner line {
+  stroke: rgb(60 60 67 / 0.7);
+  stroke-width: 2.4;
+  stroke-linecap: round;
+}
+
+@keyframes hud-in-top {
+  from {
+    transform: translateY(calc(-100% - 40px));
+  }
+}
+@keyframes hud-in-bottom {
+  from {
+    transform: translateY(24px);
+    opacity: 0;
+  }
+}
+@keyframes hud-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .hud-pill,
+  .hud-undo {
+    animation: hud-fade 0.2s ease-out;
+    transition: none;
+  }
+}
+@keyframes hud-fade {
+  from {
+    opacity: 0;
+  }
+}

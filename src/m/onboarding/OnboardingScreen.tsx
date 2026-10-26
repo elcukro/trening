@@ -5,6 +5,7 @@ import { db, type OnboardingRow } from '@/db'
 import { completeOnboarding, saveOnboardingDraft, savePlanFromProfile, softDelete } from '@/db/repo'
 import { useEngine } from '@/app/useSettings'
 import { useToast } from '@/components/Toast'
+import { friendlyError } from '@/lib/errors'
 import { ONBOARDING_ID, SKIPPABLE, STEPS, checks, finalize, firstIncomplete, healthScreen, nextStep, prevStep, stepNumber, stepValid, type AthleteProfile, type Draft, type Step } from '@/engine/onboarding'
 import type { Settings } from '@/engine/schema'
 import { todayISO } from '@/lib/dates'
@@ -92,7 +93,6 @@ function Flow({ row, settings, home, me }: { row: OnboardingRow | null; settings
   async function save() {
     const r = finalize(draft)
     if (!r.ok) {
-      haptic.error()
       toast.notify('Brakuje odpowiedzi – uzupełnij zaznaczony krok', 'error', r.issues.join(', '))
       const missing = firstIncomplete(draft)
       if (missing !== 'summary') go(missing, 'back')
@@ -112,16 +112,16 @@ function Flow({ row, settings, home, me }: { row: OnboardingRow | null; settings
         if (settings.program_id !== 'generated') patch.program_id = 'generated'
       }
       if (Object.keys(patch).length) await engine.settingsApi.update(patch)
-      haptic.success()
       if (editing) {
-        toast.notify('Zapisano zmiany')
+        toast.notify('Zapisano zmiany', 'success')
         navigate(me, { replace: true })
       } else {
+        haptic.success()
         setSaved(r.profile)
         go('done', 'fwd')
       }
     } catch (e) {
-      toast.notify('Nie udało się zapisać', 'error', e instanceof Error ? e.message : String(e))
+      toast.notify('Nie zapisano odpowiedzi', 'error', friendlyError(e).message)
     } finally {
       setBusy(false)
     }
@@ -131,7 +131,7 @@ function Flow({ row, settings, home, me }: { row: OnboardingRow | null; settings
     if (!(await confirmAction({ title: 'Usunąć odpowiedzi?', message: 'Usuniemy Twoje odpowiedzi i zgodę na dane o zdrowiu. Plan nie będzie ich uwzględniał.', action: 'Usuń' }))) return
     await softDelete('onboarding', ONBOARDING_ID)
     later()
-    toast.notify('Usunięto odpowiedzi')
+    toast.notify('Usunięto odpowiedzi', 'success')
     navigate(me, { replace: true })
   }
 

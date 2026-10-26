@@ -7,11 +7,12 @@ import { useIosDay, useRideScore, type IosDay } from '@/day/useIos'
 import { useBriefing, type Briefing } from '@/day/useBriefing'
 import { rideVerdict, type DayPhase } from '@/day/dayState'
 import { structureLabel } from '@/day/summary'
-import { useToast } from '@/components/Toast'
+import { useAction, useToast } from '@/components/Toast'
 import { fmtLong, todayISO } from '@/lib/dates'
 import { minutes, num } from '@/lib/format'
 import { DAY_TYPE_LABEL } from '@/lib/labels'
 import { Btn, Card, Group, Row, Screen } from '../components/Chrome'
+import { Waiting } from '../components/Waiting'
 import { CheckinSheet } from '../components/CheckinSheet'
 import { FoodCard } from '../components/FoodCard'
 import { MealSheet } from '../components/MealSheet'
@@ -61,15 +62,21 @@ export function TodayScreen() {
   async function saveRpe(rpe: number) {
     const log = d.rideLog
     const status = log && LOGGED.includes(log.status) && log.status !== 'skipped' ? (log.status as 'done' | 'modified') : score != null && score < 70 ? 'modified' : 'done'
-    await toast.run('Zapisuję RPE…', () => d.logRide(status, { rpe }), () => `RPE ${rpe} zapisane`)
+    await toast.run('Zapisuję RPE…', () => d.logRide(status, { rpe }), () => `RPE ${rpe} zapisane`, undefined, { quiet: true, errorTitle: 'Nie zapisano RPE' })
   }
   async function unskip() {
     await toast.run('Przywracam…', async () => {
       await upsertSessionLog(date, 'bike', { status: 'planned', rpe: null })
-      for (const o of d.view.overrides.filter((o) => o.kind === 'skip')) await d.view.undo(o.id)
-    }, () => 'Trening wrócił do planu')
+      for (const o of d.view.overrides.filter((x) => x.kind === 'skip')) await d.view.undo(o.id)
+    }, () => 'Trening wrócił do planu', undefined, { quiet: true })
   }
-  const sendBolt = () => void toast.run('Wysyłam na Bolta…', d.sendToBolt, (s) => (s === 'updated' ? 'Zaktualizowano na Bolcie. Zsynchronizuj licznik.' : 'Wysłano na Bolta. Zsynchronizuj licznik.'))
+  // dzień bez jazdy oznaczony jako pominięty – odwracalne, więc bez pytania, za to z „Cofnij” (docs/27 § 6)
+  async function markSkipped() {
+    await toast.run('Oznaczam…', () => d.logRide('skipped'), () => 'Oznaczono jako pominięte', () => ({ label: 'Cofnij', onClick: () => void upsertSessionLog(date, 'bike', { status: 'planned' }) }), { quiet: true })
+  }
+  // wysyłka trwa kilka sekund – animacja na karcie zamiast komunikatu (docs/27 § 6)
+  const bolt = useAction()
+  const sendBolt = () => void bolt.run(d.sendToBolt, (s) => (s === 'updated' ? 'Zaktualizowano na Bolcie. Zsynchronizuj licznik.' : 'Wysłano na Bolta. Zsynchronizuj licznik.'), { errorTitle: 'Nie wysłano na Bolta' })
 
   return (
     <Screen title={isToday ? 'Dziś' : cap(fmtLong(date).split(',')[0]!)} subtitle={`${fmtLong(date)}${day ? ` · tydzień ${day.week}${day.week_type === 'deload' ? ' · lżejszy' : ''}` : ''}`} back={isToday ? undefined : '/m/plan'} day={color}>
@@ -89,7 +96,7 @@ export function TodayScreen() {
           <p className="m-sub m-dim">Tego dnia nie ma w planie.</p>
         </Card>
       ) : (
-        <StateCard phase={phase} day={day} d={d} brief={brief} score={score} onCoach={openCoach} onCheckin={() => setSheet('checkin')} onSteps={() => navigate(`/m/jazda/${date}`)} onSummary={() => navigate(`/m/podsumowanie/${date}`)} onBolt={sendBolt} onRpe={saveRpe} onUnskip={unskip} />
+        <StateCard phase={phase} day={day} d={d} brief={brief} score={score} onCoach={openCoach} onCheckin={() => setSheet('checkin')} onSteps={() => navigate(`/m/jazda/${date}`)} onSummary={() => navigate(`/m/podsumowanie/${date}`)} onBolt={sendBolt} boltBusy={bolt.pending} onRpe={saveRpe} onUnskip={unskip} onSkip={markSkipped} />
       )}
 
       {day && isToday && phase !== 'rest' && (
@@ -160,8 +167,10 @@ interface CardProps {
   onSteps: () => void
   onSummary: () => void
   onBolt: () => void
+  boltBusy: boolean
   onRpe: (rpe: number) => Promise<void>
   onUnskip: () => Promise<void>
+  onSkip: () => Promise<void>
 }
 
 function StateCard(p: CardProps) {
@@ -238,11 +247,14 @@ function StateCard(p: CardProps) {
                 Pokaż kroki
               </Btn>
             )}
-            {phase !== 'riding' && day.bike && d.bolt.kind !== 'na' && d.bolt.kind !== 'ok' && (
-              <Btn soft onClick={p.onBolt} className="w-full">
-                Wyślij na Bolta
-              </Btn>
-            )}
+            {phase !== 'riding' && day.bike && d.bolt.kind !== 'na' && (d.bolt.kind !== 'ok' || p.boltBusy) &&
+              (p.boltBusy ? (
+                <Waiting label="Wysyłam na Bolta…" detail="Zwykle kilka sekund" size={96} />
+              ) : (
+                <Btn soft onClick={p.onBolt} className="w-full">
+                  Wyślij na Bolta
+                </Btn>
+              ))}
           </div>
         </Card>
       )
@@ -322,7 +334,7 @@ function StateCard(p: CardProps) {
           <p className="m-eyebrow m-dim">Bez jazdy</p>
           <p className="m-title mt-1">{name}</p>
           <p className="m-sub m-dim mt-2">Tego dnia nie było treningu ani oznaczenia. Jeśli to decyzja, oznacz jako pominięte – raporty przestaną o to pytać.</p>
-          <Btn soft onClick={() => void p.d.logRide('skipped')} className="mt-4 w-full">
+          <Btn soft onClick={() => void p.onSkip()} className="mt-4 w-full">
             Oznacz jako pominięte
           </Btn>
         </Card>

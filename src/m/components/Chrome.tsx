@@ -1,8 +1,9 @@
-import { useCallback, useEffect, useLayoutEffect, useRef, useState, type ReactNode } from 'react'
+import { useCallback, useEffect, useLayoutEffect, useRef, useState, type CSSProperties, type ReactNode } from 'react'
 import { NavLink, useNavigate } from 'react-router'
 import { IconChevronLeft, IconClose } from '@/ios/components/Icons'
 import { useEdgeBack } from '../useEdgeBack'
 import { confirmAction } from '@/native'
+import { Spinner } from './Waiting'
 
 /* ------------------------------------------------------------------ ekran z dużym tytułem */
 
@@ -106,10 +107,21 @@ export function Row({ title, sub, value, onClick, to, icon, chevron }: { title: 
   return <div className="m-row">{body}</div>
 }
 
-export function Btn({ children, onClick, soft, disabled, className = '', type = 'button' }: { children: ReactNode; onClick?: () => void; soft?: boolean; disabled?: boolean; className?: string; type?: 'button' | 'submit' }) {
+/**
+ * Przycisk. `busy` = akcja w toku (docs/27 § 6): kółko aktywności i opis zamiast etykiety, drugie dotknięcie nic nie
+ * robi, a przycisk nie szarzeje jak wyłączony – czekanie widać tam, gdzie zawodnik dotknął.
+ */
+export function Btn({ children, onClick, soft, disabled, busy, className = '', style, type = 'button' }: { children: ReactNode; onClick?: () => void; soft?: boolean; disabled?: boolean; busy?: string | false; className?: string; style?: CSSProperties; type?: 'button' | 'submit' }) {
   return (
-    <button type={type} className={`m-btn ${soft ? 'm-btn-soft' : ''} ${className}`} onClick={onClick} disabled={disabled}>
-      {children}
+    <button type={type} className={`m-btn ${soft ? 'm-btn-soft' : ''} ${className}`} style={style} onClick={busy ? undefined : onClick} disabled={disabled && !busy} aria-busy={busy ? true : undefined}>
+      {busy ? (
+        <>
+          <Spinner light={!soft} />
+          {busy}
+        </>
+      ) : (
+        children
+      )}
     </button>
   )
 }

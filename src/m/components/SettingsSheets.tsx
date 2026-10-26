@@ -1,7 +1,8 @@
 import { useState } from 'react'
 import { useEngine } from '@/app/useSettings'
 import { geocode, setLocation, type WeatherLocation } from '@/sync/weather'
-import { useToast } from '@/components/Toast'
+import { useAction, useToast } from '@/components/Toast'
+import { friendlyError } from '@/lib/errors'
 import { fmtDate } from '@/lib/dates'
 import { Btn, Sheet } from './Chrome'
 import { currentPosition, haptic } from '@/native'
@@ -63,6 +64,7 @@ function NumbersSheetLoaded({ onClose }: { onClose: () => void }) {
   // bez pełnej daty, a z samym rokiem – kalendarz startuje od 1 stycznia tego roku
   const [born, setBorn] = useState(settings.birth_date ?? (settings.birth_year != null ? `${settings.birth_year}-01-01` : ''))
   const [busy, setBusy] = useState(false)
+  const toast = useToast()
   const [initial] = useState(() => JSON.stringify({ ftp, lthr, power, height, born }))
   const dirty = JSON.stringify({ ftp, lthr, power, height, born }) !== initial
 
@@ -85,7 +87,10 @@ function NumbersSheetLoaded({ onClose }: { onClose: () => void }) {
         lthr_bpm: lthr.trim() && Number.isFinite(l) && l > 0 ? Math.round(l) : null,
         power_meter: power,
       })
+      toast.notify('Zapisano progi', 'success')
       onClose()
+    } catch (e) {
+      toast.notify('Nie zapisano progów', 'error', friendlyError(e).message)
     } finally {
       setBusy(false)
     }
@@ -140,27 +145,31 @@ function NumbersSheetLoaded({ onClose }: { onClose: () => void }) {
 
 /** Miejscowość prognozy dla odprawy – zapis zostaje na tym urządzeniu. */
 export function LocationSheet({ onClose }: { onClose: () => void }) {
-  const toast = useToast()
+  const locate = useAction()
+  const find = useAction()
   const [query, setQuery] = useState('')
   const [found, setFound] = useState<WeatherLocation[]>([])
+  const [none, setNone] = useState(false)
   /** Pozycja telefonu zamiast wpisywania – pytanie o zgodę dopiero teraz, przy użyciu funkcji (docs/26 § 5). */
   async function useMyLocation() {
-    const r = await toast.run('Ustalam lokalizację…', async () => {
+    const r = await locate.run(async () => {
       const pos = await currentPosition()
       // nazwy miejscowości nie zgadujemy (Open-Meteo nie ma geokodowania odwrotnego) – współrzędne w podpisie wystarczą
       await setLocation({ name: `Moja lokalizacja (${num(pos.lat, 2)}, ${num(pos.lon, 2)})`, ...pos })
-    }, () => 'Prognoza dla Twojej lokalizacji')
+    }, () => 'Prognoza dla Twojej lokalizacji', { errorTitle: 'Nie ustalono lokalizacji' })
     if (r !== null) onClose()
   }
   async function search() {
     if (!query.trim()) return
-    const r = await toast.run('Szukam…', () => geocode(query), (list) => (list.length ? `Znaleziono ${list.length}` : 'Nic nie znaleziono'))
+    // wynik (albo jego brak) widać pod polem – bez komunikatu
+    const r = await find.run(() => geocode(query), () => '', { errorTitle: 'Nie wyszukano' })
     setFound(r ?? [])
+    setNone(r !== null && r.length === 0)
   }
   return (
     <Sheet title="Pogoda" onClose={onClose}>
       <div className="flex flex-col gap-3">
-        <Btn onClick={() => void useMyLocation()} className="w-full">
+        <Btn onClick={() => void useMyLocation()} busy={locate.pending && 'Ustalam lokalizację…'} className="w-full">
           Użyj mojej lokalizacji
         </Btn>
         <p className="m-foot m-dim -mt-1 px-1">albo wyszukaj miejscowość:</p>
@@ -172,10 +181,11 @@ export function LocationSheet({ onClose }: { onClose: () => void }) {
           }}
         >
           <input className="m-input flex-1" placeholder="Nazwa miejscowości" value={query} onChange={(e) => setQuery(e.target.value)} aria-label="Miejscowość" />
-          <Btn type="submit" disabled={!query.trim()} className="!min-h-11">
+          <Btn type="submit" disabled={!query.trim()} busy={find.pending && 'Szukam'} className="!min-h-11">
             Szukaj
           </Btn>
         </form>
+        {none && <p className="m-sub m-dim px-1">Nic nie znaleziono – sprawdź pisownię.</p>}
         {found.length > 0 && (
           <div className="m-list">
             {found.map((f) => (

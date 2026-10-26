@@ -26,9 +26,10 @@ export async function shrinkPhoto(file: Blob, maxPx = 1024, quality = 0.8): Prom
 }
 
 /** Zdjęcia posiłku albo etykiety → podgląd (Edge Function `meal-parse`). Zapis robi arkusz po korekcie. */
-export async function parseMealPhotos(images: string[], note: string, hint: { protein_target?: number }): Promise<ParsedMeal> {
+/** `signal` – „Anuluj” w arkuszu posiłku przerywa czekanie (docs/27 § 6). */
+export async function parseMealPhotos(images: string[], note: string, hint: { protein_target?: number }, signal?: AbortSignal): Promise<ParsedMeal> {
   if (!supabase) throw new Error('Bez konta rozpoznawanie nie działa')
-  const { data, error } = await supabase.functions.invoke<{ meal?: ParsedMeal; error?: string }>('meal-parse', { body: { images, note, hint } })
+  const { data, error } = await supabase.functions.invoke<{ meal?: ParsedMeal; error?: string }>('meal-parse', { body: { images, note, hint }, signal })
   if (error) {
     // treść błędu funkcji (limit, wyłączone konto) jest w odpowiedzi, a nie w `error.message`
     const ctx = (error as { context?: Response }).context

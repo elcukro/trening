@@ -3,6 +3,8 @@ import type { Checkin } from '@/db'
 import { Btn, Sheet } from './Chrome'
 import { haptic } from '@/native'
 import { fromHealth, healthLine } from '@/day/health'
+import { useToast } from '@/components/Toast'
+import { friendlyError } from '@/lib/errors'
 
 const SCALES = [
   { key: 'sleep', label: 'Sen', low: 'fatalny', high: 'świetny' },
@@ -22,6 +24,7 @@ export function CheckinSheet({ checkin, lastWeight, onClose, onSave }: { checkin
   const [rhr, setRhr] = useState(checkin?.resting_hr != null ? String(checkin.resting_hr) : '')
   const [scale, setScale] = useState<Record<ScaleKey, number | null>>({ sleep: checkin?.sleep ?? null, legs: checkin?.legs ?? null, motivation: checkin?.motivation ?? null })
   const [busy, setBusy] = useState(false)
+  const toast = useToast()
   const [initialWeight] = useState(weight)
   const [initialRhr] = useState(rhr)
   // stan z otwarcia – zamknięcie bez zapisu pyta tylko wtedy, gdy coś się zmieniło
@@ -33,7 +36,11 @@ export function CheckinSheet({ checkin, lastWeight, onClose, onSave }: { checkin
     setBusy(true)
     try {
       await onSave({ weight_kg: numOrNull(weight) ?? checkin?.weight_kg ?? null, resting_hr: numOrNull(rhr) ?? checkin?.resting_hr ?? null, sleep: scale.sleep, legs: scale.legs, motivation: scale.motivation })
+      toast.notify('Check-in zapisany', 'success')
       onClose()
+    } catch (e) {
+      // arkusz zostaje otwarty z wpisanymi danymi – można spróbować jeszcze raz
+      toast.notify('Nie zapisano check-inu', 'error', friendlyError(e).message)
     } finally {
       setBusy(false)
     }

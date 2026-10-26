@@ -41,7 +41,7 @@ export function SummaryScreen() {
 
   async function saveRpe(v: number) {
     const status = log && LOGGED.includes(log.status) ? (log.status as 'done' | 'modified') : score != null && score < 70 ? 'modified' : 'done'
-    await toast.run('Zapisuję RPE…', () => d.logRide(status, { rpe: v }), () => `RPE ${v} zapisane`)
+    await toast.run('Zapisuję RPE…', () => d.logRide(status, { rpe: v }), () => `RPE ${v} zapisane`, undefined, { quiet: true, errorTitle: 'Nie zapisano RPE' })
   }
 
   if (!a) {

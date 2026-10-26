@@ -37,6 +37,11 @@ const COACH =
 /** Ikony: bez faktury i ozdób – jedna bryła, 2–3 kolory, czytelna w 40–80 px. */
 const ICON_STYLE = 'Minimal icon: very simple shapes, smooth plastic-like surfaces, flat solid colors with one soft highlight, no texture, no strands, no ornaments, no small details, no swirls. The object floats in mid-air with generous empty margin on every side, absolutely no contact shadow and no shadow below it. ' + STYLE
 
+/** Rysunek kreską do animacji oczekiwania – czarny tusz na białym, bez szarości, żeby alfa z jasności dała czystą linię. */
+const LINE =
+  'Simple black-and-white hand-drawn cartoon line drawing, thick confident black ink outlines of even weight, slightly wobbly hand-drawn feel, ' +
+  'no shading, no fill colors, no grey, no hatching, no texture, pure white background, centered with generous empty margin, no text, no letters, no watermark, no frame, no ground line.'
+
 /** id → prompt. Pogoda i typy dnia mają być równie prostymi bryłami, żeby działały w 40–80 px. */
 const ASSETS = {
   coach: { prompt: COACH, ratio: '3:4' },
@@ -75,6 +80,13 @@ const ASSETS = {
   'ob-health': { prompt: 'A glossy red heart with a soft white medical cross on it and a light blue stethoscope curled around it.' },
   'ob-goal': { prompt: 'A small snowy mountain peak in blue and white with a red flag on the top and a winding grey road leading up to it.' },
   'ob-done': { prompt: 'A golden trophy cup with a small sky blue ribbon and two tiny sparkles.' },
+  // ekran logowania /m (docs/27 § 7): pełna scena z tłem (bez wycinania), dół przechodzi w tło aplikacji #f2f2f7 – WebP robi cwebp ręcznie
+  'login-hero': { raw: true, ratio: '4:3', prompt: 'Soft 3D clay-style diorama render, smooth rounded forms, matte surfaces with subtle glossy highlights, gentle morning light from top-left, fresh friendly colors (sky blue, leaf green, warm orange, soft white). A friendly cycling coach mascot (stylized 3D character, short beard, white helmet, sunglasses, light blue cycling jersey, black shorts) riding a light blue road bike, pure side view facing right, pedalling on a smooth winding grey road through rounded green alpine hills, snowy blue-grey mountain peaks far behind, a round warm sun and two fluffy clouds in a pale blue sky. The rider is small, in the lower middle third. The bottom fifth of the image fades smoothly into a plain flat very light grey (#f2f2f7) with nothing in it. No text, no letters, no watermark, no frame.' },
+  'login-hero-b': { raw: true, ratio: '4:3', prompt: 'Soft 3D clay-style diorama render, smooth rounded forms, matte surfaces with subtle glossy highlights, gentle morning light, fresh friendly colors. A small round floating island of green hills with a winding road climbing to a snowy mountain pass with a tiny red flag; a friendly cycling coach mascot (short beard, white helmet, light blue jersey) rides a light blue road bike up the road, side view. A warm sun and soft clouds. Everything floats on a plain flat very light grey background (#f2f2f7), generous empty margin. No text, no letters, no watermark, no frame.' },
+  // animacja oczekiwania (docs/27 § 6): czarno-biały rysunek kreską, bez wycinania tła – alfę z jasności liczy scripts/line-art.py
+  'wait-wheel': { raw: true, ratio: '1:1', prompt: `A single bicycle wheel seen exactly side-on as a perfect circle: chunky tyre, thin rim, 8 straight spokes, small round hub in the exact center, perfectly circular and symmetric. ${LINE}` },
+  'wait-rider': { raw: true, ratio: '4:3', prompt: `A small cheerful cartoon cyclist on a road bike, pure side view facing right, pedalling, slightly leaning forward, round helmet. Both wheels drawn as plain empty circles (tyre outline only, NO spokes) with a small dot hub in the center, fully visible. ${LINE}` },
+  'wait-rider-spokes': { raw: true, ratio: '4:3', prompt: `A small cheerful cartoon cyclist on a road bike, pure side view facing right, pedalling hard, slightly leaning forward, round helmet, a few short speed lines behind. Both wheels are perfect circles with simple straight spokes, fully visible. ${LINE}` },
   // ekran startowy aplikacji iOS (docs/27): warstwy paralaksy per pora roku (WebP 1800 px do public/m/intro/) i rowerzysta;
   // niebo, słońce/księżyc i pora dnia są w CSS (src/m/intro/)
   ...sceneAssets(),
