@@ -14,9 +14,27 @@ export function Switch({ on, label, onChange, disabled }: { on: boolean; label: 
   )
 }
 
-// wzrost z listy, data urodzenia z kalendarza – zamiast klawiatury – na iOS klawiatura w arkuszu chowała pola (26.10.2026)
+// liczby z listy, data urodzenia z kalendarza – zamiast klawiatury, która na iOS chowała pola arkusza (26.10.2026)
 const validBirth = (v: string) => /^\d{4}-\d{2}-\d{2}$/.test(v) && v >= '1920-01-01' && v <= '2015-12-31'
-const HEIGHTS = Array.from({ length: 81 }, (_, i) => String(140 + i))
+/** Wartości lo..hi co 1; bieżąca spoza zakresu też trafia na listę, żeby zapis jej nie zgubił. */
+function steps(lo: number, hi: number, current: string): string[] {
+  const out = Array.from({ length: hi - lo + 1 }, (_, i) => String(lo + i))
+  return current && !out.includes(current) ? [current, ...out] : out
+}
+
+/** Lista systemowa iOS w miejscu pola liczbowego: otwiera się na bieżącej wartości, bez klawiatury. */
+function NumberPick({ value, onChange, lo, hi, label, empty }: { value: string; onChange: (v: string) => void; lo: number; hi: number; label: string; empty?: boolean }) {
+  return (
+    <select className="m-big mt-1 w-full appearance-none bg-transparent outline-none" value={value} onChange={(e) => onChange(e.target.value)} aria-label={label}>
+      {(empty || !value) && <option value="">—</option>}
+      {steps(lo, hi, value).map((v) => (
+        <option key={v} value={v}>
+          {v}
+        </option>
+      ))}
+    </select>
+  )
+}
 
 /**
  * Progi i miernik – jedyne ustawienia zmieniane często (po każdym teście).
@@ -72,26 +90,19 @@ function NumbersSheetLoaded({ onClose }: { onClose: () => void }) {
         <div className="grid grid-cols-2 gap-3">
           <label className="m-list p-3">
             <span className="m-eyebrow block">FTP</span>
-            <input className="m-big mt-1 w-full bg-transparent outline-none" inputMode="numeric" value={ftp} onChange={(e) => setFtp(e.target.value)} aria-label="FTP w watach" />
+            <NumberPick value={ftp} onChange={setFtp} lo={100} hi={450} label="FTP w watach" />
             <span className="m-foot m-dim">W</span>
           </label>
           <label className="m-list p-3">
             <span className="m-eyebrow block">Tętno progowe</span>
-            <input className="m-big mt-1 w-full bg-transparent outline-none" inputMode="numeric" placeholder="—" value={lthr} onChange={(e) => setLthr(e.target.value)} aria-label="Tętno progowe" />
+            <NumberPick value={lthr} onChange={setLthr} lo={120} hi={200} label="Tętno progowe" empty />
             <span className="m-foot m-dim">bpm</span>
           </label>
         </div>
         <div className="grid grid-cols-2 gap-3">
           <label className="m-list p-3">
             <span className="m-eyebrow block">Wzrost</span>
-            <select className="m-big mt-1 w-full appearance-none bg-transparent outline-none" value={height} onChange={(e) => setHeight(e.target.value)} aria-label="Wzrost w cm">
-              <option value="">—</option>
-              {HEIGHTS.map((h) => (
-                <option key={h} value={h}>
-                  {h}
-                </option>
-              ))}
-            </select>
+            <NumberPick value={height} onChange={setHeight} lo={140} hi={220} label="Wzrost w cm" empty />
             <span className="m-foot m-dim">cm</span>
           </label>
           {/* natywny kalendarz iOS: przezroczyste pole daty na całej karcie, pod nim sformatowana wartość */}
@@ -111,7 +122,7 @@ function NumbersSheetLoaded({ onClose }: { onClose: () => void }) {
             <Switch on={power} label="Mam miernik mocy" onChange={setPower} />
           </div>
         </div>
-        <p className="m-foot m-dim px-1">Po teście progowym wpisz nowe wartości – strefy mocy i tętna przeliczą się same, a plany na Bolta pojadą z nowymi watami.</p>
+        <p className="m-foot m-dim px-1">Po teście progowym wybierz nowe wartości – strefy mocy i tętna przeliczą się same, a plany na Bolta pojadą z nowymi watami.</p>
         <Btn onClick={() => void save()} disabled={busy} className="w-full">
           Zapisz
         </Btn>
