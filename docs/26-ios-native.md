@@ -120,6 +120,9 @@ punktowe. Do zrobienia:
 
 ## 4. Nowe możliwości iOS (niedostępne dla PWA)
 
+Szczegółowy plan funkcji natywnych (Apple Health, haptyka, powiadomienia, skaner, widżet) i przegląd UI/UX wobec HIG
+z nowymi etapami: **docs/27-ios-funkcje-natywne-i-ux.md** (26.10.2026).
+
 Kolejność według wartości dla zawodnika:
 
 1. **HealthKit**
@@ -177,6 +180,8 @@ Plan prac zakłada, że punkty z § 5 robimy od razu (są też dobre same w sobi
 żeby późniejsze zgłoszenie do App Store nie wymagało przeróbek.
 
 ## 7. Etapy
+
+**Uwaga 26.10.2026:** etapy 1–4 poniżej zastępuje kolejność z docs/27 § 4 (1a szlify HIG → 2 Apple Health → 1b parytet → 3 App Store).
 
 | Etap | Zakres | Czas |
 |---|---|---|
