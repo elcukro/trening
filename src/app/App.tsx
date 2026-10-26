@@ -27,12 +27,15 @@ import { PHASE_COLOR, PHASE_SHORT } from '@/lib/labels'
 import type { PhaseId } from '@/engine/types'
 import type { Feature } from '@/engine/schema'
 import { FULL_ESCAPE, useUiMode } from '@/day/useIos'
+import { useOnboardingDue } from '@/day/useOnboarding'
+import { useAuth } from '@/sync/auth'
 import { IS_IOS_APP } from '@/native'
 import { Intro } from '@/m/Intro'
 
 const ProgressPage = lazy(() => import('@/features/progress/ProgressPage').then((m) => ({ default: m.ProgressPage })))
 const IosApp = lazy(() => import('@/ios/IosApp').then((m) => ({ default: m.IosApp })))
 const MobileApp = lazy(() => import('@/m/MobileApp').then((m) => ({ default: m.MobileApp })))
+const DesktopOnboarding = lazy(() => import('@/m/onboarding/DesktopOnboarding').then((m) => ({ default: m.DesktopOnboarding })))
 const ReportPage = lazy(() => import('@/features/progress/ReportPage').then((m) => ({ default: m.ReportPage })))
 
 /** Dolny pasek na telefonie – bez zmian; Kalendarz jest dostępny przez „Więcej”. */
@@ -215,6 +218,10 @@ function Layout() {
   useWahooAutoPush()
   useEmailSnapshots()
   usePushKeepalive()
+  // nowe konto bez wypełnionych potrzeb – ten sam onboarding co w `/m`, jako karta (docs/31)
+  const auth = useAuth()
+  const onboardingDue = useOnboardingDue(!!auth.session)
+  if (onboardingDue) return <Navigate to="/start" replace />
   return (
     <div className="flex w-full flex-1">
       <SideNav />
@@ -304,6 +311,7 @@ export function App() {
               <Route path="wiecej/ustawienia" element={<SettingsPage />} />
               <Route path="*" element={<Navigate to="/" replace />} />
             </Route>
+            <Route path="start" element={<Suspense fallback={null}><DesktopOnboarding /></Suspense>} />
             <Route path="i/*" element={<Suspense fallback={null}><IosApp /></Suspense>} />
             <Route path="m/*" element={<Suspense fallback={null}><MobileApp /></Suspense>} />
             </>

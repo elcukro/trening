@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import type { OnboardingRow } from '@/db'
-import { onboardingDue, prefill, startFrom } from '../onboarding'
+import { bodyFromHealth, onboardingDue, prefill, startFrom } from '../onboarding'
 
 const row = (patch: Partial<OnboardingRow>): OnboardingRow => ({ id: 'v1', updated_at: '2026-10-26T10:00:00Z', status: 'draft', step: null, draft: null, data: null, schema_version: 1, consent_health_at: null, consent_version: null, completed_at: null, ...patch })
 
@@ -46,5 +46,24 @@ describe('startFrom', () => {
   it('skończony: podsumowanie z danymi bez wersji', () => {
     const data = { version: 1, time: { hours_per_week: 5 } } as unknown as OnboardingRow['data']
     expect(startFrom(row({ status: 'done', data }), {})).toEqual({ step: 'summary', draft: { time: { hours_per_week: 5 } } })
+  })
+})
+
+describe('bodyFromHealth', () => {
+  const today = '2026-10-26'
+  it('wypełnia puste pola, zaokrągla jak listy', () => {
+    expect(bodyFromHealth(undefined, { height_cm: 181.6, weight_kg: 82.37, birth_date: '1985-05-01', sex: 'male' }, today)).toEqual({
+      body: { height_cm: 182, weight_kg: 82.5, birth_date: '1985-05-01', sex: 'male' },
+      filled: ['height_cm', 'weight_kg', 'birth_date', 'sex'],
+    })
+  })
+  it('nie nadpisuje wartości z profilu ani wyboru; puste (także null po pominięciu) wypełnia', () => {
+    const r = bodyFromHealth({ height_cm: 175, weight_kg: null, sex: 'male' }, { height_cm: 181, weight_kg: 80, sex: 'female' }, today)
+    expect(r).toEqual({ body: { height_cm: 175, weight_kg: 80, sex: 'male' }, filled: ['weight_kg'] })
+  })
+  it('odrzuca wartości spoza zakresów i brak danych', () => {
+    expect(bodyFromHealth({}, { height_cm: 90, weight_kg: 400, birth_date: '2015-01-01', sex: null }, today).filled).toEqual([])
+    expect(bodyFromHealth({}, { birth_date: '01.05.1985' }, today).filled).toEqual([])
+    expect(bodyFromHealth({ height_cm: 170 }, null, today)).toEqual({ body: { height_cm: 170 }, filled: [] })
   })
 })

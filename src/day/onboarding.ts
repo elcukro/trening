@@ -1,4 +1,6 @@
 import type { OnboardingRow } from '@/db'
+import { addDays } from '@/engine/dates'
+import type { HealthProfile } from './health'
 import type { Settings } from '@/engine/schema'
 import { STEPS, firstIncomplete, type Draft, type Step, type StepOrSummary } from '@/engine/onboarding'
 
@@ -48,4 +50,40 @@ export function prefill(s: Partial<Settings>, legacy: boolean): Draft {
     if (s.hr_max_bpm) d.measure.hr_max_bpm = s.hr_max_bpm
   }
   return d
+}
+
+export type BodyField = 'height_cm' | 'weight_kg' | 'birth_date' | 'sex'
+
+/** Najpóźniejsza data urodzenia w onboardingu (16 lat – minimalny wiek, docs/29 § 1); ten sam limit ma kalendarz. */
+export const birthMax = (today: string) => addDays(today, -16 * 365)
+
+/**
+ * Ciało ze Zdrowia (aplikacja iOS, docs/31): wypełnia tylko pola puste – wartość z profilu i wybór zawodnika zostają.
+ * Puste jest też `null` (pominięty krok, „nie wiem”), bo po zapisie nie da się ich odróżnić; wypełnienie dzieje się raz
+ * przy wejściu na krok i zawodnik może je od razu poprawić. Liczby jak na listach: wzrost w cm, masa co 0,5 kg;
+ * wartości spoza zakresów schematu odpadają.
+ */
+export function bodyFromHealth(body: Draft['body'], h: HealthProfile | null, today: string): { body: NonNullable<Draft['body']>; filled: BodyField[] } {
+  const out = { ...body }
+  const filled: BodyField[] = []
+  if (!h) return { body: out, filled }
+  const height = h.height_cm != null ? Math.round(h.height_cm) : null
+  if (out.height_cm == null && height != null && height >= 120 && height <= 230) {
+    out.height_cm = height
+    filled.push('height_cm')
+  }
+  const weight = h.weight_kg != null ? Math.round(h.weight_kg * 2) / 2 : null
+  if (out.weight_kg == null && weight != null && weight >= 35 && weight <= 200) {
+    out.weight_kg = weight
+    filled.push('weight_kg')
+  }
+  if (out.birth_date == null && h.birth_date && /^\d{4}-\d{2}-\d{2}$/.test(h.birth_date) && h.birth_date >= '1920-01-01' && h.birth_date <= birthMax(today)) {
+    out.birth_date = h.birth_date
+    filled.push('birth_date')
+  }
+  if (out.sex == null && (h.sex === 'female' || h.sex === 'male')) {
+    out.sex = h.sex
+    filled.push('sex')
+  }
+  return { body: out, filled }
 }

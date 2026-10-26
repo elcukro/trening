@@ -14,6 +14,14 @@ export interface HealthDay {
   sleep_min?: number | null
 }
 
+/** Profil ze Zdrowia do onboardingu (`readProfile`, docs/31) – surowe wartości, zaokrągla `bodyFromHealth`. */
+export interface HealthProfile {
+  height_cm?: number | null
+  weight_kg?: number | null
+  birth_date?: string | null
+  sex?: 'female' | 'male' | null
+}
+
 export const HEALTH_FIELDS: readonly HealthField[] = ['weight_kg', 'resting_hr', 'hrv_ms', 'sleep_min']
 
 /** Zaokrąglenia jak przy wpisie ręcznym: waga do 0,1 kg, reszta do całości. */

@@ -40,6 +40,23 @@ To pamięć projektu o klawiaturze w PWA iOS (docs/24 § 6).
 przechodzenia przez resztę. Wiersz niewypełniony jest oznaczony „do uzupełnienia”. Na górze są uwagi spójności (`checks`).
 „Zapisz” przepuszcza dane przez `finalize` (pełny schemat); gdy czegoś brakuje, przenosi do pierwszego brakującego kroku.
 
+**Apple Zdrowie (aplikacja iOS)**: krok „Ciało” zaraz po zgodzie pyta o uprawnienia i wypełnia **puste** pola ze
+Zdrowia: wzrost (ostatni pomiar), masę (ostatnie 30 dni), datę urodzenia i płeć (cechy z profilu Zdrowia).
+- Wtyczka: `readProfile` w `native/trening-health` i `health.readProfile()` w `src/native/health.ts`.
+- Scalanie: `bodyFromHealth` w `src/day/onboarding.ts`, z testami. Zaokrągla jak listy (cm, co 0,5 kg) i odrzuca wartości
+  spoza zakresów schematu. Wartość z profilu i wybór zawodnika zostają; `null` (pominięty krok) traktuje jak puste.
+- Nad polami pojawia się „Z aplikacji Zdrowie: wpisaliśmy …”. Każdą wartość można poprawić, a po zmianie podpis znika.
+- Na webie pola zostają listami.
+- `NSHealthShareUsageDescription` w Info.plist wymienia też wzrost, datę urodzenia i płeć.
+- Dane przykładowe w symulatorze (`-TreningHealthSeed YES`) mają wzrost 182 cm. Daty urodzenia i płci aplikacja nie może
+  zapisać, więc w symulatorze ustawia się je ręcznie w aplikacji Zdrowie.
+
+**Na komputerze** (≥ 1024 px, pełna aplikacja) działa ten sam komponent, bez drugiej implementacji: trasa `/start`
+(`src/m/onboarding/DesktopOnboarding.tsx`) pokazuje go jako kartę 480 px na środku ekranu, a poniżej 1024 px na całym
+ekranie. `Layout` pełnej aplikacji kieruje tam nowe konto, które go nie wypełniło (`useOnboardingDue`). Wejście do zmian:
+Więcej → „Twoje potrzeby”. Wyjście wraca do `/` albo do `/wiecej`; `OnboardingScreen` dostaje adresy przez propsy
+`home` i `me`.
+
 **Haptyka** (aplikacja iOS, `src/native/haptics.ts`): `selection` przy każdym wyborze, `warning` przy pierwszej czerwonej
 fladze, `success` po zapisie, `error` przy próbie zapisu niepełnych danych.
 
@@ -112,7 +129,8 @@ Dziewięć renderów 3D w stylu `public/m/art/`. Nazwy: `ob-time`, `ob-form`, `o
 - Vitest: `src/engine/__tests__/onboarding.test.ts` (25 testów, pokrycie modułu ~99 %), `src/day/__tests__/onboarding.test.ts`.
 - E2E `e2e/onboarding.spec.ts` (viewport iPhone 390×844):
   - cały przepływ: czerwona flaga i jej cofnięcie, poprawka z podsumowania, zapis w IndexedDB (kształt profilu), wejście z Ja;
-  - wznawianie: wstecz zachowuje odpowiedzi, „Później”, „Dokończ: krok 2 z 10”.
+  - wznawianie: wstecz zachowuje odpowiedzi, „Później”, „Dokończ: krok 2 z 10”;
+  - komputer (1440×900): wejście z Więcej, karta 480 px na środku, „Później” wraca do pełnej aplikacji.
   - Zrzuty: `test-results/onboarding-*.png`.
 
 ## 6. Na później

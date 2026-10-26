@@ -19,12 +19,12 @@ function readRow(page: Page) {
     () =>
       new Promise<Record<string, unknown> | undefined>((resolve, reject) => {
         const open = indexedDB.open('trening')
-        open.onerror = () => reject(open.error)
-        open.onsuccess = () => {
+        open.addEventListener('error', () => reject(open.error))
+        open.addEventListener('success', () => {
           const req = open.result.transaction('onboarding').objectStore('onboarding').get('v1')
-          req.onsuccess = () => resolve(req.result as Record<string, unknown> | undefined)
-          req.onerror = () => reject(req.error)
-        }
+          req.addEventListener('success', () => resolve(req.result as Record<string, unknown> | undefined))
+          req.addEventListener('error', () => reject(req.error))
+        })
       }),
   )
 }
@@ -168,4 +168,26 @@ test('przerwany onboarding wraca do zapisanego kroku i wstecz zachowuje odpowied
   await page.getByRole('button', { name: /Uzupełnij swoje potrzeby/ }).click()
   await step(page, 2)
   expect(await readRow(page)).toMatchObject({ status: 'draft', step: 'time_detail', draft: { time: { hours_per_week: 8 } } })
+})
+
+test.describe('komputer', () => {
+  test.use({ viewport: { width: 1440, height: 900 }, hasTouch: false })
+
+  test('ten sam onboarding jako karta na środku; wejście z Więcej, „Później” wraca do pełnej aplikacji', async ({ page }) => {
+    await page.goto('/wiecej?today=2026-10-26')
+    await page.getByRole('link', { name: /Twoje potrzeby/ }).click()
+    await expect(page).toHaveURL(/\/start$/)
+    await expect(page.getByRole('heading', { name: 'Ułóżmy plan pod Ciebie' })).toBeVisible()
+    // karta 480 px na środku ekranu
+    const box = await page.locator('.ob-desk-card').boundingBox()
+    expect(box?.width).toBe(480)
+    expect(Math.round((box?.x ?? 0) + (box?.width ?? 0) / 2)).toBe(720)
+    await page.getByRole('button', { name: 'Zaczynamy' }).click()
+    await fillTime(page)
+    await step(page, 2)
+    await shot(page, 'desktop')
+    await page.getByRole('button', { name: 'Później' }).click()
+    await expect(page).toHaveURL(/localhost:\d+\/$/)
+    expect(await readRow(page)).toMatchObject({ status: 'draft', step: 'time_detail' })
+  })
 })

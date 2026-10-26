@@ -1,5 +1,5 @@
 import { registerPlugin } from '@capacitor/core'
-import type { HealthDay } from '@/day/health'
+import type { HealthDay, HealthProfile } from '@/day/health'
 import { isNative } from './platform'
 
 /** Wtyczka Swift `native/trening-health` (HealthKit) – metody jak w `TreningHealthPlugin.swift`. */
@@ -7,6 +7,7 @@ interface TreningHealthPlugin {
   isAvailable(): Promise<{ available: boolean }>
   requestAuthorization(): Promise<{ granted: boolean }>
   readDay(options: { date: string }): Promise<HealthDay>
+  readProfile(): Promise<HealthProfile>
 }
 
 const plugin = registerPlugin<TreningHealthPlugin>('TreningHealth')
@@ -37,6 +38,15 @@ export const health = {
     if (!isNative()) return null
     try {
       return await plugin.readDay({ date })
+    } catch {
+      return null
+    }
+  },
+  /** Wzrost, masa, data urodzenia i płeć do onboardingu (docs/31); `null` na webie i przy błędzie. */
+  async readProfile(): Promise<HealthProfile | null> {
+    if (!isNative()) return null
+    try {
+      return await plugin.readProfile()
     } catch {
       return null
     }

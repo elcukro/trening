@@ -1,13 +1,16 @@
-import type { ReactNode } from 'react'
+import { useEffect, useState, type ReactNode } from 'react'
 import { WEEKDAYS, addDays, type Weekday } from '@/engine/dates'
 import { CONSENT_VERSION, DEVICES, DISCIPLINES, FIXED_KINDS, GOAL_TYPES, HEALTH_QUESTIONS, TRAINERS, YEARS, checks, healthScreen, isWeekend, withDays, withGoalType, type Draft, type Goal, type Step } from '@/engine/onboarding'
-import { haptic } from '@/native'
+import { haptic, health } from '@/native'
+import type { HealthProfile } from '@/day/health'
+import { birthMax, bodyFromHealth, type BodyField } from '@/day/onboarding'
 import { Chips, DateRow, Field, Options, PickRow, YesNo, range } from './controls'
 import { BIKE_LABEL, DAY_LONG, DAY_SHORT, DEVICE_LABEL, DISCIPLINE_LABEL, FIXED_LABEL, GOAL_LABEL, HEALTH_TEXT, REASON_LABEL, TRAINER_LABEL, YEARS_LABEL, hours, minutes } from './labels'
 
 /** Treść kroków onboardingu (docs/31). Każdy krok dostaje szkic i `set`; walidację robi `stepValid` w silniku. */
 
-export type StepProps = { d: Draft; set: (d: Draft) => void; today: string }
+/** `update` – zmiana od bieżącego szkicu (odczyt asynchroniczny, np. Zdrowie, nie gubi wyborów z międzyczasu). */
+export type StepProps = { d: Draft; set: (d: Draft) => void; update: (fn: (d: Draft) => Draft) => void; today: string }
 
 /** Ilustracja, tytuł i „po co pytamy” każdego kroku. */
 export const STEP_HEAD: Record<Step, { art: string; title: string; sub: string }> = {
@@ -203,15 +206,43 @@ function ConsentStep({ d, set }: StepProps) {
   )
 }
 
-function BodyStep({ d, set, today }: StepProps) {
+/** „wzrost”, „wzrost i masę”, „wzrost, masę i płeć” */
+const joinAnd = (a: string[]) => (a.length > 1 ? `${a.slice(0, -1).join(', ')} i ${a.at(-1)}` : (a[0] ?? ''))
+
+const BODY_LABEL: Record<BodyField, string> = { height_cm: 'wzrost', weight_kg: 'masę', birth_date: 'datę urodzenia', sex: 'płeć' }
+
+function BodyStep({ d, set, update, today }: StepProps) {
   const b = d.body ?? {}
   const put = (p: Partial<NonNullable<Draft['body']>>) => set({ ...d, body: { ...b, ...p } })
+  // aplikacja iOS: po zgodzie (poprzedni krok) pytamy Zdrowie o uprawnienia i wypełniamy tylko puste pola
+  const [hp, setHp] = useState<HealthProfile | null>(null)
+  useEffect(() => {
+    let alive = true
+    void (async () => {
+      if (!(await health.available())) return
+      await health.authorize()
+      const h = await health.readProfile()
+      if (!alive || !h) return
+      setHp(h)
+      update((cur) => ({ ...cur, body: bodyFromHealth(cur.body, h, today).body }))
+    })()
+    return () => {
+      alive = false
+    }
+  }, [update, today])
+  // podpis znika, gdy zawodnik zmieni wartość
+  const fromHealth = hp ? (Object.keys(BODY_LABEL) as BodyField[]).filter((f) => b[f] != null && b[f] === bodyFromHealth({}, hp, today).body[f]) : []
   return (
     <>
+      {fromHealth.length > 0 && (
+        <Notice tone="blue" title="Z aplikacji Zdrowie">
+          Wpisaliśmy {joinAnd(fromHealth.map((f) => BODY_LABEL[f]))}. Sprawdź i popraw, jeśli coś się nie zgadza.
+        </Notice>
+      )}
       <div className="m-list">
         <PickRow label="Wzrost" value={b.height_cm ?? null} options={range(140, 210)} format={(v) => `${v} cm`} optional onChange={(v) => put({ height_cm: v })} />
         <PickRow label="Masa ciała" value={b.weight_kg ?? null} options={range(40, 150, 0.5)} format={(v) => `${String(v).replace('.', ',')} kg`} optional onChange={(v) => put({ weight_kg: v })} />
-        <DateRow label="Data urodzenia" value={b.birth_date} min="1920-01-01" max={addDays(today, -16 * 365)} optional onChange={(v) => put({ birth_date: v })} />
+        <DateRow label="Data urodzenia" value={b.birth_date} min="1920-01-01" max={birthMax(today)} optional onChange={(v) => put({ birth_date: v })} />
       </div>
       <Field label="Płeć" foot="Do wzoru na zapotrzebowanie kalorii.">
         <Chips label="Płeć" options={[{ value: 'female', label: 'Kobieta' }, { value: 'male', label: 'Mężczyzna' }, { value: 'none', label: 'Nie podaję' }]} value={b.sex === undefined ? undefined : (b.sex ?? 'none')} onChange={(v) => put({ sex: v === 'none' ? null : (v as 'female' | 'male') })} />

@@ -14,7 +14,8 @@ public class TreningHealthPlugin: CAPPlugin, CAPBridgedPlugin {
     public let pluginMethods: [CAPPluginMethod] = [
         CAPPluginMethod(name: "isAvailable", returnType: CAPPluginReturnPromise),
         CAPPluginMethod(name: "requestAuthorization", returnType: CAPPluginReturnPromise),
-        CAPPluginMethod(name: "readDay", returnType: CAPPluginReturnPromise)
+        CAPPluginMethod(name: "readDay", returnType: CAPPluginReturnPromise),
+        CAPPluginMethod(name: "readProfile", returnType: CAPPluginReturnPromise)
     ]
 
     private let store = HKHealthStore()
@@ -22,8 +23,12 @@ public class TreningHealthPlugin: CAPPlugin, CAPBridgedPlugin {
 
     private var readTypes: Set<HKObjectType> {
         var out = Set<HKObjectType>()
-        for id in [HKQuantityTypeIdentifier.bodyMass, .restingHeartRate, .heartRateVariabilitySDNN] {
+        for id in [HKQuantityTypeIdentifier.bodyMass, .restingHeartRate, .heartRateVariabilitySDNN, .height] {
             if let t = HKObjectType.quantityType(forIdentifier: id) { out.insert(t) }
+        }
+        // onboarding (docs/31): data urodzenia i płeć – cechy, nie pomiary (aplikacja ich nie zapisuje)
+        for id in [HKCharacteristicTypeIdentifier.dateOfBirth, .biologicalSex] {
+            if let t = HKObjectType.characteristicType(forIdentifier: id) { out.insert(t) }
         }
         if let s = HKObjectType.categoryType(forIdentifier: .sleepAnalysis) { out.insert(s) }
         return out
@@ -102,6 +107,43 @@ public class TreningHealthPlugin: CAPPlugin, CAPBridgedPlugin {
         group.enter()
         sleepMinutes(from: nightStart, to: nightEnd) { v in
             if let v = v { put("sleep_min", v) }
+            group.leave()
+        }
+        group.notify(queue: .main) { call.resolve(out) }
+    }
+
+    /**
+     * Profil do onboardingu (docs/31): ostatni wzrost, masa z ostatnich 30 dni, data urodzenia i płeć.
+     * Brak uprawnień albo danych = brak pola; zawodnik i tak może poprawić każdą wartość.
+     */
+    @objc func readProfile(_ call: CAPPluginCall) {
+        guard HKHealthStore.isHealthDataAvailable() else {
+            call.resolve([:])
+            return
+        }
+        var out: [String: Any] = [:]
+        let lock = NSLock()
+        func put(_ key: String, _ value: Any) {
+            lock.lock()
+            out[key] = value
+            lock.unlock()
+        }
+        if let dob = try? store.dateOfBirthComponents(), let y = dob.year, let m = dob.month, let d = dob.day {
+            put("birth_date", String(format: "%04d-%02d-%02d", y, m, d))
+        }
+        if let sex = try? store.biologicalSex().biologicalSex {
+            if sex == .female { put("sex", "female") } else if sex == .male { put("sex", "male") }
+        }
+        let now = Date()
+        let group = DispatchGroup()
+        group.enter()
+        latest(.height, unit: .meterUnit(with: .centi), from: .distantPast, to: now) { v in
+            if let v = v { put("height_cm", v) }
+            group.leave()
+        }
+        group.enter()
+        latest(.bodyMass, unit: .gramUnit(with: .kilo), from: now.addingTimeInterval(-30 * 86_400), to: now) { v in
+            if let v = v { put("weight_kg", v) }
             group.leave()
         }
         group.notify(queue: .main) { call.resolve(out) }
@@ -199,6 +241,8 @@ public class TreningHealthPlugin: CAPPlugin, CAPBridgedPlugin {
             let wake = cal.date(byAdding: .minute, value: tired ? 5 * 60 + 50 : 6 * 60 + 35, to: day)!
             out.append(HKCategorySample(type: .categoryType(forIdentifier: .sleepAnalysis)!, value: 3, start: bed, end: wake))
         }
+        let cm = HKUnit.meterUnit(with: .centi)
+        out.append(HKQuantitySample(type: .quantityType(forIdentifier: .height)!, quantity: HKQuantity(unit: cm, doubleValue: 182), start: today, end: today))
         store.save(out) { _, _ in done() }
     }
     #else

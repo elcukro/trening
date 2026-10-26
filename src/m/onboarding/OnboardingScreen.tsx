@@ -15,7 +15,7 @@ import { ONBOARDING_LATER } from '@/day/useOnboarding'
 import { ART } from '../art'
 import { useEdgeBack } from '../useEdgeBack'
 import { Btn } from '../components/Chrome'
-import { Notice, STEP_BODY, STEP_HEAD } from './steps'
+import { Notice, STEP_BODY, STEP_HEAD, type StepProps } from './steps'
 import { STEP_TITLE, stepSummary } from './labels'
 
 type View = StartStep | 'done'
@@ -34,14 +34,15 @@ function later() {
  * krawędzi), pomijanie pól opcjonalnych, szkic zapisywany po każdym kroku i podsumowanie z poprawkami.
  * Dane ładują się raz (Dexie) – potem ekran trzyma szkic w stanie, żeby synchronizacja nie podmieniała go w trakcie.
  */
-export function OnboardingScreen() {
+/** Ten sam onboarding w `/m` (telefon, aplikacja iOS) i jako karta na komputerze (`/start`) – różnią się tylko adresy wyjścia. */
+export function OnboardingScreen({ home = '/m', me = '/m/ja' }: { home?: string; me?: string }) {
   const engine = useEngine()
   const row = useLiveQuery(() => db.onboarding.get(ONBOARDING_ID).then((r) => r ?? null), [], undefined)
   if (row === undefined || !engine.settingsApi.loaded) return <div className="ob" />
-  return <Flow row={row} settings={engine.ctx.settings} />
+  return <Flow row={row} settings={engine.ctx.settings} home={home} me={me} />
 }
 
-function Flow({ row, settings }: { row: OnboardingRow | null; settings: Partial<Settings> }) {
+function Flow({ row, settings, home, me }: { row: OnboardingRow | null; settings: Partial<Settings>; home: string; me: string }) {
   const navigate = useNavigate()
   const engine = useEngine()
   const toast = useToast()
@@ -66,7 +67,7 @@ function Flow({ row, settings }: { row: OnboardingRow | null; settings: Partial<
   }
   const exit = () => {
     if (view !== 'done') later()
-    navigate('/m', { replace: true })
+    navigate(home, { replace: true })
   }
 
   const back = (() => {
@@ -104,7 +105,7 @@ function Flow({ row, settings }: { row: OnboardingRow | null; settings: Partial<
       haptic.success()
       if (editing) {
         toast.notify('Zapisano zmiany')
-        navigate('/m/ja', { replace: true })
+        navigate(me, { replace: true })
       } else go('done', 'fwd')
     } catch (e) {
       toast.notify('Nie udało się zapisać', 'error', e instanceof Error ? e.message : String(e))
@@ -118,7 +119,7 @@ function Flow({ row, settings }: { row: OnboardingRow | null; settings: Partial<
     await softDelete('onboarding', ONBOARDING_ID)
     later()
     toast.notify('Usunięto odpowiedzi')
-    navigate('/m/ja', { replace: true })
+    navigate(me, { replace: true })
   }
 
   const step = (STEPS as readonly string[]).includes(view) ? (view as Step) : null
@@ -163,7 +164,7 @@ function Flow({ row, settings }: { row: OnboardingRow | null; settings: Partial<
           {step && (
             <>
               <StepHead step={step} />
-              {STEP_BODY[step]({ d: draft, set: setDraft, today })}
+              <StepBody step={step} d={draft} set={setDraft} update={setDraft} today={today} />
             </>
           )}
           {view === 'summary' && <Summary draft={draft} today={today} editing={editing} onEdit={(s) => {
@@ -215,6 +216,12 @@ function Flow({ row, settings }: { row: OnboardingRow | null; settings: Partial<
       </footer>
     </div>
   )
+}
+
+/** Krok jako komponent (nie wywołanie funkcji) – kroki mają własne hooki (np. odczyt Zdrowia w „Ciele”). */
+function StepBody({ step, ...props }: StepProps & { step: Step }) {
+  const Body = STEP_BODY[step]
+  return <Body {...props} />
 }
 
 function StepHead({ step }: { step: Step }) {

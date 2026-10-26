@@ -10,6 +10,7 @@ const ITEMS: { to: string; icon: string; label: string; sub: string; feature?: F
   { to: '/wiecej/sezon', icon: '🗺️', label: 'Sezon', sub: 'Fazy, tabela tygodni, wydarzenia' },
   { to: '/wiecej/sprzet', icon: '🔧', label: 'Sprzęt', sub: 'Twoje rowery, serwis, dziennik' },
   { to: '/wiecej/wyjazd', icon: '🎒', label: 'Wyjazd', sub: 'Checklista, torby, strategia na przełęcz', feature: 'trip' },
+  { to: '/start', icon: '🎯', label: 'Twoje potrzeby', sub: 'Czas, sprzęt, zdrowie i cel – z nich powstanie plan' },
   { to: '/wiecej/ustawienia', icon: '⚙️', label: 'Ustawienia', sub: 'Profil, LTHR, daty, integracje, kopia' },
   { to: '/biblioteka/strefy', icon: '❤️', label: 'Strefy tętna', sub: 'Tabela bpm dla aktualnego LTHR' },
   { to: '/biblioteka/zasady', icon: '📜', label: 'Zasady R1–R16', sub: 'Co robić, gdy plan się sypie' },
