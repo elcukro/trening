@@ -56,5 +56,5 @@ export function parseScene(value: string | null | undefined): IntroScene | null 
 
 /** Pliki warstw sceny (do wczytania przed pokazaniem intro – bez doczytywania w trakcie animacji). */
 export function sceneImages(scene: Pick<IntroScene, 'season'>): string[] {
-  return ['far', 'near', 'road'].map((l) => `/m/intro/intro-${scene.season}-${l}.webp`).concat('/m/intro/intro-rider.webp')
+  return ['far', 'near', 'road'].map((l) => `/m/intro/intro-${scene.season}-${l}.webp`).concat('/m/intro/intro-rider.webp', '/m/intro/intro-title.webp')
 }

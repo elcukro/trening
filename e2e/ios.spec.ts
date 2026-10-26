@@ -82,7 +82,7 @@ test('Na telefonie start otwiera nowy wygląd (/m); /i jest pod przełącznikiem
 
   // z pełnej aplikacji da się wrócić do prostego widoku
   await page.getByRole('link', { name: 'Więcej' }).click()
-  await page.getByText("Prosty widok na iPhone'a").click()
+  await page.getByText('Prosty widok na telefon').click()
   await expect(page.getByRole('heading', { name: 'Dziś' })).toBeVisible()
 })
 
