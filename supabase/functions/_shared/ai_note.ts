@@ -9,7 +9,7 @@ import { fulfilsPlan, isShortenedPlan, type DaySnapshot } from './email_views.ts
 import { historyContext, numbersOk, rideFacts, type HistRide, type History, type RideFacts, type RideRowLite, type StoredSamples } from './ride_facts.ts'
 import { COACH_HANDBOOK, promptFacts, ruleNote, userMessage, wordCount } from './ride_note_prompt.ts'
 import { assertAiSafe, isAiSource } from './provenance.ts'
-import { fromStrava, fromWahoo, mergeRides, sameRide, type RideRow, type RideSource } from './rides.ts'
+import { fromFit, fromStrava, fromWahoo, mergeRides, rideFromRow, sameRide, type RideRow, type RideSource } from './rides.ts'
 import { accessTokenFor, stravaScope, updateActivity } from './strava.ts'
 import { checkDraft, isDefaultTitle, parseDraft, ruleDraft, titlePrompt, withSignature, type TitleDraft } from './strava_title.ts'
 import { aiLangRule } from './i18n.ts'
@@ -40,39 +40,52 @@ export interface RideRef {
   id: number | string
 }
 
-const RIDE_TABLE = { wahoo: 'wahoo_workouts', strava: 'strava_activities' } as const
-const STREAM_TABLE = { wahoo: ['wahoo_streams', 'workout_id'], strava: ['strava_streams', 'activity_id'] } as const
+export const RIDE_TABLE = { wahoo: 'wahoo_workouts', strava: 'strava_activities', fit: 'fit_rides' } as const
+const STREAM_TABLE = { wahoo: ['wahoo_streams', 'workout_id'], strava: ['strava_streams', 'activity_id'], fit: ['fit_streams', 'ride_id'] } as const
 const HIST_COLS = {
   wahoo: 'id, date, starts, name, minutes_active, moving_time_s, distance_km, ascent_m, mmp_w, np_w, avg_power, avg_hr, max_hr, avg_cadence, device_watts, decoupling_pct, hr_histogram, note, note_source, note_facts, summary',
   strava: 'id, date, start_at, name, moving_time_s, elapsed_time_s, distance_m, elevation_m, mmp_w, np_w, avg_watts, avg_hr, max_hr, avg_cadence, device_watts, decoupling_pct, hr_histogram, note, note_source, note_facts',
+  fit: 'id, date, start_at, name, moving_time_s, elapsed_time_s, distance_m, elevation_m, mmp_w, np_w, avg_watts, avg_hr, max_hr, avg_cadence, device_watts, decoupling_pct, hr_histogram, note, note_source, note_facts',
 } as const
 
 export async function loadRide(admin: SupabaseClient, userId: string, ref: RideRef): Promise<RideRow | null> {
   const { data } = await admin.from(RIDE_TABLE[ref.source]).select('*').eq('user_id', userId).eq('id', ref.id).maybeSingle()
   if (!data || data.deleted_at) return null
   if (ref.source === 'strava' && !data.is_ride) return null
-  return ref.source === 'wahoo' ? fromWahoo(data) : fromStrava(data)
+  return rideFromRow(ref.source, data)
 }
 
 /**
- * Jazdy konta z zakresu dat (`from` null = od początku). Dla AI (`aiOnly`) wyłącznie Wahoo – historia ze Stravy, nawet
- * policzona przez nas, nie może trafić do modelu (polityka § 5.3). Bez AI (notatka z reguł, mail, widoki) – obie tabele
- * scalone, kopia z Wahoo wygrywa.
+ * Jazdy konta z zakresu dat (`from` null = od początku). Dla AI (`aiOnly`) wyłącznie Wahoo i wgrane pliki – historia ze
+ * Stravy, nawet policzona przez nas, nie może trafić do modelu (polityka § 5.3). Bez AI (notatka z reguł, mail, widoki) –
+ * wszystkie tabele scalone, kopia z Wahoo wygrywa, potem z pliku.
  */
 export async function loadRidesRange(admin: SupabaseClient, userId: string, from: string | null, to: string, aiOnly: boolean): Promise<RideRow[]> {
   let w = admin.from('wahoo_workouts').select(HIST_COLS.wahoo).eq('user_id', userId).is('deleted_at', null).lte('date', to)
+  let f = admin.from('fit_rides').select(HIST_COLS.fit).eq('user_id', userId).is('deleted_at', null).lte('date', to)
   let st = admin.from('strava_activities').select(HIST_COLS.strava).eq('user_id', userId).eq('is_ride', true).is('deleted_at', null).lte('date', to)
   if (from) {
     w = w.gte('date', from)
+    f = f.gte('date', from)
     st = st.gte('date', from)
   }
-  const [{ data: wr }, s] = await Promise.all([w.order('date'), aiOnly ? Promise.resolve({ data: [] as Record<string, unknown>[] }) : st.order('date')])
-  return mergeRides((wr ?? []).map((r) => fromWahoo(r as Record<string, unknown>)), ((s.data ?? []) as Record<string, unknown>[]).map(fromStrava))
+  const [{ data: wr }, { data: fr }, s] = await Promise.all([w.order('date'), f.order('date'), aiOnly ? Promise.resolve({ data: [] as Record<string, unknown>[] }) : st.order('date')])
+  const rows = (d: unknown) => (d ?? []) as Record<string, unknown>[]
+  return mergeRides(rows(wr).map(fromWahoo), rows(s.data).map(fromStrava), rows(fr).map(fromFit))
+}
+
+/** Kopia jazdy ze Stravy w naszych danych (Wahoo, potem wgrany plik) albo null. */
+export async function ownTwin(admin: SupabaseClient, userId: string, ride: RideRow): Promise<RideRow | null> {
+  const [{ data: w }, { data: f }] = await Promise.all([
+    admin.from('wahoo_workouts').select('*').eq('user_id', userId).eq('date', ride.date).is('deleted_at', null),
+    admin.from('fit_rides').select('*').eq('user_id', userId).eq('date', ride.date).is('deleted_at', null),
+  ])
+  return [...(w ?? []).map(fromWahoo), ...(f ?? []).map(fromFit)].find((o) => sameRide(o, ride)) ?? null
 }
 
 export const loadRideHistory = (admin: SupabaseClient, userId: string, upTo: string, aiOnly: boolean): Promise<RideRow[]> => loadRidesRange(admin, userId, null, upTo, aiOnly)
 
-/** Fakty o jeździe z bazy: jazda, próbki, migawka planu, historia. Dla jazdy z Wahoo – tylko dane spoza Stravy. */
+/** Fakty o jeździe z bazy: jazda, próbki, migawka planu, historia. Dla jazdy z Wahoo albo z pliku – tylko dane spoza Stravy. */
 export async function gatherFacts(admin: SupabaseClient, userId: string, ref: RideRef): Promise<{ facts: RideFacts; ride: RideRow } | null> {
   const a = await loadRide(admin, userId, ref)
   if (!a) return null
@@ -264,7 +277,7 @@ export interface NoteResult {
 
 /**
  * Notatka dla jazdy: model (z jedną poprawką, gdy zmyśli liczbę) albo reguły; zapis przy jeździe.
- * **Model tylko dla jazd z Wahoo** (docs/33): jazda ze Stravy dostaje zawsze notatkę z reguł – polityka API Stravy
+ * **Model tylko dla jazd z Wahoo i z wgranego pliku** (docs/33): jazda ze Stravy dostaje zawsze notatkę z reguł – polityka API Stravy
  * § 5.3/5.10 zakazuje przekazywania jej danych (także pochodnych) do AI.
  */
 export async function writeNote(admin: SupabaseClient, userId: string, ref: RideRef, opts: { force?: boolean; model?: string; dryRun?: boolean; ftpBefore?: number } = {}): Promise<NoteResult | null> {
@@ -343,10 +356,9 @@ export async function writeStravaTitle(admin: SupabaseClient, userId: string, ac
   if (!a || a.title_set_at) return null
   const stravaRide = await loadRide(admin, userId, { source: 'strava', id: activityId })
   if (!stravaRide) return null
-  // tekst modelu tylko z faktów kopii z Wahoo – Strava służy wyłącznie do wskazania jazdy i sprawdzenia tytułu
-  const { data: twins } = await admin.from('wahoo_workouts').select('*').eq('user_id', userId).eq('date', a.date as string).is('deleted_at', null)
-  const twin = (twins ?? []).map((r) => fromWahoo(r)).find((w) => sameRide(w, stravaRide)) ?? null
-  const g = await gatherFacts(admin, userId, twin ? { source: 'wahoo', id: twin.id } : { source: 'strava', id: activityId })
+  // tekst modelu tylko z faktów kopii z Wahoo albo z pliku – Strava służy wyłącznie do wskazania jazdy i sprawdzenia tytułu
+  const twin = await ownTwin(admin, userId, stravaRide)
+  const g = await gatherFacts(admin, userId, twin ? { source: twin.source, id: twin.id } : { source: 'strava', id: activityId })
   if (!g) return null
   const { facts } = g
   const twinNote = twin?.note ?? null
@@ -359,7 +371,7 @@ export async function writeStravaTitle(admin: SupabaseClient, userId: string, ac
   let source: 'ai' | 'rules' = 'rules'
   let detail = ''
   try {
-    if (!twin) throw new Error('brak kopii z Wahoo – tytuł z reguł (polityka API § 5.3)')
+    if (!twin) throw new Error('brak kopii z Wahoo ani z pliku – tytuł z reguł (polityka API § 5.3)')
     if (!Deno.env.get('ANTHROPIC_API_KEY')) throw new Error('brak klucza')
     if (!(await underLimit(admin))) throw new Error('limit miesięczny')
     assertAiSafe(promptFacts(facts))

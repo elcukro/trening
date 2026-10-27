@@ -1,19 +1,20 @@
 /**
- * Jedna jazda niezależnie od źródła (docs/33 § 4): wiersz `strava_activities` albo `wahoo_workouts` → `RideRow`
- * z polem `source`. Czysty TS – ten sam kod w Edge Functions i w aplikacji (Vitest: `src/engine/__tests__/rides.test.ts`).
+ * Jedna jazda niezależnie od źródła (docs/33 § 4): wiersz `strava_activities`, `wahoo_workouts` albo `fit_rides`
+ * (plik FIT wgrany w aplikacji, np. z MyWhoosh – § 7a) → `RideRow` z polem `source`. Czysty TS – ten sam kod w Edge Functions i w aplikacji (Vitest: `src/engine/__tests__/rides.test.ts`).
  *
- * Ta sama jazda bywa w obu tabelach (Bolt wysyła ją do Wahoo, a Wahoo do Stravy). `mergeRides` zostawia kopię z Wahoo –
- * to nasze dane, bez limitu 7 dni i dozwolone dla AI – a jazdę ze Stravy tylko wtedy, gdy Wahoo jej nie ma.
+ * Ta sama jazda bywa w kilku tabelach (Bolt wysyła ją do Wahoo, a Wahoo do Stravy; MyWhoosh wysyła na Stravę, a zawodnik
+ * wgrywa ten sam plik). `mergeRides` zostawia kopię z Wahoo, potem z pliku – to nasze dane, bez limitu 7 dni i dozwolone
+ * dla AI – a jazdę ze Stravy tylko wtedy, gdy żadna z nich jej nie ma.
  */
 import type { DataSource } from './provenance.ts'
 
-export type RideSource = Extract<DataSource, 'wahoo' | 'strava'>
+export type RideSource = Extract<DataSource, 'wahoo' | 'strava' | 'fit'>
 
 export interface RideRow {
   source: RideSource
-  /** identyfikator w tabeli źródła (Strava: id aktywności, Wahoo: id treningu) */
+  /** identyfikator w tabeli źródła (Strava: id aktywności, Wahoo: id treningu, plik: id w `fit_rides`) */
   id: number
-  /** klucz unikalny między źródłami: `wahoo:123`, `strava:456` */
+  /** klucz unikalny między źródłami: `wahoo:123`, `strava:456`, `fit:7` */
   key: string
   date: string
   start_at: string | null
@@ -44,11 +45,16 @@ const obj = <T>(v: unknown): T | null => (v && typeof v === 'object' ? (v as T) 
 export const rideKey = (source: RideSource, id: number | string): string => `${source}:${id}`
 
 /** Wiersz `strava_activities` (serwer albo Dexie) → `RideRow`. */
-export function fromStrava(a: Record<string, unknown>): RideRow {
+export const fromStrava = (a: Record<string, unknown>): RideRow => fromStravaLike('strava', a)
+
+/** Wiersz `fit_rides` → `RideRow` (te same kolumny co `strava_activities`). */
+export const fromFit = (a: Record<string, unknown>): RideRow => fromStravaLike('fit', a)
+
+function fromStravaLike(source: 'strava' | 'fit', a: Record<string, unknown>): RideRow {
   return {
-    source: 'strava',
+    source,
     id: Number(a.id),
-    key: rideKey('strava', a.id as number),
+    key: rideKey(source, a.id as number),
     date: a.date as string,
     start_at: (a.start_at as string | null) ?? null,
     name: (a.name as string | null) ?? 'Jazda',
@@ -114,14 +120,24 @@ export function sameRide(a: Pick<RideRow, 'date' | 'start_at' | 'moving_time_s'>
   return dur && a.date === b.date
 }
 
-/** Kopia z Wahoo wygrywa; jazda ze Stravy zostaje tylko bez bliźniaka z Wahoo. Wynik po dacie i godzinie startu. */
-export function mergeRides(wahoo: readonly RideRow[], strava: readonly RideRow[]): RideRow[] {
+/**
+ * Kopia z Wahoo wygrywa, potem z wgranego pliku; jazda ze Stravy zostaje tylko bez bliźniaka w żadnej z nich.
+ * Wynik po dacie i godzinie startu.
+ */
+export function mergeRides(wahoo: readonly RideRow[], strava: readonly RideRow[], fit: readonly RideRow[] = []): RideRow[] {
   const out: RideRow[] = [...wahoo]
-  for (const s of strava) if (!wahoo.some((w) => sameRide(w, s))) out.push(s)
+  for (const f of fit) if (!wahoo.some((w) => sameRide(w, f))) out.push(f)
+  const ours = [...out]
+  for (const s of strava) if (!ours.some((o) => sameRide(o, s))) out.push(s)
   return out.sort((x, y) => (x.date === y.date ? (x.start_at ?? '').localeCompare(y.start_at ?? '') : x.date.localeCompare(y.date)))
 }
 
-/** Bliźniak jazdy w drugim źródle (do pominięcia drugiego maila o tej samej jeździe). */
+/** Bliźniak jazdy w innym źródle (do pominięcia drugiego maila o tej samej jeździe). */
 export function twinOf(ride: RideRow, others: readonly RideRow[]): RideRow | null {
   return others.find((o) => o.source !== ride.source && sameRide(o, ride)) ?? null
+}
+
+/** Wiersz tabeli źródła → `RideRow`. */
+export function rideFromRow(source: RideSource, row: Record<string, unknown>): RideRow {
+  return source === 'wahoo' ? fromWahoo(row) : source === 'fit' ? fromFit(row) : fromStrava(row)
 }

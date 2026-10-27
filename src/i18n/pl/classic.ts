@@ -4,6 +4,7 @@ import { plCount } from '../core'
 export default {
   rideSource: {
     stravaExpires: 'Strava · znika po 7 dniach',
+    fit: 'Plik FIT',
   },
   nav: {
     mainLabel: 'Nawigacja główna',

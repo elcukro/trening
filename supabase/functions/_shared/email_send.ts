@@ -10,7 +10,7 @@ import { hm, mondayOf as mondayOfWeek, ruleLetter, weekFacts, weekPrompt, WEEK_S
 import { numbersOk } from './ride_facts.ts'
 import { callClaude, loadRide, loadRidesRange, underLimit, type RideRef } from './ai_note.ts'
 import { assertAiSafe } from './provenance.ts'
-import { fromStrava, fromWahoo, twinOf, type RideRow } from './rides.ts'
+import { fromFit, fromStrava, fromWahoo, twinOf, type RideRow } from './rides.ts'
 import { buildWorkoutView, fulfilsPlan, type DaySnapshot, type RideLite } from './email_views.ts'
 import { aiLangRule, fix, strings, weekdayOf, weekRange, type Lang } from './i18n.ts'
 import { userLang } from './supabase.ts'
@@ -187,17 +187,18 @@ async function weekDoneMin(admin: SupabaseClient, userId: string, date: string):
   return week.reduce((s, r) => s + r.moving_time_s / 60, 0)
 }
 
-/** Jazdy dnia z obu tabel osobno (bez scalania) – do szukania bliźniaka jazdy w drugim źródle. */
+/** Jazdy dnia ze wszystkich tabel osobno (bez scalania) – do szukania bliźniaka jazdy w innym źródle. */
 async function dayRidesBoth(admin: SupabaseClient, userId: string, date: string): Promise<RideRow[]> {
-  const [{ data: s }, { data: w }] = await Promise.all([
+  const [{ data: s }, { data: w }, { data: f }] = await Promise.all([
     admin.from('strava_activities').select('*').eq('user_id', userId).eq('date', date).is('deleted_at', null),
     admin.from('wahoo_workouts').select('*').eq('user_id', userId).eq('date', date).is('deleted_at', null),
+    admin.from('fit_rides').select('*').eq('user_id', userId).eq('date', date).is('deleted_at', null),
   ])
-  return [...(s ?? []).map(fromStrava), ...(w ?? []).map(fromWahoo)]
+  return [...(s ?? []).map(fromStrava), ...(w ?? []).map(fromWahoo), ...(f ?? []).map(fromFit)]
 }
 
-/** Klucz maila po jeździe: Strava – samo id (jak dotąd), Wahoo – `wahoo:<id>`. */
-export const workoutRef = (r: Pick<RideRow, 'source' | 'id'>): string => (r.source === 'strava' ? String(r.id) : `wahoo:${r.id}`)
+/** Klucz maila po jeździe: Strava – samo id (jak dotąd), Wahoo – `wahoo:<id>`, wgrany plik – `fit:<id>`. */
+export const workoutRef = (r: Pick<RideRow, 'source' | 'id'>): string => (r.source === 'strava' ? String(r.id) : `${r.source}:${r.id}`)
 
 async function currentRpe(admin: SupabaseClient, userId: string, date: string): Promise<number | null> {
   const { data } = await admin.from('session_logs').select('rpe').eq('user_id', userId).eq('date', date).eq('kind', 'bike').is('deleted_at', null).order('updated_at', { ascending: false }).limit(1).maybeSingle()
@@ -239,10 +240,11 @@ export async function sendWorkout(admin: SupabaseClient, userId: string, ref: Ri
   if (a.moving_time_s < 15 * 60) return 'krótka jazda'
   const snap = await snapshot(admin, userId, a.date)
   if (!fulfilsPlan(a.moving_time_s, snap?.planned?.minutes ?? null)) return 'czeka na wieczorne podsumowanie'
-  const twin = twinOf(a, await dayRidesBoth(admin, userId, a.date))
-  if (twin) {
-    const { data: sent } = await admin.from('email_log').select('ref').eq('user_id', userId).eq('kind', 'workout').eq('ref', workoutRef(twin)).maybeSingle()
-    if (sent) return 'mail był o tej jeździe z drugiego źródła'
+  // bliźniaki w każdym innym źródle (plik z MyWhoosh bywa też na Stravie, plik z Bolta – w Wahoo)
+  const twins = (await dayRidesBoth(admin, userId, a.date)).filter((o) => twinOf(a, [o]))
+  if (twins.length) {
+    const { data: sent } = await admin.from('email_log').select('ref').eq('user_id', userId).eq('kind', 'workout').in('ref', twins.map(workoutRef)).limit(1)
+    if (sent?.length) return 'mail był o tej jeździe z drugiego źródła'
   }
   const ref0 = workoutRef(a)
   if (!(await reserve(admin, userId, 'workout', ref0))) return 'już wysłane'
@@ -333,7 +335,7 @@ export async function gatherWeek(admin: SupabaseClient, userId: string, monday: 
   const sunday = addDays(monday, 6)
   const nextSunday = addDays(monday, 13)
   const [rides, { data: snaps }, { data: logs }, { data: cis }] = await Promise.all([
-    // tylko Wahoo – list pisze model, a dane Stravy nie mogą trafić do AI (docs/33)
+    // tylko Wahoo i wgrane pliki – list pisze model, a dane Stravy nie mogą trafić do AI (docs/33)
     loadRidesRange(admin, userId, prevMonday, sunday, true),
     admin.from('email_days').select('date, payload').eq('user_id', userId).gte('date', monday).lte('date', nextSunday),
     // logi zbudowane z jazd Stravy pomijamy (ich status i metryki pochodzą ze Stravy)

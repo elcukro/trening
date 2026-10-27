@@ -61,9 +61,11 @@ interface CachedStreams {
 const isOld = (iso: string | null | undefined, now: number) => !iso || now - Date.parse(iso) > STRAVA_KEEP_MS
 
 /**
- * Próbki jazdy (co 5 s) z `wahoo_streams` albo `strava_streams` – pobierane na żądanie i buforowane w `kv`
+ * Próbki jazdy (co 5 s) z `wahoo_streams`, `fit_streams` albo `strava_streams` – pobierane na żądanie i buforowane w `kv`
  * (`streams:<ride.key>`), żeby analiza działała offline po pierwszym otwarciu. Bufor Stravy wygasa po 7 dniach.
  */
+const STREAM_TABLE = { wahoo: ['wahoo_streams', 'workout_id'], fit: ['fit_streams', 'ride_id'], strava: ['strava_streams', 'activity_id'] } as const
+
 export async function loadRideStreams(ride: Pick<RideRow, 'source' | 'id' | 'key'>): Promise<RideSamples | null> {
   const key = `streams:${ride.key}`
   const cached = (await db.kv.get(key))?.value as CachedStreams | undefined
@@ -72,7 +74,8 @@ export async function loadRideStreams(ride: Pick<RideRow, 'source' | 'id' | 'key
     await db.kv.delete(key)
   }
   if (!supabase) return null
-  const q = ride.source === 'wahoo' ? supabase.from('wahoo_streams').select('dt, n, samples').eq('workout_id', ride.id) : supabase.from('strava_streams').select('dt, n, samples').eq('activity_id', ride.id)
+  const [table, col] = STREAM_TABLE[ride.source]
+  const q = supabase.from(table).select('dt, n, samples').eq(col, ride.id)
   const { data, error } = await q.maybeSingle()
   if (error) throw new Error(`${ride.source}_streams: ${error.message}`)
   if (!data) return null

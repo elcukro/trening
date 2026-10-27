@@ -49,7 +49,7 @@ export interface SessionLog extends SyncedRow {
   bike?: string | null
   strava_activity_id?: number | null
   /** skąd metryki dnia (docs/33 § 4): log z jazd Stravy nie trafia do AI i znika po 7 dniach razem z jazdą */
-  source?: 'strava' | 'wahoo' | 'manual' | null
+  source?: 'strava' | 'wahoo' | 'fit' | 'manual' | null
   notes?: string | null
 }
 
@@ -168,6 +168,31 @@ export interface WahooWorkout extends SyncedRow {
   has_streams?: boolean | null
   summary?: Record<string, unknown> | null
   /** notatka trenera po jeździe – z AI tylko na danych Wahoo (docs/33) */
+  note?: string | null
+  note_source?: 'ai' | 'rules' | null
+}
+
+/** Jazda z wgranego pliku FIT (docs/33 § 7a, np. MyWhoosh) – zapisuje Edge Function `fit-upload`, aplikacja tylko czyta. */
+export interface FitRide extends SyncedRow {
+  date: string
+  start_at: string
+  name: string | null
+  file_name?: string | null
+  moving_time_s: number
+  elapsed_time_s: number
+  distance_m: number
+  elevation_m: number
+  avg_hr?: number | null
+  max_hr?: number | null
+  avg_cadence?: number | null
+  avg_watts?: number | null
+  np_w?: number | null
+  device_watts?: boolean | null
+  decoupling_pct?: number | null
+  mmp_w?: Record<string, number | null> | null
+  best_speed_kmh?: Record<string, number | null> | null
+  hr_histogram?: number[] | null
+  has_streams?: boolean | null
   note?: string | null
   note_source?: 'ai' | 'rules' | null
 }
@@ -292,9 +317,9 @@ export interface OutboxItem {
   ts: string
 }
 
-export const SYNC_TABLES = ['bikes', 'checkins', 'session_logs', 'test_results', 'plan_overrides', 'gear_task_state', 'service_log', 'packing_state', 'strava_activities', 'baseline_entries', 'wahoo_pushes', 'wahoo_workouts', 'meals', 'onboarding', 'plans'] as const
+export const SYNC_TABLES = ['bikes', 'checkins', 'session_logs', 'test_results', 'plan_overrides', 'gear_task_state', 'service_log', 'packing_state', 'strava_activities', 'baseline_entries', 'wahoo_pushes', 'wahoo_workouts', 'meals', 'onboarding', 'plans', 'fit_rides'] as const
 /** Tabele, do których klient nie wstawia wierszy – tylko aktualizuje wybrane pola (RLS: update own). */
-export const UPDATE_ONLY_TABLES: Record<string, string[]> = { strava_activities: ['date', 'is_ride', 'updated_at'], wahoo_pushes: [], wahoo_workouts: [] }
+export const UPDATE_ONLY_TABLES: Record<string, string[]> = { strava_activities: ['date', 'is_ride', 'updated_at'], wahoo_pushes: [], wahoo_workouts: [], fit_rides: [] }
 export type SyncTable = (typeof SYNC_TABLES)[number]
 /**
  * Tabele z deterministycznym `id` (np. identyfikator zadania) – klucz główny na serwerze to (user_id, id),
@@ -318,6 +343,7 @@ export class TreningDB extends Dexie {
   baseline_entries!: EntityTable<BaselineEntry, 'id'>
   wahoo_pushes!: EntityTable<WahooPushRow, 'id'>
   wahoo_workouts!: EntityTable<WahooWorkout, 'id'>
+  fit_rides!: EntityTable<FitRide, 'id'>
   meals!: EntityTable<MealRow, 'id'>
   onboarding!: EntityTable<OnboardingRow, 'id'>
   plans!: EntityTable<PlanRow, 'id'>
@@ -364,6 +390,9 @@ export class TreningDB extends Dexie {
     })
     this.version(11).stores({
       plans: 'id, updated_at',
+    })
+    this.version(12).stores({
+      fit_rides: 'id, date, updated_at',
     })
   }
 }

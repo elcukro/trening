@@ -188,6 +188,8 @@ const en: typeof pl = {
       fallbackName: 'Ride',
       none: 'No rides in the last 4 weeks',
       noneSub: 'Rides appear after syncing with Wahoo or Strava',
+      fitUpload: 'Upload a ride (FIT)',
+      fitUploadSub: 'From MyWhoosh or another app without Wahoo – with a coach note',
     },
     goal: {
       group: 'You and your goal',

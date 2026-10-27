@@ -1,17 +1,19 @@
 /**
  * Co dzieje się po nowej jeździe (docs/33 § 2): kopia z Wahoo → plik FIT → notatka (AI) → mail po treningu.
- * Jazda tylko ze Stravy → notatka z reguł → mail. Tylko Deno.
+ * Plik wgrany w aplikacji (MyWhoosh, § 7a) → notatka (AI) → mail. Jazda tylko ze Stravy → notatka z reguł → mail. Tylko Deno.
  */
 import type { SupabaseClient } from 'npm:@supabase/supabase-js@2'
-import { loadRide, writeNote, writeStravaTitle } from './ai_note.ts'
+import { loadRide, ownTwin, writeNote, writeStravaTitle } from './ai_note.ts'
 import { sendWorkout, warsawNow } from './email_send.ts'
 import { redact } from './provenance.ts'
-import { fromWahoo, sameRide } from './rides.ts'
 import { ingestFit, syncCompleted } from './wahoo_sync.ts'
 import type { WahooSummary } from './wahoo_summary.ts'
 
 /** Ile dni wstecz jazda dostaje notatkę i mail – starsze (historia, odpytanie po przerwie) tylko metryki. */
 const FRESH_DAYS = 3
+
+/** Wgrany plik dostaje notatkę AI, gdy jazda jest z ostatnich dwóch tygodni (starsze – historia, tylko metryki). */
+export const FIT_NOTE_DAYS = 14
 
 function daysAgo(n: number): string {
   const d = new Date(`${warsawNow().date}T00:00:00Z`)
@@ -20,6 +22,19 @@ function daysAgo(n: number): string {
 }
 
 const errText = (e: unknown) => `błąd: ${redact(e)}`
+
+/** Wgrany plik po zapisie: notatka (jazda z ostatnich `FIT_NOTE_DAYS` dni – zawodnik wgrywa ją sam, często później) i mail. */
+export async function processFitRide(admin: SupabaseClient, userId: string, id: number): Promise<string> {
+  const ride = await loadRide(admin, userId, { source: 'fit', id })
+  if (!ride) return 'brak jazdy'
+  const steps: string[] = []
+  if (ride.date >= daysAgo(FIT_NOTE_DAYS) && !ride.note) {
+    const n = await writeNote(admin, userId, { source: 'fit', id }).catch((e) => ({ detail: errText(e), source: 'błąd' }))
+    steps.push(`notatka: ${n ? `${'source' in n ? n.source : ''} ${n.detail}`.trim() : 'pominięta'}`)
+  }
+  steps.push(`mail: ${await sendWorkout(admin, userId, { source: 'fit', id }).catch(errText)}`)
+  return steps.join(' | ')
+}
 
 /** Jazdy z Wahoo po zapisie: plik FIT, potem (dla świeżych) notatka i mail. */
 export async function processWahooRides(admin: SupabaseClient, userId: string, ids: number[]): Promise<Record<string, string>> {
@@ -58,10 +73,9 @@ export async function afterStravaImport(admin: SupabaseClient, userId: string, a
   }
   const ride = await loadRide(admin, userId, { source: 'strava', id: activityId })
   if (!ride) return [...log, 'strava: nie jazda']
-  const { data: sameDay } = await admin.from('wahoo_workouts').select('*').eq('user_id', userId).eq('date', ride.date).is('deleted_at', null)
-  const twin = (sameDay ?? []).map((r) => fromWahoo(r)).find((w) => sameRide(w, ride))
+  const twin = await ownTwin(admin, userId, ride)
   if (twin) {
-    log.push(`strava: kopia z Wahoo ${twin.id} – notatka i mail z Wahoo`)
+    log.push(`strava: kopia ${twin.key} – notatka i mail z niej`)
   } else {
     const n = await writeNote(admin, userId, { source: 'strava', id: activityId }).catch((e) => ({ detail: errText(e) }))
     log.push(`strava: notatka z reguł ${n ? n.detail : 'pominięta'}`)

@@ -313,9 +313,9 @@ export function useSnapshot(): Snapshot {
 
   const suggestion = useMemo(() => {
     const lastTest = (tests ?? []).filter((t) => t.ftp_w).map((t) => t.date).toSorted().at(-1) ?? null
-    // tylko Wahoo: zapisane FTP trafia do danych, które widzi AI, więc nie może pochodzić ze Stravy (docs/33)
+    // tylko Wahoo i wgrane pliki: zapisane FTP trafia do danych, które widzi AI, więc nie może pochodzić ze Stravy (docs/33)
     return suggestFtp(
-      acts.filter((a) => a.source === 'wahoo'),
+      acts.filter((a) => a.source !== 'strava'),
       ftpEff.ftp,
       lastTest,
       new Set(dismissals),

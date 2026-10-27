@@ -22,8 +22,8 @@ export function useFtpSuggestion(engine: Engine, acts: RideRow[]): FtpSuggestion
     const tests = engine.ctx.tests ?? []
     const eff = effectiveFtp(today, engine.ctx.settings.ftp_w_estimate, tests)
     const since = eff.source === 'test' ? (eff.test_date ?? null) : null
-    // tylko Wahoo: zapisane FTP trafia do danych, które widzi AI, więc nie może pochodzić ze Stravy (docs/33)
-    const rides = acts.filter((a) => a.source === 'wahoo')
+    // tylko Wahoo i wgrane pliki: zapisane FTP trafia do danych, które widzi AI, więc nie może pochodzić ze Stravy (docs/33)
+    const rides = acts.filter((a) => a.source !== 'strava')
     return suggestFtp(rides, eff.ftp, since, new Set(dismissed.map((d) => d.key.slice(DISMISS_PREFIX.length))))
   }, [engine, acts, dismissed])
 }

@@ -19,6 +19,9 @@ import { fmtDayMonth, fmtShort, todayISO } from '@/lib/dates'
 import { num } from '@/lib/format'
 import { Group, Row, Screen } from '../components/Chrome'
 import { LanguageSheet, LocationSheet, NumbersSheet, Switch, langChoiceLabel } from '../components/SettingsSheets'
+import { FitUploadSheet } from '../components/FitUploadSheet'
+import { canUploadFit } from '@/sync/fitUpload'
+import { useSharedFit } from '../useSharedFit'
 import { ART } from '../art'
 import { IS_IOS_APP } from '@/native'
 import { confirmAction } from '@/native'
@@ -96,8 +99,10 @@ export function MeScreen() {
   const form = formLabel(snap.form?.tsb ?? null)
   const toGoal = snap.goal.ftp - snap.ftp.w
   const s = engine.ctx.settings
-  const [sheet, setSheet] = useState<'numbers' | 'location' | 'language' | null>(null)
+  const [sheet, setSheet] = useState<'numbers' | 'location' | 'language' | 'fit' | null>(null)
   const langChoice: LangChoice = s.language === 'pl' || s.language === 'en' ? s.language : 'system'
+  // plik .fit przysłany z innej aplikacji (iOS „Udostępnij”) – od razu do arkusza wgrywania
+  const [sharedFit, takeSharedFit] = useSharedFit()
   const onboarding = useOnboardingRow()
   const loc = useLiveQuery(getLocation, [], undefined)
   const [sv, setSv] = useState<StravaStatus | 'error' | null>(null)
@@ -194,6 +199,7 @@ export function MeScreen() {
           return <Row key={a.key} to={`/m/podsumowanie/${a.date}`} icon={<img src={ART.heart} alt="" width={28} height={28} className="h-7 w-7 object-contain" />} title={a.name} sub={`${fmtShort(a.date)} · ${Math.round(a.moving_time_s / 60)} min · ${num(a.distance_m / 1000, 0)} km${a.device_watts && a.np_w ? ` · ${Math.round(a.np_w)} W` : a.avg_hr ? ` · ${Math.round(a.avg_hr)} bpm` : ''}`} value={load ? `${Math.round(load.tss)} TSS` : undefined} />
         })}
         {rides.length === 0 && <Row title={tm.rides.none} sub={tm.rides.noneSub} />}
+        {canUploadFit && auth.session && <Row icon={<img src={ART.bolt} alt="" width={28} height={28} className="h-7 w-7 object-contain" />} title={tm.rides.fitUpload} sub={tm.rides.fitUploadSub} onClick={() => setSheet('fit')} />}
       </Group>
 
       <Group label={tm.goal.group}>
@@ -307,6 +313,16 @@ export function MeScreen() {
       {sheet === 'numbers' && <NumbersSheet onClose={() => setSheet(null)} />}
       {sheet === 'location' && <LocationSheet onClose={() => setSheet(null)} />}
       {sheet === 'language' && <LanguageSheet onClose={() => setSheet(null)} />}
+      {(sheet === 'fit' || sharedFit) && (
+        <FitUploadSheet
+          initialFile={sharedFit}
+          onFileTaken={() => {
+            setSheet('fit')
+            takeSharedFit()
+          }}
+          onClose={() => setSheet(null)} onOpenRide={(date) => navigate(`/m/podsumowanie/${date}`)}
+        />
+      )}
     </Screen>
   )
 }

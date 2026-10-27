@@ -13,6 +13,7 @@ import './m.css'
 import { TabBar } from './components/Chrome'
 import { CoachSheet } from './components/CoachSheet'
 import { useViewport } from './useViewport'
+import { useSharedFitListener } from './useSharedFit'
 import { TodayScreen } from './screens/TodayScreen'
 import { PlanScreen } from './screens/PlanScreen'
 import { MeScreen } from './screens/MeScreen'
@@ -37,6 +38,8 @@ export function MobileApp() {
   usePushKeepalive()
   useHealthSync()
   useViewport()
+  // aplikacja iOS: plik .fit z „Udostępnij” → Ja → „Wgraj jazdę (FIT)” (docs/33 § 7a)
+  useSharedFitListener()
   // komunikaty w stylu iOS (pigułka u góry, „Cofnij” nad paskiem zakładek – docs/27 § 6)
   useToastStyle('ios')
   // aplikacja iOS: ekran startowy znika, gdy `/m` (albo logowanie) jest już na ekranie

@@ -13,6 +13,22 @@
 		<string>pl</string>
 		<string>en</string>
 	</array>
+	<key>CFBundleDocumentTypes</key>
+	<array>
+		<dict>
+			<!-- pliki .fit z innych aplikacji (Pliki, Safari, MyWhoosh) – „Udostępnij → Trening”, docs/33 § 7a -->
+			<key>CFBundleTypeName</key>
+			<string>FIT ride file</string>
+			<key>CFBundleTypeRole</key>
+			<string>Viewer</string>
+			<key>LSHandlerRank</key>
+			<string>Alternate</string>
+			<key>LSItemContentTypes</key>
+			<array>
+				<string>com.garmin.fit</string>
+			</array>
+		</dict>
+	</array>
 	<key>CFBundleExecutable</key>
 	<string>$(EXECUTABLE_NAME)</string>
 	<key>CFBundleIdentifier</key>
@@ -79,5 +95,31 @@
 	<string>Bicycle Coach can save calories and protein from your meals to Health – only if you turn this on in Settings.</string>
 	<key>UIUserInterfaceStyle</key>
 	<string>Light</string>
+	<key>LSSupportsOpeningDocumentsInPlace</key>
+	<false/>
+	<key>UTImportedTypeDeclarations</key>
+	<array>
+		<dict>
+			<key>UTTypeIdentifier</key>
+			<string>com.garmin.fit</string>
+			<key>UTTypeDescription</key>
+			<string>Plik FIT</string>
+			<key>UTTypeConformsTo</key>
+			<array>
+				<string>public.data</string>
+			</array>
+			<key>UTTypeTagSpecification</key>
+			<dict>
+				<key>public.filename-extension</key>
+				<array>
+					<string>fit</string>
+				</array>
+				<key>public.mime-type</key>
+				<array>
+					<string>application/vnd.ant.fit</string>
+				</array>
+			</dict>
+		</dict>
+	</array>
 </dict>
 </plist>

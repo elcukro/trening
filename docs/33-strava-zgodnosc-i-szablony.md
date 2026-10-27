@@ -139,6 +139,42 @@ Application” – wysyłka tekstu modelu przez API Stravy może być tak odczyt
   (3) historia: `wahoo-push {backfill}` jednorazowo.
 - Po zapisie jazdy z plikiem: metryki → notatka AI (fakty z `rideFacts` na próbkach FIT) → mail po treningu.
 
+## 7a. Wgrany plik FIT jako źródło dla AI (27.10.2026)
+
+Po co: jazdy, które nie przechodzą przez Wahoo – Ferdynand od 11.10.2026 jeździ w domu na **MyWhoosh**, który wysyła
+jazdę prosto na Stravę. Bez innego źródła takie jazdy mają tylko notatkę z reguł i blokują czyszczenie Stravy (§ 11 pkt 2).
+
+**Co potrafi MyWhoosh (stan 27.10.2026)**: pobranie pliku `.fit` każdej jazdy na mywhoosh.com → Profil → Aktywności
+([relacja użytkownika na forum Garmina](https://forums.garmin.com/apps-software/mobile-apps-web/f/garmin-connect-web/400631/download-from-mywhoosh));
+połączenia ze Stravą, Garmin Connect, TrainingPeaks i intervals.icu ([lista integracji intervals.icu](https://www.intervals.icu/integrations/)).
+Do Wahoo Cloud nie wysyła. Garmin (Health API) i TrainingPeaks wymagają umowy partnerskiej (TrainingPeaks zamknął
+API dla nowych partnerów). intervals.icu ma osobisty klucz API i oddaje oryginalny plik – możliwy automat na później
+(konto + klucz u zawodnika, sekret po stronie serwera). **Wybrana droga: plik wgrywany w aplikacji** – bez nowej umowy,
+bez nowego konta, dane są nasze (źródło `fit`, bez limitu 7 dni).
+
+- **Wgranie**: `/m` → Ja → „Wgraj jazdę (FIT)” (`src/m/components/FitUploadSheet.tsx`, klient `src/sync/fitUpload.ts`:
+  nagłówek `.FIT` sprawdzany przed wysyłką, ≤ 8 MB, base64 w JSON). W aplikacji iOS także **„Udostępnij → Trening”**
+  z Plików albo Safari: `Info.plist` deklaruje typ `com.garmin.fit` (`CFBundleDocumentTypes`, `UTImportedTypeDeclarations`,
+  `LSSupportsOpeningDocumentsInPlace = false` – iOS kopiuje plik do `Documents/Inbox`), wtyczka `native/trening-files`
+  łapie `capacitorOpenURL` (także przy zimnym starcie), czyta plik, usuwa kopię i wysyła go zdarzeniem `fitFile`
+  (`retainUntilConsumed`) → `src/native/files.ts` → `src/m/useSharedFit.ts` → ekran Ja otwiera arkusz i wgrywa od razu.
+- **Serwer**: Edge Function `fit-upload` (JWT): `decodeFit` → `fitRide` (`_shared/fit_ride.ts`, czysty TS: `resample`,
+  `rideMetrics`, `movingTotals`, `hrHistogram` – ten sam kod co plik z Wahoo; przewyższenie z wysokości z histerezą 2 m;
+  data dnia w Europe/Warsaw; jazda < 5 min w ruchu odpada) → `fit_rides` + `fit_streams`. Ten sam plik drugi raz
+  (`unique (user_id, file_sha256)`) nie tworzy drugiej jazdy; `{delete: id}` usuwa (soft delete). Notatka i mail w tle
+  (`EdgeRuntime.waitUntil` → `processFitRide` w `_shared/ride_pipeline.ts`): notatka AI dla jazd z ostatnich 14 dni
+  (`FIT_NOTE_DAYS` – zawodnik wgrywa plik sam, często później), mail jak dla Wahoo (`sendWorkout` – nie idzie drugi raz,
+  gdy był już o bliźniaku ze Stravy albo z Wahoo). `ride-note` przyjmuje `fit_id`.
+- **Scalanie**: `RideRow.source = 'fit'`, `fromFit` (kolumny jak w `strava_activities`), `mergeRides(wahoo, strava, fit)`:
+  Wahoo → plik → Strava; bliźniak ze Stravy znika z widoków, a plik z Bolta wgrany ręcznie ustępuje kopii z Wahoo.
+  Historia dla AI (`loadRidesRange(…, aiOnly)`) = Wahoo + pliki; `ownTwin` szuka kopii jazdy ze Stravy w obu (tytuł,
+  `afterStravaImport`). Klient: `useRides`/`ridesBetween` (Dexie v12 `fit_rides`, tylko do odczytu – `UPDATE_ONLY_TABLES`),
+  trener (`useCoach`: Wahoo + pliki), próbki z `fit_streams`, propozycja FTP z jazd spoza Stravy, etykieta „Plik FIT”.
+- **Log dnia** (migracja `20261027120000_fit_rides.sql`): `private.rebuild_day_log` sumuje Wahoo i pliki (plik ze startem
+  ≤ 10 min od jazdy z Wahoo liczy się raz), Strava tylko bez nich; `session_logs.source` dostaje `fit`, notatka logu
+  `FIT: <nazwy>`; trigger `fit_ride_changed`. Typy pól zbiorczych rzutowane jawnie – plan PL/pgSQL pamięta typy rekordu
+  z pierwszego wywołania w sesji (dzień, który przechodził z Wahoo na Stravę, dawał błąd „type of parameter … does not match”).
+
 ## 8. Szablony planów i dopasowanie przez AI
 
 ### 8.1 Biblioteka szablonów (`data/templates/`)
@@ -218,6 +254,7 @@ na płacącego < 0,10 USD/rok. Limit: 10 wywołań/dzień na konto w `ai_calls`.
 | (b) FIT i webhook Wahoo | `_shared/fit.ts`, `_shared/wahoo_sync.ts`, `_shared/ride_pipeline.ts`, `wahoo-webhook`, `wahoo-push {completed, backfill, cron}` | jw. |
 | (c) retencja Stravy | migracja `20261026240000_strava_retention.sql` (`purge_strava` za flagą `strava_purge`, `purge_strava_user` przy rozłączeniu, `strava_purge_enabled` dla aplikacji), `strava-oauth` (sync 7 dni, backfill 410), widoki na `useRides` (`src/app/useRides.ts`), `purgeLocalStrava` | jw.; **flaga wyłączona** do sprawdzenia historii Wahoo obu kont |
 | (d) szablony i dopasowanie | `data/templates/*.json`, `src/engine/generator/templates.ts`, `tuning.ts`, `plan-tune`, `src/sync/planTune.ts`, `PlanWhy.tsx`, migracja `20261026250000_plan_tuning.sql` | jw. |
+| (e) wgrany plik FIT (MyWhoosh, § 7a) | `_shared/fit_ride.ts`, `fit-upload`, `processFitRide`, `fromFit`/`mergeRides`, migracja `20261027120000_fit_rides.sql`, `FitUploadSheet.tsx`, `src/sync/fitUpload.ts`, `native/trening-files` + `Info.plist` | **czeka na wdrożenie**: najpierw `supabase db push` (aplikacja pobiera `fit_rides` – bez tabeli synchronizacja zgłasza błąd), potem `supabase functions deploy fit-upload ride-note strava-webhook wahoo-push wahoo-webhook email-send coach-chat --no-verify-jwt --use-api`, potem Vercel i `npm run build:ios` |
 
 Pierwsze odpytania (27.10.2026): historia z Wahoo – konto Łukasza 44 jazdy od 13.03.2026, **w każdym miesiącu tyle samo
 co na Stravie**; konto Ferdynanda 24 jazdy od 12.09.2026. Plik FIT dekoduje się poprawnie (NP, MMP 20 min i dryf jak u
@@ -235,8 +272,12 @@ Decyzje użytkownika (26.10.2026, po lekturze tego dokumentu):
 1. **Zapis na Stravę wyłączony wszystkim** – migracja `strava_write = false`, serwer pisze tylko z `STRAVA_WRITE_ENABLED=1`.
 2. Oba konta jeżdżą z Wahoo – **ale nie całkiem (27.10.2026)**: Ferdynand od 11.10 trenuje w domu na MyWhoosh (prosto
    na Stravę, bez Wahoo), a jazdy sprzed 12.09 nagrywał innym urządzeniem (46 jazd V–VIII). **Czyszczenie Stravy zostaje
-   wyłączone, dopóki jazdy z MyWhoosh nie mają innego źródła** (np. wgranie pliku FIT w aplikacji – źródło `fit`). Do tego
-   czasu jego jazdy z MyWhoosh dostają notatkę z reguł, bez AI.
+   wyłączone, dopóki jazdy z MyWhoosh nie mają innego źródła**. **Źródło jest od 27.10.2026 w kodzie: wgranie pliku FIT
+   w aplikacji (§ 7a, źródło `fit`)**. Zanim flaga `strava_purge` pójdzie na `on`: wdrożenie (§ 10 e), Ferdynand wgrywa
+   pliki jazd z MyWhoosh od 11.10 (mywhoosh.com → Profil → Aktywności), sprawdzenie, że każda jazda ze Stravy z tego
+   okresu ma bliźniaka w `wahoo_workouts` albo `fit_rides`. Jazdy sprzed 12.09 (46 jazd V–VIII z innego urządzenia)
+   zostają otwarte – po czyszczeniu znikną z aplikacji, chyba że też zostaną wgrane jako pliki. Do tego czasu jazdy
+   z MyWhoosh bez wgranego pliku dostają notatkę z reguł, bez AI.
 3. Webhook Wahoo ustawia użytkownik (portal Wahoo: adres `https://kgllegvlnmchdvkkbitt.supabase.co/functions/v1/wahoo-webhook`,
    token = sekret `WAHOO_WEBHOOK_TOKEN`, sprawdzany w polu `webhook_token` treści zdarzenia). Do tego czasu odpytanie co 30 min.
 4. Pierwsze czyszczenie danych Stravy starszych niż 7 dni – dopiero po sprawdzeniu historii z Wahoo dla obu kont.

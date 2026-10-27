@@ -19,6 +19,7 @@ let package = Package(
         .package(name: "CapacitorSplashScreen", path: "../../../node_modules/@capacitor/splash-screen"),
         .package(name: "CapacitorStatusBar", path: "../../../node_modules/@capacitor/status-bar"),
         .package(name: "TreningAuth", path: "../../../native/trening-auth"),
+        .package(name: "TreningFiles", path: "../../../native/trening-files"),
         .package(name: "TreningHealth", path: "../../../native/trening-health")
     ],
     targets: [
@@ -34,6 +35,7 @@ let package = Package(
                 .product(name: "CapacitorSplashScreen", package: "CapacitorSplashScreen"),
                 .product(name: "CapacitorStatusBar", package: "CapacitorStatusBar"),
                 .product(name: "TreningAuth", package: "TreningAuth"),
+                .product(name: "TreningFiles", package: "TreningFiles"),
                 .product(name: "TreningHealth", package: "TreningHealth")
             ]
         )

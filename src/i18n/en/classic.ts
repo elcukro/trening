@@ -4,6 +4,7 @@ import type pl from '../pl/classic'
 const en: typeof pl = {
   rideSource: {
     stravaExpires: 'Strava · removed after 7 days',
+    fit: 'FIT file',
   },
   nav: {
     mainLabel: 'Main navigation',

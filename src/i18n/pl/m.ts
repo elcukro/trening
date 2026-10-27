@@ -189,6 +189,8 @@ export default {
       fallbackName: 'Jazda',
       none: 'Brak jazd z ostatnich 4 tygodni',
       noneSub: 'Jazdy pojawią się po synchronizacji z Wahoo albo Stravą',
+      fitUpload: 'Wgraj jazdę (FIT)',
+      fitUploadSub: 'Z MyWhoosh albo innej aplikacji bez Wahoo – z notatką trenera',
     },
     goal: {
       group: 'Ty i Twój cel',

@@ -5,7 +5,7 @@
 import { useCallback, useMemo } from 'react'
 import { useLiveQuery } from 'dexie-react-hooks'
 import { db, type Checkin, type PlanOverrideRow, type SessionLog, type WahooPushRow } from '@/db'
-import { fromWahoo, type RideRow } from '../../supabase/functions/_shared/rides'
+import { fromFit, fromWahoo, mergeRides, type RideRow } from '../../supabase/functions/_shared/rides'
 import { addOverride, upsertCheckin, upsertSessionLog } from '@/db/repo'
 import { rideLoad } from '@/engine/analysis'
 import { addDays, type ISODate } from '@/engine/dates'
@@ -23,8 +23,16 @@ export function useCoach(d: IosDay, date: ISODate): { context: () => CoachContex
   const to = addDays(today, 8)
   const checkins = useLiveQuery(async () => (await db.checkins.where('date').between(from, to, true, true).toArray()).filter((c) => !c.deleted_at), [from, to], [] as Checkin[])
   const logs = useLiveQuery(async () => (await db.session_logs.where('date').between(from, to, true, true).toArray()).filter((l) => !l.deleted_at), [from, to], [] as SessionLog[])
-  // tylko Wahoo – dane Stravy nie trafiają do AI (docs/33)
-  const rides = useLiveQuery(async () => (await db.wahoo_workouts.where('date').between(from, to, true, true).toArray()).filter((w) => !w.deleted_at).map((w) => fromWahoo(w as unknown as Record<string, unknown>)), [from, to], [] as RideRow[])
+  // tylko Wahoo i wgrane pliki – dane Stravy nie trafiają do AI (docs/33)
+  const rides = useLiveQuery(
+    async () => {
+      const [w, f] = await Promise.all([db.wahoo_workouts.where('date').between(from, to, true, true).toArray(), db.fit_rides.where('date').between(from, to, true, true).toArray()])
+      const rows = <T extends { deleted_at?: string | null }>(xs: T[]) => xs.filter((x) => !x.deleted_at) as unknown as Record<string, unknown>[]
+      return mergeRides(rows(w).map(fromWahoo), [], rows(f).map(fromFit))
+    },
+    [from, to],
+    [] as RideRow[],
+  )
   const overrides = useLiveQuery(async () => (await db.plan_overrides.where('date').between(from, to, true, true).toArray()).filter((o) => !o.deleted_at), [from, to], [] as PlanOverrideRow[])
   const pushes = useLiveQuery(async () => (await db.wahoo_pushes.where('date').between(today, to, true, true).toArray()).filter((p) => !p.deleted_at && (p.status === 'created' || p.status === 'updated')), [today, to], [] as WahooPushRow[])
 

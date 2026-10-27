@@ -1,0 +1,14 @@
+{
+  "name": "trening-files",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Pliki .fit udostępnione aplikacji Trening z innych aplikacji (Pliki, Safari, MyWhoosh – docs/33 § 7a). Interfejs JS: src/native/files.ts.",
+  "license": "UNLICENSED",
+  "files": ["ios/Sources", "Package.swift"],
+  "capacitor": {
+    "ios": { "src": "ios" }
+  },
+  "peerDependencies": {
+    "@capacitor/core": "^8.0.0"
+  }
+}
