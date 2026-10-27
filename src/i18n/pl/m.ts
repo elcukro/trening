@@ -6,7 +6,7 @@ export default {
     discardTitle: 'Odrzucić zmiany?',
     discardAction: 'Odrzuć zmiany',
     mainNav: 'Nawigacja główna',
-    tabs: { today: 'Dziś', plan: 'Plan', me: 'Ja' },
+    tabs: { today: 'Dziś', plan: 'Plan', me: 'Profil' },
     coach: 'Trener',
   },
   toast: {
@@ -99,6 +99,19 @@ export default {
     powerMeter: 'Mam miernik mocy',
     powerMeterSub: 'Cele w watach na Bolcie, TSS z mocy zamiast z tętna',
     hint: 'Po teście FTP wybierz nowe wartości – strefy mocy i tętna przeliczą się same, a plany na Bolta pojadą z nowymi watami.',
+  },
+  avatar: {
+    title: 'Zdjęcie profilowe',
+    choose: 'Wybierz zdjęcie',
+    change: 'Wybierz inne zdjęcie',
+    useGoogle: 'Użyj zdjęcia z konta Google',
+    remove: 'Usuń zdjęcie',
+    saved: 'Zapisano zdjęcie',
+    googleSet: 'Zdjęcie z Google',
+    removed: 'Usunięto zdjęcie',
+    failed: 'Nie zapisano zdjęcia',
+    unreadable: 'Nie da się odczytać tego pliku – wybierz zdjęcie JPEG, HEIC albo PNG.',
+    hint: 'Zdjęcie zostaje w Twoim koncie i wraca na każdym urządzeniu. Apple nie udostępnia zdjęcia Apple ID innym aplikacjom – Memoji albo to zdjęcie zapisz w Zdjęciach i wybierz tutaj.',
   },
   location: {
     title: 'Pogoda',
@@ -292,7 +305,7 @@ export default {
     },
     weather: {
       line: (feels: string, wind: number, rain: number) => `${feels} °C odczuwalne · wiatr ${wind} km/h · deszcz ${rain} %`,
-      noLocation: 'Bez prognozy – ustaw miejscowość w Ja',
+      noLocation: 'Bez prognozy – ustaw miejscowość w Profilu',
       loading: 'Pobieram prognozę…',
       none: 'Bez prognozy',
     },
@@ -330,7 +343,7 @@ export default {
     note: { less: 'mniej', more: 'więcej' },
   },
   plan: {
-    needsAccount: 'Wysyłka na Bolta wymaga konta. Zaloguj się w zakładce Ja.',
+    needsAccount: 'Wysyłka na Bolta wymaga konta. Zaloguj się w zakładce Profil.',
     wahooNotConnected: (domain: string) => `Wahoo nie jest połączone. Połącz je w pełnej aplikacji: ${domain} → Ustawienia → Integracje.`,
     sendError: 'Wysyłka na Bolta się nie udała. Spróbuj ponownie.',
     changeFailed: 'Nie zmieniono planu',

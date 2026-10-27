@@ -110,6 +110,8 @@ export const SettingsSchema = z.object({
   weather_location: z.object({ name: z.string(), lat: z.number(), lon: z.number() }).nullable().optional(),
   /** zwykła godzina jazdy w tygodniu i w weekend – okno pogody w odprawie */
   ride_hours: z.object({ weekday: z.number().int(), weekend: z.number().int() }).nullable().optional(),
+  /** zdjęcie profilowe: data URL JPEG (własne) albo 'none' (inicjały); brak = zdjęcie z Google, jeśli konto je ma */
+  avatar: z.string().nullable().optional(),
 })
 
 export const WeekSummarySchema = z.object({

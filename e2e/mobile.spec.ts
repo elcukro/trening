@@ -76,7 +76,7 @@ test('Plan: bilans tygodnia, siedem dni, strzałki zmieniają tydzień, przytrzy
 
 test('Ja: kafelki, test FTP, ustawienia z arkuszem progów', async ({ page }) => {
   await page.goto('/m/ja?today=2026-09-23')
-  await expect(page.getByRole('heading', { name: 'Ja', exact: true })).toBeVisible()
+  await expect(page.getByRole('heading', { name: 'Profil', exact: true })).toBeVisible()
   await expect(page.getByText('Test FTP', { exact: true })).toBeVisible()
   await expect(page.getByText(/Następny: sob 26\.09/)).toBeVisible()
   await page.getByText('Progi i miernik', { exact: true }).click()

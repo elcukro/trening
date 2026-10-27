@@ -90,7 +90,7 @@ export default {
   },
   /** Gdzie zmienić odpowiedzi – zależnie od wyglądu (wstawiane do zdań niżej). */
   place: {
-    m: 'Ja → Ty i Twój cel',
+    m: 'Profil → Ty i Twój cel',
     desktop: 'Więcej → Twoje potrzeby',
   },
 

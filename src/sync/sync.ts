@@ -76,7 +76,9 @@ async function pushOutbox(userId: string): Promise<void> {
         }
       } else {
         const payload = rows.map((r) => ({ ...(r as unknown as Record<string, unknown>), user_id: userId }))
-        const { error } = await supabase.from(table).upsert(payload, { onConflict: USER_SCOPED_ID_TABLES.includes(table) ? 'user_id,id' : 'id' })
+        // kilka wierszy naraz: kolumna, której nie ma w jednym z nich (np. `created_at` nowego check-inu obok pobranego),
+        // bez `defaultToNull: false` dostaje NULL zamiast wartości domyślnej – 27.10.2026 to blokowało całą synchronizację
+        const { error } = await supabase.from(table).upsert(payload, { onConflict: USER_SCOPED_ID_TABLES.includes(table) ? 'user_id,id' : 'id', defaultToNull: false })
         if (error) throw new Error(`${table}: ${error.message}`)
       }
     }
@@ -139,9 +141,10 @@ const PROFILE_MAP: [keyof Settings, string][] = [
   ['locale', 'locale'],
   ['weather_location', 'weather_location'],
   ['ride_hours', 'ride_hours'],
+  ['avatar', 'avatar'],
 ]
 
-const PROFILE_TEXT_KEYS = new Set(['program_start', 'trip_start', 'program_id', 'athlete_name', 'birth_date', 'language', 'locale'])
+const PROFILE_TEXT_KEYS = new Set(['program_start', 'trip_start', 'program_id', 'athlete_name', 'birth_date', 'language', 'locale', 'avatar'])
 
 /**
  * Profil scalany per pole (`profileMerge.ts`): wysyłamy tylko pola nowsze lokalnie, pobieramy tylko nowsze na serwerze.

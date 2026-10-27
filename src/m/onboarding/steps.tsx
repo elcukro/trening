@@ -13,7 +13,7 @@ import { num } from '@/lib/format'
 
 /**
  * `update` – zmiana od bieżącego szkicu (odczyt asynchroniczny, np. Zdrowie, nie gubi wyborów z międzyczasu).
- * `place` – gdzie w tym wyglądzie zmienia się odpowiedzi („Ja → Ty i Twój cel”).
+ * `place` – gdzie w tym wyglądzie zmienia się odpowiedzi („Profil → Ty i Twój cel”).
  */
 export type StepProps = { d: Draft; set: (d: Draft) => void; update: (fn: (d: Draft) => Draft) => void; today: string; place: string }
 

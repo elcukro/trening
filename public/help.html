@@ -109,7 +109,7 @@ if (window.Capacitor && window.Capacitor.isNativePlatform && window.Capacitor.is
   <div class="row only-web"><span class="n"></span><div><b>Add it to your Home Screen</b><span>Safari → Share → “Add to Home Screen”. The app then works like a native one: full screen, offline and with notifications.</span></div></div>
   <div class="row"><span class="n"></span><div><b>Sign in with Google or Strava</b><span>One tap: Google with your account’s email address, or Strava if you’ve already connected it to the app (Settings → Integrations). A Google account with a different address will see a “no access” message.</span></div></div>
   <div class="row"><span class="n"></span><div><b>…or with a code from the email</b><span>Enter your account’s email address. You’ll get an 8-digit code – type it into the app. There’s no password. If your session expires, the Today screen shows a yellow bar asking you to sign in again.</span></div></div>
-  <div class="row"><span class="n"></span><div><b>Check your thresholds</b><span>Me → “Thresholds and power meter”: FTP, threshold heart rate and whether you have a power meter. All workout zones are based on these numbers.</span></div></div>
+  <div class="row"><span class="n"></span><div><b>Check your thresholds</b><span>Profile → “Thresholds and power meter”: FTP, threshold heart rate and whether you have a power meter. All workout zones are based on these numbers.</span></div></div>
   <div class="row"><span class="n"></span><div><b>Connect Strava and your Bolt</b><span>See below. The app works without them, but you’ll have to log rides by hand.</span></div></div>
 </div>
 
@@ -139,7 +139,7 @@ if (window.Capacitor && window.Capacitor.isNativePlatform && window.Capacitor.is
 <div class="list">
   <div class="row"><img src="/m/art/ride-key.png" alt=""><div><b>Ride screen</b><span>A structure bar in zone colours, the targets, and the steps one below another (warm-up, intervals, recoveries, cool-down) with watts, heart rate and cadence. “Indoor version” switches to a trainer workout (you can undo it). “Send to Bolt” – if the automatic upload hasn’t run yet.</span></div></div>
   <div class="row"><img src="/m/art/heart.png" alt=""><div><b>Summary</b><span>Match with the plan (how the ride fits the steps), TSS, heart-rate drift on easy rides, RPE, the full coach’s note with “Reply to coach”, time in heart-rate zones, and the numbers: time, distance, elevation, power, heart rate, cadence. With two rides in a day, switch between them at the top.</span></div></div>
-  <div class="row"><img src="/m/art/test.png" alt=""><div><b>FTP test</b><span>Every few weeks it replaces the week’s key session: warm-up, 20 min evenly all-out, FTP = 95% of average power. Enter the new values in Me → “Thresholds and power meter”; zones update automatically.</span></div></div>
+  <div class="row"><img src="/m/art/test.png" alt=""><div><b>FTP test</b><span>Every few weeks it replaces the week’s key session: warm-up, 20 min evenly all-out, FTP = 95% of average power. Enter the new values in Profile → “Thresholds and power meter”; zones update automatically.</span></div></div>
 </div>
 <div class="note"><p><b>Match vs. the note.</b> Match compares the ride with the plan’s steps, so a ride twice as long gets a low match even when the coach writes it was “easy, just right”. They’re two different measures.</p></div>
 
@@ -165,7 +165,7 @@ if (window.Capacitor && window.Capacitor.isNativePlatform && window.Capacitor.is
   <div class="row only-app"><img src="/m/art/bolt.png" alt=""><div><b>Settings</b><span>Thresholds and power meter, forecast location, Apple Health (weight, heart rate, HRV and sleep go into your check-in), emails (morning briefing, ride summary, Sunday weekly letter), Strava and Wahoo connection status, language, account (sync, sign out).</span></div></div>
   <div class="row only-web"><img src="/m/art/bolt.png" alt=""><div><b>Settings</b><span>Thresholds and power meter, forecast location, notifications on this phone, emails (morning briefing, ride summary, Sunday weekly letter), Strava and Wahoo connection status, language, account (sync, sign out).</span></div></div>
 </div>
-<p class="only-web">Other settings (profile, dates, data backup) and connecting Strava and Wahoo are in the full app: Me → “Open full app”.</p>
+<p class="only-web">Other settings (profile, dates, data backup) and connecting Strava and Wahoo are in the full app: Profile → “Open full app”.</p>
 <p class="only-app">Other settings (profile, dates, data backup) and connecting Strava and Wahoo are at trening.felsztukier.pl (easiest on a computer) – it’s the same account, and changes come back to the app on their own.</p>
 
 <h2 id="strava">Strava</h2>
@@ -191,7 +191,7 @@ if (window.Capacitor && window.Capacitor.isNativePlatform && window.Capacitor.is
 <tr><td>Weekly letter</td><td>Sunday 19:00</td><td>The week in a few paragraphs: what happened, how your body is responding, what to focus on next week.</td></tr>
 <tr class="only-web"><td>Notifications</td><td>Morning, evening, Sunday</td><td>Day plan, summary, weekly report. On iPhone only from the Home Screen app.</td></tr>
 </table></div>
-<p>Turn them on in Me → Email (three switches)<span class="only-web"> and Me → Notifications</span>.</p>
+<p>Turn them on in Profile → Email (three switches)<span class="only-web"> and Profile → Notifications</span>.</p>
 
 <h2 id="nutrition">Nutrition</h2>
 <div class="card">
@@ -200,18 +200,18 @@ if (window.Capacitor && window.Capacitor.isNativePlatform && window.Capacitor.is
 
 <h2 id="computer">Full app on a computer</h2>
 <div class="card">
-  <p><span class="only-web">The same address on a computer opens the full view with a sidebar; on a phone: Me → “Open full app”.</span><span class="only-app">On a computer, trening.felsztukier.pl opens the full view with a sidebar – the same account as in the app.</span> Extra screens: Calendar with drag-and-drop to move workouts, Season (all weeks of the program), Library (workouts, zones, rules), Progress with the power curve, form chart and reports, Gear and servicing, Trip (in programs with a trip), data backup.</p>
-  <p class="only-web">The previous phone view (<code>/i</code>) stays as a fallback: Me → “Back to the previous look”; from there, More → “Try the new look”.</p>
+  <p><span class="only-web">The same address on a computer opens the full view with a sidebar; on a phone: Profile → “Open full app”.</span><span class="only-app">On a computer, trening.felsztukier.pl opens the full view with a sidebar – the same account as in the app.</span> Extra screens: Calendar with drag-and-drop to move workouts, Season (all weeks of the program), Library (workouts, zones, rules), Progress with the power curve, form chart and reports, Gear and servicing, Trip (in programs with a trip), data backup.</p>
+  <p class="only-web">The previous phone view (<code>/i</code>) stays as a fallback: Profile → “Back to the previous look”; from there, More → “Try the new look”.</p>
 </div>
 
 <h2 id="trouble">Troubleshooting</h2>
 <div class="list">
-  <div class="row"><img src="/m/art/night.png" alt=""><div><b>Yellow “session expired” bar</b><span>Me → Sign out, then sign in again. Data on your phone is kept.</span></div></div>
+  <div class="row"><img src="/m/art/night.png" alt=""><div><b>Yellow “session expired” bar</b><span>Profile → Sign out, then sign in again. Data on your phone is kept.</span></div></div>
   <div class="row only-app"><img src="/m/art/heart.png" alt=""><div><b>A ride doesn’t show up from Strava</b><span>Wait 10 minutes; then at trening.felsztukier.pl: More → Settings → Integrations → “Check webhook” and “Fetch last 30 days”.</span></div></div>
   <div class="row only-web"><img src="/m/art/heart.png" alt=""><div><b>A ride doesn’t show up from Strava</b><span>Wait 10 minutes; then in the full app: Integrations → “Check webhook” and “Fetch last 30 days”.</span></div></div>
   <div class="row"><img src="/m/art/bolt.png" alt=""><div><b>The workout isn’t on the Bolt</b><span>Day card → “Send to Bolt”; on the Bolt, refresh Planned Workouts (it syncs through the ELEMNT app).</span></div></div>
-  <div class="row"><img src="/m/art/sun.png" alt=""><div><b>No weather on the card</b><span>Me → Weather → set your location. The forecast is for the ride time in your settings.</span></div></div>
-  <div class="row"><img src="/m/art/test.png" alt=""><div><b>Zones look wrong</b><span>Check FTP and threshold heart rate in Me → “Thresholds and power meter”; after a test, enter the new values.</span></div></div>
+  <div class="row"><img src="/m/art/sun.png" alt=""><div><b>No weather on the card</b><span>Profile → Weather → set your location. The forecast is for the ride time in your settings.</span></div></div>
+  <div class="row"><img src="/m/art/test.png" alt=""><div><b>Zones look wrong</b><span>Check FTP and threshold heart rate in Profile → “Thresholds and power meter”; after a test, enter the new values.</span></div></div>
   <div class="row"><img src="/m/art/rest.png" alt=""><div><b>No connection</b><span>Today, Plan, Me and rides work offline. Changes are sent automatically once you’re back online. The coach needs a connection.</span></div></div>
 </div>
 </main>

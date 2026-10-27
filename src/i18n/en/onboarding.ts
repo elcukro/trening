@@ -86,7 +86,7 @@ const en: typeof pl = {
     goal_detail: { title: 'Put your goal in numbers', sub: 'A measurable target – so your coach can tell you “on track” or “time to adjust”.' },
   },
   place: {
-    m: 'Me → You and your goal',
+    m: 'Profile → You and your goal',
     desktop: 'More → Your needs',
   },
   summary: {

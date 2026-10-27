@@ -35,11 +35,23 @@ export function useSyncRunner(programVersion: string): SyncStatus {
         timer = setTimeout(trigger, 1500)
       }
     })
+    // zmiana ustawień profilu (zdjęcie, progi, pogoda) nie idzie przez outbox – bez tego czekała na powrót do aplikacji;
+    // zapis z pobrania też zmienia `updated_at`, ale następna synchronizacja nie ma już nic do wysłania i na tym się kończy
+    let seen: string | undefined | null = null
+    const settingsSub = liveQuery(() => db.settings.get('user')).subscribe((row) => {
+      const at = row?.updated_at
+      if (seen !== null && at !== seen) {
+        if (timer) clearTimeout(timer)
+        timer = setTimeout(trigger, 1500)
+      }
+      seen = at
+    })
     return () => {
       window.removeEventListener('online', onOnline)
       document.removeEventListener('visibilitychange', onVisible)
       sub.subscription.unsubscribe()
       outboxSub.unsubscribe()
+      settingsSub.unsubscribe()
       if (timer) clearTimeout(timer)
     }
   }, [])

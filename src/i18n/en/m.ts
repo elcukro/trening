@@ -6,7 +6,7 @@ const en: typeof pl = {
     discardTitle: 'Discard changes?',
     discardAction: 'Discard changes',
     mainNav: 'Main navigation',
-    tabs: { today: 'Today', plan: 'Plan', me: 'Me' },
+    tabs: { today: 'Today', plan: 'Plan', me: 'Profile' },
     coach: 'Coach',
   },
   toast: {
@@ -98,6 +98,19 @@ const en: typeof pl = {
     powerMeter: 'I have a power meter',
     powerMeterSub: 'Watt targets on your Bolt, TSS from power instead of heart rate',
     hint: 'After an FTP test, pick the new values – power and heart-rate zones update automatically, and plans sent to your Bolt use the new watts.',
+  },
+  avatar: {
+    title: 'Profile photo',
+    choose: 'Choose photo',
+    change: 'Choose another photo',
+    useGoogle: 'Use Google account photo',
+    remove: 'Remove photo',
+    saved: 'Photo saved',
+    googleSet: 'Google photo',
+    removed: 'Photo removed',
+    failed: 'Photo not saved',
+    unreadable: "This file can't be read – choose a JPEG, HEIC or PNG photo.",
+    hint: "The photo stays with your account and comes back on every device. Apple doesn't share your Apple ID photo with other apps – save your Memoji or that photo to Photos and pick it here.",
   },
   location: {
     title: 'Weather',
@@ -290,7 +303,7 @@ const en: typeof pl = {
     },
     weather: {
       line: (feels: string, wind: number, rain: number) => `feels like ${feels} °C · wind ${wind} km/h · rain ${rain}%`,
-      noLocation: 'No forecast – set a place in Me',
+      noLocation: 'No forecast – set a place in Profile',
       loading: 'Fetching forecast…',
       none: 'No forecast',
     },
@@ -328,7 +341,7 @@ const en: typeof pl = {
     note: { less: 'less', more: 'more' },
   },
   plan: {
-    needsAccount: 'Sending to Bolt needs an account. Sign in under Me.',
+    needsAccount: 'Sending to Bolt needs an account. Sign in under Profile.',
     wahooNotConnected: (domain: string) => `Wahoo isn’t connected. Connect it in the full app: ${domain} → Settings → Integrations.`,
     sendError: 'Couldn’t send to Bolt. Try again.',
     changeFailed: 'Couldn’t change the plan',

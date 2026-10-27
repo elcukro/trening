@@ -21,6 +21,8 @@ import { effectiveFtp, effectiveLthr } from '@/engine/progress'
 import { Group, Row, Screen } from '../components/Chrome'
 import { LanguageSheet, LocationSheet, NumbersSheet, Switch, langChoiceLabel } from '../components/SettingsSheets'
 import { FitUploadSheet } from '../components/FitUploadSheet'
+import { Avatar, AvatarSheet } from '../components/AvatarSheet'
+import { avatarView, googleAvatarUrl, initialsOf } from '@/lib/avatar'
 import { canUploadFit } from '@/sync/fitUpload'
 import { useSharedFit } from '../useSharedFit'
 import { ART } from '../art'
@@ -108,7 +110,11 @@ export function MeScreen() {
   const form = formLabel(snap.form?.tsb ?? null)
   const toGoal = snap.goal.ftp - snap.ftp.w
   const s = engine.ctx.settings
-  const [sheet, setSheet] = useState<'numbers' | 'location' | 'language' | 'fit' | null>(null)
+  const email = auth.session?.user.email ?? null
+  const google = googleAvatarUrl(auth.session?.user.user_metadata)
+  const initials = initialsOf(s.athlete_name, email)
+  const avatar = avatarView(s.avatar, google, s.athlete_name, email)
+  const [sheet, setSheet] = useState<'numbers' | 'location' | 'language' | 'fit' | 'avatar' | null>(null)
   const langChoice: LangChoice = s.language === 'pl' || s.language === 'en' ? s.language : 'system'
   // plik .fit przysłany z innej aplikacji (iOS „Udostępnij”) – od razu do arkusza wgrywania
   const [sharedFit, takeSharedFit] = useSharedFit()
@@ -191,7 +197,12 @@ export function MeScreen() {
   }
 
   return (
-    <Screen title={t.m.chrome.tabs.me} subtitle={auth.session?.user.email ?? tm.noAccount}>
+    <Screen title={t.m.chrome.tabs.me} subtitle={auth.session ? undefined : tm.noAccount}>
+      {auth.session && (
+        <Group>
+          <Row icon={<Avatar view={avatar} fallback={initials} size={56} />} title={<span className="m-title">{s.athlete_name || email}</span>} sub={s.athlete_name ? (email ?? undefined) : undefined} onClick={() => setSheet('avatar')} />
+        </Group>
+      )}
       <div className="grid grid-cols-3 gap-3">
         <Tile art={ART.test} value={`${snap.ftp.w}`} unit="W" label={toGoal > 0 ? tm.tiles.toGoal(toGoal) : tm.tiles.goalReached} sub={snap.ftp.wPerKg != null ? `${num(snap.ftp.wPerKg, 2)} W/kg` : snap.ftp.source === 'test' ? tm.tiles.fromTest : tm.tiles.estimate} color="var(--red)" onClick={() => setSheet('numbers')} />
         <Tile art={ART.scale} value={snap.weight.kg != null ? num(snap.weight.kg) : '—'} unit="kg" label={snap.weight.perWeek != null ? tm.tiles.perWeek(`${snap.weight.perWeek > 0 ? '+' : ''}${num(snap.weight.perWeek, 2)}`) : tm.tiles.noTrend} sub={snap.weight.date ? tm.tiles.weightSub(fmtDayMonth(snap.weight.date), num(s.body_weight_target_kg, 0)) : tm.tiles.weightGoal(num(s.body_weight_target_kg, 0))} color="var(--accent)" />
@@ -333,6 +344,7 @@ export function MeScreen() {
       {sheet === 'numbers' && <NumbersSheet onClose={() => setSheet(null)} />}
       {sheet === 'location' && <LocationSheet onClose={() => setSheet(null)} />}
       {sheet === 'language' && <LanguageSheet onClose={() => setSheet(null)} />}
+      {sheet === 'avatar' && <AvatarSheet view={avatar} initials={initials} google={google} onClose={() => setSheet(null)} />}
       {(sheet === 'fit' || sharedFit) && (
         <FitUploadSheet
           initialFile={sharedFit}

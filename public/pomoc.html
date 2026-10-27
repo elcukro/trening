@@ -109,7 +109,7 @@ if (window.Capacitor && window.Capacitor.isNativePlatform && window.Capacitor.is
   <div class="row only-web"><span class="n"></span><div><b>Dodaj do ekranu początkowego</b><span>Safari → Udostępnij → „Do ekranu początkowego”. Aplikacja działa wtedy jak natywna, na pełnym ekranie, bez sieci i z powiadomieniami.</span></div></div>
   <div class="row"><span class="n"></span><div><b>Zaloguj się przez Google albo Stravę</b><span>Jedno dotknięcie: Google z adresem konta albo Strava, jeśli masz ją już połączoną z aplikacją (Ustawienia → Integracje). Konto Google z innym adresem niż adres konta zobaczy komunikat „nie ma dostępu”.</span></div></div>
   <div class="row"><span class="n"></span><div><b>…albo kodem z maila</b><span>Wpisz adres e-mail konta. Przyjdzie 8-cyfrowy kod – wpisz go w aplikacji. Hasła nie ma. Gdy sesja wygaśnie, ekran Dziś pokaże żółty pasek z prośbą o ponowne zalogowanie.</span></div></div>
-  <div class="row"><span class="n"></span><div><b>Sprawdź progi</b><span>Ja → „Progi i miernik”: FTP, tętno progowe, czy masz miernik mocy. Od tych liczb zależą strefy we wszystkich treningach.</span></div></div>
+  <div class="row"><span class="n"></span><div><b>Sprawdź progi</b><span>Profil → „Progi i miernik”: FTP, tętno progowe, czy masz miernik mocy. Od tych liczb zależą strefy we wszystkich treningach.</span></div></div>
   <div class="row"><span class="n"></span><div><b>Połącz Stravę i Bolta</b><span>Opisane niżej. Bez nich aplikacja też działa, ale jazdy trzeba wpisywać ręcznie.</span></div></div>
 </div>
 
@@ -139,7 +139,7 @@ if (window.Capacitor && window.Capacitor.isNativePlatform && window.Capacitor.is
 <div class="list">
   <div class="row"><img src="/m/art/ride-key.png" alt=""><div><b>Ekran jazdy</b><span>Pasek struktury w kolorach stref, cele, kroki jeden pod drugim (rozgrzewka, interwały, przerwy, schłodzenie) z watami, tętnem i kadencją. „Wersja pod dachem” zamienia trening na wersję na trenażer (da się to cofnąć). „Wyślij na Bolta” – gdy wysyłka automatyczna jeszcze nie zadziałała.</span></div></div>
   <div class="row"><img src="/m/art/heart.png" alt=""><div><b>Podsumowanie</b><span>Zgodność z planem (jak jazda pasuje do kroków), TSS, dryf tętna na jazdach spokojnych, RPE, pełna notatka trenera z „Odpowiedz trenerowi”, czas w strefach tętna, liczby: czas, dystans, przewyższenie, moc, tętno, kadencja. Gdy w dniu są dwie jazdy, przełączasz je u góry.</span></div></div>
-  <div class="row"><img src="/m/art/test.png" alt=""><div><b>Test FTP</b><span>Co kilka tygodni zastępuje akcent tygodnia: rozgrzewka, 20 min równo na maksa, FTP = 95 % średniej mocy. Nowe wartości wpisz w Ja → „Progi i miernik”; strefy przeliczą się same.</span></div></div>
+  <div class="row"><img src="/m/art/test.png" alt=""><div><b>Test FTP</b><span>Co kilka tygodni zastępuje akcent tygodnia: rozgrzewka, 20 min równo na maksa, FTP = 95 % średniej mocy. Nowe wartości wpisz w Profilu → „Progi i miernik”; strefy przeliczą się same.</span></div></div>
 </div>
 <div class="note"><p><b>Zgodność a notatka.</b> Zgodność porównuje jazdę z krokami planu, więc dwa razy dłuższa jazda ma niską zgodność, nawet gdy trener pisze, że było „spokojnie, jak trzeba”. To dwie różne miary.</p></div>
 
@@ -165,7 +165,7 @@ if (window.Capacitor && window.Capacitor.isNativePlatform && window.Capacitor.is
   <div class="row only-app"><img src="/m/art/bolt.png" alt=""><div><b>Ustawienia</b><span>Progi i miernik mocy, miejscowość prognozy, Apple Health (waga, tętno, HRV i sen trafiają do check-inu), maile (odprawa rano, podsumowanie jazdy, list tygodnia w niedzielę), stan połączeń Strava i Wahoo, język, konto (synchronizacja, wylogowanie).</span></div></div>
   <div class="row only-web"><img src="/m/art/bolt.png" alt=""><div><b>Ustawienia</b><span>Progi i miernik mocy, miejscowość prognozy, powiadomienia na ten telefon, maile (odprawa rano, podsumowanie jazdy, list tygodnia w niedzielę), stan połączeń Strava i Wahoo, język, konto (synchronizacja, wylogowanie).</span></div></div>
 </div>
-<p class="only-web">Reszta ustawień (profil, daty, kopia danych) i łączenie Stravy i Wahoo są w pełnej aplikacji: Ja → „Otwórz pełną aplikację”.</p>
+<p class="only-web">Reszta ustawień (profil, daty, kopia danych) i łączenie Stravy i Wahoo są w pełnej aplikacji: Profil → „Otwórz pełną aplikację”.</p>
 <p class="only-app">Reszta ustawień (profil, daty, kopia danych) i łączenie Stravy i Wahoo są na stronie trening.felsztukier.pl (najwygodniej na komputerze) – konto jest wspólne, zmiany wracają do aplikacji same.</p>
 
 <h2 id="strava">Strava</h2>
@@ -179,7 +179,7 @@ if (window.Capacitor && window.Capacitor.isNativePlatform && window.Capacitor.is
 <div class="card">
   <p>Jazdy spoza Bolta – np. z MyWhoosh, który wysyła je tylko na Stravę – wgrywasz jako plik .fit. Trener AI nie może czytać danych ze Stravy, a z pliku tak: jazda dostaje notatkę trenera i zastępuje w aplikacji tę samą jazdę ze Stravy.</p>
   <p><b>Skąd plik.</b> mywhoosh.com → Profil → Aktywności → pobierz plik .fit danej jazdy.</p>
-  <p><b>Jak wgrać.</b> Ja → „Wgraj jazdę (FIT)” → „Wybierz plik .fit”.<span class="only-app"> Albo w Plikach lub Safari: Udostępnij → Trening – aplikacja otworzy się i wgra plik sama.</span> Ten sam plik wgrany drugi raz nie zdubluje jazdy; w tym samym arkuszu usuniesz wgraną jazdę.</p>
+  <p><b>Jak wgrać.</b> Profil → „Wgraj jazdę (FIT)” → „Wybierz plik .fit”.<span class="only-app"> Albo w Plikach lub Safari: Udostępnij → Trening – aplikacja otworzy się i wgra plik sama.</span> Ten sam plik wgrany drugi raz nie zdubluje jazdy; w tym samym arkuszu usuniesz wgraną jazdę.</p>
 </div>
 
 <h2 id="bolt">Wahoo ELEMNT Bolt</h2>
@@ -198,7 +198,7 @@ if (window.Capacitor && window.Capacitor.isNativePlatform && window.Capacitor.is
 <tr><td>List tygodnia</td><td>Niedziela 19:00</td><td>Tydzień w kilku akapitach: co się wydarzyło, jak reaguje ciało, na czym się skupić w następnym.</td></tr>
 <tr class="only-web"><td>Powiadomienia</td><td>Rano, wieczorem, w niedzielę</td><td>Plan dnia, podsumowanie, raport tygodnia. Na iPhonie tylko z ekranu początkowego.</td></tr>
 </table></div>
-<p>Włączasz w Ja → E-mail (trzy przełączniki)<span class="only-web"> i Ja → Powiadomienia</span>.</p>
+<p>Włączasz w Profilu → E-mail (trzy przełączniki)<span class="only-web"> i Profil → Powiadomienia</span>.</p>
 
 <h2 id="zywienie">Żywienie</h2>
 <div class="card">
@@ -207,18 +207,18 @@ if (window.Capacitor && window.Capacitor.isNativePlatform && window.Capacitor.is
 
 <h2 id="komputer">Pełna aplikacja na komputerze</h2>
 <div class="card">
-  <p><span class="only-web">Ten sam adres na komputerze otwiera pełny widok z boczną nawigacją; na telefonie: Ja → „Otwórz pełną aplikację”.</span><span class="only-app">Na komputerze trening.felsztukier.pl otwiera pełny widok z boczną nawigacją – to samo konto co w aplikacji.</span> Dodatkowe ekrany: Kalendarz z przenoszeniem treningów przeciągnięciem, Sezon (wszystkie tygodnie programu), Biblioteka (treningi, strefy, zasady), Postęp z krzywą mocy, wykresem formy i raportami, Sprzęt i serwis, Wyjazd (w programach z wyjazdem), kopia danych.</p>
-  <p class="only-web">Poprzedni widok na telefon (<code>/i</code>) zostaje jako zapas: Ja → „Wróć do poprzedniego wyglądu”; w nim Więcej → „Wypróbuj nowy wygląd”.</p>
+  <p><span class="only-web">Ten sam adres na komputerze otwiera pełny widok z boczną nawigacją; na telefonie: Profil → „Otwórz pełną aplikację”.</span><span class="only-app">Na komputerze trening.felsztukier.pl otwiera pełny widok z boczną nawigacją – to samo konto co w aplikacji.</span> Dodatkowe ekrany: Kalendarz z przenoszeniem treningów przeciągnięciem, Sezon (wszystkie tygodnie programu), Biblioteka (treningi, strefy, zasady), Postęp z krzywą mocy, wykresem formy i raportami, Sprzęt i serwis, Wyjazd (w programach z wyjazdem), kopia danych.</p>
+  <p class="only-web">Poprzedni widok na telefon (<code>/i</code>) zostaje jako zapas: Profil → „Wróć do poprzedniego wyglądu”; w nim Więcej → „Wypróbuj nowy wygląd”.</p>
 </div>
 
 <h2 id="problemy">Gdy coś nie działa</h2>
 <div class="list">
-  <div class="row"><img src="/m/art/night.png" alt=""><div><b>Żółty pasek „sesja wygasła”</b><span>Ja → Wyloguj, potem zaloguj się ponownie. Dane na telefonie zostają.</span></div></div>
+  <div class="row"><img src="/m/art/night.png" alt=""><div><b>Żółty pasek „sesja wygasła”</b><span>Profil → Wyloguj, potem zaloguj się ponownie. Dane na telefonie zostają.</span></div></div>
   <div class="row only-app"><img src="/m/art/heart.png" alt=""><div><b>Jazda nie pojawia się ze Stravy</b><span>Odczekaj 10 minut; potem na trening.felsztukier.pl: Więcej → Ustawienia → Integracje → „Sprawdź webhook” i „Pobierz ostatnie 30 dni”.</span></div></div>
   <div class="row only-web"><img src="/m/art/heart.png" alt=""><div><b>Jazda nie pojawia się ze Stravy</b><span>Odczekaj 10 minut; potem w pełnej aplikacji Integracje → „Sprawdź webhook” i „Pobierz ostatnie 30 dni”.</span></div></div>
   <div class="row"><img src="/m/art/bolt.png" alt=""><div><b>Treningu nie ma na Bolcie</b><span>Karta dnia → „Wyślij na Bolta”; na Bolcie odśwież Planned Workouts (synchronizacja z aplikacją ELEMNT).</span></div></div>
-  <div class="row"><img src="/m/art/sun.png" alt=""><div><b>Brak pogody na karcie</b><span>Ja → Pogoda → ustaw miejscowość. Prognoza jest na godzinę jazdy z ustawień.</span></div></div>
-  <div class="row"><img src="/m/art/test.png" alt=""><div><b>Strefy wyglądają źle</b><span>Sprawdź FTP i tętno progowe w Ja → „Progi i miernik”; po teście wpisz nowe wartości.</span></div></div>
+  <div class="row"><img src="/m/art/sun.png" alt=""><div><b>Brak pogody na karcie</b><span>Profil → Pogoda → ustaw miejscowość. Prognoza jest na godzinę jazdy z ustawień.</span></div></div>
+  <div class="row"><img src="/m/art/test.png" alt=""><div><b>Strefy wyglądają źle</b><span>Sprawdź FTP i tętno progowe w Profilu → „Progi i miernik”; po teście wpisz nowe wartości.</span></div></div>
   <div class="row"><img src="/m/art/rest.png" alt=""><div><b>Bez sieci</b><span>Dziś, Plan, Ja i jazdy działają offline. Zapisy wyślą się same, gdy wróci zasięg. Trener potrzebuje sieci.</span></div></div>
 </div>
 </main>

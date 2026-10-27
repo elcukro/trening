@@ -101,7 +101,7 @@ test('Plan: week summary, arrows change the week, press and hold opens the day m
 
 test('Me: tiles, FTP test, thresholds sheet', async ({ page }) => {
   await page.goto('/m/ja?lang=en&today=2026-09-23')
-  await expect(page.getByRole('heading', { name: 'Me', exact: true })).toBeVisible()
+  await expect(page.getByRole('heading', { name: 'Profile', exact: true })).toBeVisible()
   await expect(page.getByText('FTP test', { exact: true })).toBeVisible()
   await expect(page.getByText(/Next: Sat 26 Sep/)).toBeVisible()
   await expect(page.getByText(/^Bicycle Coach /)).toBeVisible()
@@ -118,18 +118,18 @@ test('Me: tiles, FTP test, thresholds sheet', async ({ page }) => {
 test('Me → Language: system language by default, switching to Polish and back', async ({ page }) => {
   // bez `?lang` – język wynika z ustawienia (domyślnie systemowy, tu en-GB)
   await page.goto('/m/ja?today=2026-09-23')
-  await expect(page.getByRole('heading', { name: 'Me', exact: true })).toBeVisible()
+  await expect(page.getByRole('heading', { name: 'Profile', exact: true })).toBeVisible()
   await page.getByRole('button', { name: /^Language/ }).click()
   const sheet = page.getByRole('dialog', { name: 'Language' })
   await expect(sheet.getByRole('radio', { name: 'System language (English)' })).toHaveAttribute('aria-checked', 'true')
   await sheet.getByRole('radio', { name: 'Polski' }).click()
-  await expect(page.getByRole('heading', { name: 'Ja', exact: true })).toBeVisible()
+  await expect(page.getByRole('heading', { name: 'Profil', exact: true })).toBeVisible()
 
   await page.getByRole('button', { name: /^Język/ }).click()
   const pl = page.getByRole('dialog', { name: 'Język' })
   await expect(pl.getByRole('radio', { name: 'Polski' })).toHaveAttribute('aria-checked', 'true')
   await pl.getByRole('radio', { name: 'English', exact: true }).click()
-  await expect(page.getByRole('heading', { name: 'Me', exact: true })).toBeVisible()
+  await expect(page.getByRole('heading', { name: 'Profile', exact: true })).toBeVisible()
 })
 
 test('Coach: the button opens the full-screen chat', async ({ page }) => {
