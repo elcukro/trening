@@ -1,7 +1,7 @@
 import type { SupabaseClient } from 'npm:@supabase/supabase-js@2'
 import { env } from './env.ts'
 import { decrypt, encrypt } from './crypto.ts'
-import type { WahooWorkoutRaw } from './wahoo_summary.ts'
+import type { WahooSummary, WahooWorkoutRaw } from './wahoo_summary.ts'
 
 export const WAHOO_API = 'https://api.wahooligan.com'
 // odczyt planów i treningów potrzebny, żeby sprawdzić, co Wahoo naprawdę zapisało
@@ -346,6 +346,16 @@ export async function listWorkouts(token: string, pages = 3): Promise<{ id: numb
     if (list.length < 50) break
   }
   return out
+}
+
+/** Podsumowanie jednego treningu (jazdy z innych aplikacji przychodzą na liście bez niego); null = brak (404). */
+export async function getWorkoutSummary(token: string, id: number): Promise<WahooSummary | null> {
+  const res = await fetch(`${WAHOO_API}/v1/workouts/${id}/workout_summary`, { headers: { authorization: `Bearer ${token}` } })
+  if (res.status === 429) throw new Error('wahoo 429 – limit zapytań')
+  if (!res.ok) return null
+  const body = (await res.json().catch(() => null)) as WahooSummary | { workout_summary?: WahooSummary } | null
+  if (!body || typeof body !== 'object') return null
+  return ('workout_summary' in body ? body.workout_summary : body) as WahooSummary | null
 }
 
 /** Lista treningów z pełnymi obiektami (w tym `workout_summary`, gdy trening został wykonany). */

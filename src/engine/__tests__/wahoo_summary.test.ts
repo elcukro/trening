@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { completedInRange, dropReason, droppedWorkouts, summaryToRow, warsawDate } from '../../../supabase/functions/_shared/wahoo_summary'
+import { completedInRange, dropReason, droppedWorkouts, isOurPlan, needsSummaryFetch, summaryToRow, warsawDate } from '../../../supabase/functions/_shared/wahoo_summary'
 
 const done = {
   id: 498978425,
@@ -61,5 +61,33 @@ describe('odrzucone treningi z listy Wahoo – diagnostyka MyWhoosh (docs/33 § 
     expect(d[1]!.summary_keys).toEqual(['calories_accum', 'file'])
     expect(d[2]!.our_plan).toBe(true)
     expect(JSON.stringify(d)).not.toMatch(/https?:|signature|abc/)
+  })
+})
+
+describe('podsumowanie dociągane osobno – jazdy z innych aplikacji (27.10.2026)', () => {
+  const now = Date.parse('2026-10-27T10:00:00Z')
+  const from = '2026-10-01'
+  const to = '2026-10-27'
+  // kształt z logu produkcji: jazda z MyWhoosh na liście Wahoo bez podsumowania, typ 12, prawdziwa godzina startu
+  const mywhoosh = { id: 509043014, starts: '2026-10-23T18:19:11.000Z', name: 'MyWhoosh - Baza_Z2_158W_120min', workout_type_id: 12, workout_token: null, workout_summary: null }
+
+  it('jazda z MyWhoosh bez podsumowania – dociągnąć', () => {
+    expect(needsSummaryFetch(mywhoosh, from, to, now)).toBe(true)
+  })
+
+  it('pomija nasze plany, plany innych aplikacji o północy UTC, przyszłość, okno dat i wpisy z podsumowaniem', () => {
+    const plan = { ...mywhoosh, workout_token: '2026-10-23:Z2_60:abc', starts: '2026-10-23T04:00:00.000Z' }
+    expect(isOurPlan(plan)).toBe(true)
+    expect(needsSummaryFetch(plan, from, to, now)).toBe(false)
+    expect(needsSummaryFetch({ ...mywhoosh, name: 'The Model', starts: '2026-10-27T00:00:00.000Z' }, from, to, now)).toBe(false)
+    expect(needsSummaryFetch({ ...mywhoosh, starts: '2026-10-28T18:00:00.000Z' }, from, '2026-10-31', now)).toBe(false)
+    expect(needsSummaryFetch({ ...mywhoosh, starts: '2026-09-20T18:00:00.000Z' }, from, to, now)).toBe(false)
+    expect(needsSummaryFetch({ ...mywhoosh, workout_summary: { duration_active_accum: 6000 } }, from, to, now)).toBe(false)
+    expect(needsSummaryFetch({ ...mywhoosh, starts: null }, from, to, now)).toBe(false)
+  })
+
+  it('po dociągnięciu podsumowania jazda przechodzi przez summaryToRow', () => {
+    const filled = { ...mywhoosh, workout_summary: { duration_active_accum: 6007, distance_accum: 47880, power_avg: 153, heart_rate_avg: 130, cadence_avg: 87 } }
+    expect(summaryToRow(filled)).toMatchObject({ id: 509043014, date: '2026-10-23', minutes_active: 100, distance_km: 47.9, avg_power: 153, avg_hr: 130 })
   })
 })

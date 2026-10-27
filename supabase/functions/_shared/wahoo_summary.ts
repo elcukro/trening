@@ -96,6 +96,26 @@ export function summaryToRow(w: WahooWorkoutRaw): WahooWorkoutRow | null {
   }
 }
 
+/** Wpis z tokenem naszego planu (`YYYY-MM-DD:…`) – niewykonany plan albo jazda z innej aplikacji przypięta do planu. */
+export function isOurPlan(w: WahooWorkoutRaw): boolean {
+  return typeof w.workout_token === 'string' && /^\d{4}-\d{2}-\d{2}:/.test(w.workout_token)
+}
+
+/**
+ * Czy dociągnąć podsumowanie osobnym zapytaniem (`GET /v1/workouts/{id}/workout_summary`). Lista Wahoo nie dołącza
+ * podsumowania do jazd z innych aplikacji (27.10.2026: wszystkie jazdy Ferdynanda z MyWhoosh, typ 12, z prawdziwą
+ * godziną startu). Pomijamy nasze plany, przyszłość i wpisy o północy UTC – to plany innych aplikacji na dzień
+ * („The Model”, „Fight Club” z SYSTM), nie jazdy.
+ */
+export function needsSummaryFetch(w: WahooWorkoutRaw, from: string, to: string, now = Date.now()): boolean {
+  if (w.workout_summary || !w.starts || isOurPlan(w)) return false
+  const t = Date.parse(w.starts)
+  if (!Number.isFinite(t) || t > now) return false
+  if (/T00:00:00(\.0+)?Z$/.test(w.starts)) return false
+  const d = warsawDate(w.starts)
+  return d >= from && d <= to
+}
+
 /** Dlaczego trening z listy Wahoo nie trafia do `wahoo_workouts` (null = trafia). Te same warunki co `summaryToRow`. */
 export function dropReason(w: WahooWorkoutRaw): string | null {
   const s = w.workout_summary
@@ -143,7 +163,7 @@ export function droppedWorkouts(list: WahooWorkoutRaw[], from: string, to: strin
       name: w.name ?? null,
       workout_type_id: w.workout_type_id ?? null,
       reason,
-      our_plan: typeof w.workout_token === 'string' && /^\d{4}-\d{2}-\d{2}:/.test(w.workout_token),
+      our_plan: isOurPlan(w),
       summary_keys: s && typeof s === 'object' ? Object.keys(s).sort() : null,
       duration_active_accum: s?.duration_active_accum ?? null,
       duration_total_accum: s?.duration_total_accum ?? null,

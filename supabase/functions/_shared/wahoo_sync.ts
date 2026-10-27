@@ -9,9 +9,9 @@
 import type { SupabaseClient } from 'npm:@supabase/supabase-js@2'
 import { decodeFit, fitToStreams } from './fit.ts'
 import { hrHistogram, movingTotals, resample, rideMetrics } from './metrics.ts'
-import { accessTokenFor, listWorkoutsDetailed } from './wahoo.ts'
+import { accessTokenFor, getWorkoutSummary, listWorkoutsDetailed } from './wahoo.ts'
 import { redact } from './provenance.ts'
-import { completedInRange, droppedWorkouts, fitStart, fitUrl, isFitHost, isTransientFitError, summaryToRow, warsawDate, type WahooSummary, type WahooWorkoutRaw } from './wahoo_summary.ts'
+import { completedInRange, droppedWorkouts, fitStart, fitUrl, needsSummaryFetch, isFitHost, isTransientFitError, summaryToRow, warsawDate, type WahooSummary, type WahooWorkoutRaw } from './wahoo_summary.ts'
 
 /** Plik FIT nie liczy się do limitów Wahoo, ale nie ściągamy go bez końca: ≤ 8 MB, 30 s. */
 const FIT_MAX_BYTES = 8 * 1024 * 1024
@@ -121,6 +121,33 @@ export interface SyncResult {
   dates: string[]
   /** odrzucone wpisy z okna (diagnostyka MyWhoosh, docs/33 § 7a) */
   dropped: ReturnType<typeof droppedWorkouts>
+  /** podsumowania dociągnięte pojedynczo (jazdy z innych aplikacji) */
+  summaries: { asked: number; found: number }
+}
+
+/**
+ * Jazdy z innych aplikacji (MyWhoosh) przychodzą na liście bez `workout_summary` – dociągamy je pojedynczo, najwyżej
+ * `limit` na wywołanie (limity Wahoo) i tylko te, których jeszcze nie mamy. Uzupełnia wpisy listy na miejscu; zwraca
+ * liczbę zapytań i znalezionych podsumowań.
+ */
+export async function fillSummaries(admin: SupabaseClient, userId: string, token: string, list: WahooWorkoutRaw[], from: string, to: string, limit: number): Promise<{ asked: number; found: number }> {
+  const want = list.filter((w) => needsSummaryFetch(w, from, to))
+  if (!want.length) return { asked: 0, found: 0 }
+  const { data: known } = await admin.from('wahoo_workouts').select('id').eq('user_id', userId).in('id', want.map((w) => w.id))
+  const have = new Set((known ?? []).map((k) => Number(k.id)))
+  let asked = 0
+  let found = 0
+  for (const w of want) {
+    if (have.has(w.id)) continue
+    if (asked >= limit) break
+    asked++
+    const s = await getWorkoutSummary(token, w.id)
+    if (s) {
+      w.workout_summary = s
+      found++
+    }
+  }
+  return { asked, found }
 }
 
 /** Wykonane treningi z ostatnich `days` dni → baza. Dwa zapytania do Wahoo (2 strony po 50). */
@@ -130,18 +157,19 @@ export async function syncCompleted(admin: SupabaseClient, userId: string, days:
   const to = warsawDate(new Date().toISOString())
   const from = warsawDate(new Date(Date.now() - days * 86400000).toISOString())
   const list = await listWorkoutsDetailed(tok, 2)
+  const summaries = await fillSummaries(admin, userId, tok, list, from, to, 5)
   const rows = completedInRange(list, from, to)
   const todo = await saveCompleted(admin, userId, rows)
   const dropped = droppedWorkouts(list, from, to)
   if (dropped.length) console.log('wahoo dropped', userId.slice(0, 8), JSON.stringify(dropped))
-  return { scanned: list.length, completed: rows.length, todo, from, to, dates: rows.map((r) => r.date), dropped }
+  return { scanned: list.length, completed: rows.length, todo, from, to, dates: rows.map((r) => r.date), dropped, summaries }
 }
 
 /**
  * Historia z Wahoo (zamiast 400 dni ze Stravy – docs/33 § 3): strony `/v1/workouts` od najnowszych, aż do `days` wstecz.
  * Plik FIT tylko dla jazd z ostatnich `fitDays` dni (pobranie pliku nie liczy się do limitu, ale trwa).
  */
-export async function backfillWahoo(admin: SupabaseClient, userId: string, opts: { days: number; fitDays: number; maxPages: number; fitLimit: number }): Promise<{ pages: number; scanned: number; saved: number; fit: Record<string, number>; dropped: ReturnType<typeof droppedWorkouts> }> {
+export async function backfillWahoo(admin: SupabaseClient, userId: string, opts: { days: number; fitDays: number; maxPages: number; fitLimit: number }): Promise<{ pages: number; scanned: number; saved: number; fit: Record<string, number>; dropped: ReturnType<typeof droppedWorkouts>; summaries: { asked: number; found: number } }> {
   const tok = await accessTokenFor(admin, userId)
   if (!tok) throw new Error('not_connected')
   const from = warsawDate(new Date(Date.now() - opts.days * 86400000).toISOString())
@@ -154,12 +182,14 @@ export async function backfillWahoo(admin: SupabaseClient, userId: string, opts:
     const oldest = batch.at(-1)?.starts
     if (batch.length < 50 || (oldest && warsawDate(oldest) < from)) break
   }
+  const today = warsawDate(new Date().toISOString())
+  const summaries = await fillSummaries(admin, userId, tok, all, from, today, 40)
   const rows = all.map(summaryToRow).filter((r): r is NonNullable<typeof r> => !!r && r.date >= from)
   await saveCompleted(admin, userId, rows)
-  const dropped = droppedWorkouts(all, from, warsawDate(new Date().toISOString()), 60)
+  const dropped = droppedWorkouts(all, from, today, 60)
   if (dropped.length) console.log('wahoo backfill dropped', userId.slice(0, 8), JSON.stringify(dropped))
   const fit = await fillMissingFit(admin, userId, opts.fitDays, opts.fitLimit)
-  return { pages, scanned: all.length, saved: rows.length, fit, dropped }
+  return { pages, scanned: all.length, saved: rows.length, fit, dropped, summaries }
 }
 
 /**
