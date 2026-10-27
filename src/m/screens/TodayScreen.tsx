@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { useNavigate, useParams } from 'react-router'
+import { useLocation, useNavigate, useParams } from 'react-router'
 import { upsertSessionLog } from '@/db/repo'
 import { statusFromScore } from '@/engine/analysis'
 import { addDays, isValidISODate } from '@/engine/dates'
@@ -13,6 +13,7 @@ import { fmtLong, todayISO } from '@/lib/dates'
 import { minutes, num } from '@/lib/format'
 import { DAY_TYPE_LABEL } from '@/lib/labels'
 import { Btn, Card, Group, Row, Screen } from '../components/Chrome'
+import { InboxBell, NavAvatar } from '../components/Inbox'
 import { Waiting } from '../components/Waiting'
 import { CheckinSheet } from '../components/CheckinSheet'
 import { FoodCard } from '../components/FoodCard'
@@ -50,6 +51,13 @@ export function TodayScreen() {
   const navigate = useNavigate()
   const openCoach = useOpenCoach()
   const [sheet, setSheet] = useState<'checkin' | 'meal' | 'numbers' | null>(null)
+  const location = useLocation()
+  // wpis ze skrzynki „Poranny check-in” otwiera arkusz od razu; po zamknięciu stan historii czyścimy, żeby Wstecz go nie powtarzał
+  const askedCheckin = (location.state as { open?: string } | null)?.open === 'checkin'
+  const closeCheckin = () => {
+    setSheet(null)
+    if (askedCheckin) void navigate(location.pathname + location.search, { replace: true, state: null })
+  }
   const [openMeal, setOpenMeal] = useState<MealRow | undefined>(undefined)
   const food = useMeals(date, day, d)
   const brief = useBriefing(day, d.view.overrides.some((o) => o.kind === 'indoor'))
@@ -83,7 +91,7 @@ export function TodayScreen() {
   const sendBolt = () => void bolt.run(d.sendToBolt, (s) => (s === 'updated' ? tt.boltUpdated : tt.boltSent), { errorTitle: tt.boltFailed })
 
   return (
-    <Screen title={isToday ? t.common.today : cap(fmtLong(date).split(',')[0]!)} subtitle={`${fmtLong(date)}${day ? tt.weekPart(day.week, day.week_type === 'deload') : ''}`} back={isToday ? undefined : '/m/plan'} day={color}>
+    <Screen title={isToday ? t.common.today : cap(fmtLong(date).split(',')[0]!)} subtitle={`${fmtLong(date)}${day ? tt.weekPart(day.week, day.week_type === 'deload') : ''}`} back={isToday ? undefined : '/m/plan'} lead={<NavAvatar />} action={<InboxBell />} day={color}>
       {warn.length > 0 && (
         <div className="m-list p-3" style={{ background: 'rgb(255 204 0 / 0.18)' }}>
           <p className="m-sub">{warn[0]!.message}</p>
@@ -154,7 +162,7 @@ export function TodayScreen() {
 
       {sheet === 'meal' && day && <MealSheet key={openMeal?.id ?? 'new'} date={date} meal={openMeal} proteinTarget={day.protein_g} onClose={() => setSheet(null)} />}
       {sheet === 'numbers' && <NumbersSheet onClose={() => setSheet(null)} />}
-      {sheet === 'checkin' && <CheckinSheet checkin={d.checkin} lastWeight={d.lastWeight} onClose={() => setSheet(null)} onSave={d.saveCheckin} />}
+      {(sheet === 'checkin' || askedCheckin) && <CheckinSheet checkin={d.checkin} lastWeight={d.lastWeight} onClose={closeCheckin} onSave={d.saveCheckin} />}
     </Screen>
   )
 }

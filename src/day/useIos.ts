@@ -284,13 +284,31 @@ export interface Snapshot {
   hasData: boolean
 }
 
+/** Propozycja nowego FTP z jazd 90 dni (Profil, skrzynka) – bez reszty migawki, która liczy PMC. */
+export function useFtpSuggestion(): FtpSuggestion | null {
+  const engine = useEngine()
+  const today = todayISO()
+  const acts = useRides(addDays(today, -90), today)
+  const dismissals = useLiveQuery(async () => (await db.kv.where('key').startsWith('ftp_dismiss:').toArray()).map((r) => r.key.slice('ftp_dismiss:'.length)), [], [] as string[])
+  const { settings, tests } = engine.ctx
+  const ftp = effectiveFtp(today, settings.ftp_w_estimate, tests ?? []).ftp
+  return useMemo(() => {
+    const lastTest = (tests ?? []).filter((t) => t.ftp_w).map((t) => t.date).toSorted().at(-1) ?? null
+    // tylko Wahoo i wgrane pliki: zapisane FTP trafia do danych, które widzi AI, więc nie może pochodzić ze Stravy (docs/33)
+    return suggestFtp(
+      acts.filter((a) => a.source !== 'strava'),
+      ftp,
+      lastTest,
+      new Set(dismissals),
+    )
+  }, [acts, ftp, tests, dismissals])
+}
+
 export function useSnapshot(): Snapshot {
   const engine = useEngine()
   const today = todayISO()
   const { actual } = useDailyLoad(120)
   const checkins = useLiveQuery(async () => (await db.checkins.toArray()).filter((c) => !c.deleted_at && c.weight_kg != null), [], [] as Checkin[])
-  const acts = useRides(addDays(today, -90), today)
-  const dismissals = useLiveQuery(async () => (await db.kv.where('key').startsWith('ftp_dismiss:').toArray()).map((r) => r.key.slice('ftp_dismiss:'.length)), [], [] as string[])
   const baseline = useLiveQuery(async () => (await db.baseline_entries.toArray()).filter((b) => !b.deleted_at), [], [] as BaselineEntry[])
   const days = useMemo(() => buildCalendar(engine.ctx), [engine.ctx])
 
@@ -311,16 +329,7 @@ export function useSnapshot(): Snapshot {
 
   const week = useMemo(() => weekTss(days, engine.ctx.program, actual, today, today), [days, engine.ctx.program, actual, today])
 
-  const suggestion = useMemo(() => {
-    const lastTest = (tests ?? []).filter((t) => t.ftp_w).map((t) => t.date).toSorted().at(-1) ?? null
-    // tylko Wahoo i wgrane pliki: zapisane FTP trafia do danych, które widzi AI, więc nie może pochodzić ze Stravy (docs/33)
-    return suggestFtp(
-      acts.filter((a) => a.source !== 'strava'),
-      ftpEff.ftp,
-      lastTest,
-      new Set(dismissals),
-    )
-  }, [acts, ftpEff.ftp, tests, dismissals])
+  const suggestion = useFtpSuggestion()
 
   // Cel z programu (`program.goal`): prędkościowy liczy fizyka z CdA jazdy odniesienia, mocowy bierze `ftp_w_goal`.
   const goalDef = engine.ctx.program.goal

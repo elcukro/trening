@@ -2,6 +2,32 @@ import { plCount } from '../core'
 
 /** Teksty: day (docs/34). Źródło prawdy – wersja angielska w `../en/day.ts` musi mieć te same klucze. */
 export default {
+  /** Skrzynka pod dzwonkiem (`inbox.ts`, arkusz w `/m`). */
+  inbox: {
+    title: 'Skrzynka',
+    bell: 'Skrzynka',
+    bellCount: (n: number) => `Skrzynka, do zrobienia: ${n}`,
+    todo: 'Do zrobienia',
+    fresh: 'Nowe',
+    empty: 'Wszystko zrobione',
+    emptySub: 'Prośby o ocenę jazdy, notatki trenera i nowe progi pojawią się tutaj.',
+    sessionTitle: 'Zaloguj się ponownie',
+    sessionSub: 'Sesja wygasła – jazdy i zmiany nie synchronizują się z kontem',
+    syncTitle: 'Synchronizacja nie działa',
+    checkinTitle: 'Poranny check-in',
+    checkinSub: 'Sen, nogi i samopoczucie – 20 sekund',
+    checkinWeigh: 'Sen, nogi i waga – dziś dzień ważenia',
+    boltTitle: 'Wyślij plan na Bolta',
+    boltStale: 'Plan dnia zmienił się po wysyłce',
+    rpeTitle: 'Jak było? Oceń jazdę',
+    ftpTitle: (w: number) => `Nowe FTP: ${w} W?`,
+    ftpSub: (date: string) => `Z jazdy ${date} – zapisz w „Progi i miernik”`,
+    weatherTitle: 'Ustaw miejscowość',
+    weatherSub: 'Bez niej poranna odprawa nie pokaże pogody',
+    noteTitle: (name: string) => `Notatka trenera: ${name}`,
+    summaryTitle: (name: string) => `Podsumowanie: ${name}`,
+    testTitle: 'Nowe progi z testu',
+  },
   /** Kroki dnia (`dayState.ts` → `dayFlow`). */
   steps: {
     checkin: 'Poranny check-in',

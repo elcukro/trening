@@ -17,6 +17,7 @@ import { pushItemForDay, pushPayloadFor, wahoo } from '@/sync/wahoo'
 import { supabase } from '@/sync/supabase'
 import { IconChevronLeft } from '@/ios/components/Icons'
 import { Btn, Group, Row, Screen } from '../components/Chrome'
+import { InboxBell, NavAvatar } from '../components/Inbox'
 import { WeekStrip } from '../components/WeekStrip'
 import { WeekPager } from '../components/WeekPager'
 import { DayMenuSheet, type DayAction } from '../components/DayMenuSheet'
@@ -149,6 +150,7 @@ export function PlanScreen() {
   return (
     <Screen
       title={t.m.chrome.tabs.plan}
+      lead={<NavAvatar />}
       action={
         <span className="flex items-center">
           {monday !== thisMonday && (
@@ -162,6 +164,7 @@ export function PlanScreen() {
           <button className="m-nav-btn rotate-180 disabled:opacity-30" aria-label={tp.nextWeek} disabled={!!maxMonday && addDays(monday, 7) > maxMonday} onClick={() => go(addDays(monday, 7))}>
             <IconChevronLeft size={22} />
           </button>
+          <InboxBell />
         </span>
       }
     >

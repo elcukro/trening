@@ -13,7 +13,8 @@ import { useT } from '@/i18n/react'
  * Ekran mobilnego v2: duży tytuł, który po przewinięciu zwija się do środka paska (jak w natywnym iOS).
  * `day` ustawia kolor dnia (`--day`) dla kart i przycisków na tym ekranie.
  */
-export function Screen({ title, subtitle, back, action, day, children }: { title: string; subtitle?: ReactNode; back?: string | (() => void); action?: ReactNode; day?: { color: string; soft: string; fill?: string }; children: ReactNode }) {
+/** `lead` – element po lewej w pasku (avatar na Dziś i Planie), gdy ekran nie ma przycisku Wstecz. */
+export function Screen({ title, subtitle, back, lead, action, day, children }: { title: string; subtitle?: ReactNode; back?: string | (() => void); lead?: ReactNode; action?: ReactNode; day?: { color: string; soft: string; fill?: string }; children: ReactNode }) {
   const t = useT()
   const [scrolled, setScrolled] = useState(false)
   const navigate = useNavigate()
@@ -51,7 +52,7 @@ export function Screen({ title, subtitle, back, action, day, children }: { title
               <IconChevronLeft size={22} />
             </button>
           ) : (
-            <span className="w-2" />
+            (lead ?? <span className="w-2" />)
           )}
           {/* tytuł w pasku powtarza h1 – VoiceOver czyta go raz (docs/27 § 3.3) */}
           <span className="m-nav-title" aria-hidden>{title}</span>

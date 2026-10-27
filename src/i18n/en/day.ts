@@ -2,6 +2,31 @@ import { enCount } from '../core'
 import type pl from '../pl/day'
 
 const en: typeof pl = {
+  inbox: {
+    title: 'Inbox',
+    bell: 'Inbox',
+    bellCount: (n: number) => `Inbox, to do: ${n}`,
+    todo: 'To do',
+    fresh: 'New',
+    empty: 'All done',
+    emptySub: 'Requests to rate a ride, coach notes and new thresholds will show up here.',
+    sessionTitle: 'Sign in again',
+    sessionSub: "Your session has expired – rides and changes aren't syncing with your account",
+    syncTitle: 'Sync is not working',
+    checkinTitle: 'Morning check-in',
+    checkinSub: 'Sleep, legs and how you feel – 20 seconds',
+    checkinWeigh: "Sleep, legs and weight – today's a weigh-in day",
+    boltTitle: 'Send the plan to your Bolt',
+    boltStale: 'The plan for today changed after it was sent',
+    rpeTitle: 'How did it go? Rate the ride',
+    ftpTitle: (w: number) => `New FTP: ${w} W?`,
+    ftpSub: (date: string) => `From the ride on ${date} – save it in “Thresholds & power meter”`,
+    weatherTitle: 'Set your location',
+    weatherSub: "Without it the morning briefing can't show the weather",
+    noteTitle: (name: string) => `Coach's note: ${name}`,
+    summaryTitle: (name: string) => `Summary: ${name}`,
+    testTitle: 'New thresholds from your test',
+  },
   steps: {
     checkin: 'Morning check-in',
     checkinDetail: 'Weight, sleep, legs, motivation – 20 seconds',

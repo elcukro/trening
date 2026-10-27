@@ -22,7 +22,7 @@ import { Group, Row, Screen } from '../components/Chrome'
 import { LanguageSheet, LocationSheet, NumbersSheet, Switch, langChoiceLabel } from '../components/SettingsSheets'
 import { FitUploadSheet } from '../components/FitUploadSheet'
 import { Avatar, AvatarSheet } from '../components/AvatarSheet'
-import { avatarView, googleAvatarUrl, initialsOf } from '@/lib/avatar'
+import { useAvatar } from '../useAvatar'
 import { canUploadFit } from '@/sync/fitUpload'
 import { useSharedFit } from '../useSharedFit'
 import { ART } from '../art'
@@ -110,10 +110,7 @@ export function MeScreen() {
   const form = formLabel(snap.form?.tsb ?? null)
   const toGoal = snap.goal.ftp - snap.ftp.w
   const s = engine.ctx.settings
-  const email = auth.session?.user.email ?? null
-  const google = googleAvatarUrl(auth.session?.user.user_metadata)
-  const initials = initialsOf(s.athlete_name, email)
-  const avatar = avatarView(s.avatar, google, s.athlete_name, email)
+  const { email, google, initials, view: avatar } = useAvatar()
   const [sheet, setSheet] = useState<'numbers' | 'location' | 'language' | 'fit' | 'avatar' | null>(null)
   const langChoice: LangChoice = s.language === 'pl' || s.language === 'en' ? s.language : 'system'
   // plik .fit przysłany z innej aplikacji (iOS „Udostępnij”) – od razu do arkusza wgrywania
