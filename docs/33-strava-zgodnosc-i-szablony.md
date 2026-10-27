@@ -182,7 +182,13 @@ bez nowego konta, dane są nasze (źródło `fit`, bez limitu 7 dni).
   zapisem podsumowania), a `sameRide` i `rebuild_day_log` uznają też ten sam dzień, czas jazdy ±2 % (≥ 10 min) i start
   ≤ 3 h od siebie – dla wierszy zapisanych przed poprawką (plik FIT nie jest pobierany drugi raz). Stan produkcji
   27.10: kopie z Wahoo dla jazd MyWhoosh z 11–23.10 **nie istnieją** (backfill przeczytał całą listę: 2 strony, 24 jazdy,
-  ostatnia 10.10) – wgranie pliku zostaje drogą dla tych jazd.
+  ostatnia 10.10) – wgranie pliku zostaje drogą dla tych jazd. **Ale** aplikacja Wahoo Ferdynanda pokazuje te jazdy
+  (np. „MyWhoosh – Baza_Z2_158W_120min” 23.10, „Indoor Cycling | MyWhoosh”, z mocą i tętnem), a backfill zapisał 24
+  z 50–99 wpisów listy – reszta odpada w `summaryToRow`. Do zbadania: `droppedWorkouts` (`wahoo_summary.ts`) loguje
+  odrzucone wpisy z okna (`wahoo dropped` / `wahoo backfill dropped` w dzienniku funkcji; też pole `dropped` w odpowiedzi
+  `wahoo-push {completed|backfill}`): id, start, nazwa, `workout_type_id`, powód, klucze wpisu i podsumowania, pola
+  `duration_*`, `our_plan` – bez adresów i tokenów. Po wdrożeniu `wahoo-push` i backfillu dla Ferdynanda widać, czy jazdy
+  z MyWhoosh nie mają `workout_summary` w liście (wtedy np. `GET /v1/workouts/:id`), czy mają je w innym kształcie.
 
 ## 8. Szablony planów i dopasowanie przez AI
 

@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { completedInRange, summaryToRow, warsawDate } from '../../../supabase/functions/_shared/wahoo_summary'
+import { completedInRange, dropReason, droppedWorkouts, summaryToRow, warsawDate } from '../../../supabase/functions/_shared/wahoo_summary'
 
 const done = {
   id: 498978425,
@@ -36,5 +36,30 @@ describe('completedInRange', () => {
   it('filtruje po dacie lokalnej', () => {
     const list = [done, { ...done, id: 5, starts: '2026-09-10T08:00:00Z' }, { id: 6, starts: '2026-09-21T08:00:00Z' }]
     expect(completedInRange(list, '2026-09-15', '2026-09-22').map((r) => r.id)).toEqual([498978425])
+  })
+})
+
+describe('odrzucone treningi z listy Wahoo – diagnostyka MyWhoosh (docs/33 § 7a)', () => {
+  const list = [
+    { id: 1, starts: '2026-10-23T18:19:00.000Z', name: 'MyWhoosh - Baza_Z2_158W_120min', workout_type_id: 61, workout_summary: null },
+    { id: 2, starts: '2026-10-21T20:45:00.000Z', name: 'MyWhoosh - Z2 SweetSpot2x10', workout_summary: { calories_accum: 700, file: { url: 'https://cdn.wahooligan.com/x.fit?signature=abc' } } },
+    { id: 3, starts: '2026-10-20T19:00:00.000Z', name: 'Z2', workout_token: '2026-10-20:Z2_60:abc', workout_summary: null },
+    { id: 4, starts: '2026-10-19T17:00:00.000Z', name: 'Bolt', workout_summary: { duration_active_accum: 3600 } },
+    { id: 5, starts: '2026-10-18T17:00:00.000Z', name: 'Krótka', workout_summary: { duration_active_accum: '120' } },
+    { id: 6, starts: '2026-08-01T17:00:00.000Z', name: 'Stara', workout_summary: null },
+  ]
+
+  it('powód odrzucenia jak w summaryToRow', () => {
+    expect(list.map(dropReason)).toEqual(['brak workout_summary', 'brak czasu w podsumowaniu', 'brak workout_summary', null, 'za krótko (120 s)', 'brak workout_summary'])
+    expect(dropReason({ id: 7, workout_summary: { duration_active_accum: 600 } })).toBe('brak starts')
+  })
+
+  it('kształt podsumowania bez adresów i tokenów, plany oznaczone, okno dat', () => {
+    const d = droppedWorkouts(list, '2026-10-01', '2026-10-27')
+    expect(d.map((x) => x.id)).toEqual([1, 2, 3, 5])
+    expect(d[0]).toMatchObject({ workout_type_id: 61, summary_keys: null, our_plan: false })
+    expect(d[1]!.summary_keys).toEqual(['calories_accum', 'file'])
+    expect(d[2]!.our_plan).toBe(true)
+    expect(JSON.stringify(d)).not.toMatch(/https?:|signature|abc/)
   })
 })

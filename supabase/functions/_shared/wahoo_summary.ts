@@ -96,6 +96,64 @@ export function summaryToRow(w: WahooWorkoutRaw): WahooWorkoutRow | null {
   }
 }
 
+/** Dlaczego trening z listy Wahoo nie trafia do `wahoo_workouts` (null = trafia). Te same warunki co `summaryToRow`. */
+export function dropReason(w: WahooWorkoutRaw): string | null {
+  const s = w.workout_summary
+  if (!s) return 'brak workout_summary'
+  if (!w.starts) return 'brak starts'
+  const active = n(s.duration_active_accum) ?? n(s.duration_total_accum)
+  if (!active) return 'brak czasu w podsumowaniu'
+  if (active < 300) return `za krótko (${Math.round(active)} s)`
+  return null
+}
+
+export interface DroppedWorkout {
+  id: number
+  starts: string | null
+  name: string | null
+  workout_type_id: unknown
+  reason: string
+  our_plan: boolean
+  summary_keys: string[] | null
+  duration_active_accum: unknown
+  duration_total_accum: unknown
+  /** klucze wpisu z listy – czy podsumowanie nie leży gdzie indziej (np. w innym polu niż `workout_summary`) */
+  keys: string[]
+}
+
+/**
+ * Diagnostyka (27.10.2026: jazdy z MyWhoosh są w chmurze Wahoo, a nie w `wahoo_workouts`): odrzucone wpisy z listy
+ * z powodem i kształtem podsumowania, z okna dat jak zapis. Bez adresów i tokenów – tylko nazwy kluczy, czasy
+ * i identyfikatory. `our_plan`: wpis z tokenem naszego planu (`YYYY-MM-DD:…`) – niewykonany plan albo jazda z innej
+ * aplikacji przypięta do planu (10.10.2026).
+ */
+export function droppedWorkouts(list: WahooWorkoutRaw[], from: string, to: string, limit = 25): DroppedWorkout[] {
+  const out: DroppedWorkout[] = []
+  for (const w of list) {
+    if (w.starts) {
+      const d = warsawDate(w.starts)
+      if (d < from || d > to) continue
+    }
+    const reason = dropReason(w)
+    if (!reason) continue
+    const s = w.workout_summary
+    out.push({
+      id: w.id,
+      starts: w.starts ?? null,
+      name: w.name ?? null,
+      workout_type_id: w.workout_type_id ?? null,
+      reason,
+      our_plan: typeof w.workout_token === 'string' && /^\d{4}-\d{2}-\d{2}:/.test(w.workout_token),
+      summary_keys: s && typeof s === 'object' ? Object.keys(s).sort() : null,
+      duration_active_accum: s?.duration_active_accum ?? null,
+      duration_total_accum: s?.duration_total_accum ?? null,
+      keys: Object.keys(w).sort(),
+    })
+    if (out.length >= limit) break
+  }
+  return out
+}
+
 /** Treningi z okna [from, to] (daty lokalne) z podsumowaniem – do zapisu. */
 export function completedInRange(list: WahooWorkoutRaw[], from: string, to: string): WahooWorkoutRow[] {
   const out: WahooWorkoutRow[] = []
