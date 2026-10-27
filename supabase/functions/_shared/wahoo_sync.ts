@@ -100,9 +100,12 @@ export async function saveCompleted(admin: SupabaseClient, userId: string, rows:
   for (const r of rows) {
     const k = byId.get(r.id)
     // po pliku FIT moc, kadencja i czas w ruchu są z próbek – podsumowanie Wahoo ich nie nadpisuje
-    const row: Record<string, unknown> = { ...r }
+    const row: Record<string, unknown> = { ...r, user_id: userId, deleted_at: null, updated_at: new Date().toISOString() }
     if (k?.has_streams) for (const f of FIT_OWNED) delete row[f]
-    const { error } = await admin.from('wahoo_workouts').upsert({ ...row, user_id: userId, deleted_at: null, updated_at: new Date().toISOString() }, { onConflict: 'id' })
+    // bez pól z pliku (m.in. `date`) tylko UPDATE – upsert sprawdza NOT NULL na wstawianym wierszu, zanim trafi na konflikt
+    const { error } = k?.has_streams
+      ? await admin.from('wahoo_workouts').update(row).eq('id', r.id).eq('user_id', userId)
+      : await admin.from('wahoo_workouts').upsert(row, { onConflict: 'id' })
     if (error) throw new Error(`wahoo_workouts: ${error.message}`)
     if (!k || (!k.has_streams && !k.fit_error) || !k.note) todo.push(r.id)
   }
