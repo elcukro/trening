@@ -15,6 +15,10 @@ const base: InboxInput = {
   hasLocation: true,
   tests: [],
   seen: new Set(),
+  upcoming: [],
+  todayDeload: false,
+  tomorrowWeather: null,
+  deloadNote: null,
 }
 
 const ride = (date: string, key: string, note: string | null = null) => ({ key, date, name: 'Z2', note, note_source: note ? ('ai' as const) : null })
@@ -22,6 +26,14 @@ const ids = (inp: Partial<InboxInput>) => {
   const b = buildInbox({ ...base, ...inp })
   return { todo: b.todo.map((i) => i.id), fresh: b.fresh.map((i) => i.id), badge: b.badge, dot: b.dot }
 }
+const WD = ['mon', 'tue', 'wed', 'thu', 'fri', 'sat', 'sun']
+/** tydzień od środy 28.10 (dziś wt 27.10) do wt 3.11 */
+const week = (over: Record<string, Partial<InboxInput['upcoming'][number]>> = {}) =>
+  Array.from({ length: 7 }, (_, i) => {
+    const date = `2026-${i < 4 ? '10' : '11'}-${String(i < 4 ? 28 + i : i - 3).padStart(2, '0')}`
+    return { date, weekday: WD[(i + 2) % 7]!, ride: { name: 'Z2', minutes: 90 }, test: false, deload: false, ...over[date] }
+  })
+const soon = (inp: Partial<InboxInput>) => buildInbox({ ...base, ...inp }).soon
 
 describe('skrzynka', () => {
   it('nic do zrobienia i nic nowego → pusto, bez plakietki', () => {
@@ -69,5 +81,33 @@ describe('skrzynka', () => {
     expect(note.sub).toContain('27.10 · ')
     expect(note.sub!.endsWith('…')).toBe(true)
     expect(ids({ ...inp, seen: new Set(['note:a', 'test:t1']) }).fresh).toEqual([])
+  })
+
+  it('jutrzejsza jazda dopiero wieczorem, z pogodą na godzinę startu', () => {
+    expect(soon({ upcoming: week(), hour: 16 })).toEqual([])
+    const [item] = soon({ upcoming: week(), hour: 19, tomorrowWeather: { label: 'Deszcz', temp_min_c: 7.6, temp_max_c: 10.2, precip_prob: 60, wind_kmh: 31, start: '18:00' } })
+    expect(item).toMatchObject({ id: 'tomorrow:2026-10-28', to: '/m/dzien/2026-10-28' })
+    expect(item!.title).toContain('Z2')
+    expect(item!.sub).toMatch(/^1 h 30 min · Deszcz, 8–10 °C · .*60.* · .*31.* · .*18:00/)
+    expect(soon({ upcoming: week({ '2026-10-28': { ride: null } }), hour: 19 })).toEqual([])
+  })
+
+  it('test FTP zapowiadany 2–3 dni wcześniej, nie tydzień przed', () => {
+    expect(soon({ upcoming: week({ '2026-10-30': { test: true } }) }).map((i) => i.id)).toEqual(['soon-test:2026-10-30'])
+    expect(soon({ upcoming: week({ '2026-11-02': { test: true } }) })).toEqual([])
+  })
+
+  it('rozładowanie od poniedziałku: od piątku, z tekstem programu; nie gdy już trwa', () => {
+    const today = '2026-10-30' // piątek, poniedziałek 2.11 za 3 dni
+    const days = week({ '2026-11-02': { deload: true } })
+    expect(soon({ today, upcoming: days, deloadNote: 'Lżej.' })).toMatchObject([{ id: 'deload:2026-11-02', sub: 'Lżej.', to: '/m/plan/2026-11-02' }])
+    expect(soon({ today: '2026-10-29', upcoming: days })).toEqual([])
+    expect(soon({ today, upcoming: days, todayDeload: true })).toEqual([])
+  })
+
+  it('nieotwarta zapowiedź daje kropkę, otwarta już nie; zapowiedzi nie liczą się na plakietce', () => {
+    const inp = { upcoming: week({ '2026-10-30': { test: true } }) }
+    expect(ids(inp)).toMatchObject({ badge: 0, dot: true })
+    expect(ids({ ...inp, seen: new Set(['soon-test:2026-10-30']) })).toMatchObject({ badge: 0, dot: false })
   })
 })

@@ -51,7 +51,7 @@ function InboxSheet({ inbox, onClose }: { inbox: ReturnType<typeof useInbox>; on
 
   function go(item: InboxItem) {
     haptic.selection()
-    if (item.kind === 'new') void inbox.markSeen(item.id)
+    if (item.kind !== 'todo') void inbox.markSeen(item.id)
     onClose()
     navigate(item.to, item.state ? { state: item.state } : undefined)
   }
@@ -63,7 +63,8 @@ function InboxSheet({ inbox, onClose }: { inbox: ReturnType<typeof useInbox>; on
       <div className="flex flex-col gap-4">
         {inbox.todo.length > 0 && <Group label={L.todo}>{inbox.todo.map(row)}</Group>}
         {inbox.fresh.length > 0 && <Group label={L.fresh}>{inbox.fresh.map(row)}</Group>}
-        {inbox.todo.length === 0 && inbox.fresh.length === 0 && (
+        {inbox.soon.length > 0 && <Group label={L.soon}>{inbox.soon.map(row)}</Group>}
+        {inbox.todo.length === 0 && inbox.fresh.length === 0 && inbox.soon.length === 0 && (
           <div className="flex flex-col items-center gap-2 py-6 text-center">
             <img src="/m/art/coach-wave.png" alt="" width={72} height={72} className="h-18 w-18 object-contain" />
             <p className="m-title">{L.empty}</p>

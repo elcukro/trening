@@ -1,15 +1,17 @@
-import { addDays, type ISODate } from '@/engine/dates'
+import { addDays, diffDays, type ISODate } from '@/engine/dates'
 import { fmtShort } from '@/lib/dates'
+import { minutes } from '@/lib/format'
 import { t } from '@/i18n'
 
 /**
  * Skrzynka pod dzwonkiem (Dziś i Plan w `/m`): co czeka na zawodnika i co nowego przyszło. Wpisy liczone na bieżąco
  * z danych w aplikacji, nie zapisywane – „Do zrobienia” znika sam, gdy rzecz jest załatwiona, „Nowe” po otwarciu
- * (identyfikatory w kv `inbox_seen`). Zapowiedzi (jutrzejsza jazda, test za 2–3 dni) – następny krok.
+ * (identyfikatory w kv `inbox_seen`), „Wkrótce” – zapowiedzi (jutrzejsza jazda wieczorem, test za 2–3 dni, rozładowanie
+ * od poniedziałku) znikają same, gdy minie ich termin.
  * Czysta funkcja – testy w `__tests__/inbox.test.ts`.
  */
 
-export type InboxKind = 'todo' | 'new'
+export type InboxKind = 'todo' | 'new' | 'soon'
 
 export interface InboxItem {
   id: string
@@ -48,20 +50,55 @@ export interface InboxInput {
   hasLocation: boolean | undefined
   tests: { id: string; date: ISODate; ftp_w?: number | null; lthr_bpm: number | null }[]
   seen: ReadonlySet<string>
+  /** dni od jutra do +7 po nadpisaniach (przeniesienia, zamiany) */
+  upcoming: InboxDay[]
+  /** dzisiejszy tydzień jest już rozładowaniem – wtedy nie zapowiadamy następnego */
+  todayDeload: boolean
+  /** prognoza na godzinę jutrzejszej jazdy; `null` = brak (bez miejscowości, bez sieci) */
+  tomorrowWeather: InboxWeather | null
+  /** tekst programu o tygodniu rozładowania (`rules.deload_note`) */
+  deloadNote: string | null
+}
+
+export interface InboxDay {
+  date: ISODate
+  weekday: string
+  ride: { name: string; minutes: number } | null
+  test: boolean
+  deload: boolean
+}
+
+export interface InboxWeather {
+  label: string
+  temp_min_c: number
+  temp_max_c: number
+  precip_prob: number
+  wind_kmh: number
+  /** godzina startu z ustawień, np. „18:00” */
+  start: string
 }
 
 export interface Inbox {
   todo: InboxItem[]
   fresh: InboxItem[]
+  soon: InboxItem[]
   /** liczba na plakietce – tylko „Do zrobienia” */
   badge: number
-  /** kropka, gdy nie ma nic do zrobienia, ale przyszło coś nowego */
+  /** kropka, gdy nie ma nic do zrobienia, ale przyszło coś nowego albo nieotwarta zapowiedź */
   dot: boolean
 }
 
 export const RIDE_DAYS = 3
 const TEST_DAYS = 7
 const CHECKIN_FROM_HOUR = 5
+/** zapowiedź jutrzejszej jazdy – wieczorem dzień wcześniej */
+const TOMORROW_FROM_HOUR = 17
+/** test zapowiadamy 2–3 dni wcześniej (dzień przed nim mówi już zapowiedź jutra) */
+const TEST_AHEAD = [2, 3]
+/** rozładowanie – w piątek, sobotę i niedzielę przed nim */
+const DELOAD_AHEAD = 3
+const WIND_NOTE_KMH = 25
+const RAIN_NOTE_PCT = 20
 const EXCERPT = 90
 
 const ART = {
@@ -73,6 +110,8 @@ const ART = {
   sun: '/m/art/sun.png',
   cloud: '/m/art/cloud.png',
   wave: '/m/art/coach-wave.png',
+  ride: '/m/art/ride-easy.png',
+  rest: '/m/art/rest.png',
 } as const
 
 function excerpt(text: string): string {
@@ -127,5 +166,35 @@ export function buildInbox(inp: InboxInput): Inbox {
     fresh.push({ id, kind: 'new', art: ART.test, title: L.testTitle, sub: `${parts} · ${fmtShort(x.date)}`, to: '/m/ja' })
   }
 
-  return { todo, fresh, badge: todo.length, dot: todo.length === 0 && fresh.length > 0 }
+  const soon = upcomingItems(inp)
+  const unseenSoon = soon.some((i) => !inp.seen.has(i.id))
+  return { todo, fresh, soon, badge: todo.length, dot: todo.length === 0 && (fresh.length > 0 || unseenSoon) }
+}
+
+function weatherLine(w: InboxWeather): string {
+  const L = t().day.inbox
+  const lo = Math.round(w.temp_min_c)
+  const hi = Math.round(w.temp_max_c)
+  const parts = [`${w.label}, ${lo === hi ? lo : `${lo}–${hi}`} °C`]
+  if (w.precip_prob >= RAIN_NOTE_PCT) parts.push(L.rain(Math.round(w.precip_prob)))
+  if (w.wind_kmh >= WIND_NOTE_KMH) parts.push(L.wind(Math.round(w.wind_kmh)))
+  parts.push(L.start(w.start))
+  return parts.join(' · ')
+}
+
+function upcomingItems(inp: InboxInput): InboxItem[] {
+  const L = t().day.inbox
+  const out: InboxItem[] = []
+  const tomorrow = addDays(inp.today, 1)
+  const t1 = inp.upcoming.find((d) => d.date === tomorrow)
+  if (t1?.ride && inp.hour >= TOMORROW_FROM_HOUR) {
+    out.push({ id: `tomorrow:${tomorrow}`, kind: 'soon', art: t1.test ? ART.test : ART.ride, title: L.tomorrowTitle(t1.ride.name), sub: [minutes(t1.ride.minutes), inp.tomorrowWeather ? weatherLine(inp.tomorrowWeather) : null].filter(Boolean).join(' · '), to: `/m/dzien/${tomorrow}` })
+  }
+  const test = inp.upcoming.find((d) => d.test && TEST_AHEAD.includes(diffDays(d.date, inp.today)))
+  if (test) out.push({ id: `soon-test:${test.date}`, kind: 'soon', art: ART.test, title: L.testSoonTitle(fmtShort(test.date)), sub: L.testPrep, to: `/m/dzien/${test.date}` })
+  const monday = inp.upcoming.find((d) => d.weekday === 'mon')
+  if (monday?.deload && !inp.todayDeload && diffDays(monday.date, inp.today) <= DELOAD_AHEAD) {
+    out.push({ id: `deload:${monday.date}`, kind: 'soon', art: ART.rest, title: L.deloadTitle, sub: inp.deloadNote ?? L.deloadSub, to: `/m/plan/${monday.date}` })
+  }
+  return out
 }
