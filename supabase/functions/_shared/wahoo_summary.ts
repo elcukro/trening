@@ -118,3 +118,13 @@ export function fitUrl(s: WahooSummary | null | undefined): string | null {
   const u = s?.file?.url
   return typeof u === 'string' && isFitHost(u) ? u : null
 }
+
+/**
+ * Błąd pobrania pliku FIT, który mija sam (przekroczony czas, sieć, 429/5xx) – plik wraca przy następnym odpytaniu.
+ * Uszkodzony plik albo 403/404 to błąd trwały (`fit_error`).
+ */
+export function isTransientFitError(e: unknown): boolean {
+  const name = e instanceof Error ? e.name : ''
+  const msg = e instanceof Error ? e.message : String(e)
+  return name === 'AbortError' || name === 'TimeoutError' || /^fit (sieć|429|5\d\d)(\D|$)|signal has been aborted/i.test(msg)
+}

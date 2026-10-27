@@ -216,6 +216,27 @@ export function rideMetrics(s: Samples | null, deviceWatts: boolean): RideMetric
   }
 }
 
+/**
+ * Czas w ruchu i średnia moc w ruchu (z zerami przy toczeniu – jak `average_watts` Stravy). Dla pliku FIT z Wahoo:
+ * `power_avg` z podsumowania Wahoo jest wyższe (bez zer), więc nie pasuje do NP liczonego z próbek.
+ */
+export function movingTotals(s: Samples | null, deviceWatts: boolean): { moving_time_s: number | null; avg_watts: number | null } {
+  if (!s || !s.n) return { moving_time_s: null, avg_watts: null }
+  let n = 0
+  let wSum = 0
+  let wN = 0
+  for (let i = 0; i < s.n; i++) {
+    if (s.moving && !s.moving[i]) continue
+    n++
+    const w = s.watts?.[i]
+    if (deviceWatts && w != null) {
+      wSum += w
+      wN++
+    }
+  }
+  return { moving_time_s: n * s.dt, avg_watts: wN ? Math.round(wSum / wN) : null }
+}
+
 /** Histogram: sekundy na każdą wartość bpm (indeks = bpm). */
 export function hrHistogram(streams: RawStreams | null): number[] | null {
   const hr = streams?.heartrate?.data as (number | null)[] | undefined

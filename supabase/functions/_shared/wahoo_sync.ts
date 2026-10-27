@@ -8,23 +8,25 @@
  */
 import type { SupabaseClient } from 'npm:@supabase/supabase-js@2'
 import { decodeFit, fitToStreams } from './fit.ts'
-import { hrHistogram, resample, rideMetrics } from './metrics.ts'
+import { hrHistogram, movingTotals, resample, rideMetrics } from './metrics.ts'
 import { accessTokenFor, listWorkoutsDetailed } from './wahoo.ts'
 import { redact } from './provenance.ts'
-import { completedInRange, fitUrl, isFitHost, summaryToRow, warsawDate, type WahooSummary, type WahooWorkoutRaw } from './wahoo_summary.ts'
+import { completedInRange, fitUrl, isFitHost, isTransientFitError, summaryToRow, warsawDate, type WahooSummary, type WahooWorkoutRaw } from './wahoo_summary.ts'
 
-/** Plik FIT nie liczy się do limitów Wahoo, ale nie ściągamy go bez końca: ≤ 8 MB, 20 s. */
+/** Plik FIT nie liczy się do limitów Wahoo, ale nie ściągamy go bez końca: ≤ 8 MB, 30 s. */
 const FIT_MAX_BYTES = 8 * 1024 * 1024
 
 export async function fetchFit(url: string): Promise<Uint8Array> {
   const ctrl = new AbortController()
-  const timer = setTimeout(() => ctrl.abort(), 20_000)
+  const timer = setTimeout(() => ctrl.abort(), 30_000)
   try {
     // przekierowania ręcznie: każdy kolejny adres też musi być z listy hostów (bez ucieczki poza Wahoo/CDN)
     let next = url
     for (let hop = 0; hop < 4; hop++) {
       if (!isFitHost(next)) throw new Error('fit: niedozwolony host')
-      const res = await fetch(next, { signal: ctrl.signal, redirect: 'manual' })
+      const res = await fetch(next, { signal: ctrl.signal, redirect: 'manual' }).catch((e) => {
+        throw new Error(`fit sieć: ${e instanceof Error ? e.name : 'błąd'}`)
+      })
       if (res.status >= 300 && res.status < 400) {
         const loc = res.headers.get('location')
         if (!loc) throw new Error(`fit ${res.status} bez adresu`)
@@ -64,6 +66,10 @@ export async function ingestFit(admin: SupabaseClient, userId: string, workoutId
       updated_at: new Date().toISOString(),
     }
     if (avg_cadence_moving != null) update.avg_cadence = avg_cadence_moving
+    // średnia moc i czas w ruchu z pliku – `power_avg` Wahoo pomija zera i wychodzi ponad NP
+    const totals = movingTotals(samples, deviceWatts)
+    if (totals.moving_time_s) update.moving_time_s = totals.moving_time_s
+    update.avg_power = totals.avg_watts
     const { n, dt, ...rest } = samples
     const { error: e1 } = await admin.from('wahoo_streams').upsert({ workout_id: workoutId, user_id: userId, dt, n, samples: rest, updated_at: new Date().toISOString() }, { onConflict: 'workout_id' })
     if (e1) throw new Error(`wahoo_streams: ${e1.message}`)
@@ -72,10 +78,15 @@ export async function ingestFit(admin: SupabaseClient, userId: string, workoutId
     return 'ok'
   } catch (e) {
     const msg = redact(e)
+    // przekroczony czas, sieć, 5xx/429: bez `fit_error`, więc plik wraca przy następnym odpytaniu
+    if (isTransientFitError(e)) return `ponowię: ${msg}`
     await admin.from('wahoo_workouts').update({ fit_error: msg, updated_at: new Date().toISOString() }).eq('user_id', userId).eq('id', workoutId)
     return msg
   }
 }
+
+/** Pola liczone z pliku FIT (`ingestFit`), których nie nadpisuje ponowny zapis podsumowania. */
+const FIT_OWNED = ['avg_power', 'np_w', 'avg_cadence', 'moving_time_s'] as const
 
 /** Zapis listy z Wahoo; zwraca identyfikatory jazd, którym brakuje próbek albo notatki (do dalszej obróbki). */
 export async function saveCompleted(admin: SupabaseClient, userId: string, rows: ReturnType<typeof completedInRange>): Promise<number[]> {
@@ -84,9 +95,12 @@ export async function saveCompleted(admin: SupabaseClient, userId: string, rows:
   const byId = new Map((known ?? []).map((k) => [Number(k.id), k]))
   const todo: number[] = []
   for (const r of rows) {
-    const { error } = await admin.from('wahoo_workouts').upsert({ ...r, user_id: userId, deleted_at: null, updated_at: new Date().toISOString() }, { onConflict: 'id' })
-    if (error) throw new Error(`wahoo_workouts: ${error.message}`)
     const k = byId.get(r.id)
+    // po pliku FIT moc, kadencja i czas w ruchu są z próbek – podsumowanie Wahoo ich nie nadpisuje
+    const row: Record<string, unknown> = { ...r }
+    if (k?.has_streams) for (const f of FIT_OWNED) delete row[f]
+    const { error } = await admin.from('wahoo_workouts').upsert({ ...row, user_id: userId, deleted_at: null, updated_at: new Date().toISOString() }, { onConflict: 'id' })
+    if (error) throw new Error(`wahoo_workouts: ${error.message}`)
     if (!k || (!k.has_streams && !k.fit_error) || !k.note) todo.push(r.id)
   }
   return todo

@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { bestAverages, bestSpeeds, decoupling, normalizedPower, resample, rideMetrics, type RawStreams } from '../../../supabase/functions/_shared/metrics'
+import { bestAverages, bestSpeeds, decoupling, movingTotals, normalizedPower, resample, rideMetrics, type RawStreams } from '../../../supabase/functions/_shared/metrics'
 
 function streams(seconds: number, f: (t: number) => { hr?: number; watts?: number; cad?: number; v?: number }): RawStreams {
   const time: number[] = []
@@ -96,5 +96,17 @@ describe('rideMetrics', () => {
     expect(m.avg_cadence_moving).toBe(90)
     expect(rideMetrics(s, true).np_w).toBe(150)
     expect(rideMetrics(null, true).np_w).toBeNull()
+  })
+})
+
+describe('movingTotals', () => {
+  it('średnia moc w ruchu z zerami przy toczeniu, postój pomija', () => {
+    // 10 min: 5 min 200 W, 5 min toczenia (0 W, w ruchu); potem 5 min postoju
+    const s = resample(streams(900, (t) => (t < 300 ? { watts: 200, hr: 140, v: 8, cad: 85 } : t < 600 ? { watts: 0, hr: 120, v: 8, cad: 0 } : { watts: 0, hr: 100, v: 0, cad: 0 })), 5)!
+    const m = movingTotals(s, true)
+    expect(m.avg_watts).toBe(100)
+    expect(m.moving_time_s).toBeCloseTo(600, -1)
+    expect(movingTotals(s, false).avg_watts).toBeNull()
+    expect(movingTotals(null, true)).toEqual({ moving_time_s: null, avg_watts: null })
   })
 })

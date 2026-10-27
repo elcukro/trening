@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import { aiSafe, assertAiSafe, isAiSource, redact } from '../../../supabase/functions/_shared/provenance'
-import { fitUrl, isFitHost } from '../../../supabase/functions/_shared/wahoo_summary'
+import { fitUrl, isFitHost, isTransientFitError } from '../../../supabase/functions/_shared/wahoo_summary'
 import { fromStrava, fromWahoo, mergeRides, sameRide, twinOf } from '../../../supabase/functions/_shared/rides'
 
 const wahoo = (o: Record<string, unknown> = {}) => fromWahoo({ id: 1, date: '2026-10-25', starts: '2026-10-25T08:00:00Z', name: 'Z2', minutes_active: 90, moving_time_s: 5400, distance_km: 45.2, ascent_m: 300, avg_power: 180, ...o })
@@ -49,6 +49,17 @@ describe('plik FIT i dziennik: bezpieczne adresy', () => {
     expect(isFitHost('https://wahoo-cloud.s3.amazonaws.com/x.fit?X-Amz-Signature=1')).toBe(true)
     for (const bad of ['http://cdn.wahooligan.com/a.fit', 'https://169.254.169.254/latest', 'https://evil.com/a.fit', 'https://wahooligan.com.evil.com/a', 'https://u:p@cdn.wahooligan.com/a', 'https://cdn.wahooligan.com:8443/a', 'notaurl']) expect(isFitHost(bad), bad).toBe(false)
     expect(fitUrl({ file: { url: 'https://evil.com/a.fit' } })).toBeNull()
+  })
+
+  it('przekroczony czas i sieć – ponowić; uszkodzony plik i 403 – nie', () => {
+    const abort = new Error('The signal has been aborted')
+    expect(isTransientFitError(abort)).toBe(true)
+    expect(isTransientFitError(Object.assign(new Error('x'), { name: 'AbortError' }))).toBe(true)
+    expect(isTransientFitError(new Error('fit sieć: TypeError'))).toBe(true)
+    expect(isTransientFitError(new Error('fit 503'))).toBe(true)
+    expect(isTransientFitError(new Error('fit 403'))).toBe(false)
+    expect(isTransientFitError(new TypeError("Cannot read properties of undefined (reading 'x')"))).toBe(false)
+    expect(isTransientFitError(new Error('plik bez próbek'))).toBe(false)
   })
 
   it('redact: bez adresów i tokenów w dzienniku', () => {
