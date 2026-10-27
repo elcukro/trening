@@ -125,7 +125,8 @@ function NumbersSheetLoaded({ onClose }: { onClose: () => void }) {
           {/* natywny kalendarz iOS: przezroczyste pole daty na całej karcie, pod nim sformatowana wartość */}
           <label className="m-list relative p-3">
             <span className="m-eyebrow block">{tn.birth}</span>
-            <span className="m-big m-num mt-1 block">{born ? fmtDate(born) : '—'}</span>
+            {/* data ma 10 znaków – w rozmiarze liczb obok rok łamał się do drugiej linii na iPhonie */}
+            <span className="m-title m-num mt-2 block whitespace-nowrap">{born ? fmtDate(born) : '—'}</span>
             <span className="m-foot m-dim">{tn.birthHint}</span>
             <input type="date" className="absolute inset-0 h-full w-full opacity-0" min="1920-01-01" max="2015-12-31" value={born} onChange={(e) => setBorn(e.target.value)} aria-label={tn.birth} />
           </label>

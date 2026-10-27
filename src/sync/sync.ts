@@ -136,6 +136,8 @@ const PROFILE_MAP: [keyof Settings, string][] = [
   ['diet_enabled', 'diet_enabled'],
   ['language', 'language'],
   ['locale', 'locale'],
+  ['weather_location', 'weather_location'],
+  ['ride_hours', 'ride_hours'],
 ]
 
 const PROFILE_TEXT_KEYS = new Set(['program_start', 'trip_start', 'program_id', 'athlete_name', 'birth_date', 'language', 'locale'])

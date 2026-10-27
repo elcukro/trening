@@ -1,11 +1,10 @@
 import { useEffect, useState } from 'react'
 import { Link } from 'react-router'
 import { useLiveQuery } from 'dexie-react-hooks'
-import { db } from '@/db'
 import type { DayPlan } from '@/engine/plan'
 import type { RuleAction } from '@/engine/rules'
 import { adviseRide, clothingFor, fuelPlan, summarizeWindow, weatherLabel, type Advice, type DayForecast, type WindowSummary } from '@/engine/weather'
-import { DEFAULT_RIDE_HOURS, getLocation, loadForecast, type RideHours } from '@/sync/weather'
+import { DEFAULT_RIDE_HOURS, getLocation, loadForecast, getRideHours } from '@/sync/weather'
 import { loadClothing } from '@/data/clothing'
 import { Button, Card, CardSection, CardTitle, Inset, Metric } from '@/components/ui'
 import { num } from '@/lib/format'
@@ -21,7 +20,7 @@ const ICON: Record<Advice['kind'], string> = { indoor: '🧊', ice: '🧊', shor
 export function BriefingCard({ day, onAction, hasOverride }: { day: DayPlan; onAction?: (a: RuleAction) => void; hasOverride?: boolean }) {
   // undefined = jeszcze czytam, null = miejscowość nieustawiona
   const loc = useLiveQuery(getLocation, [], undefined)
-  const hoursPref = useLiveQuery(async () => ((await db.kv.get('ride_hours'))?.value as RideHours | undefined) ?? DEFAULT_RIDE_HOURS, [], DEFAULT_RIDE_HOURS)
+  const hoursPref = useLiveQuery(getRideHours, [], DEFAULT_RIDE_HOURS)
   const [fetched, setForecast] = useState<{ days: DayForecast[]; stale: boolean } | null | 'loading'>('loading')
   // bez miejscowości nie ma czego pobierać – „brak prognozy” wynika z ustawień, nie z sieci
   const forecast = loc === null ? null : fetched

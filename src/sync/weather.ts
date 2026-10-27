@@ -1,4 +1,5 @@
 import { db } from '@/db'
+import { withFieldStamps } from './profileMerge'
 import { getLang } from '@/i18n/core'
 import type { DayForecast } from '@/engine/weather'
 
@@ -21,25 +22,50 @@ export interface RideHours {
 export const DEFAULT_RIDE_HOURS: RideHours = { weekday: 18, weekend: 10 }
 const TTL_MS = 3 * 60 * 60 * 1000
 
+type ProfileKey = 'weather_location' | 'ride_hours'
+
 /**
- * Miejscowość prognozy z pamięci urządzenia; `null` = jeszcze nieustawiona. Bez wartości domyślnej –
+ * Miejscowość i godziny jazdy należą do konta (profil, `PROFILE_MAP`) – wracają po zalogowaniu na nowym urządzeniu.
+ * Do 27.10.2026 leżały w `kv` urządzenia; stara wartość z `kv` jest zapasem i przy pierwszym odczycie trafia do profilu.
+ * Bez konta (brak wiersza ustawień) zostają w `kv` – zapis ustawień ominąłby czekanie na profil po zalogowaniu.
+ */
+async function readField<T>(key: ProfileKey): Promise<T | null> {
+  const row = await db.settings.get('user')
+  const own = row?.value?.[key] as T | null | undefined
+  if (own != null) return own
+  const local = ((await db.kv.get(key))?.value as T | undefined) ?? null
+  if (local != null && row && own === undefined) await writeField(key, local)
+  return local
+}
+
+async function writeField(key: ProfileKey, value: unknown): Promise<void> {
+  const now = new Date().toISOString()
+  await db.kv.put({ key, value, updated_at: now })
+  const row = await db.settings.get('user')
+  if (!row) return
+  const stamps = withFieldStamps({ value: row.value, updated_at: row.updated_at, field_updated_at: row.field_updated_at })
+  await db.settings.put({ ...row, value: { ...row.value, [key]: value }, updated_at: now, field_updated_at: { ...stamps, [key]: now } })
+}
+
+/**
+ * Miejscowość prognozy; `null` = jeszcze nieustawiona. Bez wartości domyślnej –
  * cudze miasto dawałoby odprawę z pogodą z niewłaściwego miejsca (docs/18, A8).
  */
-export async function getLocation(): Promise<WeatherLocation | null> {
-  return ((await db.kv.get('weather_location'))?.value as WeatherLocation | undefined) ?? null
+export function getLocation(): Promise<WeatherLocation | null> {
+  return readField<WeatherLocation>('weather_location')
 }
 
 export async function setLocation(loc: WeatherLocation): Promise<void> {
-  await db.kv.put({ key: 'weather_location', value: loc, updated_at: new Date().toISOString() })
+  await writeField('weather_location', loc)
   await db.kv.where('key').startsWith('weather:').delete()
 }
 
 export async function getRideHours(): Promise<RideHours> {
-  return ((await db.kv.get('ride_hours'))?.value as RideHours | undefined) ?? DEFAULT_RIDE_HOURS
+  return (await readField<RideHours>('ride_hours')) ?? DEFAULT_RIDE_HOURS
 }
 
 export async function setRideHours(h: RideHours): Promise<void> {
-  await db.kv.put({ key: 'ride_hours', value: h, updated_at: new Date().toISOString() })
+  await writeField('ride_hours', h)
 }
 
 /** Wyszukiwanie miejscowości (Open-Meteo geocoding). */

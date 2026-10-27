@@ -106,6 +106,10 @@ export const SettingsSchema = z.object({
   language: z.string(),
   /** język, w którym aplikacja ostatnio się wyświetlała – dla serwera (maile, push, AI); ustawia go aplikacja */
   locale: z.enum(['pl', 'en']).optional(),
+  /** miejscowość prognozy (odprawa) – konto, nie urządzenie (od 27.10.2026) */
+  weather_location: z.object({ name: z.string(), lat: z.number(), lon: z.number() }).nullable().optional(),
+  /** zwykła godzina jazdy w tygodniu i w weekend – okno pogody w odprawie */
+  ride_hours: z.object({ weekday: z.number().int(), weekend: z.number().int() }).nullable().optional(),
 })
 
 export const WeekSummarySchema = z.object({

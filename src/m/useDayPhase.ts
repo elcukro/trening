@@ -1,11 +1,10 @@
 import { useMemo } from 'react'
 import { useLiveQuery } from 'dexie-react-hooks'
-import { db } from '@/db'
 import type { ISODate } from '@/engine/dates'
 import { dayPhase, type DayPhase } from '@/day/dayState'
 import type { IosDay } from '@/day/useIos'
 import { nowHour, todayISO } from '@/lib/dates'
-import { DEFAULT_RIDE_HOURS, type RideHours } from '@/sync/weather'
+import { DEFAULT_RIDE_HOURS, getRideHours } from '@/sync/weather'
 import { isCheckedIn } from '@/day/health'
 
 const stateOf = (log: { status: string } | undefined) => (log ? (log.status as 'planned' | 'in_progress' | 'done' | 'modified' | 'skipped') : 'none')
@@ -14,7 +13,7 @@ const stateOf = (log: { status: string } | undefined) => (log ? (log.status as '
 export function useDayPhase(d: IosDay, date: ISODate): DayPhase {
   const today = todayISO()
   const day = d.day
-  const hours = useLiveQuery(async () => ((await db.kv.get('ride_hours'))?.value as RideHours | undefined) ?? DEFAULT_RIDE_HOURS, [], DEFAULT_RIDE_HOURS)
+  const hours = useLiveQuery(getRideHours, [], DEFAULT_RIDE_HOURS)
   const weekend = day?.weekday === 'sat' || day?.weekday === 'sun'
   return useMemo(
     () =>

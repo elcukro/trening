@@ -53,10 +53,15 @@ export function PlanScreen() {
   const toast = useToast()
   const push = useAction()
   const today = todayISO()
-  const anchor = params.date && isValidISODate(params.date) ? params.date : today
-  const monday = mondayOf(anchor)
-  const [held, setHeld] = useState<Held | null>(null)
   const { ctx, weeks } = useEngine()
+  // tygodnie planu ± jeden – dalej nie ma czego oglądać (pierwszy i ostatni poniedziałek kalendarza konta)
+  const minMonday = weeks[0] ? addDays(weeks[0].monday, -7) : undefined
+  const maxMonday = weeks.at(-1) ? addDays(weeks.at(-1)!.monday, 7) : undefined
+  const anchor = params.date && isValidISODate(params.date) ? params.date : today
+  const asked = mondayOf(anchor)
+  const monday = minMonday && asked < minMonday ? minMonday : maxMonday && asked > maxMonday ? maxMonday : asked
+  const thisMonday = mondayOf(today)
+  const [held, setHeld] = useState<Held | null>(null)
 
   // `?today=` i `?hour=` zostają w adresie (podgląd i testy e2e)
   const go = useCallback((m: ISODate) => navigate(`/m/plan/${m}${typeof window === 'undefined' ? '' : window.location.search}`, { replace: true }), [navigate])
@@ -145,17 +150,28 @@ export function PlanScreen() {
     <Screen
       title={t.m.chrome.tabs.plan}
       action={
-        <span className="flex">
-          <button className="m-nav-btn" aria-label={tp.prevWeek} onClick={() => go(addDays(monday, -7))}>
+        <span className="flex items-center">
+          {monday !== thisMonday && (
+            <button className="m-nav-btn m-sub font-semibold" onClick={() => go(thisMonday)}>
+              {tp.thisWeek}
+            </button>
+          )}
+          <button className="m-nav-btn disabled:opacity-30" aria-label={tp.prevWeek} disabled={!!minMonday && addDays(monday, -7) < minMonday} onClick={() => go(addDays(monday, -7))}>
             <IconChevronLeft size={22} />
           </button>
-          <button className="m-nav-btn rotate-180" aria-label={tp.nextWeek} onClick={() => go(addDays(monday, 7))}>
+          <button className="m-nav-btn rotate-180 disabled:opacity-30" aria-label={tp.nextWeek} disabled={!!maxMonday && addDays(monday, 7) > maxMonday} onClick={() => go(addDays(monday, 7))}>
             <IconChevronLeft size={22} />
           </button>
         </span>
       }
     >
-      <WeekPager monday={monday} onChange={go} renderWeek={(m, current) => <WeekPanel key={m} monday={m} today={today} current={current} onHold={setHeld} pushing={push.pending} onPush={() => void push.run(() => pushWeek(m), (n) => tp.sent(n), { errorTitle: tp.weekPushFailed })} />} />
+      <WeekPager
+        monday={monday}
+        onChange={go}
+        min={minMonday}
+        max={maxMonday}
+        renderEdge={(side) => <p className="m-sub m-dim px-4 pt-16 text-center">{side === 'start' ? tp.edgeStart : tp.edgeEnd}</p>}
+        renderWeek={(m, current) => <WeekPanel key={m} monday={m} today={today} current={current} onHold={setHeld} pushing={push.pending} onPush={() => void push.run(() => pushWeek(m), (n) => tp.sent(n), { errorTitle: tp.weekPushFailed })} />} />
       <p className="m-foot m-dim px-1">{tp.hint}</p>
       {held && <DayMenuSheet day={held.day} window={held.window} overrides={held.overrides} today={today} onClose={() => setHeld(null)} onAction={(a) => void act(held, a)} />}
     </Screen>

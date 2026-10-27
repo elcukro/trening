@@ -1,7 +1,6 @@
 import { useState } from 'react'
 import { useLiveQuery } from 'dexie-react-hooks'
-import { db } from '@/db'
-import { DEFAULT_RIDE_HOURS, geocode, getLocation, setLocation, setRideHours, type RideHours, type WeatherLocation } from '@/sync/weather'
+import { DEFAULT_RIDE_HOURS, geocode, getLocation, setLocation, setRideHours, getRideHours, type WeatherLocation } from '@/sync/weather'
 import { Actions, Button, Card, CardTitle, Field, Input, Select } from '@/components/ui'
 import { useToast } from '@/components/Toast'
 import { useT } from '@/i18n/react'
@@ -14,7 +13,7 @@ export function WeatherSettings() {
   const toast = useToast()
   const tw = useT().settings.weather
   const loc = useLiveQuery(getLocation, [], null)
-  const hours = useLiveQuery(async () => ((await db.kv.get('ride_hours'))?.value as RideHours | undefined) ?? DEFAULT_RIDE_HOURS, [], DEFAULT_RIDE_HOURS)
+  const hours = useLiveQuery(getRideHours, [], DEFAULT_RIDE_HOURS)
   const [query, setQuery] = useState('')
   const [found, setFound] = useState<WeatherLocation[]>([])
 

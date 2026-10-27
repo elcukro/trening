@@ -1,9 +1,8 @@
 import { useEffect, useState } from 'react'
 import { useLiveQuery } from 'dexie-react-hooks'
-import { db } from '@/db'
 import type { DayPlan } from '@/engine/plan'
 import { adviseRide, clothingFor, fuelPlan, summarizeWindow, weatherLabel, type Advice, type DayForecast, type FuelPlan, type WindowSummary } from '@/engine/weather'
-import { DEFAULT_RIDE_HOURS, getLocation, loadForecast, type RideHours } from '@/sync/weather'
+import { DEFAULT_RIDE_HOURS, getLocation, loadForecast, getRideHours } from '@/sync/weather'
 import { loadClothing } from '@/data/clothing'
 
 
@@ -24,7 +23,7 @@ export interface Briefing {
 export function useBriefing(day: DayPlan | null, hasIndoorOverride = false): Briefing | null {
   // undefined = jeszcze czytam, null = miejscowość nieustawiona
   const loc = useLiveQuery(getLocation, [], undefined)
-  const hoursPref = useLiveQuery(async () => ((await db.kv.get('ride_hours'))?.value as RideHours | undefined) ?? DEFAULT_RIDE_HOURS, [], DEFAULT_RIDE_HOURS)
+  const hoursPref = useLiveQuery(getRideHours, [], DEFAULT_RIDE_HOURS)
   const [fetched, setForecast] = useState<{ days: DayForecast[]; stale: boolean } | null | 'loading'>('loading')
   // bez miejscowości nie ma czego pobierać – „brak prognozy” wynika z ustawień, nie z sieci
   const forecast = loc === null ? null : fetched
