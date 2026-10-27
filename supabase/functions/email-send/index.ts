@@ -9,7 +9,8 @@
  */
 import { CORS, APP_URL, env, json } from '../_shared/env.ts'
 import { timingSafeEqual } from '../_shared/crypto.ts'
-import { adminClient, userFromRequest } from '../_shared/supabase.ts'
+import { adminClient, requestLang, userFromRequest, userLang } from '../_shared/supabase.ts'
+import { fmtDate, langFromRequest, strings, type Lang } from '../_shared/i18n.ts'
 import { morningEmail, workoutEmail } from '../_shared/email_templates.ts'
 import { buildWorkoutView, type DaySnapshot, type RideLite } from '../_shared/email_views.ts'
 import { applyLegs, applyRpe, EVENING_HOUR, gatherWeek, resend, runEvening, runMorning, runWeekly, sendWeekly, unsubscribe, warsawNow, WEEKLY_HOUR, writeLetter } from '../_shared/email_send.ts'
@@ -17,43 +18,62 @@ import { mondayOf } from '../_shared/week_facts.ts'
 import { underUserDailyLimit } from '../_shared/ai_note.ts'
 
 /** Odpowiedź na kliknięcie „wyłącz te maile”. Zwykły tekst – domena functions Supabase podaje HTML jako text/plain. */
-function page(text: string): Response {
-  return new Response(`Trening\n\n${text}\n\nUstawienia maili: ${APP_URL}/wiecej/ustawienia\n`, { headers: { 'content-type': 'text/plain; charset=utf-8' } })
+function page(text: string, lang: Lang): Response {
+  const S = strings(lang)
+  return new Response(`${S.appName}\n\n${text}\n\n${S.pages.emailSettings(`${APP_URL}/wiecej/ustawienia`)}\n`, { headers: { 'content-type': 'text/plain; charset=utf-8' } })
 }
 
 const escapeHtml = (t: string) => t.replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' })[c] ?? c)
 
 /** Mała strona po kliknięciu w link z maila (otwiera się w przeglądarce telefonu). */
-function htmlPage(title: string, text: string, link: string): Response {
-  const html = `<!DOCTYPE html><html lang="pl"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Trening</title>
+function htmlPage(title: string, text: string, link: string, lang: Lang): Response {
+  const S = strings(lang)
+  const html = `<!DOCTYPE html><html lang="${S.htmlLang}"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>${escapeHtml(S.appName)}</title>
 <style>body{margin:0;font-family:-apple-system,system-ui,sans-serif;background:#f1f5f9;color:#0f172a;display:grid;place-items:center;min-height:100vh;padding:24px;box-sizing:border-box}
 main{background:#fff;border-radius:16px;padding:28px 24px;max-width:360px;text-align:center;box-shadow:0 1px 3px rgba(15,23,42,.08)}h1{font-size:22px;margin:0 0 8px}p{margin:0 0 20px;color:#475569;line-height:1.5}
 a{display:inline-block;background:#0284c7;color:#fff;text-decoration:none;padding:12px 22px;border-radius:12px;font-weight:600}</style></head>
-<body><main><h1>${escapeHtml(title)}</h1><p>${escapeHtml(text)}</p><a href="${escapeHtml(link)}">Otwórz aplikację</a></main></body></html>`
+<body><main><h1>${escapeHtml(title)}</h1><p>${escapeHtml(text)}</p><a href="${escapeHtml(link)}">${escapeHtml(S.pages.openApp)}</a></main></body></html>`
   return new Response(html, { headers: { 'content-type': 'text/html; charset=utf-8' } })
+}
+
+/** Uszkodzony link albo z innego konta – nie znamy zawodnika, więc język przeglądarki. */
+function badLink(req: Request): Response {
+  const lang = langFromRequest(req)
+  const P = strings(lang).pages
+  return htmlPage(P.badLinkTitle, P.badLinkText, APP_URL, lang)
 }
 
 Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') return new Response(null, { headers: CORS })
   const url = new URL(req.url)
   const unsub = url.searchParams.get('unsub')
+  // strony po kliknięciu w link z maila: język z profilu właściciela linku, a przy złym linku – z przeglądarki
   if (unsub) {
-    const kind = await unsubscribe(adminClient(), unsub)
-    return page(kind ? `Wyłączone: ${kind === 'morning' ? 'poranna odprawa' : 'podsumowanie po treningu'}. Włączysz z powrotem w Ustawieniach.` : 'Link jest nieprawidłowy albo wygasł.')
+    const r = await unsubscribe(adminClient(), unsub)
+    if (!r) return page(strings(langFromRequest(req)).pages.invalidLink, langFromRequest(req))
+    const lang = await userLang(adminClient(), r.userId)
+    const P = strings(lang).pages
+    return page(P.unsubscribed(P.kinds[r.kind]), lang)
   }
   const rpeToken = url.searchParams.get('rpe')
   if (rpeToken) {
     const r = await applyRpe(adminClient(), rpeToken)
-    if (!r) return htmlPage('Link nieprawidłowy', 'Ten link jest uszkodzony albo pochodzi z innego konta.', APP_URL)
-    if (!r.ok) return htmlPage('Nie zapisano', `RPE ${r.rpe} dla ${r.date}: ${r.reason}.`, `${APP_URL}/dzien/${r.date}`)
-    return htmlPage(`Zapisano RPE ${r.rpe}`, `Ocena jazdy z ${r.date} trafiła do dziennika. Możesz kliknąć inną liczbę, żeby ją poprawić.`, `${APP_URL}/dzien/${r.date}`)
+    if (!r) return badLink(req)
+    const lang = await userLang(adminClient(), r.userId)
+    const P = strings(lang).pages
+    const date = fmtDate(r.date, lang)
+    if (!r.ok) return htmlPage(P.notSavedTitle, P.rpeFailed(r.rpe, date, P.reasons[r.reason ?? 'db']), `${APP_URL}/dzien/${r.date}`, lang)
+    return htmlPage(P.rpeSavedTitle(r.rpe), P.rpeSavedText(date), `${APP_URL}/dzien/${r.date}`, lang)
   }
   const legsToken = url.searchParams.get('legs')
   if (legsToken) {
     const r = await applyLegs(adminClient(), legsToken)
-    if (!r) return htmlPage('Link nieprawidłowy', 'Ten link jest uszkodzony albo pochodzi z innego konta.', APP_URL)
-    if (!r.ok) return htmlPage('Nie zapisano', `Nogi ${r.legs}/5 dla ${r.date}: ${r.reason}.`, `${APP_URL}/i`)
-    return htmlPage(`Zapisano: nogi ${r.legs}/5`, `Check-in z ${r.date} ma ocenę nóg. Wagę, tętno spoczynkowe i sen dopisz w aplikacji.`, `${APP_URL}/i`)
+    if (!r) return badLink(req)
+    const lang = await userLang(adminClient(), r.userId)
+    const P = strings(lang).pages
+    const date = fmtDate(r.date, lang)
+    if (!r.ok) return htmlPage(P.notSavedTitle, P.legsFailed(r.legs, date, P.reasons[r.reason ?? 'db']), `${APP_URL}/i`, lang)
+    return htmlPage(P.legsSavedTitle(r.legs), P.legsSavedText(date), `${APP_URL}/i`, lang)
   }
   if (req.method !== 'POST') return json({ error: 'method' }, 405)
   const body = (await req.json().catch(() => ({}))) as { action?: string; secret?: string; kind?: 'morning' | 'workout' | 'weekly'; activity_id?: number | string; subject_prefix?: string; dry?: boolean }
@@ -82,12 +102,14 @@ Deno.serve(async (req) => {
 
   if (body.action === 'sample') {
     const today = warsawNow().date
+    const lang = await requestLang(req, admin, user.id)
+    const prefix = strings(lang).mail.samplePrefix
     if (body.kind === 'morning') {
       // najbliższy dzień z treningiem z migawek wgranych przez aplikację
       const { data } = await admin.from('email_days').select('date, payload').eq('user_id', user.id).gte('date', today).order('date').limit(14)
       const day = (data ?? []).find((d) => (d.payload as DaySnapshot).morning)
       if (!day) return json({ error: 'no_snapshot' }, 404)
-      const r = await resend(user.email, morningEmail((day.payload as DaySnapshot).morning!), null, '[PRÓBA] ')
+      const r = await resend(user.email, morningEmail((day.payload as DaySnapshot).morning!, { lang }), null, prefix)
       return r.error ? json({ error: 'resend', detail: r.error }, 502) : json({ ok: true, date: day.date, to: user.email })
     }
     if (body.kind === 'workout') {
@@ -98,24 +120,24 @@ Deno.serve(async (req) => {
       const { data: snapRow } = await admin.from('email_days').select('payload').eq('user_id', user.id).eq('date', a.date).maybeSingle()
       const snap = (snapRow?.payload as DaySnapshot | undefined) ?? null
       const ride: RideLite = { date: a.date, name: a.name, moving_time_s: Number(a.moving_time_s), distance_m: Number(a.distance_m ?? 0), elevation_m: Number(a.elevation_m ?? 0), avg_hr: a.avg_hr, avg_cadence: a.avg_cadence, avg_watts: a.avg_watts, np_w: a.np_w, device_watts: a.device_watts, decoupling_pct: a.decoupling_pct == null ? null : Number(a.decoupling_pct), hr_histogram: a.hr_histogram }
-      const view = buildWorkoutView(ride, snap, { athlete: '', appUrl: APP_URL, rideDateLabel: snap?.dateLabel ?? a.date, note: (a.note as string | null) ?? null })
+      const view = buildWorkoutView(ride, snap, { athlete: '', appUrl: APP_URL, rideDateLabel: snap?.dateLabel ?? a.date, note: (a.note as string | null) ?? null, lang })
       // domyślnie „[PRÓBA]”; w trybie oceny można wysłać jako zwykły mail (np. analiza testu na prośbę zawodnika)
-      const r = await resend(user.email, workoutEmail(view), null, body.subject_prefix ?? '[PRÓBA] ')
+      const r = await resend(user.email, workoutEmail(view, { lang }), null, body.subject_prefix ?? prefix)
       return r.error ? json({ error: 'resend', detail: r.error }, 502) : json({ ok: true, date: a.date, to: user.email })
     }
     if (body.kind === 'weekly') {
       // próby ręczne wywołują model – limit na konto i dobę, żeby jedno konto nie zużyło wspólnej puli
-      if (!(await underUserDailyLimit(admin, user.id, 6))) return json({ error: 'limit dzienny prób listu' }, 429)
+      if (!(await underUserDailyLimit(admin, user.id, 6))) return json({ error: strings(lang).errors.dailyLimitLetter }, 429)
       const monday = mondayOf(today)
       // tryb oceny: sam list i powód odrzucenia szkicu, bez maila (strojenie promptu)
       if (body.dry) {
         const facts = await gatherWeek(admin, user.id, monday)
-        const r = await writeLetter(admin, user.id, facts)
+        const r = await writeLetter(admin, user.id, facts, lang)
         return json({ monday, ...r, flags: facts.flags })
       }
       // list za bieżący tydzień (albo poprzedni, gdy bieżący jeszcze pusty) – próba idzie bez wpisu w email_log
-      const r = await sendWeekly(admin, user.id, monday, { force: true, subjectPrefix: '[PRÓBA] ' })
-      const r2 = r === 'pusty tydzień' ? await sendWeekly(admin, user.id, mondayOf(today) < monday ? monday : new Date(new Date(`${monday}T00:00:00Z`).getTime() - 7 * 86_400_000).toISOString().slice(0, 10), { force: true, subjectPrefix: '[PRÓBA] ' }) : r
+      const r = await sendWeekly(admin, user.id, monday, { force: true, subjectPrefix: prefix, lang })
+      const r2 = r === 'pusty tydzień' ? await sendWeekly(admin, user.id, mondayOf(today) < monday ? monday : new Date(new Date(`${monday}T00:00:00Z`).getTime() - 7 * 86_400_000).toISOString().slice(0, 10), { force: true, subjectPrefix: prefix, lang }) : r
       return r2.startsWith('wysłane') ? json({ ok: true, to: user.email, detail: r2 }) : json({ error: 'weekly', detail: r2 }, 502)
     }
     return json({ error: 'kind' }, 400)

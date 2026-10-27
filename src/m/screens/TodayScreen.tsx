@@ -28,15 +28,18 @@ import { fmtShort } from '@/lib/dates'
 import { ART, dayArt, weatherArt } from '../art'
 import { useOpenCoach } from '../coach'
 import { fromHealth, healthLine } from '@/day/health'
+import { useT } from '@/i18n/react'
 
 const LOGGED = ['done', 'modified', 'skipped']
-const cap = (t: string) => t.charAt(0).toUpperCase() + t.slice(1)
+const cap = (s: string) => s.charAt(0).toUpperCase() + s.slice(1)
 
 /**
  * Dziś (docs/24 § 4): jedna karta stanu, która zmienia się w ciągu dnia, pod nią oś dnia, żywienie i jutro.
  * Stany liczy `dayPhase` (czysty TS); dane dnia daje `useIosDay` – ten sam hook co w `/i`.
  */
 export function TodayScreen() {
+  const t = useT()
+  const tt = t.m.today
   const params = useParams()
   const today = todayISO()
   const date = params.date && isValidISODate(params.date) ? params.date : today
@@ -62,24 +65,24 @@ export function TodayScreen() {
   async function saveRpe(rpe: number) {
     const log = d.rideLog
     const status = log && LOGGED.includes(log.status) && log.status !== 'skipped' ? (log.status as 'done' | 'modified') : score != null && score < 70 ? 'modified' : 'done'
-    await toast.run('Zapisuję RPE…', () => d.logRide(status, { rpe }), () => `RPE ${rpe} zapisane`, undefined, { quiet: true, errorTitle: 'Nie zapisano RPE' })
+    await toast.run(tt.rpeSaving, () => d.logRide(status, { rpe }), () => tt.rpeSaved(rpe), undefined, { quiet: true, errorTitle: tt.rpeFailed })
   }
   async function unskip() {
-    await toast.run('Przywracam…', async () => {
+    await toast.run(tt.restoring, async () => {
       await upsertSessionLog(date, 'bike', { status: 'planned', rpe: null })
       for (const o of d.view.overrides.filter((x) => x.kind === 'skip')) await d.view.undo(o.id)
-    }, () => 'Trening wrócił do planu', undefined, { quiet: true })
+    }, () => tt.restored, undefined, { quiet: true })
   }
   // dzień bez jazdy oznaczony jako pominięty – odwracalne, więc bez pytania, za to z „Cofnij” (docs/27 § 6)
   async function markSkipped() {
-    await toast.run('Oznaczam…', () => d.logRide('skipped'), () => 'Oznaczono jako pominięte', () => ({ label: 'Cofnij', onClick: () => void upsertSessionLog(date, 'bike', { status: 'planned' }) }), { quiet: true })
+    await toast.run(tt.marking, () => d.logRide('skipped'), () => tt.markedSkipped, () => ({ label: t.common.undo, onClick: () => void upsertSessionLog(date, 'bike', { status: 'planned' }) }), { quiet: true })
   }
   // wysyłka trwa kilka sekund – animacja na karcie zamiast komunikatu (docs/27 § 6)
   const bolt = useAction()
-  const sendBolt = () => void bolt.run(d.sendToBolt, (s) => (s === 'updated' ? 'Zaktualizowano na Bolcie. Zsynchronizuj licznik.' : 'Wysłano na Bolta. Zsynchronizuj licznik.'), { errorTitle: 'Nie wysłano na Bolta' })
+  const sendBolt = () => void bolt.run(d.sendToBolt, (s) => (s === 'updated' ? tt.boltUpdated : tt.boltSent), { errorTitle: tt.boltFailed })
 
   return (
-    <Screen title={isToday ? 'Dziś' : cap(fmtLong(date).split(',')[0]!)} subtitle={`${fmtLong(date)}${day ? ` · tydzień ${day.week}${day.week_type === 'deload' ? ' · lżejszy' : ''}` : ''}`} back={isToday ? undefined : '/m/plan'} day={color}>
+    <Screen title={isToday ? t.common.today : cap(fmtLong(date).split(',')[0]!)} subtitle={`${fmtLong(date)}${day ? tt.weekPart(day.week, day.week_type === 'deload') : ''}`} back={isToday ? undefined : '/m/plan'} day={color}>
       {warn.length > 0 && (
         <div className="m-list p-3" style={{ background: 'rgb(255 204 0 / 0.18)' }}>
           <p className="m-sub">{warn[0]!.message}</p>
@@ -93,7 +96,7 @@ export function TodayScreen() {
 
       {!day ? (
         <Card>
-          <p className="m-sub m-dim">Tego dnia nie ma w planie.</p>
+          <p className="m-sub m-dim">{tt.notInPlan}</p>
         </Card>
       ) : (
         <StateCard phase={phase} day={day} d={d} brief={brief} score={score} onCoach={openCoach} onCheckin={() => setSheet('checkin')} onSteps={() => navigate(`/m/jazda/${date}`)} onSummary={() => navigate(`/m/podsumowanie/${date}`)} onBolt={sendBolt} boltBusy={bolt.pending} onRpe={saveRpe} onUnskip={unskip} onSkip={markSkipped} />
@@ -101,7 +104,7 @@ export function TodayScreen() {
 
       {day && isToday && phase !== 'rest' && (
         <div className="px-1">
-          <div className="m-dots" aria-label="Oś dnia">
+          <div className="m-dots" aria-label={tt.dayAxis}>
             {d.flow.steps.map((s, i) => (
               <span key={s.key} className="contents">
                 {i > 0 && <span className="m-dot-line" data-done={s.done} />}
@@ -109,7 +112,7 @@ export function TodayScreen() {
               </span>
             ))}
           </div>
-          <p className="m-foot m-dim mt-1.5">{d.flow.steps.map((s) => (s.key === 'checkin' ? 'check-in' : s.key === 'bolt' ? 'Bolt' : s.key === 'train' ? 'trening' : 'RPE')).join(' · ')}</p>
+          <p className="m-foot m-dim mt-1.5">{d.flow.steps.map((s) => (s.key === 'checkin' ? tt.flow.checkin : s.key === 'bolt' ? tt.flow.bolt : s.key === 'train' ? tt.flow.train : tt.flow.rpe)).join(' · ')}</p>
         </div>
       )}
 
@@ -133,17 +136,17 @@ export function TodayScreen() {
 
       {day && (
         <Group>
-          <Row title="Żywienie" sub={day.nutrition.label} value={`${day.protein_g} g białka`} icon={<img src={ART.scale} alt="" width={28} height={28} className="h-7 w-7 object-contain" />} />
+          <Row title={tt.nutrition} sub={day.nutrition.label} value={tt.protein(day.protein_g)} icon={<img src={ART.scale} alt="" width={28} height={28} className="h-7 w-7 object-contain" />} />
           {lastRide && lastRide.date !== date && (
             <Row
-              title="Ostatnia jazda"
-              sub={`${fmtShort(lastRide.date)} · ${lastRide.name ?? 'Jazda'}`}
+              title={tt.lastRide}
+              sub={`${fmtShort(lastRide.date)} · ${lastRide.name ?? t.m.me.rides.fallbackName}`}
               value={`${num((lastRide.distance_m ?? 0) / 1000, 0)} km${lastRide.device_watts && lastRide.np_w ? ` · ${Math.round(lastRide.np_w)} W` : lastRide.avg_hr ? ` · ${Math.round(lastRide.avg_hr)} bpm` : ''}`}
               to={`/m/dzien/${lastRide.date}`}
               icon={<img src={ART.heart} alt="" width={28} height={28} className="h-7 w-7 object-contain" />}
             />
           )}
-          {isToday && tomorrow && <Row title="Jutro" sub={tomorrow.bike ? `${tomorrow.bike.name} · ${minutes(tomorrow.bike.duration_min)}` : 'Wolne'} to={`/m/dzien/${tomorrow.date}`} icon={<img src={dayArt(tomorrow.day_type, tomorrow.flags.includes('test'))} alt="" width={28} height={28} className="h-7 w-7 object-contain" />} />}
+          {isToday && tomorrow && <Row title={t.common.tomorrow} sub={tomorrow.bike ? `${tomorrow.bike.name} · ${minutes(tomorrow.bike.duration_min)}` : t.m.rest} to={`/m/dzien/${tomorrow.date}`} icon={<img src={dayArt(tomorrow.day_type, tomorrow.flags.includes('test'))} alt="" width={28} height={28} className="h-7 w-7 object-contain" />} />}
         </Group>
       )}
 
@@ -174,9 +177,11 @@ interface CardProps {
 }
 
 function StateCard(p: CardProps) {
+  const t = useT()
+  const tt = t.m.today
   const { phase, day, d } = p
-  const name = day.bike?.name ?? 'Dzień wolny'
-  const eyebrow = day.flags.includes('test') ? 'Test' : day.bike ? DAY_TYPE_LABEL[day.day_type] : 'Wolne'
+  const name = day.bike?.name ?? tt.restDayName
+  const eyebrow = day.flags.includes('test') ? tt.test : day.bike ? DAY_TYPE_LABEL[day.day_type] : t.m.rest
   const art = dayArt(day.day_type, day.flags.includes('test'))
 
   switch (phase) {
@@ -186,24 +191,24 @@ function StateCard(p: CardProps) {
           <div className="flex items-start gap-3">
             <div className="min-w-0 flex-1">
               <p className="m-eyebrow" style={{ color: 'var(--day)' }}>
-                Dzień dobry
+                {tt.morning.hello}
               </p>
-              <p className="m-title mt-1">Jak się czujesz?</p>
+              <p className="m-title mt-1">{tt.morning.howFeel}</p>
               <p className="m-sub m-dim mt-2">
-                {day.bike ? `${name} · ${minutes(day.bike.duration_min)}` : 'Dziś wolne'}
-                {d.lastWeight && !fromHealth(d.checkin, 'weight_kg') ? ` · ostatnia waga ${num(d.lastWeight.kg)} kg` : ''}
+                {day.bike ? `${name} · ${minutes(day.bike.duration_min)}` : tt.morning.restToday}
+                {d.lastWeight && !fromHealth(d.checkin, 'weight_kg') ? tt.morning.lastWeight(num(d.lastWeight.kg)) : ''}
               </p>
               {/* Apple Health wypełnił już część check-inu – zostają nogi i samopoczucie (docs/27 § 2) */}
-              {healthLine(d.checkin, (f) => fromHealth(d.checkin, f)) && <p className="m-foot mt-1" style={{ color: 'var(--label)' }}>Ze Zdrowia: {healthLine(d.checkin, (f) => fromHealth(d.checkin, f))}</p>}
+              {healthLine(d.checkin, (f) => fromHealth(d.checkin, f)) && <p className="m-foot mt-1" style={{ color: 'var(--label)' }}>{t.m.checkin.fromHealthLine(healthLine(d.checkin, (f) => fromHealth(d.checkin, f)))}</p>}
             </div>
             <img src={ART.coachWave} alt="" width={84} height={112} className="-mt-2 -mr-2 h-28 w-[84px] shrink-0 object-contain" />
           </div>
           <div className="mt-4 flex flex-col gap-2">
-            <Btn onClick={() => p.onCoach(d.lastWeight ? `Waga ${num(d.lastWeight.kg)}, tętno ` : 'Waga ')} className="w-full">
-              Powiedz trenerowi
+            <Btn onClick={() => p.onCoach(tt.morning.coachPrefill(d.lastWeight ? num(d.lastWeight.kg) : null))} className="w-full">
+              {tt.morning.tellCoach}
             </Btn>
             <Btn soft onClick={p.onCheckin} className="w-full">
-              Wpisz ręcznie
+              {tt.morning.manual}
             </Btn>
           </div>
         </Card>
@@ -229,7 +234,7 @@ function StateCard(p: CardProps) {
             <div className="mt-4 flex items-center gap-3">
               <img src={weatherArt(p.brief.summary?.code, { night: p.brief.summary?.dark, windKmh: p.brief.summary?.wind_kmh })} alt="" width={40} height={40} className="h-10 w-10 shrink-0 object-contain" />
               <p className="m-sub min-w-0">
-                {p.brief.summary ? `${num(p.brief.summary.feels_c, 0)} °C odczuwalne · wiatr ${p.brief.summary.wind_kmh} km/h · deszcz ${p.brief.summary.precip_prob} %` : p.brief.location === null ? 'Bez prognozy – ustaw miejscowość w Ja' : p.brief.loading ? 'Pobieram prognozę…' : 'Bez prognozy'}
+                {p.brief.summary ? tt.weather.line(num(p.brief.summary.feels_c, 0), p.brief.summary.wind_kmh, p.brief.summary.precip_prob) : p.brief.location === null ? tt.weather.noLocation : p.brief.loading ? tt.weather.loading : tt.weather.none}
                 {p.brief.clothing && <span className="m-dim block truncate">{p.brief.clothing.label}</span>}
               </p>
             </div>
@@ -237,22 +242,22 @@ function StateCard(p: CardProps) {
           {day.bike && d.bolt.kind !== 'na' && (
             <p className="m-sub mt-3 flex items-center gap-2">
               <img src={ART.bolt} alt="" width={24} height={24} className="h-6 w-6 object-contain" />
-              <span style={{ color: d.bolt.kind === 'ok' ? 'var(--green)' : d.bolt.kind === 'error' ? 'var(--red)' : 'var(--label-2)' }}>{d.bolt.kind === 'ok' ? 'Na liczniku' : d.bolt.kind === 'stale' ? 'Na liczniku jest stara wersja' : d.bolt.kind === 'error' ? `Bolt: ${d.bolt.error}` : 'Jeszcze nie na liczniku'}</span>
+              <span style={{ color: d.bolt.kind === 'ok' ? 'var(--green)' : d.bolt.kind === 'error' ? 'var(--red)' : 'var(--label-2)' }}>{d.bolt.kind === 'ok' ? tt.bolt.ok : d.bolt.kind === 'stale' ? tt.bolt.stale : d.bolt.kind === 'error' ? tt.bolt.error(d.bolt.error) : tt.bolt.notYet}</span>
             </p>
           )}
-          {phase === 'riding' && <p className="m-foot m-dim mt-3">Jazda w toku – czekam na import ze Stravy.</p>}
+          {phase === 'riding' && <p className="m-foot m-dim mt-3">{tt.riding}</p>}
           <div className="mt-4 flex flex-col gap-2">
             {day.workout && (
               <Btn onClick={p.onSteps} className="w-full">
-                Pokaż kroki
+                {tt.showSteps}
               </Btn>
             )}
             {phase !== 'riding' && day.bike && d.bolt.kind !== 'na' && (d.bolt.kind !== 'ok' || p.boltBusy) &&
               (p.boltBusy ? (
-                <Waiting label="Wysyłam na Bolta…" detail="Zwykle kilka sekund" size={96} />
+                <Waiting label={tt.bolt.sending} detail={tt.bolt.fewSeconds} size={96} />
               ) : (
                 <Btn soft onClick={p.onBolt} className="w-full">
-                  Wyślij na Bolta
+                  {tt.bolt.send}
                 </Btn>
               ))}
           </div>
@@ -268,14 +273,14 @@ function StateCard(p: CardProps) {
       return (
         <Card day>
           <p className="m-eyebrow" style={{ color: verdict ? TONE_COLOR[verdict.tone] : 'var(--day)' }}>
-            {verdict?.text ?? (phase === 'evening' ? 'Po treningu' : 'Jak poszło')}
+            {verdict?.text ?? (phase === 'evening' ? tt.after.evening : tt.after.howItWent)}
           </p>
           <p className="m-title mt-1">{a?.name ?? name}</p>
           {a && (
             <div className="mt-3 grid grid-cols-3 gap-2">
-              <Stat value={p.score != null ? `${p.score} %` : '—'} label="zgodność" />
+              <Stat value={p.score != null ? `${p.score} %` : '—'} label={tt.after.compliance} />
               <Stat value={load ? String(Math.round(load.tss)) : '—'} label="TSS" />
-              <Stat value={a.decoupling_pct != null ? `${num(a.decoupling_pct)} %` : a.avg_hr ? `${Math.round(a.avg_hr)}` : '—'} label={a.decoupling_pct != null ? 'dryf tętna' : 'śr. tętno'} />
+              <Stat value={a.decoupling_pct != null ? `${num(a.decoupling_pct)} %` : a.avg_hr ? `${Math.round(a.avg_hr)}` : '—'} label={a.decoupling_pct != null ? tt.after.hrDrift : tt.after.avgHr} />
             </div>
           )}
           {note && <NoteExcerpt text={note} />}
@@ -284,12 +289,12 @@ function StateCard(p: CardProps) {
           </div>
           {a && (
             <Btn onClick={p.onSummary} className="mt-4 w-full">
-              Podsumowanie
+              {tt.after.summary}
             </Btn>
           )}
           {phase === 'evening' && (
             <Btn soft onClick={() => p.onCoach()} className="mt-2 w-full">
-              Powiedz trenerowi
+              {tt.morning.tellCoach}
             </Btn>
           )}
         </Card>
@@ -301,10 +306,12 @@ function StateCard(p: CardProps) {
           <div className="flex items-start gap-3">
             <div className="min-w-0 flex-1">
               <p className="m-eyebrow" style={{ color: 'var(--day)' }}>
-                Wolne
+                {t.m.rest}
               </p>
-              <p className="m-title mt-1">Dziś odpoczynek</p>
-              <p className="m-sub m-dim mt-2">Regeneracja jest częścią treningu. {day.nutrition.label}</p>
+              <p className="m-title mt-1">{tt.rest.title}</p>
+              <p className="m-sub m-dim mt-2">
+                {tt.rest.text} {day.nutrition.label}
+              </p>
             </div>
             <img src={ART.rest} alt="" width={96} height={96} className="-mt-1 -mr-1 h-24 w-24 shrink-0 object-contain" />
           </div>
@@ -316,7 +323,7 @@ function StateCard(p: CardProps) {
           <div className="flex items-start gap-3">
             <div className="min-w-0 flex-1">
               <p className="m-eyebrow" style={{ color: 'var(--red)' }}>
-                Odpuszczone
+                {tt.skipped}
               </p>
               <p className="m-title mt-1">{name}</p>
               {d.rideLog?.notes && <p className="m-sub m-dim mt-2">{d.rideLog.notes}</p>}
@@ -324,18 +331,18 @@ function StateCard(p: CardProps) {
             <img src={ART.rest} alt="" width={96} height={96} className="-mt-1 -mr-1 h-24 w-24 shrink-0 object-contain" />
           </div>
           <Btn soft onClick={() => void p.onUnskip()} className="mt-4 w-full">
-            Cofnij
+            {t.common.undo}
           </Btn>
         </Card>
       )
     case 'missed':
       return (
         <Card>
-          <p className="m-eyebrow m-dim">Bez jazdy</p>
+          <p className="m-eyebrow m-dim">{tt.missed.eyebrow}</p>
           <p className="m-title mt-1">{name}</p>
-          <p className="m-sub m-dim mt-2">Tego dnia nie było treningu ani oznaczenia. Jeśli to decyzja, oznacz jako pominięte – raporty przestaną o to pytać.</p>
+          <p className="m-sub m-dim mt-2">{tt.missed.text}</p>
           <Btn soft onClick={() => void p.onSkip()} className="mt-4 w-full">
-            Oznacz jako pominięte
+            {tt.missed.mark}
           </Btn>
         </Card>
       )
@@ -344,6 +351,7 @@ function StateCard(p: CardProps) {
 
 /** Dwa pierwsze zdania notatki trenera; reszta po dotknięciu. */
 function NoteExcerpt({ text }: { text: string }) {
+  const t = useT()
   const [open, setOpen] = useState(false)
   const sentences = text.match(/[^.!?]+[.!?]+/g) ?? [text]
   const short = sentences.slice(0, 2).join(' ').trim()
@@ -353,7 +361,7 @@ function NoteExcerpt({ text }: { text: string }) {
       {open || !more ? text : short}
       {more && (
         <button className="m-headline m-hit ml-1" style={{ color: 'var(--accent)' }} onClick={() => setOpen((v) => !v)}>
-          {open ? 'mniej' : 'więcej'}
+          {open ? t.m.today.note.less : t.m.today.note.more}
         </button>
       )}
     </p>

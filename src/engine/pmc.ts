@@ -1,3 +1,4 @@
+import { t } from '../i18n'
 import { HR_ZONE_TSS_PER_HOUR } from './analysis'
 import { addDays, diffDays, mondayOf, type ISODate } from './dates'
 import type { PowerZone, Program } from './schema'
@@ -91,7 +92,7 @@ export function rampRate(series: PmcPoint[], upTo: ISODate): { per_week: number;
   const start = series.find((p) => p.date === addDays(end?.date ?? upTo, -7))
   if (!end || !start) return null
   const per_week = Math.round((end.ctl - start.ctl) * 10) / 10
-  const warning = per_week > RAMP_LIMIT_PER_WEEK ? `Forma (CTL) rośnie o ${per_week} pkt/tydz. – szybciej niż ${RAMP_LIMIT_PER_WEEK}. Rozważ krótszą długą jazdę albo dzień wolny więcej.` : null
+  const warning = per_week > RAMP_LIMIT_PER_WEEK ? t().engine.pmc.ramp(per_week, RAMP_LIMIT_PER_WEEK) : null
   return { per_week, warning }
 }
 

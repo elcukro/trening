@@ -9,12 +9,15 @@ import { diffDays } from '@/engine/dates'
 import { todayISO, fmtDate } from '@/lib/dates'
 import { days as daysLabel, num } from '@/lib/format'
 import { Button, Card, CardSection, CardTitle, Metric, PageTitle, Segmented } from '@/components/ui'
+import { useT } from '@/i18n/react'
 
 type TripMode = 'hotel' | 'camp'
 
 export function TripPage() {
   const engine = useEngine()
   const list = loadPackingList()
+  const t = useT()
+  const T = t.classic.trip
   const [mode, setMode] = useState<TripMode>('hotel')
   const rows = useLiveQuery(() => db.packing_state.where('trip_key').equals(mode).toArray(), [mode], [] as PackingState[])
   const checked = new Map(rows.filter((r) => !r.deleted_at).map((r) => [r.item_key, r.checked]))
@@ -38,23 +41,23 @@ export function TripPage() {
   return (
     <div className="space-y-3">
       <Link to="/wiecej" className="inline-flex min-h-11 items-center text-sm font-medium text-sky-700 hover:underline dark:text-sky-300">
-        ‹ Więcej
+        ‹ {t.classic.nav.more}
       </Link>
-      <PageTitle sub={toTrip > 0 ? `${daysLabel(toTrip)} do wyjazdu (${fmtDate(engine.ctx.settings.trip_start)})` : 'Wyjazd trwa'}>Wyjazd</PageTitle>
+      <PageTitle sub={toTrip > 0 ? T.countdown(daysLabel(toTrip), fmtDate(engine.ctx.settings.trip_start)) : T.ongoing}>{T.title}</PageTitle>
 
       <Segmented
-        label="Wariant wyjazdu"
+        label={T.variant}
         value={mode}
         onChange={setMode}
         options={[
-          { value: 'hotel', label: 'Hotele' },
-          { value: 'camp', label: 'Biwak' },
+          { value: 'hotel', label: T.hotel },
+          { value: 'camp', label: T.camp },
         ]}
       />
 
       <Card>
         <CardTitle icon="✅" right={<Metric>{done}/{total}</Metric>}>
-          Checklista
+          {T.checklist}
         </CardTitle>
         <div className="mb-2 h-1.5 w-full overflow-hidden rounded-full bg-slate-200 dark:bg-slate-700">
           <div className="h-full bg-emerald-500 transition-[width]" style={{ width: `${total ? (done / total) * 100 : 0}%` }} />
@@ -76,7 +79,7 @@ export function TripPage() {
                         item.name
                       )}
                     </span>
-                    {item.price_pln != null && <span className="shrink-0 text-xs text-slate-500 tabular-nums dark:text-slate-400">{num(item.price_pln, 0)} zł</span>}
+                    {item.price_pln != null && <span className="shrink-0 text-xs text-slate-500 tabular-nums dark:text-slate-400">{T.price(num(item.price_pln, 0))}</span>}
                   </label>
                 </li>
               ))}
@@ -84,15 +87,15 @@ export function TripPage() {
           </div>
         ))}
         <CardSection className="flex items-center justify-between gap-3">
-          <span className="text-xs text-slate-500 tabular-nums dark:text-slate-400">Razem na liście: {num(price, 0)} zł</span>
+          <span className="text-xs text-slate-500 tabular-nums dark:text-slate-400">{T.total(T.price(num(price, 0)))}</span>
           <Button variant="secondary" size="sm" onClick={() => resetPacking(mode)}>
-            Odznacz wszystko
+            {T.uncheckAll}
           </Button>
         </CardSection>
       </Card>
 
       <Card tone="muted">
-        <CardTitle icon="🎒">Podział na torby</CardTitle>
+        <CardTitle icon="🎒">{T.bags}</CardTitle>
         <p className="mb-2 text-sm">{list.system}</p>
         <ul className="space-y-2 text-sm">
           {list.bags.map((b) => (
@@ -106,7 +109,7 @@ export function TripPage() {
 
       {engine.ctx.program.rules.pass_strategy && (
         <Card tone="accent">
-          <CardTitle icon="🏔️">Strategia na przełęcz</CardTitle>
+          <CardTitle icon="🏔️">{t.classic.rulesPage.passStrategy}</CardTitle>
           <ul className="list-disc space-y-1 pl-5 text-sm">
             {engine.ctx.program.rules.pass_strategy.map((s, i) => (
               <li key={i}>{s}</li>

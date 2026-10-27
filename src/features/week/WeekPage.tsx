@@ -6,7 +6,7 @@ import { db, type PlanOverrideRow, type SessionLog } from '@/db'
 import { removeOverride, swapDays } from '@/db/repo'
 import { validateSwap } from '@/engine/rules'
 import { addDays, isValidISODate, mondayOf } from '@/engine/dates'
-import { todayISO, fmtRange } from '@/lib/dates'
+import { todayISO, fmtRange, fmtDayMonth } from '@/lib/dates'
 import { hours, minutes } from '@/lib/format'
 import { DAY_TYPE_COLOR, FLAG_COLOR, FLAG_LABEL, PHASE_COLOR, WEEKDAY_SHORT, WEEK_TYPE_LABEL } from '@/lib/labels'
 import { Badge, Button, Card, Empty } from '@/components/ui'
@@ -17,9 +17,11 @@ import { plannedTss } from '@/engine/pmc'
 import type { DayPlan } from '@/engine/plan'
 import { dropState, useDragMove } from '@/features/calendar/useDragMove'
 import { DROP_CLASS, DragBar, FLASH_CLASS, useFlash } from '@/features/calendar/DragUi'
+import { t as tNow } from '@/i18n'
+import { useT } from '@/i18n/react'
 
-const dm = (iso: string) => `${iso.slice(8)}.${iso.slice(5, 7)}`
-const dayLabel = (d: DayPlan) => `${WEEKDAY_SHORT[d.weekday]} ${dm(d.date)} · ${d.bike?.name ?? 'Wolne'}`
+const dm = (iso: string) => fmtDayMonth(iso)
+const dayLabel = (d: DayPlan) => `${WEEKDAY_SHORT[d.weekday]} ${dm(d.date)} · ${d.bike?.name ?? tNow().classic.week.rest}`
 
 /*
  * Układ: telefon i 1024–1279 px – lista dni (wiersz: data | treść | zamiana);
@@ -33,6 +35,8 @@ export function WeekPage() {
   const monday = date && isValidISODate(date) ? mondayOf(date) : mondayOf(today)
   const { engine, days, window } = useWeekView(monday)
   const toast = useToast()
+  const t = useT()
+  const W = t.classic.week
 
   const logs = useLiveQuery(async () => (await db.session_logs.where('date').between(monday, addDays(monday, 6), true, true).toArray()).filter((l) => !l.deleted_at), [monday], [] as SessionLog[])
   const overrides = useLiveQuery(async () => (await db.plan_overrides.where('date').between(monday, addDays(monday, 6), true, true).toArray()).filter((o) => !o.deleted_at), [monday], [] as PlanOverrideRow[])
@@ -50,24 +54,24 @@ export function WeekPage() {
     (a: string, b: string): { ok: boolean; reason?: string } => {
       const A = days.find((d) => d.date === a)
       const B = days.find((d) => d.date === b)
-      if (A && B && !A.bike && !B.bike) return { ok: false, reason: 'Oba dni są wolne – nie ma czego zamieniać.' }
+      if (A && B && !A.bike && !B.bike) return { ok: false, reason: tNow().classic.week.bothRest }
       return validateSwap(a, b, window)
     },
     [days, window],
   )
   const canDrop = useCallback((a: string, b: string) => swapCheck(a, b).ok, [swapCheck])
-  const why = useCallback((a: string, b: string) => swapCheck(a, b).reason ?? 'Nie można zamienić tych dni.', [swapCheck])
+  const why = useCallback((a: string, b: string) => swapCheck(a, b).reason ?? tNow().classic.week.cannotSwap, [swapCheck])
   const { flashing, flash } = useFlash()
   const onDrop = useCallback(
     (from: string, to: string) => {
       void toast
         .run(
-          'Zamieniam dni…',
+          tNow().classic.week.swapping,
           () => swapDays(from, to),
-          (r) => (r.outcome === 'undone' ? `Zamiana cofnięta: ${dm(from)} ↔ ${dm(to)}` : `Dni zamienione: ${dm(from)} ↔ ${dm(to)}`),
+          (r) => (r.outcome === 'undone' ? tNow().classic.week.swapUndone(dm(from), dm(to)) : tNow().classic.week.swapped(dm(from), dm(to))),
           (r) =>
             r.outcome === 'swapped'
-              ? { label: 'Cofnij', onClick: () => void toast.run('Cofam zamianę…', () => removeOverride(r.id), () => 'Przywrócono plan').then(() => flash(from, to)) }
+              ? { label: tNow().common.undo, onClick: () => void toast.run(tNow().classic.week.undoingSwap, () => removeOverride(r.id), () => tNow().classic.planChange.undone).then(() => flash(from, to)) }
               : undefined,
         )
         .then((r) => {
@@ -80,20 +84,20 @@ export function WeekPage() {
 
   return (
     <div className="space-y-3 lg:space-y-4">
-      <nav className="flex items-center justify-between lg:justify-start lg:gap-2" aria-label="Sąsiednie tygodnie">
-        <Button variant="ghost" onClick={() => navigate(`/tydzien/${addDays(monday, -7)}`)} className="w-11 px-0 text-xl">
+      <nav className="flex items-center justify-between lg:justify-start lg:gap-2" aria-label={W.neighbours}>
+        <Button variant="ghost" onClick={() => navigate(`/tydzien/${addDays(monday, -7)}`)} className="w-11 px-0 text-xl" ariaLabel={W.prev}>
           ‹
         </Button>
         <div className="min-w-0 text-center lg:min-w-56">
-          <h1 className="text-2xl font-bold tracking-tight">{first ? `Tydzień ${first.week}` : 'Tydzień'}</h1>
+          <h1 className="text-2xl font-bold tracking-tight">{first ? t.common.weekN(first.week) : t.common.week}</h1>
           <p className="text-xs text-slate-500 tabular-nums dark:text-slate-400">{fmtRange(monday, addDays(monday, 6))}</p>
         </div>
-        <Button variant="ghost" onClick={() => navigate(`/tydzien/${addDays(monday, 7)}`)} className="w-11 px-0 text-xl">
+        <Button variant="ghost" onClick={() => navigate(`/tydzien/${addDays(monday, 7)}`)} className="w-11 px-0 text-xl" ariaLabel={W.next}>
           ›
         </Button>
         {!isCurrent && (
           <Link to="/tydzien" className="hidden text-sm font-semibold text-sky-700 hover:underline lg:ml-2 lg:block dark:text-sky-300">
-            Wróć do dziś
+            {W.backToToday}
           </Link>
         )}
       </nav>
@@ -102,17 +106,17 @@ export function WeekPage() {
           <Badge color={PHASE_COLOR[first.phase]}>{first.phase_name.replace(/ – .*/, '')}</Badge>
           <span className="text-slate-600 dark:text-slate-300">{WEEK_TYPE_LABEL[first.week_type]}</span>
           <span className="ml-auto text-slate-600 tabular-nums dark:text-slate-300">
-            {hours(doneMin)} z {hours(planMin)} · TSS {doneTss}/{planTss}
+            {W.summary(hours(doneMin), hours(planMin), doneTss, planTss)}
           </span>
         </div>
       )}
       {!isCurrent && (
         <Link to="/tydzien" className="block text-center text-sm font-semibold text-sky-700 lg:hidden dark:text-sky-300">
-          Wróć do dziś
+          {W.backToToday}
         </Link>
       )}
-      <DragBar drag={drag} verb="Zamieniam" tapHint="Dotknij dnia, z którym zamienić" dropHint="Upuść na dniu, z którym zamienić" overHint={(to) => `Puść, żeby zamienić z ${dm(to)}`} onCancel={cancel} />
-      {days.length === 0 && <Empty>Ten tydzień jest poza planem.</Empty>}
+      <DragBar drag={drag} verb={W.drag.verb} tapHint={W.drag.tap} dropHint={W.drag.drop} overHint={(to) => W.drag.over(dm(to))} onCancel={cancel} />
+      {days.length === 0 && <Empty>{W.outOfPlan}</Empty>}
       <ul className="space-y-2 xl:grid xl:grid-cols-7 xl:gap-3 xl:space-y-0">
         {days.map((d) => {
           const bikeLog = logs.find((l) => l.date === d.date && l.kind === 'bike')
@@ -157,10 +161,10 @@ export function WeekPage() {
                         <span className="shrink-0 text-slate-600 tabular-nums dark:text-slate-300 xl:text-xs">{minutes(d.bike.duration_min)}</span>
                       </div>
                     ) : (
-                      <div className="text-sm text-slate-400 dark:text-slate-500">🛋️ Wolne</div>
+                      <div className="text-sm text-slate-400 dark:text-slate-500">🛋️ {W.rest}</div>
                     )}
                     <div className="flex min-w-0 flex-wrap items-center gap-1">
-                      {d.day_type === 'key' && d.bike && <Badge color="bg-red-500" title="Trening kluczowy tygodnia – akcent">Klucz</Badge>}
+                      {d.day_type === 'key' && d.bike && <Badge color="bg-red-500" title={W.keyTitle}>{W.key}</Badge>}
                       {bikeLog && bikeLog.status !== 'planned' && <StatusBadge status={bikeLog.status} />}
                       {d.flags.map((f) => (
                         <Badge key={f} color={FLAG_COLOR[f]}>
@@ -169,12 +173,12 @@ export function WeekPage() {
                       ))}
                       {d.event && (
                         <Badge color="bg-orange-600" title={d.event}>
-                          Wydarzenie
+                          {W.event}
                         </Badge>
                       )}
                       {dayOverrides.map((o) => (
-                        <button key={o.id} onClick={() => toast.run('Cofam zmianę…', () => removeOverride(o.id), () => 'Przywrócono plan')} className="inline-flex max-w-full items-center rounded-full bg-sky-600 px-2 py-0.5 text-xs leading-4 text-white hover:bg-sky-500">
-                          {o.kind === 'swap' ? `zamienione z ${(o.date === d.date ? String(o.payload.swap_with) : o.date).slice(8)}.${(o.date === d.date ? String(o.payload.swap_with) : o.date).slice(5, 7)} ✕` : 'zmienione ✕'}
+                        <button key={o.id} onClick={() => toast.run(t.classic.planChange.undoBusy, () => removeOverride(o.id), () => tNow().classic.planChange.undone)} className="inline-flex max-w-full items-center rounded-full bg-sky-600 px-2 py-0.5 text-xs leading-4 text-white hover:bg-sky-500">
+                          {o.kind === 'swap' ? W.swappedWith(dm(o.date === d.date ? String(o.payload.swap_with) : o.date)) : W.changed} ✕
                         </button>
                       ))}
                     </div>
@@ -188,25 +192,25 @@ export function WeekPage() {
                     {/* w trakcie zamiany kliknięcia obsługuje `onClickCapture` karty – przyciski tylko mówią, co się stanie */}
                     {drop === 'source' ? (
                       <Button size="sm" variant="ghost" className="min-h-11 xl:min-h-9 xl:w-full">
-                        Anuluj
+                        {t.common.cancel}
                       </Button>
                     ) : drop === 'slot' || drop === 'over' ? (
                       <Button size="sm" className={`min-h-11 xl:min-h-9 xl:w-full ${drop === 'over' ? 'bg-emerald-600 hover:bg-emerald-500' : ''}`}>
-                        Tu
+                        {W.here}
                       </Button>
                     ) : drop ? (
-                      <button className="min-h-11 rounded-xl px-2 text-xs text-slate-500 xl:min-h-9 xl:w-full dark:text-slate-400" title="Pokaż, dlaczego nie można">
-                        Nie tu
+                      <button className="min-h-11 rounded-xl px-2 text-xs text-slate-500 xl:min-h-9 xl:w-full dark:text-slate-400" title={W.whyNotTitle}>
+                        {W.notHere}
                       </button>
                     ) : (
                       <button
                         onClick={() => arm(d.date, dayLabel(d))}
                         className="min-h-11 rounded-xl px-2 text-xs text-slate-400 transition-colors hover:bg-slate-100 hover:text-sky-700 xl:min-h-9 xl:w-full dark:hover:bg-slate-700 dark:hover:text-sky-300"
-                        aria-label={`Zamień dzień ${d.date}`}
-                        title="Zamień dzień"
+                        aria-label={W.swapAria(d.date)}
+                        title={W.swapTitle}
                       >
                         <span aria-hidden>⇅</span>
-                        <span className="hidden xl:inline"> Zamień</span>
+                        <span className="hidden xl:inline"> {W.swap}</span>
                       </button>
                     )}
                   </div>
@@ -221,7 +225,7 @@ export function WeekPage() {
           <p className="text-sm">{first.week_notes}</p>
         </Card>
       )}
-      <p className="text-xs text-slate-400 dark:text-slate-500">Przytrzymaj dzień i przeciągnij go na inny (albo „Zamień” i „Tu”). Niebieska ramka – można zamienić, zielona – puść. Zamiana pilnuje reguł: żadnych dwóch akcentów pod rząd i żadnej sesji z nogami krócej niż 48 h przed testem, górami czy blokiem.</p>
+      <p className="text-xs text-slate-400 dark:text-slate-500">{W.hint}</p>
     </div>
   )
 }

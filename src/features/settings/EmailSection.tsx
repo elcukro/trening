@@ -6,12 +6,15 @@ import { uploadEmailSnapshots } from '@/sync/emailSnapshots'
 import { todayISO } from '@/lib/dates'
 import { useToast } from '@/components/Toast'
 import { Actions, Button, Card, CardTitle, Checkbox } from '@/components/ui'
+import { UserError } from '@/i18n'
+import { useT } from '@/i18n/react'
 
 /** Maile treningowe (docs/19): poranna odprawa o 7:00 w dni z treningiem i podsumowanie zaraz po wgraniu jazdy. */
 export function EmailSection() {
   const engine = useEngine()
   const auth = useAuth()
   const toast = useToast()
+  const te = useT().settings.email
   const [busy, setBusy] = useState(false)
   const s = engine.ctx.settings
   if (!supabase || !auth.session) return null
@@ -20,14 +23,14 @@ export function EmailSection() {
     setBusy(true)
     try {
       await toast.run(
-        'Wysyłam mail próbny…',
+        te.sending,
         async () => {
           await uploadEmailSnapshots(todayISO(), engine.ctx, engine.weeks)
           const { data, error } = await supabase!.functions.invoke('email-send', { body: { action: 'sample', kind } })
-          if (error) throw new Error(kind === 'workout' ? 'Brak jazdy ze Stravy do podsumowania albo błąd wysyłki.' : kind === 'weekly' ? 'Pusty tydzień albo błąd wysyłki.' : 'Brak treningu w najbliższych dniach albo błąd wysyłki.')
+          if (error) throw new UserError(kind === 'workout' ? te.errorWorkout : kind === 'weekly' ? te.errorWeekly : te.errorMorning, { cause: error })
           return (data as { to: string }).to
         },
-        (to) => `Wysłane na ${to}`,
+        (to) => te.sentTo(to),
       )
     } finally {
       setBusy(false)
@@ -36,20 +39,20 @@ export function EmailSection() {
 
   return (
     <Card>
-      <CardTitle icon="✉️">E-mail</CardTitle>
-      <Checkbox label="Poranna odprawa o 7:00" hint="Tylko w dni z treningiem: kroki z watami i tętnem, jedzenie, uwagi dnia." checked={!!s.email_morning} onChange={(e) => void engine.settingsApi.update({ email_morning: e.target.checked })} />
-      <Checkbox label="List trenera w niedzielę o 19:00" hint="Jak minął tydzień, co z ciałem, na czym się skupić w następnym – plus tabela dni i zapowiedź planu." checked={!!s.email_weekly} onChange={(e) => void engine.settingsApi.update({ email_weekly: e.target.checked })} />
-      <Checkbox label="Podsumowanie po treningu" hint="Zaraz po wgraniu jazdy ze Stravy, jeśli wypełnia plan dnia (≥ 80 % czasu; bez planu ≥ 30 min). Krótsze i dodatkowe jazdy – w jednym mailu „Dzień w liczbach” o 21:00." checked={!!s.email_workout} onChange={(e) => void engine.settingsApi.update({ email_workout: e.target.checked })} />
-      <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">Na adres {auth.session.user.email}, z trening@felsztukier.pl. Pierwszy mail może trafić do spamu – oznacz „To nie spam”.</p>
+      <CardTitle icon="✉️">{te.title}</CardTitle>
+      <Checkbox label={te.morning} hint={te.morningHint} checked={!!s.email_morning} onChange={(e) => void engine.settingsApi.update({ email_morning: e.target.checked })} />
+      <Checkbox label={te.weekly} hint={te.weeklyHint} checked={!!s.email_weekly} onChange={(e) => void engine.settingsApi.update({ email_weekly: e.target.checked })} />
+      <Checkbox label={te.workout} hint={te.workoutHint} checked={!!s.email_workout} onChange={(e) => void engine.settingsApi.update({ email_workout: e.target.checked })} />
+      <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">{te.address(auth.session.user.email ?? '')}</p>
       <Actions className="mt-3">
         <Button size="sm" variant="secondary" disabled={busy} onClick={() => void sample('morning')}>
-          Próbna odprawa
+          {te.sampleMorning}
         </Button>
         <Button size="sm" variant="secondary" disabled={busy} onClick={() => void sample('workout')}>
-          Próbne podsumowanie
+          {te.sampleWorkout}
         </Button>
         <Button size="sm" variant="secondary" disabled={busy} onClick={() => void sample('weekly')}>
-          Próbny list tygodnia
+          {te.sampleWeekly}
         </Button>
       </Actions>
     </Card>

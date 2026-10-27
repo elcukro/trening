@@ -10,6 +10,7 @@ import { Actions, Button, Card, CardSection, CardTitle, Field, Input, Inset, Met
 import { useToast } from '@/components/Toast'
 import { num } from '@/lib/format'
 import { fmtDayMonth, todayISO } from '@/lib/dates'
+import { useT } from '@/i18n/react'
 
 function fmt(v: number | null, decimals: number): string {
   return v == null ? '—' : num(v, decimals)
@@ -21,6 +22,8 @@ function fmt(v: number | null, decimals: number): string {
  */
 export function BaselineCard({ engine, checkins, acts }: { engine: Engine; checkins: Checkin[]; acts: RideRow[] }) {
   const toast = useToast()
+  const t = useT()
+  const tb = t.progress.baseline
   const today = todayISO()
   const s = engine.ctx.settings
   const entries = useLiveQuery(() => db.baseline_entries.toArray(), [], [] as BaselineEntry[])
@@ -31,7 +34,7 @@ export function BaselineCard({ engine, checkins, acts }: { engine: Engine; check
     return currentValues({
       today,
       ftp: effectiveFtp(today, s.ftp_w_estimate, tests).ftp,
-      lthr: effectiveLthr(today, s.lthr_bpm, tests.filter((t): t is { date: string; lthr_bpm: number } => !!t.lthr_bpm)).lthr,
+      lthr: effectiveLthr(today, s.lthr_bpm, tests.filter((x): x is { date: string; lthr_bpm: number } => !!x.lthr_bpm)).lthr,
       hrMaxSetting: s.hr_max_bpm,
       checkins: checkins.filter((c) => !c.deleted_at),
       rides: acts,
@@ -56,7 +59,7 @@ export function BaselineCard({ engine, checkins, acts }: { engine: Engine; check
 
   async function freeze(ids: BaselineMetric[]) {
     await toast.run(
-      'Zapisuję punkt wyjścia…',
+      tb.freezing,
       async () => {
         for (const id of ids) {
           const v = current[id]
@@ -66,14 +69,14 @@ export function BaselineCard({ engine, checkins, acts }: { engine: Engine; check
         }
         return ids.length
       },
-      (n) => `Zapisano ${n} mierników jako punkt wyjścia (${fmtDayMonth(today)})`,
+      (n) => tb.frozen(n, fmtDayMonth(today)),
     )
   }
 
   async function saveManual() {
     const v = Number(value.replace(',', '.'))
     if (!Number.isFinite(v) || v <= 0) return
-    await toast.run('Zapisuję pomiar…', () => addBaselineEntry({ date, metric, value: v, source: 'manual' }), () => 'Pomiar zapisany')
+    await toast.run(tb.savingMeasurement, () => addBaselineEntry({ date, metric, value: v, source: 'manual' }), () => tb.measurementSaved)
     setValue('')
     setShowForm(false)
   }
@@ -84,38 +87,38 @@ export function BaselineCard({ engine, checkins, acts }: { engine: Engine; check
         icon="🎯"
         right={
           <Button variant="ghost" size="sm" onClick={() => setShowForm((v) => !v)}>
-            {showForm ? 'Zamknij' : '+ Pomiar'}
+            {showForm ? t.common.close : tb.addMeasurement}
           </Button>
         }
       >
-        Punkt wyjścia
+        {tb.title}
       </CardTitle>
       <div className="grid grid-cols-2 gap-2 text-center">
         <div className="min-w-0 rounded-xl bg-slate-100 p-3 dark:bg-slate-900/60">
           <div className="text-2xl font-bold tabular-nums">{ftpNow ? `${ftpNow} W` : '—'}</div>
-          <div className="text-xs text-slate-500 dark:text-slate-400">FTP dziś</div>
+          <div className="text-xs text-slate-500 dark:text-slate-400">{tb.ftpToday}</div>
         </div>
         <div className="min-w-0 rounded-xl bg-sky-50 p-3 dark:bg-sky-950/50">
           <div className="text-2xl font-bold tabular-nums">{goal.ftp} W</div>
-          <div className="text-xs text-slate-500 dark:text-slate-400">FTP – {engine.ctx.program.goal.short}</div>
+          <div className="text-xs text-slate-500 dark:text-slate-400">{tb.ftpGoal(engine.ctx.program.goal.short)}</div>
         </div>
       </div>
       <p className="mt-2 text-xs text-slate-500 tabular-nums dark:text-slate-400">
         {goal.kmh != null && goal.watts != null ? (
           <>
-            {goal.kmh} km/h płasko przy {num(totalKg, 0)} kg (Ty + rower) to ok. <b>{goal.watts} W</b> ciągle, czyli ~85 % FTP {goal.ftp} W.{' '}
-            {cda ? `CdA ${num(cda, 3)} m² z jazdy odniesienia.` : 'CdA 0,42 m² (założenie) – wpisz jazdę odniesienia, żeby policzyć dokładniej.'}
+            {tb.goalLineA(goal.kmh, num(totalKg, 0))} <b>{goal.watts} W</b> {tb.goalLineB(goal.ftp)}{' '}
+            {cda ? tb.cdaFromRide(num(cda, 3)) : tb.cdaAssumed}
           </>
         ) : (
-          <>Cel programu: {goal.label}.</>
+          <>{tb.programGoal(goal.label)}</>
         )}
-        {ftpNow ? ` Luka: ${goal.ftp - ftpNow > 0 ? `${goal.ftp - ftpNow} W (${Math.round(((goal.ftp - ftpNow) / ftpNow) * 100)} %)` : 'cel osiągnięty'}.` : ''}
+        {ftpNow ? (goal.ftp - ftpNow > 0 ? tb.gap(goal.ftp - ftpNow, Math.round(((goal.ftp - ftpNow) / ftpNow) * 100)) : tb.gapReached) : ''}
       </p>
 
       {showForm && (
         <CardSection>
           <div className="grid grid-cols-2 gap-3">
-            <Field label="Miernik" className="col-span-2">
+            <Field label={tb.metric} className="col-span-2">
               <Select value={metric} onChange={(e) => setMetric(e.target.value as BaselineMetric)}>
                 {BASELINE_DEFS.map((d) => (
                   <option key={d.id} value={d.id}>
@@ -124,17 +127,17 @@ export function BaselineCard({ engine, checkins, acts }: { engine: Engine; check
                 ))}
               </Select>
             </Field>
-            <Field label="Wartość">
+            <Field label={tb.value}>
               <Input inputMode="decimal" value={value} onChange={(e) => setValue(e.target.value)} placeholder={BASELINE_DEFS.find((d) => d.id === metric)?.unit} />
             </Field>
-            <Field label="Data">
+            <Field label={tb.date}>
               <Input type="date" value={date} onChange={(e) => setDate(e.target.value)} />
             </Field>
           </div>
           <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">{BASELINE_DEFS.find((d) => d.id === metric)?.hint}</p>
           <Actions className="mt-2">
             <Button onClick={saveManual} disabled={!value}>
-              Zapisz
+              {t.common.save}
             </Button>
           </Actions>
         </CardSection>
@@ -142,9 +145,9 @@ export function BaselineCard({ engine, checkins, acts }: { engine: Engine; check
 
       <CardSection>
         <div className="grid grid-cols-[minmax(0,1fr)_auto_auto_auto] gap-x-2 text-xs text-slate-500 dark:text-slate-400">
-          <span>Miernik</span>
-          <span className="text-right">start</span>
-          <span className="text-right">teraz</span>
+          <span>{tb.metric}</span>
+          <span className="text-right">{tb.colStart}</span>
+          <span className="text-right">{tb.colNow}</span>
           <span className="w-12 text-right">Δ</span>
         </div>
         <ul className="divide-y divide-slate-100 dark:divide-slate-700/80">
@@ -156,16 +159,16 @@ export function BaselineCard({ engine, checkins, acts }: { engine: Engine; check
                   <span className="block truncate" title={r.def.hint}>
                     {r.def.label}
                   </span>
-                  {r.baseline && <span className="block text-xs text-slate-400 dark:text-slate-500">od {fmtDayMonth(r.baseline.date)}{r.def.goal ? ` · cel ${num(r.def.goal, r.def.decimals)}` : ''}</span>}
+                  {r.baseline && <span className="block text-xs text-slate-400 dark:text-slate-500">{tb.since(fmtDayMonth(r.baseline.date))}{r.def.goal ? ` · ${tb.goalShort(num(r.def.goal, r.def.decimals))}` : ''}</span>}
                 </span>
                 <span className="text-right tabular-nums">
                   {r.baseline ? (
-                    <button type="button" className="rounded px-1 hover:bg-slate-100 dark:hover:bg-slate-700" title="Usuń ten zapis" onClick={() => first && void softDelete('baseline_entries', first.id)}>
+                    <button type="button" className="rounded px-1 hover:bg-slate-100 dark:hover:bg-slate-700" title={tb.deleteEntry} onClick={() => first && void softDelete('baseline_entries', first.id)}>
                       {fmt(r.baseline.value, r.def.decimals)}
                     </button>
                   ) : r.current != null ? (
-                    <Button variant="ghost" size="sm" onClick={() => freeze([r.def.id])} ariaLabel={`Zapisz ${r.def.label} jako punkt wyjścia`}>
-                      zapisz
+                    <Button variant="ghost" size="sm" onClick={() => freeze([r.def.id])} ariaLabel={tb.saveAs(r.def.label)}>
+                      {tb.saveShort}
                     </Button>
                   ) : (
                     '—'
@@ -182,18 +185,19 @@ export function BaselineCard({ engine, checkins, acts }: { engine: Engine; check
         {missing.length > 0 && (
           <Actions className="mt-2">
             <Button variant="secondary" size="sm" onClick={() => freeze(missing.map((r) => r.def.id))}>
-              Zapisz {missing.length} dostępnych jako punkt wyjścia
+              {tb.saveAll(missing.length)}
             </Button>
           </Actions>
         )}
         {live.length === 0 && missing.length === 0 && (
           <Inset tone="info" className="mt-2 text-xs">
-            Dane pojawią się po teście FTP, check-inach i imporcie jazd ze Stravy. Jazdę odniesienia (20 min płasko, równo, na chwytach) wpisz przyciskiem „+ Pomiar”.
+            {tb.empty(tb.addMeasurement)}
           </Inset>
         )}
       </CardSection>
       <p className="mt-2 text-xs text-slate-500 dark:text-slate-400">
-        <Metric className="font-normal">Kolumna „start”</Metric> to pierwszy zapis miernika – nie zmienia się, dopóki go nie usuniesz. „Teraz” liczy się na bieżąco z testów, check-inów i jazd z ostatnich 28 dni.
+        <Metric className="font-normal">{tb.footStart}</Metric>
+        {tb.footRest}
       </p>
     </Card>
   )

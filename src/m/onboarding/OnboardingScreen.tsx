@@ -20,9 +20,10 @@ import { ONBOARDING_LATER } from '@/day/useOnboarding'
 import { ART } from '../art'
 import { useEdgeBack } from '../useEdgeBack'
 import { Btn } from '../components/Chrome'
-import { Notice, STEP_BODY, STEP_HEAD, type StepProps } from './steps'
-import { DAY_SHORT, STEP_TITLE, stepSummary } from './labels'
+import { Notice, STEP_ART, STEP_BODY, type StepProps } from './steps'
+import { stepSummary } from './labels'
 import { PlanWhy } from './PlanWhy'
+import { useT } from '@/i18n/react'
 
 type View = StartStep | 'done'
 
@@ -52,6 +53,10 @@ function Flow({ row, settings, home, me }: { row: OnboardingRow | null; settings
   const navigate = useNavigate()
   const engine = useEngine()
   const toast = useToast()
+  const t = useT()
+  const o = t.onboarding
+  // gdzie zmienić odpowiedzi: `/m` (Ja) albo pełna aplikacja (Więcej)
+  const place = me.startsWith('/m') ? o.place.m : o.place.desktop
   const today = todayISO()
   const [start] = useState(() => startFrom(row, settings))
   const editing = row?.status === 'done' && !row.deleted_at
@@ -96,8 +101,8 @@ function Flow({ row, settings, home, me }: { row: OnboardingRow | null; settings
   async function save() {
     const r = finalize(draft)
     if (!r.ok) {
-      toast.notify('Brakuje odpowiedzi – uzupełnij zaznaczony krok', 'error', r.issues.join(', '))
       const missing = firstIncomplete(draft)
+      toast.notify(o.screen.missingTitle, 'error', missing !== 'summary' ? o.screen.missingStep(o.stepTitle[missing]) : undefined)
       if (missing !== 'summary') go(missing, 'back')
       return
     }
@@ -121,7 +126,7 @@ function Flow({ row, settings, home, me }: { row: OnboardingRow | null; settings
         if (plan && plan.tuning_source !== 'user') void requestTuning(planInputs(r.profile, today)).then((t) => savePlanTuning(t.tuning, t.source))
       }
       if (editing) {
-        toast.notify('Zapisano zmiany', 'success')
+        toast.notify(o.screen.savedChanges, 'success')
         navigate(me, { replace: true })
       } else {
         haptic.success()
@@ -129,17 +134,17 @@ function Flow({ row, settings, home, me }: { row: OnboardingRow | null; settings
         go('done', 'fwd')
       }
     } catch (e) {
-      toast.notify('Nie zapisano odpowiedzi', 'error', friendlyError(e).message)
+      toast.notify(o.screen.saveFailed, 'error', friendlyError(e).message)
     } finally {
       setBusy(false)
     }
   }
 
   async function remove() {
-    if (!(await confirmAction({ title: 'Usunąć odpowiedzi?', message: 'Usuniemy Twoje odpowiedzi i zgodę na dane o zdrowiu. Plan nie będzie ich uwzględniał.', action: 'Usuń' }))) return
+    if (!(await confirmAction({ title: o.screen.removeTitle, message: o.screen.removeMessage, action: t.common.delete }))) return
     await softDelete('onboarding', ONBOARDING_ID)
     later()
-    toast.notify('Usunięto odpowiedzi', 'success')
+    toast.notify(o.screen.removed, 'success')
     navigate(me, { replace: true })
   }
 
@@ -152,25 +157,25 @@ function Flow({ row, settings, home, me }: { row: OnboardingRow | null; settings
       <header className="ob-head">
         <div className="ob-head-row">
           {back ? (
-            <button className="m-nav-btn" onClick={back} aria-label="Wróć">
+            <button className="m-nav-btn" onClick={back} aria-label={t.common.back}>
               <IconChevronLeft size={22} />
             </button>
           ) : (
             <span className="w-11" />
           )}
           <span className="m-foot m-dim flex-1 text-center" aria-live="polite">
-            {step ? `Krok ${stepNumber(step)} z ${STEPS.length}` : view === 'summary' ? 'Podsumowanie' : ''}
+            {step ? o.screen.stepOf(stepNumber(step), STEPS.length) : view === 'summary' ? o.screen.summary : ''}
           </span>
           {view !== 'done' ? (
             <button className="ob-later m-hit" onClick={exit}>
-              {editing ? 'Zamknij' : 'Później'}
+              {editing ? t.common.close : o.screen.later}
             </button>
           ) : (
             <span className="w-11" />
           )}
         </div>
         {view !== 'intro' && view !== 'done' && (
-          <div className="ob-progress" role="progressbar" aria-label="Postęp" aria-valuemin={0} aria-valuemax={STEPS.length} aria-valuenow={step ? stepNumber(step) - 1 : STEPS.length}>
+          <div className="ob-progress" role="progressbar" aria-label={o.screen.progress} aria-valuemin={0} aria-valuemax={STEPS.length} aria-valuenow={step ? stepNumber(step) - 1 : STEPS.length}>
             {STEPS.map((s, i) => (
               <span key={s} data-done={step ? i < stepNumber(step) - 1 : true} data-now={s === step} />
             ))}
@@ -185,14 +190,14 @@ function Flow({ row, settings, home, me }: { row: OnboardingRow | null; settings
           {step && (
             <>
               <StepHead step={step} />
-              <StepBody step={step} d={draft} set={setDraft} update={setDraft} today={today} />
+              <StepBody step={step} d={draft} set={setDraft} update={setDraft} today={today} place={place} />
             </>
           )}
-          {view === 'summary' && <Summary draft={draft} today={today} editing={editing} onEdit={(s) => {
+          {view === 'summary' && <Summary draft={draft} today={today} editing={editing} place={place} onEdit={(s) => {
                 setFromSummary(true)
                 go(s, 'fwd')
               }} onRemove={editing ? () => void remove() : undefined} />}
-          {view === 'done' && <Done draft={draft} profile={saved} today={today} />}
+          {view === 'done' && <Done draft={draft} profile={saved} today={today} place={place} />}
         </div>
       </div>
 
@@ -204,13 +209,13 @@ function Flow({ row, settings, home, me }: { row: OnboardingRow | null; settings
               persist(draft, to === 'summary' ? 'summary' : to)
               go(to === 'summary' ? 'summary' : 'time', 'fwd')
             }}>
-            Zaczynamy
+            {o.screen.start}
           </Btn>
         )}
         {step && (
           <>
             <Btn className="w-full" disabled={!valid} onClick={() => next(step)}>
-              {fromSummary ? 'Gotowe' : 'Dalej'}
+              {fromSummary ? t.common.done : t.common.next}
             </Btn>
             {skippable && !fromSummary && (
               <button className="ob-skip m-hit" onClick={() => {
@@ -219,19 +224,19 @@ function Flow({ row, settings, home, me }: { row: OnboardingRow | null; settings
                   persist(d, nextStep(step))
                   go(nextStep(step), 'fwd')
                 }}>
-                Pomiń
+                {o.screen.skip}
               </button>
             )}
           </>
         )}
         {view === 'summary' && (
           <Btn className="w-full" disabled={busy} onClick={() => void save()}>
-            {editing ? 'Zapisz zmiany' : 'Zapisz'}
+            {editing ? o.screen.saveChanges : t.common.save}
           </Btn>
         )}
         {view === 'done' && (
           <Btn className="w-full" onClick={exit}>
-            Do aplikacji
+            {o.screen.toApp}
           </Btn>
         )}
       </footer>
@@ -246,10 +251,10 @@ function StepBody({ step, ...props }: StepProps & { step: Step }) {
 }
 
 function StepHead({ step }: { step: Step }) {
-  const h = STEP_HEAD[step]
+  const h = useT().onboarding.stepHead[step]
   return (
     <div className="ob-hero">
-      <img src={h.art} alt="" width={112} height={112} />
+      <img src={STEP_ART[step]} alt="" width={112} height={112} />
       <h1 className="m-title">{h.title}</h1>
       <p className="m-sub m-dim">{h.sub}</p>
     </div>
@@ -257,19 +262,21 @@ function StepHead({ step }: { step: Step }) {
 }
 
 function Intro({ legacy }: { legacy: boolean }) {
+  const t = useT()
+  const i = t.onboarding.intro
   return (
     <>
       <div className="ob-hero">
         <img src={ART.coachWave} alt="" width={150} height={200} className="ob-coach" />
-        <h1 className="m-display">{legacy ? 'Twoje potrzeby' : 'Ułóżmy plan pod Ciebie'}</h1>
-        <p className="m-sub m-dim">Dziesięć krótkich kroków, ok. 3 minuty. Odpowiadasz dotknięciami – klawiatura prawie się nie pojawi. Możesz przerwać i wrócić później.</p>
+        <h1 className="m-display">{legacy ? i.titleLegacy : i.title}</h1>
+        <p className="m-sub m-dim">{i.text(t.common.appName)}</p>
       </div>
       <div className="m-list">
         {[
-          ['/m/art/ob-time.png', 'Czas i obecna forma', 'ile możesz jeździć i od czego zaczynamy'],
-          ['/m/art/ob-gear.png', 'Pomiar i sprzęt', 'waty, tętno albo odczucie; rowery i urządzenia'],
-          ['/m/art/ob-health.png', 'Ciało i zdrowie', 'za Twoją zgodą, do bezpiecznego obciążenia'],
-          ['/m/art/ob-goal.png', 'Cel', 'z liczbą i datą, żeby było widać postęp'],
+          ['/m/art/ob-time.png', i.timeTitle, i.timeSub],
+          ['/m/art/ob-gear.png', i.gearTitle, i.gearSub],
+          ['/m/art/ob-health.png', i.healthTitle, i.healthSub],
+          ['/m/art/ob-goal.png', i.goalTitle, i.goalSub],
         ].map(([art, title, sub]) => (
           <div key={title} className="m-row">
             <img src={art} alt="" width={36} height={36} className="h-9 w-9 shrink-0 object-contain" />
@@ -285,7 +292,9 @@ function Intro({ legacy }: { legacy: boolean }) {
 }
 
 /** Podsumowanie: każdy krok jednym wierszem; dotknięcie otwiera krok do poprawki. Uwagi spójności na górze. */
-function Summary({ draft, today, editing, onEdit, onRemove }: { draft: Draft; today: string; editing: boolean; onEdit: (s: Step) => void; onRemove?: () => void }) {
+function Summary({ draft, today, editing, place, onEdit, onRemove }: { draft: Draft; today: string; editing: boolean; place: string; onEdit: (s: Step) => void; onRemove?: () => void }) {
+  const o = useT().onboarding
+  const r = o.review
   const notes = checks(draft, today).filter((c) => c.id !== 'health_doctor')
   const health = healthScreen(draft.health)
   const rows: Step[] = ['time', 'time_detail', 'current', 'measure', 'gear', 'body', 'health', 'goal_detail', 'consent']
@@ -293,28 +302,28 @@ function Summary({ draft, today, editing, onEdit, onRemove }: { draft: Draft; to
     <>
       <div className="ob-hero">
         <img src={ART.coach} alt="" width={96} height={128} className="ob-coach-sm" />
-        <h1 className="m-title">{editing ? 'Twoje potrzeby' : 'Sprawdź, czy wszystko się zgadza'}</h1>
-        <p className="m-sub m-dim">Dotknij wiersza, żeby poprawić.</p>
+        <h1 className="m-title">{editing ? r.titleEditing : r.title}</h1>
+        <p className="m-sub m-dim">{r.tapToEdit}</p>
       </div>
       {health.level === 'doctor' && (
-        <Notice tone="red" title="Najpierw lekarz">
-          Plan będzie tylko spokojny, dopóki lekarz nie pozwoli na mocniejszy trening.
+        <Notice tone="red" title={r.doctorTitle}>
+          {r.doctor}
         </Notice>
       )}
       {notes.map((c) => (
-        <Notice key={c.id} tone={c.level === 'warn' ? 'orange' : 'blue'} title={c.level === 'warn' ? 'Uwaga' : 'Dobrze wiedzieć'}>
+        <Notice key={c.id} tone={c.level === 'warn' ? 'orange' : 'blue'} title={c.level === 'warn' ? o.steps.warnTitle : o.steps.infoTitle}>
           {c.text}
         </Notice>
       ))}
       <div className="m-list">
         {rows.map((s) => {
-          const value = s === 'health' ? (draft.health ? { ok: 'bez przeciwwskazań', caution: 'z ostrożnością', doctor: 'najpierw lekarz' }[health.level] : '') : stepSummary(s, draft)
+          const value = s === 'health' ? (draft.health ? o.summary.healthLevel[health.level] : '') : stepSummary(s, draft)
           const ok = stepValid(s, draft)
           return (
             <button key={s} className="m-row" onClick={() => onEdit(s === 'goal_detail' && !draft.goal?.type ? 'goal' : s)}>
               <span className="min-w-0 flex-1">
-                <span className="block">{s === 'goal_detail' ? 'Cel' : STEP_TITLE[s]}</span>
-                <span className={`m-foot block ${ok ? 'm-dim' : 'ob-missing'}`}>{ok ? value || '—' : 'do uzupełnienia'}</span>
+                <span className="block">{s === 'goal_detail' ? r.goal : o.stepTitle[s]}</span>
+                <span className={`m-foot block ${ok ? 'm-dim' : 'ob-missing'}`}>{ok ? value || '—' : r.missing}</span>
               </span>
               <span className="m-dim-3 shrink-0 rotate-180">
                 <IconChevronLeft size={18} />
@@ -323,11 +332,11 @@ function Summary({ draft, today, editing, onEdit, onRemove }: { draft: Draft; to
           )
         })}
       </div>
-      <p className="m-foot m-dim px-1">Z tych danych powstanie Twój plan. Zmienisz je w każdej chwili w Ja → Twoje potrzeby.</p>
+      <p className="m-foot m-dim px-1">{r.foot(place)}</p>
       {onRemove && (
         <div className="m-list">
           <button className="m-row ob-danger" onClick={onRemove}>
-            Usuń moje odpowiedzi i wycofaj zgodę
+            {r.remove}
           </button>
         </div>
       )}
@@ -339,7 +348,9 @@ function Summary({ draft, today, editing, onEdit, onRemove }: { draft: Draft; to
  * „Gotowe!” z podglądem planu (docs/32 § 6): pierwszy tydzień dzień po dniu i liczby o całym planie, liczone
  * generatorem z zapisanego profilu. Bez profilu (np. odświeżenie strony) zostaje sam komunikat.
  */
-function Done({ draft, profile, today }: { draft: Draft; profile: AthleteProfile | null; today: string }) {
+function Done({ draft, profile, today, place }: { draft: Draft; profile: AthleteProfile | null; today: string; place: string }) {
+  const t = useT()
+  const o = t.onboarding.done
   const doctor = healthScreen(draft.health).level === 'doctor'
   // wiersz planu konta (null = konto przy programie z data/ – bez dopasowania), undefined = jeszcze czytam
   const plan = useLiveQuery(() => db.plans.get(PLAN_ID).then((r) => (r && !r.deleted_at ? r : null)), [], undefined)
@@ -374,16 +385,16 @@ function Done({ draft, profile, today }: { draft: Draft; profile: AthleteProfile
     <>
       <div className="ob-hero ob-done">
         <img src="/m/art/ob-done.png" alt="" width={140} height={140} />
-        <h1 className="m-display">Gotowe!</h1>
+        <h1 className="m-display">{o.title}</h1>
         <p className="m-sub m-dim">
           {preview
-            ? `Twój plan: ${preview.weeks} tygodni, do ${num(preview.hours_per_week)} h jazdy tygodniowo. Zmienisz potrzeby w każdej chwili w Ja → Twoje potrzeby.`
-            : 'Zapisaliśmy Twoje potrzeby. Z nich powstanie Twój plan. Zmienisz je w każdej chwili w Ja → Twoje potrzeby.'}
+            ? o.planSummary(t.common.weeks(preview.weeks), num(preview.hours_per_week), place)
+            : o.savedOnly(place)}
         </p>
       </div>
       {doctor && (
-        <Notice tone="red" title="Najpierw lekarz">
-          Do czasu rozmowy z lekarzem plan będzie tylko spokojny.
+        <Notice tone="red" title={o.doctorTitle}>
+          {o.doctor}
         </Notice>
       )}
       {tuningBusy && <p className="m-sub m-dim px-1" data-testid="plan-tuning">Trener dopasowuje plan do Twoich odpowiedzi…</p>}
@@ -391,14 +402,14 @@ function Done({ draft, profile, today }: { draft: Draft; profile: AthleteProfile
       {preview && (
         <>
           <section className="flex flex-col gap-2" data-testid="plan-preview">
-            <h2 className="m-eyebrow px-1">Pierwszy tydzień · {num(preview.first_week_hours)} h</h2>
+            <h2 className="m-eyebrow px-1">{o.firstWeek(num(preview.first_week_hours))}</h2>
             <div className="m-list">
               {preview.first_week.map((d) => (
                 <div key={d.weekday} className="m-row">
-                  <span className="m-num m-dim w-8 shrink-0 uppercase">{DAY_SHORT[d.weekday]}</span>
+                  <span className="m-num m-dim w-8 shrink-0 uppercase">{t.onboarding.dayShort[d.weekday]}</span>
                   <span className="min-w-0 flex-1">
-                    <span className={`block truncate ${d.name ? '' : 'm-dim'}`}>{d.name ?? 'Wolne'}</span>
-                    {d.test && <span className="m-foot m-dim block">test kalibracyjny – od niego liczą się strefy</span>}
+                    <span className={`block truncate ${d.name ? '' : 'm-dim'}`}>{d.name ?? o.rest}</span>
+                    {d.test && <span className="m-foot m-dim block">{o.calibrationTest}</span>}
                   </span>
                   {d.duration_min > 0 && <span className="m-num m-dim shrink-0">{fmtMinutes(d.duration_min)}</span>}
                 </div>
@@ -406,22 +417,22 @@ function Done({ draft, profile, today }: { draft: Draft; profile: AthleteProfile
             </div>
           </section>
           <section className="flex flex-col gap-2">
-            <h2 className="m-eyebrow px-1">Fazy planu</h2>
+            <h2 className="m-eyebrow px-1">{o.phases}</h2>
             <div className="m-list">
               {preview.phases.map((ph) => (
                 <div key={ph.name} className="m-row">
                   <span className="min-w-0 flex-1 truncate">{ph.name}</span>
-                  <span className="m-num m-dim shrink-0">{ph.weeks} tyg.</span>
+                  <span className="m-num m-dim shrink-0">{o.weeksShort(ph.weeks)}</span>
                 </div>
               ))}
             </div>
           </section>
           {preview.notes.map((n) => (
-            <Notice key={n} tone="blue" title="Dobrze wiedzieć">
+            <Notice key={n} tone="blue" title={t.onboarding.steps.infoTitle}>
               {n}
             </Notice>
           ))}
-          <p className="m-foot m-dim px-1">Plan liczy kod z Twoich odpowiedzi – trener wybiera tylko rodzaj planu i parametry, w granicach zasad. Każdy wybór możesz zmienić wyżej. Kolejne tygodnie zobaczysz w zakładce Plan, gdy plan zostanie przypisany do konta.</p>
+          <p className="m-foot m-dim px-1">{o.foot}</p>
         </>
       )}
     </>

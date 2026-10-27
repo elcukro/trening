@@ -42,6 +42,12 @@ const LINE =
   'Simple black-and-white hand-drawn cartoon line drawing, thick confident black ink outlines of even weight, slightly wobbly hand-drawn feel, ' +
   'no shading, no fill colors, no grey, no hatching, no texture, pure white background, centered with generous empty margin, no text, no letters, no watermark, no frame, no ground line.'
 
+/** Napisy: dokładna pisownia, jednolite szare tło (białe obrzeże liter musi przetrwać wycinanie). */
+const TITLE =
+  'Logo wordmark artwork for a cycling app. The text must read exactly "Bicycle Coach" (B-i-c-y-c-l-e  C-o-a-c-h), correctly spelled, nothing else written. ' +
+  'Soft 3D render, smooth rounded forms, matte surfaces with subtle glossy highlights, gentle studio lighting from top-left, friendly iOS-like look. ' +
+  'Isolated on a plain flat solid medium grey background (#8e98a3), centered with generous empty margin, no other text, no tagline, no shadow on the background, no watermark, no frame.'
+
 /** id → prompt. Pogoda i typy dnia mają być równie prostymi bryłami, żeby działały w 40–80 px. */
 const ASSETS = {
   coach: { prompt: COACH, ratio: '3:4' },
@@ -80,6 +86,10 @@ const ASSETS = {
   'ob-health': { prompt: 'A glossy red heart with a soft white medical cross on it and a light blue stethoscope curled around it.' },
   'ob-goal': { prompt: 'A small snowy mountain peak in blue and white with a red flag on the top and a winding grey road leading up to it.' },
   'ob-done': { prompt: 'A golden trophy cup with a small sky blue ribbon and two tiny sparkles.' },
+  // napis „Bicycle Coach” na ekran startowy (nad niebem sceny intro): wycięty z tła, pełna rozdzielczość w scratch/ – wybór ręczny
+  'title-a': { title: true, ratio: '21:9', prompt: `${TITLE} Layout: the words "Bicycle Coach" on a single line. Lettering: chunky, bubbly, rounded soft 3D clay letters, puffy and friendly, in a smooth sky blue to deep blue gradient (#5fb4ff to #0a7aff), each letter wrapped in a thick soft white rim like a sticker outline, with a subtle glossy highlight on top.` },
+  'title-b': { title: true, ratio: '21:9', prompt: `${TITLE} Layout: the words "Bicycle Coach" on a single line. Lettering: bold rounded soft 3D letters in deep blue (#0a7aff) with a thick soft white rim like a sticker outline. The letter "o" in "Coach" is replaced by a small 3D bicycle wheel in warm orange (#ff9500) with a dark grey tyre and thin white spokes, the same height as the lowercase letters, so the word still clearly reads "Coach".` },
+  'title-c': { title: true, ratio: '4:3', prompt: `${TITLE} Layout: a clean two-line stacked lockup, the word "Bicycle" on the first line and the word "Coach" on the second line, both lines the same width, centered. Lettering: clean modern geometric rounded sans-serif, heavy weight, white letter faces with a subtle 3D extrusion in deep blue (#0a7aff) going down-right, very gentle bevel, minimal and elegant, no outline.` },
   // ekran logowania /m (docs/27 § 7): pełna scena z tłem (bez wycinania), dół przechodzi w tło aplikacji #f2f2f7 – WebP robi cwebp ręcznie
   'login-hero': { raw: true, ratio: '4:3', prompt: 'Soft 3D clay-style diorama render, smooth rounded forms, matte surfaces with subtle glossy highlights, gentle morning light from top-left, fresh friendly colors (sky blue, leaf green, warm orange, soft white). A friendly cycling coach mascot (stylized 3D character, short beard, white helmet, sunglasses, light blue cycling jersey, black shorts) riding a light blue road bike, pure side view facing right, pedalling on a smooth winding grey road through rounded green alpine hills, snowy blue-grey mountain peaks far behind, a round warm sun and two fluffy clouds in a pale blue sky. The rider is small, in the lower middle third. The bottom fifth of the image fades smoothly into a plain flat very light grey (#f2f2f7) with nothing in it. No text, no letters, no watermark, no frame.' },
   'login-hero-b': { raw: true, ratio: '4:3', prompt: 'Soft 3D clay-style diorama render, smooth rounded forms, matte surfaces with subtle glossy highlights, gentle morning light, fresh friendly colors. A small round floating island of green hills with a winding road climbing to a snowy mountain pass with a tiny red flag; a friendly cycling coach mascot (short beard, white helmet, light blue jersey) rides a light blue road bike up the road, side view. A warm sun and soft clouds. Everything floats on a plain flat very light grey background (#f2f2f7), generous empty margin. No text, no letters, no watermark, no frame.' },
@@ -142,11 +152,17 @@ async function make(id) {
   const a = ASSETS[id]
   const t0 = Date.now()
   // 1) generacja (Gemini 3 Pro Image przez fal – dobrze trzyma styl zestawu)
-  const gen = await fal('fal-ai/nano-banana-pro', { prompt: a.raw || a.scene ? a.prompt : `${a.prompt} ${a.ratio ? STYLE : ICON_STYLE}`, aspect_ratio: a.ratio ?? (a.scene ? '21:9' : '1:1'), resolution: '1K', output_format: 'png', num_images: 1 })
+  const gen = await fal('fal-ai/nano-banana-pro', { prompt: a.raw || a.scene || a.title ? a.prompt : `${a.prompt} ${a.ratio ? STYLE : ICON_STYLE}`, aspect_ratio: a.ratio ?? (a.scene ? '21:9' : '1:1'), resolution: a.title ? '2K' : '1K', output_format: 'png', num_images: 1 })
   const src = gen.images?.[0]?.url
   if (!src) throw new Error(`brak obrazu: ${JSON.stringify(gen).slice(0, 200)}`)
   writeFileSync(`${RAW}/${id}.png`, await download(src))
   if (a.scene) return saveScene(id, a, src)
+  if (a.title) {
+    const cut = await fal('fal-ai/birefnet/v2', { image_url: src, model: 'General Use (Heavy)', operating_resolution: '2048x2048', output_format: 'png', refine_foreground: true })
+    writeFileSync(`${RAW}/${id}-cut.png`, await download(cut.image.url))
+    console.log(`✓ ${id} → ${RAW}/${id}-cut.png`)
+    return
+  }
   if (a.raw) {
     console.log(`✓ ${id} → ${RAW}/${id}.png (bez wycinania tła)`)
     return

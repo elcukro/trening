@@ -1,6 +1,8 @@
 import alpsJson from '../../data/program.json'
 import ftp300Json from '../../data/program-ftp300.json'
 import { parseProgram, type Program } from '@/engine/schema'
+import { getLang, type Lang } from '@/i18n/core'
+import { localizeProgram } from './localize'
 
 /**
  * Rejestr plików programów. Nazwy, cele, żywienie, rowery i kadencja siedzą w samych plikach
@@ -16,13 +18,14 @@ export const DEFAULT_PROGRAM_ID: ProgramId = 'alps2027'
 
 const cache = new Map<string, Program>()
 
-/** Program treningowy z `data/`, zwalidowany schematem Zod (raz na identyfikator). */
-export function loadProgram(id: string = DEFAULT_PROGRAM_ID): Program {
-  const found = cache.get(id)
+/** Program treningowy z `data/`, zwalidowany schematem Zod, w danym języku (raz na identyfikator i język). */
+export function loadProgram(id: string = DEFAULT_PROGRAM_ID, lang: Lang = getLang()): Program {
+  const key = `${id}|${lang}`
+  const found = cache.get(key)
   if (found) return found
   const entry = PROGRAMS.find((p) => p.id === id) ?? PROGRAMS[0]
-  const parsed = parseProgram(entry.json)
-  cache.set(id, parsed)
+  const parsed = localizeProgram(parseProgram(entry.json), lang)
+  cache.set(key, parsed)
   return parsed
 }
 

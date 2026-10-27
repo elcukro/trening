@@ -13,6 +13,7 @@ import { mainTarget } from '@/day/summary'
 import { Btn, Card, List, Row, RowIcon, Screen, Section, Stat } from '../components/Chrome'
 import { IconChevron, IconRest, IconWatch } from '../components/Icons'
 import { AfterSheet } from '../components/AfterSheet'
+import { useT } from '@/i18n/react'
 
 function Steps({ workout }: { workout: ResolvedWorkout }) {
   return (
@@ -45,6 +46,8 @@ export function WorkoutScreen() {
   const params = useParams()
   const navigate = useNavigate()
   const toast = useToast()
+  const tr = useT()
+  const tx = tr.ios.workout
   const date = params.date && isValidISODate(params.date) ? params.date : todayISO()
   const d = useIosDay(date)
   const [sending, setSending] = useState(false)
@@ -54,24 +57,24 @@ export function WorkoutScreen() {
   const w = day?.workout
   if (!day || !day.bike || !w) {
     return (
-      <Screen title="Trening" back={() => navigate(-1)}>
+      <Screen title={tx.title} back={() => navigate(-1)}>
         <Section>
           <List>
-            <Row title="Tego dnia nie ma jazdy" />
+            <Row title={tx.noRide} />
           </List>
         </Section>
       </Screen>
     )
   }
 
-  const t = mainTarget(w)
+  const target = mainTarget(w)
   const bolt = boltLabel(d.bolt)
   const indoorOn = d.view.overrides.some((o) => o.kind === 'indoor')
 
   async function send() {
     setSending(true)
     try {
-      await toast.run('Wysyłam na Bolta…', d.sendToBolt, (s) => (s === 'updated' ? 'Zaktualizowano na Bolcie. Zsynchronizuj licznik.' : 'Wysłano na Bolta. Zsynchronizuj licznik.'))
+      await toast.run(tr.ios.bolt.sending, d.sendToBolt, (s) => (s === 'updated' ? tr.ios.bolt.updated : tr.ios.bolt.sent))
     } finally {
       setSending(false)
     }
@@ -86,40 +89,40 @@ export function WorkoutScreen() {
               <div key={i} className={zoneColor(s.zone)} style={{ width: `${(s.duration_s / (w.steps.reduce((a, x) => a + x.duration_s, 0) || 1)) * 100}%` }} />
             ))}
           </div>
-          {t && (
+          {target && (
             <div className="mt-4 grid grid-cols-3 gap-2">
-              <Stat size="sm" value={t.watts ? `${t.watts[0]}–${t.watts[1]}` : t.zone} unit={t.watts ? 'W' : undefined} label={t.watts ? 'moc na pracy' : 'strefa'} />
-              <Stat size="sm" value={t.bpm ? `${t.bpm[0]}–${t.bpm[1]}` : `${t.rpe[0]}–${t.rpe[1]}`} unit={t.bpm ? 'bpm' : 'RPE'} label={t.bpm ? 'tętno' : 'odczucie'} />
-              <Stat size="sm" value={t.cadence ? `${t.cadence[0]}–${t.cadence[1]}` : '—'} unit={t.cadence ? 'rpm' : undefined} label="kadencja" />
+              <Stat size="sm" value={target.watts ? `${target.watts[0]}–${target.watts[1]}` : target.zone} unit={target.watts ? 'W' : undefined} label={target.watts ? tr.ios.stat.powerAtWork : tr.ios.stat.zone} />
+              <Stat size="sm" value={target.bpm ? `${target.bpm[0]}–${target.bpm[1]}` : `${target.rpe[0]}–${target.rpe[1]}`} unit={target.bpm ? 'bpm' : 'RPE'} label={target.bpm ? tr.ios.stat.hr : tr.ios.stat.feel} />
+              <Stat size="sm" value={target.cadence ? `${target.cadence[0]}–${target.cadence[1]}` : '—'} unit={target.cadence ? 'rpm' : undefined} label={tr.ios.stat.cadence} />
             </div>
           )}
         </div>
       </Card>
 
       {!day.lthr && !day.ftp && (
-        <Section footer="Bez LTHR i FTP jedziesz po odczuciu (RPE). Po sobotnim teście zakresy pojawią się same.">
+        <Section footer={tx.noZonesFooter}>
           <List>
-            <Row title="Brak stref – jedź po RPE" />
+            <Row title={tx.noZones} />
           </List>
         </Section>
       )}
 
-      <Section header="Kroki">
+      <Section header={tx.steps}>
         <Steps workout={w} />
       </Section>
 
-      <Section header="Na czym polega">
+      <Section header={tx.about}>
         <List>
           <Row wrap title={w.description} />
-          <Row wrap title="Rower" subtitle={day.bike.bike} />
+          <Row wrap title={tx.bike} subtitle={day.bike.bike} />
         </List>
       </Section>
 
-      <Section header="Licznik" footer={bolt ? bolt.text : undefined}>
+      <Section header={tx.computer} footer={bolt ? bolt.text : undefined}>
         <List>
           <Row
             icon={<RowIcon color="var(--teal)"><IconWatch size={18} /></RowIcon>}
-            title={d.bolt.kind === 'ok' ? 'Wyślij ponownie na Bolta' : d.bolt.kind === 'stale' ? 'Zaktualizuj na Bolcie' : 'Wyślij na Bolta'}
+            title={d.bolt.kind === 'ok' ? tr.ios.bolt.resend : d.bolt.kind === 'stale' ? tr.ios.bolt.update : tr.ios.bolt.send}
             onClick={sending ? undefined : () => void send()}
             accessory={<span className="ios-dim-3"><IconChevron size={18} /></span>}
           />
@@ -127,11 +130,11 @@ export function WorkoutScreen() {
       </Section>
 
       {day.fallback_workout && (
-        <Section header="Gdy pogoda nie pozwala" footer={indoorOn ? 'Plan na dziś jest w wersji pod dachem.' : `Zamiennik: ${day.fallback_workout.name}`}>
+        <Section header={tx.fallback} footer={indoorOn ? tx.indoorOn : tx.substitute(day.fallback_workout.name)}>
           <List>
             <Row
               icon={<RowIcon color="var(--indigo)"><IconRest size={18} /></RowIcon>}
-              title={indoorOn ? 'Wróć do jazdy na zewnątrz' : 'Przełącz na wersję pod dachem'}
+              title={indoorOn ? tx.backOutdoor : tx.switchIndoor}
               onClick={() => {
                 const o = d.view.overrides.find((x) => x.kind === 'indoor')
                 if (o) void d.view.undo(o.id)
@@ -146,7 +149,7 @@ export function WorkoutScreen() {
       {date <= todayISO() && (
         <div className="px-4 pb-4">
           <Btn kind="tinted" className="w-full" onClick={() => setAfter(true)}>
-            Jak poszło?
+            {tr.ios.after.title}
           </Btn>
         </div>
       )}

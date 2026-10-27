@@ -5,9 +5,14 @@
   <key>CAPACITOR_DEBUG</key>
 	<string>$(CAPACITOR_DEBUG)</string>
 	<key>CFBundleDevelopmentRegion</key>
-	<string>pl</string>
+	<string>en</string>
 	<key>CFBundleDisplayName</key>
-        <string>Trening</string>
+	<string>Bicycle Coach</string>
+	<key>CFBundleLocalizations</key>
+	<array>
+		<string>pl</string>
+		<string>en</string>
+	</array>
 	<key>CFBundleExecutable</key>
 	<string>$(EXECUTABLE_NAME)</string>
 	<key>CFBundleIdentifier</key>
@@ -67,11 +72,11 @@
 	<key>UIStatusBarStyle</key>
 	<string>UIStatusBarStyleDarkContent</string>
 	<key>NSLocationWhenInUseUsageDescription</key>
-	<string>Trening używa lokalizacji tylko po to, żeby pokazać prognozę pogody na godzinę jazdy w Twojej okolicy. Pozycja zostaje na telefonie.</string>
+	<string>Bicycle Coach uses your location only to show the weather forecast for your ride time in your area. Your location stays on your phone.</string>
 	<key>NSHealthShareUsageDescription</key>
-	<string>Trening czyta ze Zdrowia wagę, tętno spoczynkowe, HRV i sen, żeby poranny check-in wypełniał się sam, a trener widział zmęczenie, oraz wzrost, datę urodzenia i płeć, żeby wypełnić profil przy pierwszym uruchomieniu. Dane nie trafiają do reklam.</string>
+	<string>Bicycle Coach reads weight, resting heart rate, HRV and sleep from Health so your morning check-in fills itself in and your coach can see fatigue, plus height, date of birth and sex to fill in your profile on first launch. Your data is never used for ads.</string>
 	<key>NSHealthUpdateUsageDescription</key>
-	<string>Trening może zapisywać do Zdrowia kalorie i białko z posiłków – tylko gdy włączysz to w ustawieniach.</string>
+	<string>Bicycle Coach can save calories and protein from your meals to Health – only if you turn this on in Settings.</string>
 	<key>UIUserInterfaceStyle</key>
 	<string>Light</string>
 </dict>

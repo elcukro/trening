@@ -28,7 +28,7 @@ _spec.loader.exec_module(gen)
 sys.stdout = _stdout
 
 PROGRAM_ID = "ftp300"
-PROGRAM_VERSION = "2026.10.26-2"
+PROGRAM_VERSION = "2026.10.27-1"
 
 # dłuższy blok VO2max niż w programie alpejskim (6 powtórzeń) – przy trenażerze ERG da się utrzymać moc
 gen.add(gen.interval_workout("VO2_6x3", "VO2max 6×3 min", "vo2max", 6, 3, 3, "Z5b", [85, 95], gen.VO2_DESC, wu=20))
@@ -58,7 +58,7 @@ DEFAULT_SETTINGS = {
     "timezone": "Europe/Warsaw",
     "volume_scale": 1.0,
     "units": "metric",
-    "language": "pl",
+    "language": "system",
 }
 
 PHASES = [
@@ -309,6 +309,7 @@ def main():
         "week_summary": gen.week_table(days),
         "layout": {"mode": "fixed"},
     }
+    gen.add_translations(program, f"program-{PROGRAM_ID}.json")
     with open(os.path.join(HERE, f"program-{PROGRAM_ID}.json"), "w", encoding="utf-8") as f:
         json.dump(program, f, ensure_ascii=False, indent=1)
     with open(os.path.join(HERE, f"calendar-{PROGRAM_ID}.json"), "w", encoding="utf-8") as f:

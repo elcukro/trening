@@ -4,7 +4,8 @@
  */
 import { db } from '@/db'
 import { addDays, type ISODate } from '@/engine/dates'
-import { supabase } from './supabase'
+import { t, UserError } from '@/i18n'
+import { langHeaders, supabase } from './supabase'
 
 export type ChatBlock =
   | { type: 'text'; text: string }
@@ -27,20 +28,23 @@ export interface ChatReply {
   tools: { id: string; name: string; input: Record<string, unknown> }[]
 }
 
-/** Błąd funkcji po ludzku: treść `error` z odpowiedzi serwera (limit, brak klucza) albo status (401 = sesja wygasła). */
-async function describeError(e: unknown): Promise<string> {
+/**
+ * Błąd funkcji po ludzku: treść `error` z odpowiedzi serwera (limit, brak klucza) albo status (401 = sesja wygasła).
+ * Odpowiedź serwera to zdanie dla zawodnika (`UserError`); reszta zostaje technicznym błędem dla `friendlyError`.
+ */
+async function describeError(e: unknown): Promise<Error> {
   const ctx = (e as { context?: Response }).context
   if (ctx instanceof Response) {
-    if (ctx.status === 401) return 'Sesja wygasła – zaloguj się ponownie.'
+    if (ctx.status === 401) return new UserError(t().sync.coach.sessionExpired)
     try {
       const body = (await ctx.clone().json()) as { error?: string }
-      if (body?.error) return body.error
+      if (body?.error) return new UserError(body.error)
     } catch {
       /* odpowiedź bez JSON */
     }
-    return `Trener nie odpowiada (${ctx.status}).`
+    return new UserError(t().sync.coach.noReplyStatus(ctx.status))
   }
-  return e instanceof Error ? e.message : 'Trener nie odpowiada'
+  return e instanceof Error ? e : new UserError(t().sync.coach.noReply)
 }
 
 export const canChat = !!supabase
@@ -51,18 +55,18 @@ function isNetworkError(e: unknown): boolean {
 }
 
 export async function askCoach(messages: ChatMessage[], context: unknown, signal?: AbortSignal): Promise<ChatReply> {
-  if (!supabase) throw new Error('Bez konta trener nie odpowiada')
-  const call = () => supabase!.functions.invoke<ChatReply & { error?: string }>('coach-chat', { body: { messages, context }, signal })
+  if (!supabase) throw new UserError(t().sync.coach.noAccount)
+  const call = () => supabase!.functions.invoke<ChatReply & { error?: string }>('coach-chat', { body: { messages, context }, headers: langHeaders(), signal })
   let { data, error } = await call()
   // iOS po wybudzeniu aplikacji potrafi zerwać pierwsze żądanie, zanim wyjdzie z telefonu (21.10.2026: serwer nie dostał nic) –
-  // jedna ponowna próba po chwili, potem komunikat po polsku zamiast „Failed to send a request to the Edge Function”
+  // jedna ponowna próba po chwili, potem komunikat w języku zawodnika zamiast „Failed to send a request to the Edge Function”
   if (error && isNetworkError(error) && !signal?.aborted) {
     await new Promise((r) => setTimeout(r, 1500))
     ;({ data, error } = await call())
-    if (error && isNetworkError(error)) throw new Error('Brak połączenia z trenerem – sprawdź sieć i wyślij jeszcze raz.')
+    if (error && isNetworkError(error)) throw new UserError(t().sync.coach.offline)
   }
-  if (error) throw new Error(await describeError(error))
-  if (!data || data.error) throw new Error(data?.error ?? 'brak odpowiedzi')
+  if (error) throw await describeError(error)
+  if (!data || data.error) throw new UserError(data?.error ?? t().sync.noReply)
   return data
 }
 

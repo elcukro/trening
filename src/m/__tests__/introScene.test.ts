@@ -64,6 +64,7 @@ describe('introScene i parseScene', () => {
       '/m/intro/intro-spring-near.webp',
       '/m/intro/intro-spring-road.webp',
       '/m/intro/intro-rider.webp',
+      '/m/intro/intro-title.webp',
     ])
   })
 })

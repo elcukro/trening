@@ -12,22 +12,24 @@ import { ProgressScreen } from './screens/ProgressScreen'
 import { MoreScreen } from './screens/MoreScreen'
 import { LoginScreen } from './screens/LoginScreen'
 import { NO_ACCOUNT } from '@/day/useIos'
+import { useT } from '@/i18n/react'
 import { IconMore, IconProgress, IconToday, IconWeek } from './components/Icons'
 
 const TABS = [
-  { to: '/i', label: 'Dziś', Icon: IconToday, end: true },
-  { to: '/i/tydzien', label: 'Tydzień', Icon: IconWeek },
-  { to: '/i/postep', label: 'Postęp', Icon: IconProgress },
-  { to: '/i/wiecej', label: 'Więcej', Icon: IconMore },
-]
+  { to: '/i', key: 'today', Icon: IconToday, end: true },
+  { to: '/i/tydzien', key: 'week', Icon: IconWeek },
+  { to: '/i/postep', key: 'progress', Icon: IconProgress },
+  { to: '/i/wiecej', key: 'more', Icon: IconMore },
+] as const
 
 function TabBar() {
+  const t = useT()
   return (
-    <nav className="ios-tabbar" aria-label="Nawigacja główna">
-      {TABS.map((t) => (
-        <NavLink key={t.to} to={t.to} end={t.end} className="ios-tab">
-          <t.Icon size={26} />
-          {t.label}
+    <nav className="ios-tabbar" aria-label={t.ios.tabs.nav}>
+      {TABS.map((tab) => (
+        <NavLink key={tab.to} to={tab.to} end={'end' in tab ? tab.end : undefined} className="ios-tab">
+          <tab.Icon size={26} />
+          {t.ios.tabs[tab.key]}
         </NavLink>
       ))}
     </nav>

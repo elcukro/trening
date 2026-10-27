@@ -4,17 +4,22 @@ import { useEngine } from '@/app/useSettings'
 import { PageTitle } from '@/components/ui'
 import { FULL_ESCAPE, useUiMode } from '@/day/useIos'
 import type { Feature } from '@/engine/schema'
+import { helpUrl } from '@/lib/help'
+import { useT } from '@/i18n/react'
 
-const ITEMS: { to: string; icon: string; label: string; sub: string; feature?: Feature; external?: boolean }[] = [
-  { to: '/kalendarz', icon: '🗓️', label: 'Kalendarz', sub: 'Miesiąc w siatce: jazdy, znaczniki, wykonanie' },
-  { to: '/wiecej/sezon', icon: '🗺️', label: 'Sezon', sub: 'Fazy, tabela tygodni, wydarzenia' },
-  { to: '/wiecej/sprzet', icon: '🔧', label: 'Sprzęt', sub: 'Twoje rowery, serwis, dziennik' },
-  { to: '/wiecej/wyjazd', icon: '🎒', label: 'Wyjazd', sub: 'Checklista, torby, strategia na przełęcz', feature: 'trip' },
-  { to: '/start', icon: '🎯', label: 'Twoje potrzeby', sub: 'Czas, sprzęt, zdrowie i cel – z nich powstanie plan' },
-  { to: '/wiecej/ustawienia', icon: '⚙️', label: 'Ustawienia', sub: 'Profil, LTHR, daty, integracje, kopia' },
-  { to: '/biblioteka/strefy', icon: '❤️', label: 'Strefy tętna', sub: 'Tabela bpm dla aktualnego LTHR' },
-  { to: '/biblioteka/zasady', icon: '📜', label: 'Zasady R1–R16', sub: 'Co robić, gdy plan się sypie' },
-  { to: '/pomoc.html', icon: '📖', label: 'Pomoc', sub: 'Instrukcja: funkcje, dzień po dniu, ustawienia', external: true },
+type ItemKey = 'calendar' | 'season' | 'gear' | 'trip' | 'needs' | 'settings' | 'zones' | 'rules' | 'help'
+
+/** Pozycje „Więcej”; nazwa i opis ze słownika (`classic.more.items`). */
+const ITEMS: { to: string; icon: string; key: ItemKey; feature?: Feature; external?: boolean }[] = [
+  { to: '/kalendarz', icon: '🗓️', key: 'calendar' },
+  { to: '/wiecej/sezon', icon: '🗺️', key: 'season' },
+  { to: '/wiecej/sprzet', icon: '🔧', key: 'gear' },
+  { to: '/wiecej/wyjazd', icon: '🎒', key: 'trip', feature: 'trip' },
+  { to: '/start', icon: '🎯', key: 'needs' },
+  { to: '/wiecej/ustawienia', icon: '⚙️', key: 'settings' },
+  { to: '/biblioteka/strefy', icon: '❤️', key: 'zones' },
+  { to: '/biblioteka/zasady', icon: '📜', key: 'rules' },
+  { get to() { return helpUrl() }, icon: '📖', key: 'help', external: true },
 ]
 
 function ItemLink({ to, external, children }: { to: string; external?: boolean; children: ReactNode }) {
@@ -36,9 +41,11 @@ export function MorePage() {
   const engine = useEngine()
   const navigate = useNavigate()
   const ui = useUiMode()
+  const t = useT()
+  const M = t.classic.more
   return (
     <div>
-      <PageTitle sub={`Program ${engine.ctx.program.version}`}>Więcej</PageTitle>
+      <PageTitle sub={M.programVersion(engine.ctx.program.version)}>{M.title}</PageTitle>
       <button
         onClick={() => {
           try {
@@ -54,8 +61,8 @@ export function MorePage() {
           ✦
         </span>
         <span className="min-w-0 flex-1">
-          <span className="block text-sm font-semibold">Prosty widok na iPhone'a</span>
-          <span className="block text-xs text-slate-500 dark:text-slate-400">Jeden ekran na dziś: check-in, trening, licznik, podsumowanie</span>
+          <span className="block text-sm font-semibold">{M.simpleView}</span>
+          <span className="block text-xs text-slate-500 dark:text-slate-400">{M.simpleViewSub}</span>
         </span>
         <span className="text-slate-400" aria-hidden>
           ›
@@ -69,8 +76,8 @@ export function MorePage() {
                 {it.icon}
               </span>
               <span className="min-w-0 flex-1">
-                <span className="block text-sm font-semibold">{it.label}</span>
-                <span className="block text-xs text-slate-500 dark:text-slate-400">{it.sub}</span>
+                <span className="block text-sm font-semibold">{M.items[it.key].label}</span>
+                <span className="block text-xs text-slate-500 dark:text-slate-400">{M.items[it.key].sub}</span>
               </span>
               <span className="text-slate-400" aria-hidden>
                 ›

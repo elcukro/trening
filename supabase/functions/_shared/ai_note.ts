@@ -12,6 +12,8 @@ import { assertAiSafe, isAiSource } from './provenance.ts'
 import { fromStrava, fromWahoo, mergeRides, sameRide, type RideRow, type RideSource } from './rides.ts'
 import { accessTokenFor, stravaScope, updateActivity } from './strava.ts'
 import { checkDraft, isDefaultTitle, parseDraft, ruleDraft, titlePrompt, withSignature, type TitleDraft } from './strava_title.ts'
+import { aiLangRule } from './i18n.ts'
+import { userLang } from './supabase.ts'
 
 // Sonnet: w ocenie 26.09 (9 jazd, docs/20) wyraźnie lepszy od Haiku – dobrze czyta skale check-inu i ustalenia o zawodniku;
 // koszt ok. 1 grosza za notatkę. Zmiana bez wdrożenia: sekret AI_MODEL.
@@ -280,7 +282,8 @@ export async function writeNote(admin: SupabaseClient, userId: string, ref: Ride
     facts.derived.ftp_change_w = facts.test.ftp_est - opts.ftpBefore
     facts.derived.ftp_change_pct = Math.round(((facts.test.ftp_est - opts.ftpBefore) / opts.ftpBefore) * 100)
   }
-  const system = `${COACH_HANDBOOK}\n\nUSTALENIA O TYM ZAWODNIKU\n${facts.athlete.coach_notes.map((n) => `- ${n}`).join('\n') || '- brak'}`
+  const lang = await userLang(admin, userId)
+  const system = [COACH_HANDBOOK, `USTALENIA O TYM ZAWODNIKU\n${facts.athlete.coach_notes.map((n) => `- ${n}`).join('\n') || '- brak'}`, aiLangRule(lang)].filter(Boolean).join('\n\n')
   let note = ''
   let source: 'ai' | 'rules' = 'rules'
   let detail = ''
@@ -310,7 +313,7 @@ export async function writeNote(admin: SupabaseClient, userId: string, ref: Ride
   } catch (e) {
     detail = e instanceof Error ? e.message : String(e)
   }
-  if (!note) note = ruleNote(facts)
+  if (!note) note = ruleNote(facts, lang)
   if (opts.dryRun) return { note, source, detail, facts }
   await admin.from(table).update({ note, note_source: source, note_at: new Date().toISOString(), note_facts: facts, updated_at: new Date().toISOString() }).eq('user_id', userId).eq('id', ref.id)
   return { note, source, detail, facts }
@@ -329,7 +332,7 @@ export interface TitleResult {
 /**
  * Tytuł i opis jazdy na Stravie (docs/20 § Tytuł na Stravie). Tylko gdy profil ma `strava_write`, zgoda obejmuje
  * `activity:write`, tytuł jest domyślny (Strava albo nazwa z Bolta) i nic jeszcze nie wysłaliśmy (`title_set_at`).
- * Zwraca null, gdy pominięto. Podpis „Notatki: Kolarski Trener AI” dopisuje kod.
+ * Zwraca null, gdy pominięto. Podpis „Notatki: Bicycle Coach” / „Notes: Bicycle Coach” (wg języka zawodnika) dopisuje kod.
  */
 export async function writeStravaTitle(admin: SupabaseClient, userId: string, activityId: number | string, opts: { model?: string; dryRun?: boolean } = {}): Promise<TitleResult | null> {
   if (!stravaWriteEnabled() && !opts.dryRun) return null
@@ -351,6 +354,7 @@ export async function writeStravaTitle(admin: SupabaseClient, userId: string, ac
   if (!isDefaultTitle(a.name as string, facts.plan?.name, (pushed ?? []).map((p) => p.name as string).filter(Boolean))) {
     return { title: '', description: '', source: 'rules', detail: `własny tytuł zawodnika zostaje: ${a.name}` }
   }
+  const lang = await userLang(admin, userId)
   let draft: TitleDraft | null = null
   let source: 'ai' | 'rules' = 'rules'
   let detail = ''
@@ -359,8 +363,8 @@ export async function writeStravaTitle(admin: SupabaseClient, userId: string, ac
     if (!Deno.env.get('ANTHROPIC_API_KEY')) throw new Error('brak klucza')
     if (!(await underLimit(admin))) throw new Error('limit miesięczny')
     assertAiSafe(promptFacts(facts))
-    const system = `${COACH_HANDBOOK}\n\nUSTALENIA O TYM ZAWODNIKU\n${facts.athlete.coach_notes.map((n) => `- ${n}`).join('\n') || '- brak'}`
-    let user = titlePrompt(facts, twinNote)
+    const system = [COACH_HANDBOOK, `USTALENIA O TYM ZAWODNIKU\n${facts.athlete.coach_notes.map((n) => `- ${n}`).join('\n') || '- brak'}`, aiLangRule(lang)].filter(Boolean).join('\n\n')
+    let user = titlePrompt(facts, twinNote, lang)
     for (let attempt = 0; attempt < 2; attempt++) {
       const r = await callClaude(system, user, opts.model ?? MODEL)
       await admin.from('ai_calls').insert({ user_id: userId, activity_id: activityId, input_tokens: r.usage.input_tokens ?? 0, output_tokens: r.usage.output_tokens ?? 0, cache_read_tokens: r.usage.cache_read_input_tokens ?? 0, cache_write_tokens: r.usage.cache_creation_input_tokens ?? 0 })
@@ -373,13 +377,13 @@ export async function writeStravaTitle(admin: SupabaseClient, userId: string, ac
         break
       }
       detail = `${check.problems.join('; ')} | szkic: ${r.text.slice(0, 300)}`
-      user = `${titlePrompt(facts, twinNote)}\n\nPoprzednia wersja była odrzucona (${check.problems.join('; ')}). Napisz jeszcze raz, dokładnie w dwóch liniach „Tytuł:” i „Opis:”.`
+      user = `${titlePrompt(facts, twinNote, lang)}\n\nPoprzednia wersja była odrzucona (${check.problems.join('; ')}). Napisz jeszcze raz, dokładnie w dwóch liniach „Tytuł:” i „Opis:”.`
     }
   } catch (e) {
     detail = e instanceof Error ? e.message : String(e)
   }
-  if (!draft) draft = ruleDraft(facts)
-  const description = withSignature(draft.description)
+  if (!draft) draft = ruleDraft(facts, lang)
+  const description = withSignature(draft.description, lang)
   if (opts.dryRun) return { title: draft.title, description, source, detail }
   const token = await accessTokenFor(admin, userId)
   if (!token) return { title: draft.title, description, source, detail: 'brak tokenu Stravy' }

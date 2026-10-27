@@ -1,5 +1,5 @@
 import { useMemo, useState, type ChangeEvent } from 'react'
-import { useEngine } from '@/app/useSettings'
+import { useEngine, useSettings } from '@/app/useSettings'
 import type { Settings } from '@/engine/schema'
 import { earliestTripStart, layoutWeeks, TripDateError } from '@/engine/layout'
 import { isValidISODate } from '@/engine/dates'
@@ -15,6 +15,10 @@ import { IntegrationsSection } from './IntegrationsSection'
 import { PushSection } from './PushSection'
 import { EmailSection } from './EmailSection'
 import { WeatherSettings } from './WeatherSettings'
+import { t as tr } from '@/i18n'
+import { systemLang } from '@/i18n/core'
+import { useT } from '@/i18n/react'
+import { num as fmtNum } from '@/lib/format'
 
 type Form = {
   athlete_name: string
@@ -65,10 +69,11 @@ const intOrNull = (n: number | null): number | null => (n == null || Number.isNa
 /** Walidacja: błędy przypisane do pól (wyświetlane pod polem). */
 function fromForm(f: Form, base: Settings): { settings: Settings; errors: FieldErrors } {
   const errors: FieldErrors = {}
+  const tv = tr().settings.validation
   const req = (key: keyof Form, v: string, min: number, max: number): number => {
     const n = num(v)
     if (n === null || n < min || n > max) {
-      errors[key] = `Podaj liczbę ${min}–${max}.`
+      errors[key] = tv.number(fmtNum(min, 2), fmtNum(max, 2))
       return NaN
     }
     return n
@@ -77,8 +82,8 @@ function fromForm(f: Form, base: Settings): { settings: Settings; errors: FieldE
     if (v.trim() === '') return null
     return req(key, v, min, max)
   }
-  if (!isValidISODate(f.program_start)) errors.program_start = 'Nieprawidłowa data.'
-  if (!isValidISODate(f.trip_start)) errors.trip_start = 'Nieprawidłowa data.'
+  if (!isValidISODate(f.program_start)) errors.program_start = tv.date
+  if (!isValidISODate(f.trip_start)) errors.trip_start = tv.date
   const settings: Settings = {
     ...base,
     athlete_name: f.athlete_name.trim() || base.athlete_name,
@@ -122,6 +127,8 @@ export function SettingsPage() {
 function SettingsForm({ engine, saved, setSaved }: { engine: ReturnType<typeof useEngine>; saved: boolean; setSaved: (v: boolean) => void }) {
   const { settings, update, reset } = engine.settingsApi
   const toast = useToast()
+  const t = useT()
+  const ts = t.settings
   const [form, setForm] = useState<Form>(() => toForm(settings))
 
   const parsed = useMemo(() => fromForm(form, settings), [form, settings])
@@ -133,9 +140,9 @@ function SettingsForm({ engine, saved, setSaved }: { engine: ReturnType<typeof u
       const next = layoutWeeks(engine.ctx.program, parsed.settings)
       return { ok: true as const, before: phaseSpans(engine.weeks), after: phaseSpans(next), total: next.length }
     } catch (e) {
-      return { ok: false as const, message: e instanceof TripDateError ? `${e.message} Najwcześniej: ${fmtDate(e.earliest)}.` : String(e) }
+      return { ok: false as const, message: e instanceof TripDateError ? ts.validation.earliest(e.message, fmtDate(e.earliest)) : String(e) }
     }
-  }, [parsed, errorCount, settings, engine])
+  }, [parsed, errorCount, settings, engine, ts])
 
   const set = (k: keyof Form) => (e: ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     setSaved(false)
@@ -152,13 +159,13 @@ function SettingsForm({ engine, saved, setSaved }: { engine: ReturnType<typeof u
 
   async function save() {
     if (!canSave) return
-    await toast.run('Zapisuję ustawienia…', () => update(parsed.settings), () => 'Ustawienia zapisane')
+    await toast.run(ts.page.saving, () => update(parsed.settings), () => ts.page.saved)
     setSaved(true)
   }
 
   return (
     <div className="space-y-3">
-      <PageTitle sub="Profil, daty, objętość, konto">Ustawienia</PageTitle>
+      <PageTitle sub={ts.page.sub}>{ts.page.title}</PageTitle>
       {/* dwie niezależne kolumny (a nie wiersze siatki) – bez pustych dziur, gdy karty mają różną wysokość; na komputerze profil po lewej */}
       <div className="space-y-3 lg:grid lg:grid-cols-2 lg:items-start lg:gap-6 lg:space-y-0">
         <div className="min-w-0 space-y-3 lg:space-y-4">
@@ -170,29 +177,29 @@ function SettingsForm({ engine, saved, setSaved }: { engine: ReturnType<typeof u
         <div className="min-w-0 space-y-3 lg:order-first lg:space-y-4">
           <ProgramCard />
           <Card>
-            <CardTitle icon="👤">Profil</CardTitle>
+            <CardTitle icon="👤">{ts.profile.title}</CardTitle>
             <div className="space-y-3">
-              <Field label="Imię">
+              <Field label={ts.profile.name}>
                 <Input value={form.athlete_name} onChange={set('athlete_name')} autoComplete="given-name" />
               </Field>
               <div className="grid grid-cols-2 gap-3">
-                {numField('body_weight_start_kg', 'Masa startowa (kg)', 'decimal')}
-                {numField('body_weight_target_kg', 'Masa docelowa (kg)', 'decimal')}
-                {numField('lthr_bpm', 'LTHR (bpm)', 'numeric', engine.ctx.tests?.length ? `ręcznie; testy mają pierwszeństwo (ostatni: ${engine.ctx.tests.at(-1)!.lthr_bpm} bpm)` : 'ręcznie – albo zapisz wynik testu', 'np. 160')}
-                {numField('hr_max_bpm', 'HRmax (bpm)', 'numeric', 'opcjonalnie')}
-                {numField('ftp_w_estimate', 'FTP szacunek (W)', 'numeric')}
-                {numField('ftp_w_goal', 'Cel FTP (W)', 'numeric')}
-                {numField('bike_and_kit_kg', 'Rower + bagaż (kg)', 'decimal', 'do kalkulatora podjazdu')}
-                {numField('height_cm', 'Wzrost (cm)', 'numeric', 'do budżetu kcal')}
-                <Field label="Data urodzenia" hint="do budżetu kcal">
+                {numField('body_weight_start_kg', ts.profile.weightStart, 'decimal')}
+                {numField('body_weight_target_kg', ts.profile.weightTarget, 'decimal')}
+                {numField('lthr_bpm', ts.profile.lthr, 'numeric', engine.ctx.tests?.length ? ts.profile.lthrHintTests(engine.ctx.tests.at(-1)!.lthr_bpm ?? null) : ts.profile.lthrHint, ts.profile.lthrPlaceholder)}
+                {numField('hr_max_bpm', ts.profile.hrMax, 'numeric', ts.profile.optional)}
+                {numField('ftp_w_estimate', ts.profile.ftpEstimate, 'numeric')}
+                {numField('ftp_w_goal', ts.profile.ftpGoal, 'numeric')}
+                {numField('bike_and_kit_kg', ts.profile.bikeKit, 'decimal', ts.profile.bikeKitHint)}
+                {numField('height_cm', ts.profile.height, 'numeric', ts.profile.forKcal)}
+                <Field label={ts.profile.birthDate} hint={ts.profile.forKcal}>
                   <Input type="date" min="1920-01-01" max="2015-12-31" value={form.birth_date} onChange={set('birth_date')} />
                 </Field>
               </div>
             </div>
             <CardSection>
               <Checkbox
-                label="Mam miernik mocy"
-                hint="Cele w watach na ekranie Dziś i w planach na Wahoo (ELEMNT liczy TSS, IF i rysuje profil tylko z mocy). FTP z pola wyżej albo z ostatniego testu."
+                label={ts.profile.powerMeter}
+                hint={ts.profile.powerMeterHint}
                 checked={form.power_meter}
                 onChange={(e) => {
                   setSaved(false)
@@ -202,9 +209,9 @@ function SettingsForm({ engine, saved, setSaved }: { engine: ReturnType<typeof u
             </CardSection>
           </Card>
           <Card>
-            <CardTitle icon="📆">Daty</CardTitle>
+            <CardTitle icon="📆">{ts.dates.title}</CardTitle>
             <div className="grid grid-cols-2 gap-3">
-              <Field label="Start programu" hint="poniedziałek tygodnia 1" error={err('program_start')}>
+              <Field label={ts.dates.programStart} hint={ts.dates.programStartHint} error={err('program_start')}>
                 <Input type="date" value={form.program_start} onChange={set('program_start')} invalid={!!err('program_start')} />
               </Field>
               <Field label={engine.ctx.program.meta.target.label} error={err('trip_start') ?? (preview && !preview.ok ? preview.message : null)}>
@@ -213,13 +220,13 @@ function SettingsForm({ engine, saved, setSaved }: { engine: ReturnType<typeof u
             </div>
             {preview && preview.ok && (
               <Inset tone="info" className="mt-3">
-                <p className="mb-1 font-semibold">Podgląd zmian (R14): {preview.total} tygodni</p>
+                <p className="mb-1 font-semibold">{ts.dates.previewTitle(preview.total)}</p>
                 <table className="w-full text-xs tabular-nums">
                   <thead className="text-slate-500 dark:text-slate-400">
                     <tr>
-                      <th className="text-left font-medium">Faza</th>
-                      <th className="text-left font-medium">Teraz</th>
-                      <th className="text-left font-medium">Po zmianie</th>
+                      <th className="text-left font-medium">{ts.dates.phase}</th>
+                      <th className="text-left font-medium">{ts.dates.now}</th>
+                      <th className="text-left font-medium">{ts.dates.after}</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -229,8 +236,8 @@ function SettingsForm({ engine, saved, setSaved }: { engine: ReturnType<typeof u
                       return (
                         <tr key={p.id} className={changed ? 'font-semibold' : ''}>
                           <td className="py-0.5">{PHASE_SHORT[p.id]}</td>
-                          <td className="py-0.5">{b ? `${b.count} tyg. od ${fmtDate(b.from)}` : '—'}</td>
-                          <td className="py-0.5">{`${p.count} tyg. od ${fmtDate(p.from)}`}</td>
+                          <td className="py-0.5">{b ? ts.dates.span(b.count, fmtDate(b.from)) : '—'}</td>
+                          <td className="py-0.5">{ts.dates.span(p.count, fmtDate(p.from))}</td>
                         </tr>
                       )
                     })}
@@ -240,34 +247,35 @@ function SettingsForm({ engine, saved, setSaved }: { engine: ReturnType<typeof u
             )}
           </Card>
           <Card>
-            <CardTitle icon="🌗">Wygląd</CardTitle>
+            <CardTitle icon="🌗">{ts.appearance.title}</CardTitle>
             <ThemePicker />
           </Card>
+          <LanguageCard />
           <WeatherSettings />
           <Card>
-            <CardTitle icon="📏">Objętość</CardTitle>
+            <CardTitle icon="📏">{ts.volume.title}</CardTitle>
             <div className="space-y-3">
-              <Field label={`Skala objętości (R16): ${Number(form.volume_scale).toLocaleString('pl-PL')}`} hint="0,7–1,0 – skraca Z2, długie jazdy i pagórki; akcenty, testy i góry bez zmian" error={err('volume_scale')}>
+              <Field label={ts.volume.scale(fmtNum(Number(form.volume_scale), 2))} hint={ts.volume.hint} error={err('volume_scale')}>
                 <input className="block min-h-11 w-full accent-sky-600" type="range" min={0.7} max={1} step={0.05} value={form.volume_scale} onChange={set('volume_scale')} />
               </Field>
             </div>
           </Card>
           {errorCount > 0 && (
             <Inset tone="error" role="alert">
-              Popraw {errorCount === 1 ? 'zaznaczone pole' : 'zaznaczone pola'} – zapis jest zablokowany.
+              {ts.page.fixErrors(errorCount)}
             </Inset>
           )}
           <Actions>
             <Button onClick={save} disabled={!canSave} className="flex-1">
-              {saved ? 'Zapisano ✓' : 'Zapisz'}
+              {saved ? ts.page.savedCheck : t.common.save}
             </Button>
-            <Button variant="secondary" onClick={() => toast.run('Przywracam domyślne…', reset, () => 'Przywrócono ustawienia domyślne')}>
-              Przywróć domyślne
+            <Button variant="secondary" onClick={() => toast.run(ts.page.resetting, reset, () => ts.page.resetDone)}>
+              {ts.page.resetDefaults}
             </Button>
           </Actions>
           <BackupSection />
           <p className="text-xs text-slate-400 dark:text-slate-500">
-            Wersja programu {engine.ctx.program.version} · build {__BUILD_ID__}
+            {ts.page.version(engine.ctx.program.version, __BUILD_ID__)}
           </p>
         </div>
       </div>
@@ -275,28 +283,47 @@ function SettingsForm({ engine, saved, setSaved }: { engine: ReturnType<typeof u
   )
 }
 
-const THEME_OPTIONS: { value: ThemePref; label: string }[] = [
-  { value: 'system', label: 'Jak system' },
-  { value: 'light', label: 'Jasny' },
-  { value: 'dark', label: 'Ciemny' },
-]
-
 function ThemePicker() {
+  const ta = useT().settings.appearance
   const [pref, setPref] = useState<ThemePref>(() => getThemePref())
+  const options: { value: ThemePref; label: string }[] = [
+    { value: 'system', label: ta.system },
+    { value: 'light', label: ta.light },
+    { value: 'dark', label: ta.dark },
+  ]
   return (
     <div>
       <Segmented
         role="radiogroup"
-        label="Motyw"
+        label={ta.theme}
         value={pref}
-        options={THEME_OPTIONS}
+        options={options}
         onChange={(t) => {
           setThemePref(t)
           setPref(t)
         }}
       />
-      <p className="mt-2 text-xs text-slate-500 dark:text-slate-400">Zapisane na tym urządzeniu. „Jak system” podąża za ustawieniem telefonu lub komputera.</p>
+      <p className="mt-2 text-xs text-slate-500 dark:text-slate-400">{ta.hint}</p>
     </div>
+  )
+}
+
+/** Język aplikacji (docs/34 § 4): zapis w profilu (`settings.language`), `LangProvider` w App.tsx przełącza drzewo. */
+function LanguageCard() {
+  const tl = useT().common.language
+  const { settings, update } = useSettings()
+  const choice = settings.language === 'pl' || settings.language === 'en' ? settings.language : 'system'
+  const detected = systemLang() === 'pl' ? tl.pl : tl.en
+  return (
+    <Card>
+      <CardTitle icon="🌐">{tl.title}</CardTitle>
+      <Select aria-label={tl.title} value={choice} onChange={(e) => void update({ language: e.target.value })}>
+        <option value="system">{tl.system(detected)}</option>
+        <option value="pl">{tl.pl}</option>
+        <option value="en">{tl.en}</option>
+      </Select>
+      <p className="mt-2 text-xs text-slate-500 dark:text-slate-400">{tl.hint}</p>
+    </Card>
   )
 }
 
@@ -307,17 +334,18 @@ function ThemePicker() {
 function ProgramCard() {
   const engine = useEngine()
   const toast = useToast()
+  const tp = useT().settings.program
   const { program, settings } = engine.ctx
   const current = settings.program_id ?? DEFAULT_PROGRAM_ID
   return (
     <Card>
-      <CardTitle icon="🗺️">Program treningowy</CardTitle>
-      <Field label="Program" hint="Zmiana przebudowuje kalendarz. Daty startu i celu oraz progi zostają z Twoich ustawień – sprawdź je po przełączeniu.">
+      <CardTitle icon="🗺️">{tp.title}</CardTitle>
+      <Field label={tp.label} hint={tp.hint}>
         <Select
           value={current}
-          onChange={(e) => void toast.run('Przełączam program…', () => engine.settingsApi.update({ program_id: e.target.value }), () => 'Program przełączony')}
+          onChange={(e) => void toast.run(tp.switching, () => engine.settingsApi.update({ program_id: e.target.value }), () => tp.switched)}
         >
-          {current === 'generated' && <option value="generated">{program.meta.name} (z Twoich potrzeb)</option>}
+          {current === 'generated' && <option value="generated">{tp.generated(program.meta.name)}</option>}
           {programOptions().map((p) => (
             <option key={p.id} value={p.id}>
               {p.name}
@@ -326,9 +354,9 @@ function ProgramCard() {
         </Select>
       </Field>
       <CardSection className="divide-y divide-slate-200/70 dark:divide-slate-700/80">
-        <Row label="Wersja">{program.version}</Row>
-        <Row label="Tygodni">{Object.keys(program.weeks).length}</Row>
-        <Row label="Faz">{program.phases.length}</Row>
+        <Row label={tp.version}>{program.version}</Row>
+        <Row label={tp.weeks}>{Object.keys(program.weeks).length}</Row>
+        <Row label={tp.phases}>{program.phases.length}</Row>
       </CardSection>
     </Card>
   )

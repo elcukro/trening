@@ -2,24 +2,17 @@ import { useState } from 'react'
 import type { SessionLog } from '@/db'
 import { IconAdjust, IconCheck, IconClose } from './Icons'
 import { List, Row, Section, Sheet } from './Chrome'
+import { useT } from '@/i18n/react'
+import type { Messages } from '@/i18n'
 
 type Status = 'done' | 'modified' | 'skipped'
 
-const OPTIONS: { value: Status; title: string; sub: string; color: string; Icon: typeof IconCheck }[] = [
-  { value: 'done', title: 'Zrobione', sub: 'Tak jak w planie', color: 'var(--green)', Icon: IconCheck },
-  { value: 'modified', title: 'Inaczej', sub: 'Krócej, lżej, inna trasa', color: 'var(--orange)', Icon: IconAdjust },
-  { value: 'skipped', title: 'Odpuszczone', sub: 'Nie było jazdy', color: 'var(--red)', Icon: IconClose },
-]
-
-const RPE_HINT: Record<number, string> = {
-  1: 'spacer',
-  3: 'bardzo lekko',
-  5: 'umiarkowanie',
-  6: 'równo, można gadać',
-  7: 'ciężko',
-  8: 'bardzo ciężko',
-  9: 'na granicy',
-  10: 'maksymalnie',
+function options(t: Messages): { value: Status; title: string; sub: string; color: string; Icon: typeof IconCheck }[] {
+  return [
+    { value: 'done', title: t.ios.status.done, sub: t.ios.after.doneSub, color: 'var(--green)', Icon: IconCheck },
+    { value: 'modified', title: t.ios.status.modified, sub: t.ios.after.modifiedSub, color: 'var(--orange)', Icon: IconAdjust },
+    { value: 'skipped', title: t.ios.status.skipped, sub: t.ios.after.skippedSub, color: 'var(--red)', Icon: IconClose },
+  ]
 }
 
 /** „Jak poszło?” – trzy stany, RPE i notatka. Domyślnie wybrany jest stan sugerowany przez dane. */
@@ -28,6 +21,9 @@ export function AfterSheet({ log, suggested, onClose, onSave }: { log: SessionLo
   const [rpe, setRpe] = useState<number | null>(log?.rpe ?? null)
   const [notes, setNotes] = useState(log?.notes ?? '')
   const [busy, setBusy] = useState(false)
+  const t = useT()
+  const tx = t.ios.after
+  const rpeHint = tx.rpeHint as Record<number, string>
 
   async function save() {
     setBusy(true)
@@ -40,10 +36,10 @@ export function AfterSheet({ log, suggested, onClose, onSave }: { log: SessionLo
   }
 
   return (
-    <Sheet title="Jak poszło?" onClose={onClose} done={{ label: 'Zapisz', onClick: save, disabled: busy }}>
+    <Sheet title={tx.title} onClose={onClose} done={{ label: t.common.save, onClick: save, disabled: busy }}>
       <Section>
         <List>
-          {OPTIONS.map((o) => (
+          {options(t).map((o) => (
             <Row
               key={o.value}
               onClick={() => setStatus(o.value)}
@@ -61,7 +57,7 @@ export function AfterSheet({ log, suggested, onClose, onSave }: { log: SessionLo
       </Section>
 
       {status !== 'skipped' && (
-        <Section header="Jak ciężko było (RPE)" footer={rpe ? RPE_HINT[rpe] ?? '' : 'Subiektywna skala 1–10. Pomaga liczyć obciążenie, gdy nie ma mocy ani tętna.'}>
+        <Section header={tx.rpeHeader} footer={rpe ? rpeHint[rpe] ?? '' : tx.rpeFooter}>
           <div className="mx-4 grid grid-cols-5 gap-2">
             {Array.from({ length: 10 }, (_, i) => i + 1).map((v) => (
               <button
@@ -78,10 +74,10 @@ export function AfterSheet({ log, suggested, onClose, onSave }: { log: SessionLo
         </Section>
       )}
 
-      <Section header="Notatka">
+      <Section header={tx.note}>
         <List>
           <div className="ios-row">
-            <input className="ios-input ios-input-block" value={notes} onChange={(e) => setNotes(e.target.value)} placeholder={status === 'skipped' ? 'Powód (opcjonalnie)' : 'Jedno zdanie (opcjonalnie)'} aria-label="Notatka" />
+            <input className="ios-input ios-input-block" value={notes} onChange={(e) => setNotes(e.target.value)} placeholder={status === 'skipped' ? tx.reasonPlaceholder : tx.notePlaceholder} aria-label={tx.note} />
           </div>
         </List>
       </Section>

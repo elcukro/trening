@@ -4,6 +4,7 @@ import { useToast } from '@/components/Toast'
 import { OAuthButtons } from '@/components/OAuthButtons'
 import { Btn, List, Row, Section } from '../components/Chrome'
 import { IconBike, IconChevron } from '../components/Icons'
+import { useT } from '@/i18n/react'
 
 /**
  * Ekran logowania: bez konta aplikacja nie ma skąd wziąć jazd, check-inów ani zmian planu,
@@ -13,6 +14,8 @@ import { IconBike, IconChevron } from '../components/Icons'
  */
 export function LoginScreen({ auth, onSkip }: { auth: AuthState; onSkip: () => void }) {
   const toast = useToast()
+  const t = useT()
+  const tx = t.ios.login
   const [email, setEmail] = useState('')
   const [code, setCode] = useState('')
   const [link, setLink] = useState('')
@@ -24,30 +27,30 @@ export function LoginScreen({ auth, onSkip }: { auth: AuthState; onSkip: () => v
 
   async function send() {
     setMsg(null)
-    await toast.run('Wysyłam kod na maila…', async () => {
+    await toast.run(tx.sendingCode, async () => {
       const { error } = await auth.signIn(email)
       if (error) throw new Error(error)
       setSent(true)
-      setMsg('Sprawdź skrzynkę i wpisz kod z maila.')
-      return 'Mail wysłany'
+      setMsg(tx.checkInbox)
+      return tx.mailSent
     })
   }
 
   async function useCode() {
     setMsg(null)
-    await toast.run('Sprawdzam kod…', async () => {
+    await toast.run(tx.checkingCode, async () => {
       const { error } = await auth.signInWithCode(email, code)
       if (error) throw new Error(error)
-      return 'Zalogowano'
+      return tx.signedIn
     })
   }
 
   async function useLink() {
     setMsg(null)
-    await toast.run('Loguję linkiem…', async () => {
+    await toast.run(tx.signingInLink, async () => {
       const { error } = await auth.signInWithLink(link)
       if (error) throw new Error(error)
-      return 'Zalogowano'
+      return tx.signedIn
     })
   }
 
@@ -57,15 +60,15 @@ export function LoginScreen({ auth, onSkip }: { auth: AuthState; onSkip: () => v
         <span className="ios-icon-tile mb-4 h-12 w-12 rounded-2xl" style={{ background: 'var(--blue)' }}>
           <IconBike size={28} />
         </span>
-        <h1 className="ios-large-title">Trening</h1>
-        <p className="ios-subhead ios-dim mt-1">Zaloguj się, żeby zobaczyć swoje jazdy, check-iny i zmiany planu. Bez konta widać tylko sam program.</p>
+        <h1 className="ios-large-title">{t.common.appName}</h1>
+        <p className="ios-subhead ios-dim mt-1">{tx.subtitle}</p>
       </header>
 
       <div className="mt-6">
         <div className="px-4 pb-2">
           <OAuthButtons auth={auth} returnPath={window.location.pathname} onError={setMsg} />
         </div>
-        <Section header="E-mail" footer={sent ? undefined : 'Wyślemy kod jednorazowy. Hasła nie ma.'}>
+        <Section header={tx.email} footer={sent ? undefined : tx.emailFooter}>
           <List>
             <div className="ios-row">
               <input
@@ -73,17 +76,17 @@ export function LoginScreen({ auth, onSkip }: { auth: AuthState; onSkip: () => v
                 type="email"
                 inputMode="email"
                 autoComplete="email"
-                placeholder="adres@example.com"
+                placeholder={tx.emailPlaceholder}
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                aria-label="Adres e-mail"
+                aria-label={tx.emailLabel}
               />
             </div>
           </List>
         </Section>
 
         {sent && !linkMode && (
-          <Section header="Kod z maila" footer="Sześć cyfr. Kod jest jednorazowy i wygasa po godzinie.">
+          <Section header={tx.code} footer={tx.codeFooter}>
             <List>
               <div className="ios-row">
                 <input
@@ -93,7 +96,7 @@ export function LoginScreen({ auth, onSkip }: { auth: AuthState; onSkip: () => v
                   placeholder="000000"
                   value={code}
                   onChange={(e) => setCode(e.target.value)}
-                  aria-label="Kod z maila"
+                  aria-label={tx.code}
                 />
               </div>
             </List>
@@ -101,10 +104,10 @@ export function LoginScreen({ auth, onSkip }: { auth: AuthState; onSkip: () => v
         )}
 
         {linkMode && (
-          <Section header="Link z maila" footer="Skopiuj cały adres z maila i wklej tutaj – zadziała też w aplikacji z ekranu początkowego.">
+          <Section header={tx.link} footer={tx.linkFooter}>
             <List>
               <div className="ios-row">
-                <input className="ios-input ios-input-block" placeholder="https://…" value={link} onChange={(e) => setLink(e.target.value)} aria-label="Link z maila" />
+                <input className="ios-input ios-input-block" placeholder="https://…" value={link} onChange={(e) => setLink(e.target.value)} aria-label={tx.link} />
               </div>
             </List>
           </Section>
@@ -121,31 +124,31 @@ export function LoginScreen({ auth, onSkip }: { auth: AuthState; onSkip: () => v
         <div className="space-y-3 px-4">
           {linkMode ? (
             <Btn className="w-full" disabled={!link.trim() || toast.busy} onClick={() => void useLink()}>
-              Zaloguj linkiem
+              {tx.signInLink}
             </Btn>
           ) : sent ? (
             <>
               <Btn className="w-full" disabled={code.trim().length < 4 || toast.busy} onClick={() => void useCode()}>
-                Zaloguj
+                {tx.signIn}
               </Btn>
               <Btn kind="gray" className="w-full" disabled={toast.busy} onClick={() => void send()}>
-                Wyślij kod ponownie
+                {tx.resend}
               </Btn>
             </>
           ) : (
             <Btn className="w-full" disabled={!email.includes('@') || toast.busy} onClick={() => void send()}>
-              Wyślij kod na maila
+              {tx.sendCode}
             </Btn>
           )}
           <Btn kind="plain" className="w-full" onClick={() => setLinkMode((v) => !v)}>
-            {linkMode ? 'Wróć do kodu' : 'Mam link z maila'}
+            {linkMode ? tx.backToCode : tx.haveLink}
           </Btn>
         </div>
       </div>
 
       <div className="mt-auto px-4 pt-8 pb-6">
         <button className="ios-row w-full justify-center rounded-2xl" style={{ color: 'var(--label-2)' }} onClick={onSkip}>
-          <span className="ios-subhead">Zobacz tylko plan, bez konta</span>
+          <span className="ios-subhead">{tx.skip}</span>
           <IconChevron size={16} />
         </button>
       </div>

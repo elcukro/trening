@@ -1,4 +1,5 @@
 import { ActionSheet, ActionSheetButtonStyle } from '@capacitor/action-sheet'
+import { t } from '@/i18n'
 import { isNative } from './platform'
 
 /**
@@ -29,7 +30,7 @@ export async function confirmAction({ title, message, action, destructive = true
         message,
         options: [
           { title: action, style: destructive ? ActionSheetButtonStyle.Destructive : ActionSheetButtonStyle.Default },
-          { title: 'Anuluj', style: ActionSheetButtonStyle.Cancel },
+          { title: t().common.cancel, style: ActionSheetButtonStyle.Cancel },
         ],
       })
       return r.index === 0

@@ -23,10 +23,12 @@ import type { PlanOverrideRow } from '@/db'
 import { useRides } from '@/app/useRides'
 import type { RuleAction, RuleWarning } from '@/engine/rules'
 import { WahooButton } from './WahooButton'
+import { t as tNow } from '@/i18n'
+import { useT } from '@/i18n/react'
 
 function typeBadges(day: DayPlan) {
   const out: { label: string; color: string }[] = []
-  if (day.week_type === 'test' && !day.flags.includes('test')) out.push({ label: 'Tydzień testowy', color: 'bg-indigo-500' })
+  if (day.week_type === 'test' && !day.flags.includes('test')) out.push({ label: tNow().classic.dayView.testWeek, color: 'bg-indigo-500' })
   for (const f of day.flags) out.push({ label: FLAG_LABEL[f], color: FLAG_COLOR[f] })
   return out
 }
@@ -34,12 +36,13 @@ function typeBadges(day: DayPlan) {
 /** Hierarchia: data (podpis) → tydzień i faza (tytuł) → typ tygodnia i odliczanie. */
 export function DayHeader({ day }: { day: DayPlan }) {
   const target = useEngine().ctx.program.meta.target
+  const t = useT()
   const countdown = day.days_to_trip > 0 ? `${days(day.days_to_trip)} ${target.until}` : day.days_to_trip === 0 ? target.today : target.after
   return (
     <header className="mb-3 lg:mb-5 lg:border-b lg:border-slate-200 lg:pb-4 lg:dark:border-slate-700">
       <p className="text-sm font-medium text-slate-500 first-letter:uppercase dark:text-slate-400">{fmtLong(day.date)}</p>
       <div className="mt-1 flex min-w-0 flex-wrap items-center gap-2">
-        <h1 className="text-2xl font-bold tracking-tight">Tydzień {day.week}</h1>
+        <h1 className="text-2xl font-bold tracking-tight">{t.common.weekN(day.week)}</h1>
         <Badge color={PHASE_COLOR[day.phase]}>{day.phase_name.replace(/ – .*/, '')}</Badge>
         {typeBadges(day).map((b) => (
           <Badge key={b.label} color={b.color}>
@@ -59,12 +62,14 @@ export function BikeCard({ day, engine, onAction }: { day: DayPlan; engine: Engi
   const w = day.workout
   const program = engine.ctx.program
   const acts = useActivities(day.date)
+  const t = useT()
+  const D = t.classic.dayView
   if (!day.bike || !w) {
     return (
       <>
         <Card tone="muted">
-          <CardTitle icon="🛋️">Dzień wolny</CardTitle>
-          <p className="text-sm text-slate-600 dark:text-slate-300">Pełny odpoczynek. Spacer, sen, 5 min rozciągania zginaczy bioder.</p>
+          <CardTitle icon="🛋️">{D.restTitle}</CardTitle>
+          <p className="text-sm text-slate-600 dark:text-slate-300">{D.restText}</p>
         </Card>
         <StravaActivities date={day.date} zones={program.hr_zones_lthr_fraction} lthr={day.lthr} extra />
       </>
@@ -81,7 +86,7 @@ export function BikeCard({ day, engine, onAction }: { day: DayPlan; engine: Engi
   if (day.bike.workout_id === 'TRAVEL_REST') {
     return (
       <Card tone="muted">
-        <CardTitle icon="🚗">Dojazd / odpoczynek</CardTitle>
+        <CardTitle icon="🚗">{D.travelTitle}</CardTitle>
         <p className="text-sm">{w.description}</p>
       </Card>
     )
@@ -93,12 +98,12 @@ export function BikeCard({ day, engine, onAction }: { day: DayPlan; engine: Engi
       <CardTitle icon="🚴" right={<Metric>{minutes(day.bike.duration_min)}</Metric>}>
         {w.name}
       </CardTitle>
-      <p className="mb-3 text-xs leading-4 text-slate-500 dark:text-slate-400">Rower: {day.bike.bike}</p>
+      <p className="mb-3 text-xs leading-4 text-slate-500 dark:text-slate-400">{D.bike(day.bike.bike)}</p>
       <TimelineBar steps={w.steps} />
       {!lthr && !day.ftp && (
         <Link to="/wiecej/ustawienia" className="mt-3 block">
           <Inset tone="warn" className="font-medium hover:underline">
-            Zrób test i wpisz LTHR, żeby zobaczyć tętno w bpm. Do tego czasu jedź po RPE.
+            {D.needLthr}
           </Inset>
         </Link>
       )}
@@ -108,13 +113,13 @@ export function BikeCard({ day, engine, onAction }: { day: DayPlan; engine: Engi
       <CardSection>
         <p className="text-sm text-slate-600 dark:text-slate-300">{w.description}</p>
         <div className="mt-2 flex flex-wrap gap-x-4 gap-y-1 text-xs text-slate-500 dark:text-slate-400">
-          {carbs[1] > 0 && <span>Jedzenie: {carbs[0]}–{carbs[1]} g węgli/h</span>}
-          {day.bike.duration_min >= 60 && <span>Picie: 500–750 ml/h</span>}
+          {carbs[1] > 0 && <span>{D.food(carbs[0], carbs[1])}</span>}
+          {day.bike.duration_min >= 60 && <span>{D.drink}</span>}
         </div>
       </CardSection>
       {day.fallback_workout && (
         <details className="mt-3 rounded-xl bg-slate-100 p-3 text-sm dark:bg-slate-900/60">
-          <summary className="min-h-6 cursor-pointer font-medium">🧊 Wersja pod dachem: {day.fallback_workout.name}</summary>
+          <summary className="min-h-6 cursor-pointer font-medium">🧊 {D.indoorVersion(day.fallback_workout.name)}</summary>
           <div className="mt-2">
             <TimelineBar steps={day.fallback_workout.steps} />
             <StepList workout={day.fallback_workout} compact />
@@ -124,10 +129,10 @@ export function BikeCard({ day, engine, onAction }: { day: DayPlan; engine: Engi
       {onAction && (
         <div className="mt-3 grid grid-cols-2 gap-2">
           <Button variant="secondary" onClick={() => onAction({ kind: 'indoor', date: day.date, label: '', payload: {} })} className="whitespace-normal">
-            🧊 Gołoledź / pod dachem
+            🧊 {D.indoorButton}
           </Button>
           <Button variant="secondary" onClick={() => onAction({ kind: 'sick', date: day.date, label: '', payload: { level: 'cold' } })} className="whitespace-normal">
-            🤒 Choroba
+            🤒 {D.sickButton}
           </Button>
         </div>
       )}
@@ -143,32 +148,34 @@ export function NutritionCard({ day, engine }: { day: DayPlan; engine: Engine })
   const n = day.nutrition
   const target = engine.ctx.settings.body_weight_target_kg
   const tone = n.energy.startsWith('deficit') ? 'default' : 'accent'
+  const D = useT().classic.dayView
   return (
     <Card tone={tone}>
-      <CardTitle icon="🍽️">Żywienie</CardTitle>
+      <CardTitle icon="🍽️">{D.nutritionTitle}</CardTitle>
       <p className="text-sm font-medium">{n.label}</p>
       <div className="mt-1 divide-y divide-slate-200/70 dark:divide-slate-700/80">
-        <Row label="Białko">
+        <Row label={D.protein}>
           <span className="tabular-nums">{day.protein_g} g</span> <span className="text-xs font-normal text-slate-500 dark:text-slate-400">({num(n.protein_g_per_kg)} g/kg × {target} kg)</span>
         </Row>
         {n.on_bike_carbs_g_per_h[1] > 0 && (
-          <Row label="Na rowerze">
+          <Row label={D.onBike}>
             <span className="tabular-nums">
-              {n.on_bike_carbs_g_per_h[0]}–{n.on_bike_carbs_g_per_h[1]} g węgli/h
+              {D.carbsPerHour(n.on_bike_carbs_g_per_h[0], n.on_bike_carbs_g_per_h[1])}
             </span>
           </Row>
         )}
-        {n.post_workout && <Row label="Po treningu">{n.post_workout}</Row>}
+        {n.post_workout && <Row label={D.postWorkout}>{n.post_workout}</Row>}
       </div>
     </Card>
   )
 }
 
 export function NotesCard({ day }: { day: DayPlan }) {
+  const t = useT()
   if (!day.week_notes && !day.event && day.warnings.length === 0) return null
   return (
     <Card tone="warn">
-      <CardTitle icon="📌">Uwagi</CardTitle>
+      <CardTitle icon="📌">{t.classic.dayView.notesTitle}</CardTitle>
       <ul className="space-y-1 text-sm">
         {day.event && <li className="font-medium">{day.event}</li>}
         {day.week_notes && <li>{day.week_notes}</li>}

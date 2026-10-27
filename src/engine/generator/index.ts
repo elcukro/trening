@@ -3,10 +3,11 @@ import type { CalendarDay, PhaseId } from '../types'
 import { buildCalendar, seasonSummary } from '../calendar'
 import type { ISODate } from '../dates'
 import { planInputs, type AthleteProfile, type PlanInputs } from '../onboarding'
-import { HR_ZONES, POWER_ZONES, buildLibrary, testIdFor } from './library'
+import { hrZones, POWER_ZONES, buildLibrary, testIdFor } from './library'
 import { clampTuning, defaultTuning, type PlanTuning } from './tuning'
 import { buildSkeleton, fillWeek, layoutDays, type DayLayout, type Skeleton, type WeekSkeleton } from './structure'
-import { CADENCE, DAY_NAME, bikes, nutrition, phases, programGoal, programMeta, rules } from './texts'
+import { bikes, cadence, nutrition, phases, programGoal, programMeta, rules } from './texts'
+import { t as tr } from '../../i18n'
 
 /**
  * Generator planów (docs/32): z danych onboardingu (`planInputs`) buduje program w formacie `data/program.json`
@@ -15,6 +16,7 @@ import { CADENCE, DAY_NAME, bikes, nutrition, phases, programGoal, programMeta, 
  *
  * Zasada: kod liczy, model opowiada – tu nie ma żadnego tekstu z modelu. Wynik jest deterministyczny dla tych samych
  * wejść i daty; `GENERATOR_VERSION` rośnie przy każdej zmianie, która zmienia plan dla tych samych wejść.
+ * Teksty powstają w bieżącym języku (`getLang()`) – cache programu w `src/data/generated.ts` ma język w kluczu.
  */
 
 export const GENERATOR_VERSION = '1.0.0'
@@ -46,23 +48,24 @@ export function estimateFtp(weightKg: number | null, experience: PlanInputs['exp
 const KIT_KG = { road: 9, gravel: 10, mtb: 13 } as const
 
 function weekNotes(inp: PlanInputs, sk: Skeleton, wk: WeekSkeleton, lay: DayLayout, tpl: WeekTemplate): string | undefined {
-  const testName = { power: 'test FTP 20 min', hr: 'test progowy 30 min', rpe: 'pętla na czas' }[inp.measure]
+  const N = tr().engine.generator.weekNotes
+  const testName = N.testName[inp.measure]
   if (wk.index === 0) {
-    const testDay = lay.calibration && wk.test ? DAY_NAME[lay.calibration] : null
-    return testDay ? `Tydzień kalibracyjny: lekkie jazdy, a w ${testDay} ${testName}. Od jego wyniku liczą się strefy – do tego czasu plan używa szacunków.` : inp.intensity_allowed ? 'Tydzień wprowadzający: tylko lekkie jazdy, bez testu. Pierwszy test za kilka tygodni, gdy organizm przywyknie do regularności.' : 'Tydzień wprowadzający: lekkie jazdy. Plan zostaje spokojny do czasu rozmowy z lekarzem.'
+    if (lay.calibration && wk.test) return N.calibration(lay.calibration, testName)
+    return inp.intensity_allowed ? N.intro : N.introEasy
   }
   if (wk.index === 1) {
-    const key = lay.keys[0] && tpl[lay.keys[0]]?.[0] !== 'Z2' ? ` Jedyny dzień, w którym wolno się zmęczyć, to ${DAY_NAME[lay.keys[0]]}.` : ''
-    return `Start fazy bazowej. Jazdy spokojne mają być nudne – rozmowa pełnymi zdaniami.${key}`
+    const keyDay = lay.keys[0] && tpl[lay.keys[0]]?.[0] !== 'Z2' ? lay.keys[0] : null
+    return N.baseStart(keyDay)
   }
-  if (wk.type === 'deload') return 'Tydzień lżejszy: bez interwałów, długa krótsza. Nogi mają wyjść świeższe, niż weszły.'
-  if (wk.test && wk.phase === 'TAPER') return `Taper i ${testName} na koniec planu – rozliczenie tego, co zbudowałeś. Po nim ustawiamy następny cel.`
-  if (wk.test) return `W tym tygodniu ${testName} zamiast akcentu. Dzień wcześniej naprawdę lekko.`
-  if (wk.phase === 'TAPER') return wk.lastTaper ? 'Ostatni tydzień: krótko i świeżo. Nie nadrabiaj niczego – forma już jest.' : 'Taper: objętość w dół, intensywność tylko w krótkich pobudzeniach.'
+  if (wk.type === 'deload') return N.deload
+  if (wk.test && wk.phase === 'TAPER') return N.finalTest(testName)
+  if (wk.test) return N.test(testName)
+  if (wk.phase === 'TAPER') return wk.lastTaper ? N.lastTaper : N.taper
   const first = sk.weeks.find((w) => w.phase === wk.phase)
   if (first?.index === wk.index) {
-    if (wk.phase === 'II') return 'Nowa faza: interwały progowe. Pierwsze minuty każdego interwału prowadź po odczuciu, nie na siłę.'
-    if (wk.phase === 'III') return inp.goal.type === 'ftp' ? 'Blok VO2max: objętość w dół, intensywność w górę. Powtórzenia równo, nie sprintem na starcie.' : 'Faza specyficzna: praca pod wymagania celu.'
+    if (wk.phase === 'II') return N.build
+    if (wk.phase === 'III') return inp.goal.type === 'ftp' ? N.vo2 : N.specific
   }
   return undefined
 }
@@ -79,7 +82,7 @@ export function generateFromInputs(inp: PlanInputs, extras: GeneratorExtras, tod
   if (sk.weeks[0]!.test && !lay.calibration) {
     sk.weeks[0]!.test = false
     sk.weeks[0]!.type = 'prep'
-    notes.push('Żaden z dostępnych dni nie mieści testu kalibracyjnego – strefy zostają szacunkiem do pierwszego testu w planie.')
+    notes.push(tr().engine.generator.notes.noCalibrationDay)
   }
   const ctx = { inp, template: t.template, layout: lay, lib, state: { lastLong: Math.max(60, Math.min(extras.longest_ride_min, inp.day_caps_min[lay.long ?? 'sat'])), lastKeySunday: false } }
   const weeks: Record<string, WeekTemplate> = {}
@@ -89,7 +92,7 @@ export function generateFromInputs(inp: PlanInputs, extras: GeneratorExtras, tod
     if (note) tpl.notes = note
     weeks[String(wk.index)] = tpl
   }
-  if (sk.horizon === 'rolling' && 'date' in inp.goal && inp.goal.date) notes.push('Data celu jest dalej niż rok – plan obejmuje pierwsze 52 tygodnie i zostanie przedłużony.')
+  if (sk.horizon === 'rolling' && 'date' in inp.goal && inp.goal.date) notes.push(tr().engine.generator.notes.rolling)
 
   const phaseIds = [...new Set(sk.weeks.map((w) => w.phase))] as PhaseId[]
   const weight = extras.weight_kg ?? 75
@@ -112,7 +115,7 @@ export function generateFromInputs(inp: PlanInputs, extras: GeneratorExtras, tod
     volume_scale: 1,
     program_id: GENERATED_PROGRAM_ID,
     units: 'metric',
-    language: 'pl',
+    language: 'system',
   }
   const draft: Program = {
     version: `gen-${GENERATOR_VERSION}`,
@@ -120,11 +123,11 @@ export function generateFromInputs(inp: PlanInputs, extras: GeneratorExtras, tod
     nutrition: nutrition(inp, phaseIds, 1),
     bikes: bikes(inp),
     goal: programGoal(inp),
-    cadence: CADENCE,
+    cadence: cadence(),
     rules: rules(inp, sk, lay),
     features: inp.measure === 'power' ? ['ftp_suggestions'] : [],
     default_settings: settings,
-    hr_zones_lthr_fraction: HR_ZONES,
+    hr_zones_lthr_fraction: hrZones(),
     power_zones_ftp_fraction: POWER_ZONES,
     phases: phases(inp, sk),
     bike_workouts: lib,
@@ -156,6 +159,6 @@ export function generateProgram(profile: AthleteProfile, today: ISODate, tuning?
 
 export { buildLibrary, testIdFor, LADDERS } from './library'
 export { buildSkeleton, layoutDays, keyCountFor, programStart, MAX_WEEKS } from './structure'
-export { allowedTemplates, PLAN_TEMPLATES, templateById, TEMPLATE_IDS, type PlanTemplate, type TemplateId } from './templates'
+export { allowedTemplates, PLAN_TEMPLATES, templateById, templateText, TEMPLATE_IDS, type PlanTemplate, type TemplateId } from './templates'
 export { clampTuning, defaultTuning, isDefaultTuning, planTuningSchema, ruleWhy, tuningBounds, type PlanTuning, type TuningKey } from './tuning'
 export type { Skeleton, WeekSkeleton, DayLayout } from './structure'

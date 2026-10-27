@@ -1,3 +1,4 @@
+import { t } from '../i18n'
 /**
  * Odprawa przed jazdą (pkt 6, docs/14): z prognozy na okno treningu wyprowadza ostrzeżenia, propozycje (pod dachem,
  * krótszy sweet spot, upał), ubiór i żywienie w liczbach. Czysty TS – prognozę dostarcza `src/sync/weather.ts`.
@@ -113,13 +114,13 @@ export function summarizeWindow(day: DayForecast, w: RideWindow): WindowSummary 
 export function adviseRide(s: WindowSummary, opts: { hasSweetSpot?: boolean; indoorAvailable?: boolean } = {}): Advice[] {
   const out: Advice[] = []
   const icy = s.temp_min_c <= 1 && (s.precip_mm > 0 || s.precip_prob >= RAIN_PROB_WARN)
-  if (s.feels_c < INDOOR_BELOW_C) out.push({ kind: 'indoor', message: `Odczuwalne ${s.feels_c} °C – poniżej −10 °C plan zakłada 4×4 pod dachem.`, action: opts.indoorAvailable === false ? undefined : 'indoor' })
-  else if (icy) out.push({ kind: 'ice', message: `Opady przy ${s.temp_min_c} °C – ryzyko gołoledzi. Lepiej pod dachem (R4).`, action: opts.indoorAvailable === false ? undefined : 'indoor' })
-  else if (s.feels_c < SHORTEN_SS_BELOW_C && opts.hasSweetSpot) out.push({ kind: 'shorten_ss', message: `Odczuwalne ${s.feels_c} °C – skróć interwały sweet spot o jedną trzecią i wydłuż rozgrzewkę.` })
-  if (s.temp_max_c >= HEAT_FROM_C) out.push({ kind: 'heat', message: `Do ${s.temp_max_c} °C – upał: cele tętna 3–5 bpm niżej, 750 ml/h z solą (R13).` })
-  if (!icy && s.precip_prob >= RAIN_PROB_WARN) out.push({ kind: 'rain', message: `Deszcz ${s.precip_prob} % (${s.precip_mm} mm) – kurtka, światła, ostrożnie w zakrętach.` })
-  if (s.gust_kmh >= GUST_WARN_KMH || s.wind_kmh >= WIND_WARN_KMH) out.push({ kind: 'wind', message: `Wiatr ${s.wind_kmh} km/h (porywy ${s.gust_kmh}) – trasa pod wiatr na wyjeździe, z wiatrem do domu.` })
-  if (s.dark) out.push({ kind: 'dark', message: `Koniec jazdy po zachodzie (${s.sunset}) – światła i odblaski.` })
+  if (s.feels_c < INDOOR_BELOW_C) out.push({ kind: 'indoor', message: t().engine.weather.indoor(s.feels_c), action: opts.indoorAvailable === false ? undefined : 'indoor' })
+  else if (icy) out.push({ kind: 'ice', message: t().engine.weather.ice(s.temp_min_c), action: opts.indoorAvailable === false ? undefined : 'indoor' })
+  else if (s.feels_c < SHORTEN_SS_BELOW_C && opts.hasSweetSpot) out.push({ kind: 'shorten_ss', message: t().engine.weather.shortenSs(s.feels_c) })
+  if (s.temp_max_c >= HEAT_FROM_C) out.push({ kind: 'heat', message: t().engine.weather.heat(s.temp_max_c) })
+  if (!icy && s.precip_prob >= RAIN_PROB_WARN) out.push({ kind: 'rain', message: t().engine.weather.rain(s.precip_prob, s.precip_mm) })
+  if (s.gust_kmh >= GUST_WARN_KMH || s.wind_kmh >= WIND_WARN_KMH) out.push({ kind: 'wind', message: t().engine.weather.wind(s.wind_kmh, s.gust_kmh) })
+  if (s.dark) out.push({ kind: 'dark', message: t().engine.weather.dark(s.sunset) })
   return out
 }
 
@@ -144,25 +145,26 @@ export interface FuelPlan {
 /** Żywienie w liczbach: g węgli i ml płynów na cały trening (upał: górne widełki + sól). */
 export function fuelPlan(durationMin: number, carbsPerHour: [number, number], tempMaxC: number | null): FuelPlan | null {
   const h = durationMin / 60
-  if (carbsPerHour[1] <= 0 || durationMin < 60) return { carbs_g: [0, 0], fluid_ml: [Math.round(h * 500), Math.round(h * 750)], portions: 0, note: durationMin < 60 ? 'Do godziny wystarczy woda; jedz po treningu.' : 'Trening na czczo/bez jedzenia – tylko picie.' }
+  if (carbsPerHour[1] <= 0 || durationMin < 60) return { carbs_g: [0, 0], fluid_ml: [Math.round(h * 500), Math.round(h * 750)], portions: 0, note: durationMin < 60 ? t().engine.weather.fuelShort : t().engine.weather.fuelNone }
   const hot = tempMaxC != null && tempMaxC >= HEAT_FROM_C
   const carbs: [number, number] = [Math.round(h * carbsPerHour[0]), Math.round(h * carbsPerHour[1])]
   const fluid: [number, number] = hot ? [Math.round(h * 750), Math.round(h * 1000)] : [Math.round(h * 500), Math.round(h * 750)]
   const portions = Math.max(1, Math.round(((carbs[0] + carbs[1]) / 2) / 25))
-  return { carbs_g: carbs, fluid_ml: fluid, portions, note: hot ? 'Upał: sól w bidonie (0,5 g/l), pij co 15 min.' : 'Zacznij jeść po 30–40 min, potem co 20 min.' }
+  return { carbs_g: carbs, fluid_ml: fluid, portions, note: hot ? t().engine.weather.fuelHot : t().engine.weather.fuel }
 }
 
-/** Opis kodu WMO po polsku (skrót). */
+/** Opis kodu WMO w języku zawodnika (skrót). */
 export function weatherLabel(code: number): string {
-  if (code === 0) return 'słonecznie'
-  if (code <= 2) return 'częściowo pochmurno'
-  if (code === 3) return 'pochmurno'
-  if (code === 45 || code === 48) return 'mgła'
-  if (code >= 51 && code <= 57) return 'mżawka'
-  if (code >= 61 && code <= 67) return 'deszcz'
-  if (code >= 71 && code <= 77) return 'śnieg'
-  if (code >= 80 && code <= 82) return 'przelotny deszcz'
-  if (code >= 85 && code <= 86) return 'przelotny śnieg'
-  if (code >= 95) return 'burza'
-  return 'zmiennie'
+  const c = t().engine.weather.code
+  if (code === 0) return c.clear
+  if (code <= 2) return c.partly
+  if (code === 3) return c.cloudy
+  if (code === 45 || code === 48) return c.fog
+  if (code >= 51 && code <= 57) return c.drizzle
+  if (code >= 61 && code <= 67) return c.rain
+  if (code >= 71 && code <= 77) return c.snow
+  if (code >= 80 && code <= 82) return c.showers
+  if (code >= 85 && code <= 86) return c.snowShowers
+  if (code >= 95) return c.storm
+  return c.mixed
 }

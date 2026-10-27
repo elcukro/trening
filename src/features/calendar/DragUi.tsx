@@ -2,6 +2,8 @@ import { useCallback, useRef, useState } from 'react'
 import type { ISODate } from '@/engine/dates'
 import { Button } from '@/components/ui'
 import type { DragMove, DropState } from './useDragMove'
+import { fmtDayMonth } from '@/lib/dates'
+import { useT } from '@/i18n/react'
 
 /**
  * Wspólny język przenoszenia i zamiany dni (Kalendarz, Tydzień):
@@ -34,10 +36,12 @@ export function useFlash(ms = 1600): { flashing: (date: ISODate) => boolean; fla
   return { flashing, flash }
 }
 
-const dm = (iso: ISODate) => `${Number(iso.slice(8))}.${iso.slice(5, 7)}`
+const dm = (iso: ISODate) => fmtDayMonth(iso)
 
 /** Pasek podpowiedzi przypięty do dołu ekranu (nie przesuwa siatki w trakcie przeciągania) i „duch” pod palcem. */
 export function DragBar({ drag, verb, tapHint, dropHint, overHint, onCancel }: { drag: DragMove | null; verb: string; tapHint: string; dropHint: string; overHint?: (date: ISODate) => string; onCancel: () => void }) {
+  const t = useT()
+  const D = t.classic.drag
   if (!drag) return null
   const tone = drag.over ? 'border-emerald-500 bg-emerald-50 text-emerald-900 dark:bg-emerald-950 dark:text-emerald-100' : drag.reason ? 'border-red-400 bg-red-50 text-red-900 dark:bg-red-950 dark:text-red-100' : 'border-sky-400 bg-sky-50 text-sky-900 dark:bg-sky-950 dark:text-sky-100'
   return (
@@ -45,13 +49,13 @@ export function DragBar({ drag, verb, tapHint, dropHint, overHint, onCancel }: {
       <div className="pb-nav fixed inset-x-0 bottom-2 z-40 px-4 lg:bottom-6">
         <div className={`mx-auto flex max-w-md flex-wrap items-center justify-between gap-2 rounded-xl border-2 px-3 py-2 text-sm shadow-lg transition-colors ${tone}`} role="status">
           <span className="min-w-0 flex-1">
-            {verb}: <b>{drag.label}</b>
+            {D.verb(verb)} <b>{drag.label}</b>
             <span className="block text-xs">
-              {drag.over ? (overHint?.(drag.over) ?? `Puść tutaj: ${dm(drag.over)}`) : drag.reason ? `Tu nie można: ${drag.reason}` : `${drag.armed ? tapHint : dropHint} (niebieska ramka).`}
+              {drag.over ? (overHint?.(drag.over) ?? D.dropHere(dm(drag.over))) : drag.reason ? D.denied(drag.reason) : D.hint(drag.armed ? tapHint : dropHint)}
             </span>
           </span>
           <Button size="sm" variant="ghost" onClick={onCancel}>
-            Anuluj
+            {t.common.cancel}
           </Button>
         </div>
       </div>

@@ -1,7 +1,9 @@
-/** Formatowanie po polsku: przecinek dziesiętny, jednostki metryczne. */
+import { enCount, getLang, intlLocale, plCount } from '@/i18n/core'
+
+/** Formatowanie w języku zawodnika (docs/34): po polsku przecinek dziesiętny, po angielsku kropka; jednostki metryczne. */
 
 export function num(value: number, digits = 1): string {
-  return value.toLocaleString('pl-PL', { minimumFractionDigits: 0, maximumFractionDigits: digits })
+  return value.toLocaleString(intlLocale(), { minimumFractionDigits: 0, maximumFractionDigits: digits })
 }
 
 export function kg(value: number, digits = 1): string {
@@ -39,15 +41,11 @@ export function rpe(range: [number, number]): string {
   return range[0] === range[1] ? `RPE ${range[0]}` : `RPE ${range[0]}–${range[1]}`
 }
 
+/** Polska odmiana liczebnika („5 dni”). Teksty dwujęzyczne biorą formy ze słownika (`plCount` / `enCount` w `@/i18n`). */
 export function plural(n: number, one: string, few: string, many: string): string {
-  const abs = Math.abs(n)
-  if (abs === 1) return `${n} ${one}`
-  const mod10 = abs % 10
-  const mod100 = abs % 100
-  if (mod10 >= 2 && mod10 <= 4 && !(mod100 >= 12 && mod100 <= 14)) return `${n} ${few}`
-  return `${n} ${many}`
+  return plCount(n, one, few, many)
 }
 
 export function days(n: number): string {
-  return plural(n, 'dzień', 'dni', 'dni')
+  return getLang() === 'pl' ? plCount(n, 'dzień', 'dni', 'dni') : enCount(n, 'day', 'days')
 }

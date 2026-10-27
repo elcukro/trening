@@ -1,0 +1,5 @@
+/* Nazwa pod ikoną i opisy uprawnień po polsku (docs/34 § 4). */
+"CFBundleDisplayName" = "Bicycle Coach";
+"NSLocationWhenInUseUsageDescription" = "Bicycle Coach używa lokalizacji tylko do prognozy pogody na godzinę jazdy w Twojej okolicy. Pozycja zostaje na telefonie.";
+"NSHealthShareUsageDescription" = "Bicycle Coach czyta ze Zdrowia wagę, tętno spoczynkowe, HRV i sen, żeby poranny check-in wypełniał się sam, a trener widział zmęczenie, oraz wzrost, datę urodzenia i płeć, żeby wypełnić profil przy pierwszym uruchomieniu. Dane nie trafiają do reklam.";
+"NSHealthUpdateUsageDescription" = "Bicycle Coach może zapisywać do Zdrowia kalorie i białko z posiłków – tylko gdy włączysz to w ustawieniach.";

@@ -12,6 +12,7 @@ import { addDays, type ISODate } from '@/engine/dates'
 import { pushPayloadFor, wahoo } from '@/sync/wahoo'
 import { supabase } from '@/sync/supabase'
 import { todayISO } from '@/lib/dates'
+import { UserError, t } from '@/i18n'
 import { buildCoachContext, type CoachContext } from './coachContext'
 import type { CoachToolDeps } from './coachTools'
 import type { IosDay } from './useIos'
@@ -54,10 +55,11 @@ export function useCoach(d: IosDay, date: ISODate): { context: () => CoachContex
       upsertSessionLog,
       addOverride: (dt, kind, payload) => addOverride(dt, kind, payload),
       pushWahoo: async () => {
-        if (!supabase) throw new Error('Aplikacja działa lokalnie – wysyłka wymaga konta.')
+        const L = t().day.bolt
+        if (!supabase) throw new UserError(L.localOnly)
         const { items, remove } = await pushPayloadFor(today, 7, ctx, weeks)
         const res = await wahoo.push(items, 'update', remove)
-        const errors = res.results.filter((r) => r.status === 'error').map((r) => `${r.date}: ${r.error === 'not_connected' ? 'Wahoo nie jest połączone (Ustawienia → Integracje)' : (r.error ?? 'błąd')}`)
+        const errors = res.results.filter((r) => r.status === 'error').map((r) => L.dayError(r.date, r.error === 'not_connected' ? L.notConnected : (r.error ?? L.sendError)))
         return { pushed: res.pushed, errors: [...new Set(errors)] }
       },
     }),

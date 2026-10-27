@@ -4,14 +4,14 @@ import { useLiveQuery } from 'dexie-react-hooks'
 import { db } from '@/db'
 import type { DayPlan } from '@/engine/plan'
 import type { RuleAction } from '@/engine/rules'
-import { adviseRide, clothingFor, fuelPlan, summarizeWindow, weatherLabel, type Advice, type ClothingTable, type DayForecast, type WindowSummary } from '@/engine/weather'
+import { adviseRide, clothingFor, fuelPlan, summarizeWindow, weatherLabel, type Advice, type DayForecast, type WindowSummary } from '@/engine/weather'
 import { DEFAULT_RIDE_HOURS, getLocation, loadForecast, type RideHours } from '@/sync/weather'
-import clothingJson from '../../../data/clothing.json'
+import { loadClothing } from '@/data/clothing'
 import { Button, Card, CardSection, CardTitle, Inset, Metric } from '@/components/ui'
 import { num } from '@/lib/format'
 import { boltLabel, useBoltState } from './WahooStatus'
+import { useT } from '@/i18n/react'
 
-const CLOTHING = clothingJson as ClothingTable
 const ICON: Record<Advice['kind'], string> = { indoor: '🧊', ice: '🧊', shorten_ss: '🥶', heat: '🌡️', rain: '🌧️', wind: '💨', dark: '🔦' }
 
 /**
@@ -26,6 +26,8 @@ export function BriefingCard({ day, onAction, hasOverride }: { day: DayPlan; onA
   // bez miejscowości nie ma czego pobierać – „brak prognozy” wynika z ustawień, nie z sieci
   const forecast = loc === null ? null : fetched
   const bolt = boltLabel(useBoltState(day))
+  const t = useT()
+  const B = t.classic.briefing
 
   useEffect(() => {
     let alive = true
@@ -50,33 +52,34 @@ export function BriefingCard({ day, onAction, hasOverride }: { day: DayPlan; onA
   const summary: WindowSummary | null = dayF ? summarizeWindow(dayF, window) : null
   const hasSweetSpot = w.steps.some((s) => s.zone === 'SS' || s.zone === 'THR' || s.zone === 'Z4')
   const advice = summary ? adviseRide(summary, { hasSweetSpot, indoorAvailable: !!day.fallback_workout && !hasOverride }) : []
-  const clothing = summary ? clothingFor(summary, CLOTHING) : null
+  const clothing = summary ? clothingFor(summary, loadClothing()) : null
   const fuel = fuelPlan(day.bike.duration_min, day.nutrition.on_bike_carbs_g_per_h, summary?.temp_max_c ?? null)
   const startLabel = `${String(window.start_hour).padStart(2, '0')}:00`
 
   return (
     <Card tone={advice.some((a) => a.action) ? 'warn' : 'default'}>
       <CardTitle icon="🧭" right={summary ? <Metric>{num(summary.temp_c, 0)} °C · {weatherLabel(summary.code)}</Metric> : undefined}>
-        Odprawa przed jazdą
+        {B.title}
       </CardTitle>
-      {forecast === 'loading' && <p className="text-xs text-slate-500 dark:text-slate-400">Pobieram prognozę…</p>}
+      {forecast === 'loading' && <p className="text-xs text-slate-500 dark:text-slate-400">{B.loading}</p>}
       {forecast !== 'loading' && !summary && (
         <p className="text-xs text-slate-500 dark:text-slate-400">{loc === null ? (
             <>
-              Brak miejscowości prognozy – ustaw ją w{' '}
+              {B.noLocationBefore}
               <Link to="/wiecej/ustawienia" className="font-medium text-sky-700 underline dark:text-sky-300">
-                Ustawieniach
+                {B.noLocationLink}
               </Link>
-              .
+              {B.noLocationAfter}
             </>
-          ) : forecast === null ? 'Brak prognozy (offline i bez bufora).' : 'Prognoza obejmuje 7 dni – dla tego dnia jeszcze jej nie ma.'} Ubiór i żywienie liczę bez pogody.</p>
+          ) : forecast === null ? B.noForecast : B.tooFar} {B.withoutWeather}</p>
       )}
       {summary && (
         <>
           <p className="text-sm tabular-nums">
-            {loc?.name}, start {startLabel} ({day.bike.duration_min} min): odczuwalne <b>{num(summary.feels_c, 0)} °C</b> ({num(summary.temp_min_c, 0)}–{num(summary.temp_max_c, 0)}), wiatr {summary.wind_kmh} km/h
-            {summary.gust_kmh >= 40 ? ` (porywy ${summary.gust_kmh})` : ''}, deszcz {summary.precip_prob} %, zachód {summary.sunset}.
-            {forecast !== 'loading' && forecast?.stale ? ' Prognoza z bufora (offline).' : ''}
+            {B.summaryStart(loc?.name ?? '', startLabel, day.bike.duration_min)}
+            <b>{num(summary.feels_c, 0)} °C</b>
+            {B.summaryRest(num(summary.temp_min_c, 0), num(summary.temp_max_c, 0), summary.wind_kmh, summary.gust_kmh >= 40 ? summary.gust_kmh : null, summary.precip_prob, summary.sunset)}
+            {forecast !== 'loading' && forecast?.stale ? B.stale : ''}
           </p>
           {advice.length > 0 && (
             <ul className="mt-2 space-y-1.5">
@@ -88,7 +91,7 @@ export function BriefingCard({ day, onAction, hasOverride }: { day: DayPlan; onA
                     </span>
                     {a.action && onAction && (
                       <Button size="sm" variant="secondary" onClick={() => onAction({ kind: 'indoor', date: day.date, label: '', payload: {} })}>
-                        Zastosuj: pod dachem
+                        {B.applyIndoor}
                       </Button>
                     )}
                   </Inset>
@@ -96,19 +99,19 @@ export function BriefingCard({ day, onAction, hasOverride }: { day: DayPlan; onA
               ))}
             </ul>
           )}
-          {advice.length === 0 && <p className="mt-1 text-xs text-emerald-700 dark:text-emerald-300">Warunki dobre – bez uwag.</p>}
+          {advice.length === 0 && <p className="mt-1 text-xs text-emerald-700 dark:text-emerald-300">{B.allGood}</p>}
         </>
       )}
       {bolt && (
         <p className={`mt-2 text-xs ${bolt.tone === 'ok' ? 'text-emerald-700 dark:text-emerald-300' : bolt.tone === 'warn' ? 'text-amber-700 dark:text-amber-300' : 'text-slate-500 dark:text-slate-400'}`}>
-          ⌚ Bolt: {bolt.text}
-          {bolt.tone !== 'ok' ? ' – przycisk „Wyślij na Wahoo” jest pod treningiem.' : ' Zsynchronizuj licznik przed wyjazdem.'}
+          ⌚ {B.bolt(bolt.text)}
+          {bolt.tone !== 'ok' ? B.boltHint : B.boltSync}
         </p>
       )}
       <CardSection className="grid gap-3 sm:grid-cols-2">
         {clothing && (
           <div className="min-w-0">
-            <p className="text-xs font-medium text-slate-500 dark:text-slate-400">👕 Ubiór ({clothing.label.toLowerCase()})</p>
+            <p className="text-xs font-medium text-slate-500 dark:text-slate-400">👕 {B.clothing(clothing.label.toLowerCase())}</p>
             <ul className="mt-1 list-disc pl-4 text-sm leading-5">
               {clothing.items.map((i) => (
                 <li key={i}>{i}</li>
@@ -118,17 +121,17 @@ export function BriefingCard({ day, onAction, hasOverride }: { day: DayPlan; onA
         )}
         {fuel && (
           <div className="min-w-0">
-            <p className="text-xs font-medium text-slate-500 dark:text-slate-400">🍌 Żywienie na {day.bike.duration_min} min</p>
+            <p className="text-xs font-medium text-slate-500 dark:text-slate-400">🍌 {B.fuelTitle(day.bike.duration_min)}</p>
             <ul className="mt-1 list-disc pl-4 text-sm leading-5 tabular-nums">
               {fuel.carbs_g[1] > 0 ? (
                 <li>
-                  {fuel.carbs_g[0]}–{fuel.carbs_g[1]} g węgli ≈ {fuel.portions} porcji (żel, banan, 500 ml izotoniku = ~25 g)
+                  {B.carbs(fuel.carbs_g[0], fuel.carbs_g[1], fuel.portions)}
                 </li>
               ) : (
-                <li>bez jedzenia</li>
+                <li>{B.noFood}</li>
               )}
               <li>
-                {fuel.fluid_ml[0]}–{fuel.fluid_ml[1]} ml płynów {fuel.fluid_ml[1] > 1000 ? '(2 bidony)' : '(1 bidon)'}
+                {B.fluids(fuel.fluid_ml[0], fuel.fluid_ml[1], fuel.fluid_ml[1] > 1000 ? 2 : 1)}
               </li>
               <li className="text-slate-500 dark:text-slate-400">{fuel.note}</li>
             </ul>

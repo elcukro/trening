@@ -1,4 +1,5 @@
 import { db } from '@/db'
+import { getLang } from '@/i18n/core'
 import type { DayForecast } from '@/engine/weather'
 
 /**
@@ -43,8 +44,8 @@ export async function setRideHours(h: RideHours): Promise<void> {
 
 /** Wyszukiwanie miejscowości (Open-Meteo geocoding). */
 export async function geocode(name: string): Promise<WeatherLocation[]> {
-  const res = await fetch(`https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(name)}&count=5&language=pl&format=json`)
-  if (!res.ok) throw new Error(`Geokodowanie ${res.status}`)
+  const res = await fetch(`https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(name)}&count=5&language=${getLang()}&format=json`)
+  if (!res.ok) throw new Error(`Geocoding ${res.status}`)
   const data = (await res.json()) as { results?: { name: string; latitude: number; longitude: number; admin1?: string; country?: string }[] }
   return (data.results ?? []).map((r) => ({ name: [r.name, r.admin1, r.country].filter(Boolean).join(', '), lat: Math.round(r.latitude * 100) / 100, lon: Math.round(r.longitude * 100) / 100 }))
 }

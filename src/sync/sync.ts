@@ -126,9 +126,11 @@ const PROFILE_MAP: [keyof Settings, string][] = [
   ['birth_year', 'birth_year'],
   ['birth_date', 'birth_date'],
   ['diet_enabled', 'diet_enabled'],
+  ['language', 'language'],
+  ['locale', 'locale'],
 ]
 
-const PROFILE_TEXT_KEYS = new Set(['program_start', 'trip_start', 'program_id', 'athlete_name', 'birth_date'])
+const PROFILE_TEXT_KEYS = new Set(['program_start', 'trip_start', 'program_id', 'athlete_name', 'birth_date', 'language', 'locale'])
 
 /**
  * Profil scalany per pole (`profileMerge.ts`): wysyłamy tylko pola nowsze lokalnie, pobieramy tylko nowsze na serwerze.

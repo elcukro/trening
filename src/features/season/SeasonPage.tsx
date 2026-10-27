@@ -8,10 +8,13 @@ import { PHASE_COLOR, PHASE_SHORT, WEEK_TYPE_LABEL } from '@/lib/labels'
 import { Badge, Card, PageTitle } from '@/components/ui'
 import { useMemo } from 'react'
 import type { PhaseId } from '@/engine/types'
+import { useT } from '@/i18n/react'
 
 export function SeasonPage() {
   const engine = useEngine()
   const today = todayISO()
+  const t = useT()
+  const S = t.classic.seasonPage
   const { summary, weeks } = useMemo(() => {
     const days = buildCalendar(engine.ctx)
     return { summary: seasonSummary(engine.ctx, days), weeks: engine.weeks }
@@ -32,7 +35,7 @@ export function SeasonPage() {
 
   return (
     <div className="space-y-4">
-      <PageTitle sub={`${fmtDate(engine.ctx.settings.program_start)} → ${engine.ctx.program.meta.target.short} ${fmtDate(engine.ctx.settings.trip_start)}`}>Sezon</PageTitle>
+      <PageTitle sub={`${fmtDate(engine.ctx.settings.program_start)} → ${engine.ctx.program.meta.target.short} ${fmtDate(engine.ctx.settings.trip_start)}`}>{S.title}</PageTitle>
       <Card>
         <div className="flex h-4 w-full overflow-hidden rounded-lg">
           {phases.map((p) => (
@@ -44,7 +47,7 @@ export function SeasonPage() {
             <li key={p.id + p.from} className="flex min-w-0 items-center gap-2">
               <span className={`h-2.5 w-2.5 shrink-0 rounded-full ${PHASE_COLOR[p.id]}`} />
               <span className="truncate font-medium">{PHASE_SHORT[p.id]}</span>
-              <span className="shrink-0 text-slate-500 tabular-nums dark:text-slate-400">{p.count} tyg.</span>
+              <span className="shrink-0 text-slate-500 tabular-nums dark:text-slate-400">{S.weeks(p.count)}</span>
             </li>
           ))}
         </ul>
@@ -54,12 +57,12 @@ export function SeasonPage() {
         <table className="w-full min-w-[34rem] text-xs">
           <thead className="text-left text-slate-500 dark:text-slate-400">
             <tr>
-              <th className="py-1 pr-2">Tydz.</th>
-              <th className="py-1 pr-2">Daty</th>
-              <th className="py-1 pr-2">Typ</th>
-              <th className="py-1 pr-2 text-right">Godz.</th>
-              <th className="py-1 pr-2">Akcent</th>
-              <th className="py-1">Sob / Nd</th>
+              <th className="py-1 pr-2">{S.col.week}</th>
+              <th className="py-1 pr-2">{S.col.dates}</th>
+              <th className="py-1 pr-2">{S.col.type}</th>
+              <th className="py-1 pr-2 text-right">{S.col.hours}</th>
+              <th className="py-1 pr-2">{S.col.key}</th>
+              <th className="py-1">{S.col.weekend}</th>
             </tr>
           </thead>
           <tbody>
@@ -76,7 +79,7 @@ export function SeasonPage() {
                   </td>
                   <td className="py-1.5 pr-2 whitespace-nowrap">{fmtRange(w.start, w.end)}</td>
                   <td className="py-1.5 pr-2">
-                    {w.type === 'build' ? <span className="text-slate-500 dark:text-slate-400">build</span> : <Badge color={w.type === 'deload' ? 'bg-teal-600' : w.type === 'test' ? 'bg-indigo-600' : 'bg-violet-500'}>{WEEK_TYPE_LABEL[w.type as keyof typeof WEEK_TYPE_LABEL]}</Badge>}
+                    {w.type === 'build' ? <span className="text-slate-500 dark:text-slate-400">{WEEK_TYPE_LABEL.build}</span> : <Badge color={w.type === 'deload' ? 'bg-teal-600' : w.type === 'test' ? 'bg-indigo-600' : 'bg-violet-500'}>{WEEK_TYPE_LABEL[w.type as keyof typeof WEEK_TYPE_LABEL]}</Badge>}
                   </td>
                   <td className="py-1.5 pr-2 text-right tabular-nums whitespace-nowrap">{hours(w.bike_min)}</td>
                   <td className="py-1.5 pr-2 whitespace-nowrap">{w.key.join(', ')}</td>

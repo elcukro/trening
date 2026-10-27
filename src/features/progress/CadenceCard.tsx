@@ -5,9 +5,11 @@ import type { CadencePolicy } from '@/engine/schema'
 import { cadenceTrend, lowCadenceWarning } from '@/engine/cadence'
 import { Card, CardTitle, Inset, Metric } from '@/components/ui'
 import { fmtDayMonth } from '@/lib/dates'
+import { useT } from '@/i18n/react'
 
 /** Kadencja tygodniami (średnia ważona czasem z jazd) z celem i progiem z programu (`program.cadence`). */
 export function CadenceCard({ acts, today, policy }: { acts: RideRow[]; today: string; policy: CadencePolicy }) {
+  const tc = useT().progress.cadence
   const trend = useMemo(() => cadenceTrend(acts, today, 8), [acts, today])
   const warning = useMemo(() => lowCadenceWarning(trend, policy), [trend, policy])
   const last = trend.filter((w) => w.avg_rpm != null).at(-1)
@@ -15,10 +17,10 @@ export function CadenceCard({ acts, today, policy }: { acts: RideRow[]; today: s
   return (
     <Card>
       <CardTitle icon="🔄" right={last?.avg_rpm != null ? <Metric>{last.avg_rpm} rpm</Metric> : undefined}>
-        Kadencja
+        {tc.title}
       </CardTitle>
       {!hasData ? (
-        <p className="text-sm text-slate-500 dark:text-slate-400">Średnia kadencja tygodniami pojawi się po jazdach z czujnikiem kadencji (Bolt zapisuje ją do Stravy). Cel na płaskim: ≥ {policy.goal_rpm} rpm.</p>
+        <p className="text-sm text-slate-500 dark:text-slate-400">{tc.empty(policy.goal_rpm)}</p>
       ) : (
         <div className="h-36">
           <ResponsiveContainer>
@@ -39,7 +41,7 @@ export function CadenceCard({ acts, today, policy }: { acts: RideRow[]; today: s
         </Inset>
       )}
       <p className="mt-2 text-xs text-slate-500 dark:text-slate-400">
-        Linia = cel {policy.goal_rpm} rpm.{policy.tip ? ` ${policy.tip.charAt(0).toUpperCase()}${policy.tip.slice(1)}.` : ''}
+        {tc.line(policy.goal_rpm)}{policy.tip ? ` ${policy.tip.charAt(0).toUpperCase()}${policy.tip.slice(1)}.` : ''}
       </p>
     </Card>
   )

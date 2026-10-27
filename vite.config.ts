@@ -22,10 +22,11 @@ export default defineConfig({
       registerType: 'autoUpdate',
       includeAssets: ['apple-touch-icon.png', 'icon.svg', 'icon-src.png'],
       manifest: {
-        name: 'Trening',
-        short_name: 'Trening',
-        description: 'Osobisty asystent treningowy: rower i żywienie.',
-        lang: 'pl',
+        // manifest jest jeden dla obu języków (docs/34 § 4) – opis po angielsku, nazwa się nie tłumaczy
+        name: 'Bicycle Coach',
+        short_name: 'Bicycle Coach',
+        description: 'Your personal cycling coach: daily plan, rides and nutrition.',
+        lang: 'en',
         start_url: '/',
         scope: '/',
         display: 'standalone',

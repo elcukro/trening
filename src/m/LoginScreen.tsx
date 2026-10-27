@@ -3,6 +3,7 @@ import type { AuthState } from '@/sync/auth'
 import { OAuthButtons } from '@/components/OAuthButtons'
 import { friendlyError } from '@/lib/errors'
 import { IS_IOS_APP, haptic } from '@/native'
+import { useT } from '@/i18n/react'
 import { Btn } from './components/Chrome'
 import './login.css'
 
@@ -16,6 +17,7 @@ const CODE_LEN = 6
  * `/i` zostaje przy swoim ekranie (`src/ios/screens/LoginScreen.tsx`).
  */
 export function LoginScreen({ auth, onSkip }: { auth: AuthState; onSkip: () => void }) {
+  const t = useT()
   const [email, setEmail] = useState('')
   const [code, setCode] = useState('')
   const [link, setLink] = useState('')
@@ -47,19 +49,19 @@ export function LoginScreen({ auth, onSkip }: { auth: AuthState; onSkip: () => v
   const sendCode = (e?: FormEvent) => {
     e?.preventDefault()
     if (!validEmail || busy) return
-    void attempt('Wysyłam kod…', () => auth.signIn(email.trim()), () => {
+    void attempt(t.login.sendingCode, () => auth.signIn(email.trim()), () => {
       setCode('')
       setStep('code')
     })
   }
   const submitCode = (value = code) => {
     if (value.length < CODE_LEN || busy) return
-    void attempt('Loguję…', () => auth.signInWithCode(email.trim(), value), undefined)
+    void attempt(t.login.signingIn, () => auth.signInWithCode(email.trim(), value), undefined)
   }
   const submitLink = (e?: FormEvent) => {
     e?.preventDefault()
     if (!link.trim() || busy) return
-    void attempt('Loguję…', () => auth.signInWithLink(link.trim()))
+    void attempt(t.login.signingIn, () => auth.signInWithLink(link.trim()))
   }
 
   useEffect(() => {
@@ -71,13 +73,13 @@ export function LoginScreen({ auth, onSkip }: { auth: AuthState; onSkip: () => v
       <div className="m-login-hero">
         <img src="/m/art/login-hero.webp" alt="" width={1200} height={780} />
         <button type="button" className="m-login-skip" onClick={onSkip}>
-          Bez konta
+          {t.login.skip}
         </button>
       </div>
 
       <div className="m-login-body">
-        <h1 className="m-login-title">Trening</h1>
-        <p className="m-login-lead">Twój trener kolarski: plan na dziś, jazdy ze Stravy i trening na Bolcie w jednym miejscu.</p>
+        <h1 className="m-login-title">{t.common.appName}</h1>
+        <p className="m-login-lead">{t.login.lead}</p>
 
         {step === 'email' && (
           <>
@@ -85,7 +87,7 @@ export function LoginScreen({ auth, onSkip }: { auth: AuthState; onSkip: () => v
               <OAuthButtons auth={auth} returnPath={window.location.pathname} onError={setError} large />
             </div>
             <p className="m-login-or">
-              <span>albo kodem z maila</span>
+              <span>{t.login.orCode}</span>
             </p>
             <form onSubmit={sendCode} className="flex flex-col gap-3">
               <input
@@ -96,13 +98,13 @@ export function LoginScreen({ auth, onSkip }: { auth: AuthState; onSkip: () => v
                 autoCapitalize="none"
                 autoCorrect="off"
                 enterKeyHint="send"
-                placeholder="Twój e-mail"
+                placeholder={t.login.emailPlaceholder}
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                aria-label="Adres e-mail"
+                aria-label={t.login.emailLabel}
               />
               <Btn type="submit" disabled={!validEmail} busy={busy ?? false} className="w-full">
-                Wyślij kod
+                {t.login.sendCode}
               </Btn>
             </form>
           </>
@@ -111,9 +113,10 @@ export function LoginScreen({ auth, onSkip }: { auth: AuthState; onSkip: () => v
         {step === 'code' && (
           <div className="flex flex-col gap-3">
             <p className="m-sub">
-              Wysłaliśmy kod na <b>{email.trim()}</b>.{' '}
+              {t.login.codeSentBefore} <b>{email.trim()}</b>
+              {t.login.codeSentAfter}{' '}
               <button type="button" className="m-hit font-semibold" style={{ color: 'var(--accent)' }} onClick={() => setStep('email')}>
-                Zmień
+                {t.common.change}
               </button>
             </p>
             {/* jedno pole (podpowiedź kodu z Poczty, wklejanie) pod sześcioma kafelkami */}
@@ -130,7 +133,7 @@ export function LoginScreen({ auth, onSkip }: { auth: AuthState; onSkip: () => v
                   setCode(v)
                   if (v.length === CODE_LEN) submitCode(v)
                 }}
-                aria-label="Kod z maila, sześć cyfr"
+                aria-label={t.login.codeLabel}
               />
               {Array.from({ length: CODE_LEN }, (_, i) => (
                 <span key={i} className="m-login-digit" data-active={i === Math.min(code.length, CODE_LEN - 1) || undefined} aria-hidden>
@@ -139,20 +142,20 @@ export function LoginScreen({ auth, onSkip }: { auth: AuthState; onSkip: () => v
               ))}
             </label>
             <Btn onClick={() => submitCode()} disabled={code.length < CODE_LEN} busy={busy ?? false} className="w-full">
-              Zaloguj
+              {t.login.signIn}
             </Btn>
             <button type="button" className="m-login-link" disabled={!!busy} onClick={() => sendCode()}>
-              Nie doszedł? Wyślij ponownie
+              {t.login.resend}
             </button>
           </div>
         )}
 
         {step === 'link' && (
           <form onSubmit={submitLink} className="flex flex-col gap-3">
-            <input className="m-login-field" placeholder="https://…" value={link} onChange={(e) => setLink(e.target.value)} aria-label="Link z maila" enterKeyHint="go" />
-            <p className="m-foot m-dim px-1">Skopiuj cały adres z maila i wklej tutaj.</p>
+            <input className="m-login-field" placeholder="https://…" value={link} onChange={(e) => setLink(e.target.value)} aria-label={t.login.linkLabel} enterKeyHint="go" />
+            <p className="m-foot m-dim px-1">{t.login.linkHint}</p>
             <Btn type="submit" disabled={!link.trim()} busy={busy ?? false} className="w-full">
-              Zaloguj linkiem
+              {t.login.signInWithLink}
             </Btn>
           </form>
         )}
@@ -165,11 +168,11 @@ export function LoginScreen({ auth, onSkip }: { auth: AuthState; onSkip: () => v
 
         {!IS_IOS_APP && step !== 'code' && (
           <button type="button" className="m-login-link" onClick={() => setStep(step === 'link' ? 'email' : 'link')}>
-            {step === 'link' ? 'Wróć do kodu' : 'Mam link z maila'}
+            {step === 'link' ? t.login.backToCode : t.login.haveLink}
           </button>
         )}
 
-        <p className="m-login-foot">Bez konta zobaczysz sam plan – jazdy, check-iny i zmiany zostaną tylko na tym telefonie.</p>
+        <p className="m-login-foot">{t.login.noAccountNote}</p>
       </div>
     </div>
   )

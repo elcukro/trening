@@ -9,11 +9,12 @@ import type { HrZone } from '@/engine/schema'
 import { Card, CardSection, CardTitle, Metric } from '@/components/ui'
 import { num } from '@/lib/format'
 import { fmtDayMonth } from '@/lib/dates'
-
-const METHOD_PL = { power: 'moc', hr: 'tętno', rpe: 'RPE' } as const
+import { useT } from '@/i18n/react'
 
 /** Obciążenie treningowe (TSS) z jazd (Wahoo, Strava): tygodnie + lista ostatnich jazd ze zgodnością z planu vs wykonanie. */
 export function LoadCard({ acts, logs, ftp, lthr, zones, today }: { acts: RideRow[]; logs: SessionLog[]; ftp: number | null; lthr: number | null; zones: HrZone[]; today: string }) {
+  const t = useT()
+  const tl = t.progress.load
   const analyses = useLiveQuery(async () => (await db.kv.where('key').startsWith('analysis:').toArray()) as KeyValueRow[], [], [] as KeyValueRow[])
   const scoreOf = (id: string) => (analyses.find((k) => k.key === `analysis:${id}`)?.value as { score: number | null } | undefined)?.score ?? null
 
@@ -38,11 +39,11 @@ export function LoadCard({ acts, logs, ftp, lthr, zones, today }: { acts: RideRo
 
   return (
     <Card>
-      <CardTitle icon="🔥" right={<Metric>{thisWeek.tss} TSS w tym tyg.</Metric>}>
-        Obciążenie (TSS)
+      <CardTitle icon="🔥" right={<Metric>{tl.thisWeek(thisWeek.tss)}</Metric>}>
+        {tl.title}
       </CardTitle>
       {withLoad.length === 0 ? (
-        <p className="text-sm text-slate-500 dark:text-slate-400">TSS liczy się z mocy (miernik + FTP), z tętna (LTHR) albo z RPE wpisanego przy jeździe. Połącz Stravę i wpisz LTHR lub RPE.</p>
+        <p className="text-sm text-slate-500 dark:text-slate-400">{tl.empty}</p>
       ) : (
         <div className="h-36">
           <ResponsiveContainer>
@@ -50,7 +51,7 @@ export function LoadCard({ acts, logs, ftp, lthr, zones, today }: { acts: RideRo
               <CartesianGrid strokeDasharray="3 3" stroke="#94a3b8" strokeOpacity={0.3} />
               <XAxis dataKey="label" tick={{ fontSize: 10 }} />
               <YAxis tick={{ fontSize: 10 }} />
-              <Tooltip formatter={(v, name) => (name === 'tss' ? [`${v} TSS`, 'obciążenie'] : [v, name])} />
+              <Tooltip formatter={(v, name) => (name === 'tss' ? [`${v} TSS`, tl.tooltipName] : [v, name])} />
               <Bar dataKey="tss" name="tss" fill="#f97316" isAnimationActive={false} />
             </BarChart>
           </ResponsiveContainer>
@@ -65,12 +66,12 @@ export function LoadCard({ acts, logs, ftp, lthr, zones, today }: { acts: RideRo
                 <li key={a.key} className="grid grid-cols-[auto_minmax(0,1fr)_auto_auto] items-center gap-x-2 py-1.5 tabular-nums">
                   <span className="text-slate-500 dark:text-slate-400">{fmtDayMonth(a.date)}</span>
                   <span className="min-w-0 truncate" title={a.name ?? ''}>
-                    {a.name ?? 'Jazda'} <span className="text-slate-400 dark:text-slate-500">{num(a.moving_time_s / 3600, 1)} h{a.np_w && a.device_watts ? ` · NP ${a.np_w} W` : ''}</span>
+                    {a.name ?? t.progress.rideFallback} <span className="text-slate-400 dark:text-slate-500">{num(a.moving_time_s / 3600, 1)} h{a.np_w && a.device_watts ? ` · NP ${a.np_w} W` : ''}</span>
                   </span>
-                  <span className={`w-14 text-right ${score == null ? 'text-slate-400' : score >= 70 ? 'text-emerald-600 dark:text-emerald-400' : score >= 40 ? 'text-amber-600 dark:text-amber-400' : 'text-red-600 dark:text-red-400'}`} title="Zgodność z planem (kroki pracy w celu)">
+                  <span className={`w-14 text-right ${score == null ? 'text-slate-400' : score >= 70 ? 'text-emerald-600 dark:text-emerald-400' : score >= 40 ? 'text-amber-600 dark:text-amber-400' : 'text-red-600 dark:text-red-400'}`} title={tl.complianceTitle}>
                     {score != null ? `${score} %` : ''}
                   </span>
-                  <span className="w-16 text-right" title={load ? `IF ${load.if} · z ${METHOD_PL[load.method]}` : 'brak danych do TSS'}>
+                  <span className="w-16 text-right" title={load ? tl.ifFrom(num(load.if, 2), load.method) : tl.noTss}>
                     {load ? `${load.tss} TSS` : '—'}
                   </span>
                 </li>

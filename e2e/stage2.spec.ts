@@ -14,7 +14,7 @@ async function fillNumber(page: Page, label: string, value: string) {
 test('check-in zapisuje się i przetrwa przeładowanie', async ({ page }) => {
   await page.goto('/?today=2026-09-15')
   await page.getByRole('button', { name: /Poranny check-in/ }).click()
-  await fillNumber(page, 'Waga (kg)', '104,8')
+  await fillNumber(page, 'Masa ciała (kg)', '104,8')
   await fillNumber(page, 'Tętno spoczynkowe', '54')
   await page.getByRole('radiogroup', { name: 'Sen' }).getByRole('radio', { name: '4' }).click()
   await page.getByRole('radiogroup', { name: 'Nogi' }).getByRole('radio', { name: '3' }).click()
@@ -65,19 +65,19 @@ test('kalkulator podjazdu i konto bez konfiguracji', async ({ page }) => {
   await expect(page.getByText(/^\d+ min$/).first()).toBeVisible()
   await page.goto('/wiecej/ustawienia')
   // bez env: komunikat o braku konfiguracji; z env (.env.local): formularz magic link
-  await expect(page.getByText(/Brak konfiguracji Supabase/).or(page.getByRole('button', { name: 'Wyślij link logowania' }))).toBeVisible()
+  await expect(page.getByText(/Brak konfiguracji Supabase/).or(page.getByRole('button', { name: 'Wyślij kod logowania' }))).toBeVisible()
   await expect(page.getByRole('button', { name: 'Eksport JSON' })).toBeVisible()
 })
 
 test('Wahoo: przycisk wysyłki na dniu z treningiem, sekcja w Integracjach', async ({ page }) => {
   await page.goto('/?today=2026-09-30')
-  await expect(page.getByRole('button', { name: /Wyślij na Wahoo/ })).toBeVisible()
+  await expect(page.getByRole('button', { name: /Wyślij na Bolta/ })).toBeVisible()
   // stan na Bolcie: lokalnie nic nie wysłano – na karcie i w odprawie
   await expect(page.getByTestId('bolt-state')).toHaveText('nie wysłano na Bolta')
   await expect(page.getByText(/⌚ Bolt: nie wysłano na Bolta/)).toBeVisible()
   // dzień bez jazdy – bez przycisku
   await page.goto('/?today=2026-09-18')
-  await expect(page.getByRole('button', { name: /Wyślij na Wahoo/ })).toHaveCount(0)
+  await expect(page.getByRole('button', { name: /Wyślij na Bolta/ })).toHaveCount(0)
   await page.goto('/wiecej/ustawienia')
   await expect(page.getByText(/Zaloguj się, żeby połączyć Stravę i Wahoo/)).toBeVisible()
 })
@@ -107,7 +107,7 @@ test('Zamiany dni składają się w kolejności wykonania i dają się cofnąć'
   await expect(day('2026-10-06')).toHaveAttribute('data-drop', 'slot')
   await expect(day('2026-10-05')).toHaveAttribute('data-drop', 'blocked')
   await tu('2026-10-06').click()
-  await expect(page.getByText('Dni zamienione: 08.10 ↔ 06.10')).toBeVisible()
+  await expect(page.getByText('Dni zamienione: 8.10 ↔ 6.10')).toBeVisible()
   await expect(day('2026-10-08').getByText('Baza tlenowa Z2')).toBeVisible()
   await expect(day('2026-10-06').getByText('Wolne')).toBeVisible()
   // 2) poniedziałek (wolne) ↔ czwartek (teraz Z2): wcześniejszy dzień, późniejsza zamiana – Z2 ma trafić na poniedziałek
@@ -117,7 +117,7 @@ test('Zamiany dni składają się w kolejności wykonania i dają się cofnąć'
   await expect(day('2026-10-08').getByText('Wolne')).toBeVisible()
   await expect(day('2026-10-06').getByText('Wolne')).toBeVisible()
   // znacznik zamiany jest na obu dniach; powtórzenie ostatniej zamiany ją cofa
-  await expect(day('2026-10-08').getByRole('button', { name: /zamienione z 05\.10/ })).toBeVisible()
+  await expect(day('2026-10-08').getByRole('button', { name: /zamienione z 5\.10/ })).toBeVisible()
   await page.getByRole('button', { name: 'Zamień dzień 2026-10-08' }).click()
   await tu('2026-10-05').click()
   await expect(page.getByText(/Zamiana cofnięta/).first()).toBeVisible()
@@ -142,12 +142,12 @@ test('Tydzień: przeciągnięcie dnia na inny zamienia je, „Cofnij” w komuni
   await page.mouse.move(c.x + c.width / 2, c.y + c.height / 2, { steps: 6 })
   await page.mouse.move(b.x + b.width / 2, b.y + b.height / 2, { steps: 8 })
   await expect(day('2026-10-08')).toHaveAttribute('data-drop', 'over')
-  await expect(page.getByText('Puść, żeby zamienić z 08.10')).toBeVisible()
+  await expect(page.getByText('Puść, żeby zamienić z 8.10')).toBeVisible()
   await page.screenshot({ path: 'test-results/week-drag.png', fullPage: true })
   await page.mouse.up()
   await expect(day('2026-10-08').getByText('Baza tlenowa Z2')).toBeVisible()
   await expect(day('2026-10-06').getByText('Wolne')).toBeVisible()
-  await expect(page.getByText('Dni zamienione: 06.10 ↔ 08.10')).toBeVisible()
+  await expect(page.getByText('Dni zamienione: 6.10 ↔ 8.10')).toBeVisible()
   await page.getByRole('button', { name: 'Cofnij' }).click()
   await expect(day('2026-10-06').getByText('Baza tlenowa Z2')).toBeVisible()
   await expect(day('2026-10-08').getByText('Wolne')).toBeVisible()
@@ -185,7 +185,7 @@ test('Komunikaty o wyniku akcji: sukces i błąd', async ({ page }) => {
   // zapis lokalny: pasek postępu i potwierdzenie
   await page.goto('/?today=2026-09-15')
   await page.getByRole('button', { name: /Poranny check-in/ }).click()
-  await page.getByLabel('Waga (kg)').fill('104,2')
+  await page.getByLabel('Masa ciała (kg)').fill('104,2')
   await page.getByRole('button', { name: 'Zapisz' }).click()
   await expect(page.getByRole('status')).toContainText('Check-in zapisany')
   // akcja zakończona błędem: komunikat ze szczegółami (import niepoprawnej kopii – bez sieci, więc wynik jest pewny)
@@ -193,7 +193,7 @@ test('Komunikaty o wyniku akcji: sukces i błąd', async ({ page }) => {
   await page.setInputFiles('input[type="file"]', { name: 'zle.json', mimeType: 'application/json', buffer: Buffer.from('{"app":"cos innego"}') })
   await expect(page.getByRole('alert')).toContainText('Nie udało się')
   await page.getByRole('button', { name: 'szczegóły' }).click()
-  await expect(page.getByRole('alert')).toContainText(/kopia aplikacji Trening/i)
+  await expect(page.getByRole('alert')).toContainText(/kopia aplikacji Bicycle Coach/i)
   await page.screenshot({ path: 'test-results/toast.png' })
   await page.getByRole('alert').getByRole('button', { name: 'Zamknij' }).click()
   await expect(page.getByRole('alert')).toHaveCount(0)

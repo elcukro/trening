@@ -1,3 +1,5 @@
+import { intlLocale, localized } from '../i18n/core'
+import { en, pl } from '../i18n/dict'
 import type { ProgramGearTask } from './schema'
 import { addDays, compareISO, type ISODate } from './dates'
 
@@ -49,8 +51,8 @@ export interface GearTaskView {
   done_at: ISODate | null
 }
 
-export const BIKE_KIND_LABEL: Record<BikeKind, string> = { road: 'szosa', gravel: 'gravel', mtb: 'MTB', tt: 'czasówka', other: 'inny' }
-export const BRAKES_LABEL: Record<BrakeKind, string> = { disc: 'tarczowe', rim: 'szczękowe' }
+export const BIKE_KIND_LABEL: Record<BikeKind, string> = localized({ pl: pl.engine.gear.kind, en: en.engine.gear.kind })
+export const BRAKES_LABEL: Record<BrakeKind, string> = localized({ pl: pl.engine.gear.brakes, en: en.engine.gear.brakes })
 
 /** Klucz stanu zadania cyklicznego – jeden na szablon i rower, żeby odhaczenie jednego roweru nie gasiło drugiego. */
 export function templateTaskId(templateId: string, bikeId: string): string {
@@ -82,5 +84,5 @@ export function gearTasks(opts: { programTasks: ProgramGearTask[]; templates: Ge
     }
   }
 
-  return out.toSorted((a, b) => (a.due ?? '9999') < (b.due ?? '9999') ? -1 : (a.due ?? '9999') > (b.due ?? '9999') ? 1 : a.title.localeCompare(b.title, 'pl'))
+  return out.toSorted((a, b) => (a.due ?? '9999') < (b.due ?? '9999') ? -1 : (a.due ?? '9999') > (b.due ?? '9999') ? 1 : a.title.localeCompare(b.title, intlLocale()))
 }

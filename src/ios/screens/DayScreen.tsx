@@ -6,7 +6,7 @@ import type { ResolvedWorkout } from '@/engine/types'
 import { useToast } from '@/components/Toast'
 import { fmtLong, todayISO } from '@/lib/dates'
 import { minutes, num } from '@/lib/format'
-import { DAY_TYPE_LABEL } from '@/lib/labels'
+import { DAY_TYPE_LABEL, WEEKDAY_LONG } from '@/lib/labels'
 import { zoneColor } from '@/lib/zones'
 import { useIosDay, useRideScore } from '@/day/useIos'
 import { useBriefing } from '@/day/useBriefing'
@@ -20,14 +20,21 @@ import { AfterSheet } from '../components/AfterSheet'
 import { BriefingSheet } from '../components/BriefingSheet'
 import { CoachSheet } from '../components/CoachSheet'
 import { canChat } from '@/sync/coachChat'
+import { useT } from '@/i18n/react'
+import type { Messages } from '@/i18n'
 
-const WEEKDAY_TITLE: Record<string, string> = { mon: 'Poniedziałek', tue: 'Wtorek', wed: 'Środa', thu: 'Czwartek', fri: 'Piątek', sat: 'Sobota', sun: 'Niedziela' }
+/** Nazwa dnia tygodnia wielką literą (tytuł ekranu). */
+const weekdayTitle = (wd: string | undefined): string | undefined => {
+  const s = wd ? WEEKDAY_LONG[wd] : undefined
+  return s ? s.charAt(0).toUpperCase() + s.slice(1) : undefined
+}
 
 /** Pasek stref treningu – szerokość proporcjonalna do czasu kroku. */
 function Timeline({ workout }: { workout: ResolvedWorkout }) {
   const total = workout.steps.reduce((a, s) => a + s.duration_s, 0) || 1
+  const t = useT()
   return (
-    <div className="flex h-2 w-full gap-px overflow-hidden rounded-full" role="img" aria-label="Struktura treningu">
+    <div className="flex h-2 w-full gap-px overflow-hidden rounded-full" role="img" aria-label={t.ios.day.structure}>
       {workout.steps.map((s, i) => (
         <div key={i} className={zoneColor(s.zone)} style={{ width: `${(s.duration_s / total) * 100}%` }} />
       ))}
@@ -36,18 +43,20 @@ function Timeline({ workout }: { workout: ResolvedWorkout }) {
 }
 
 function StatusPill({ status, hasActivity }: { status: string | undefined; hasActivity: boolean }) {
-  if (status === 'done') return <Pill color="#fff" bg="var(--green)">Zrobione</Pill>
-  if (status === 'modified') return <Pill color="#fff" bg="var(--orange)">Inaczej</Pill>
-  if (status === 'skipped') return <Pill color="#fff" bg="var(--red)">Odpuszczone</Pill>
-  if (status === 'in_progress') return <Pill color="#fff" bg="var(--blue)">W trakcie</Pill>
-  if (hasActivity) return <Pill color="#fff" bg="var(--green)">Jazda zapisana</Pill>
+  const st = useT().ios.status
+  if (status === 'done') return <Pill color="#fff" bg="var(--green)">{st.done}</Pill>
+  if (status === 'modified') return <Pill color="#fff" bg="var(--orange)">{st.modified}</Pill>
+  if (status === 'skipped') return <Pill color="#fff" bg="var(--red)">{st.skipped}</Pill>
+  if (status === 'in_progress') return <Pill color="#fff" bg="var(--blue)">{st.inProgress}</Pill>
+  if (hasActivity) return <Pill color="#fff" bg="var(--green)">{st.rideSaved}</Pill>
   return null
 }
 
 function HeroRide({ day, status, hasActivity, onOpen }: { day: DayPlan; status: string | undefined; hasActivity: boolean; onOpen: () => void }) {
   const w = day.workout!
-  const t = mainTarget(w)
+  const target = mainTarget(w)
   const structure = structureLabel(w)
+  const stat = useT().ios.stat
   return (
     <Card onClick={onOpen} className="mb-4">
       <div className="p-4">
@@ -71,11 +80,11 @@ function HeroRide({ day, status, hasActivity, onOpen }: { day: DayPlan; status: 
         <div className="mt-3">
           <Timeline workout={w} />
         </div>
-        {t && (
+        {target && (
           <div className="mt-3 grid grid-cols-3 gap-2">
-            <Stat size="sm" value={t.watts ? `${t.watts[0]}–${t.watts[1]}` : t.zone} unit={t.watts ? 'W' : undefined} label={t.watts ? 'moc' : 'strefa'} />
-            <Stat size="sm" value={t.bpm ? `${t.bpm[0]}–${t.bpm[1]}` : `${t.rpe[0]}–${t.rpe[1]}`} unit={t.bpm ? 'bpm' : 'RPE'} label={t.bpm ? 'tętno' : 'odczucie'} />
-            <Stat size="sm" value={t.cadence ? `${t.cadence[0]}–${t.cadence[1]}` : '—'} unit={t.cadence ? 'rpm' : undefined} label="kadencja" />
+            <Stat size="sm" value={target.watts ? `${target.watts[0]}–${target.watts[1]}` : target.zone} unit={target.watts ? 'W' : undefined} label={target.watts ? stat.power : stat.zone} />
+            <Stat size="sm" value={target.bpm ? `${target.bpm[0]}–${target.bpm[1]}` : `${target.rpe[0]}–${target.rpe[1]}`} unit={target.bpm ? 'bpm' : 'RPE'} label={target.bpm ? stat.hr : stat.feel} />
+            <Stat size="sm" value={target.cadence ? `${target.cadence[0]}–${target.cadence[1]}` : '—'} unit={target.cadence ? 'rpm' : undefined} label={stat.cadence} />
           </div>
         )}
       </div>
@@ -84,6 +93,7 @@ function HeroRide({ day, status, hasActivity, onOpen }: { day: DayPlan; status: 
 }
 
 function HeroRest() {
+  const tx = useT().ios.day
   return (
     <Card className="mb-4">
       <div className="p-4">
@@ -91,10 +101,10 @@ function HeroRest() {
           <RowIcon color="var(--label-3)">
             <IconRest size={18} />
           </RowIcon>
-          <Pill>Wolne</Pill>
+          <Pill>{tx.rest}</Pill>
         </div>
-        <h2 className="ios-title2">Dzień wolny</h2>
-        <p className="ios-subhead ios-dim mt-1">Odpoczynek jest częścią planu. Spacer, sen, kilka minut rozciągania zginaczy bioder.</p>
+        <h2 className="ios-title2">{tx.restTitle}</h2>
+        <p className="ios-subhead ios-dim mt-1">{tx.restSub}</p>
       </div>
     </Card>
   )
@@ -135,11 +145,13 @@ function RideResult({
   className?: string
 }) {
   const verdict = rideVerdict(score)
+  const t = useT()
+  const tx = t.ios.day
   const details = [
     speedKmh != null ? `${num(speedKmh, 1)} km/h` : null,
     cadence ? `${cadence} rpm` : null,
     avgHr ? `${avgHr}${maxHr ? `/${maxHr}` : ''} bpm` : null,
-    ascentM ? `${Math.round(ascentM)} m w górę` : null,
+    ascentM ? tx.ascent(Math.round(ascentM)) : null,
   ].filter(Boolean)
   return (
     <Card className={className}>
@@ -153,15 +165,15 @@ function RideResult({
           )}
         </div>
         <div className="grid grid-cols-4 gap-2">
-          <Stat size="sm" value={activeMin} unit="min" label="czas" />
-          <Stat size="sm" value={powerW ?? avgHr ?? '—'} unit={powerW ? 'W' : avgHr ? 'bpm' : undefined} label={powerW ? powerLabel : 'śr. tętno'} />
-          <Stat size="sm" value={km != null ? num(km, 1) : '—'} unit={km != null ? 'km' : undefined} label="dystans" />
+          <Stat size="sm" value={activeMin} unit="min" label={tx.time} />
+          <Stat size="sm" value={powerW ?? avgHr ?? '—'} unit={powerW ? 'W' : avgHr ? 'bpm' : undefined} label={powerW ? powerLabel : tx.avgHr} />
+          <Stat size="sm" value={km != null ? num(km, 1) : '—'} unit={km != null ? 'km' : undefined} label={tx.distance} />
           <Stat size="sm" value={tss ?? '—'} label="TSS" />
         </div>
         {details.length > 0 && <p className="ios-foot ios-dim ios-num mt-3">{details.join(' · ')}</p>}
         {decoupling != null && (
           <p className="ios-foot ios-dim ios-num mt-1">
-            Pw:HR {num(decoupling, 1)} % · {decouplingNote(decoupling)}
+            Pw:HR {num(decoupling, 1)} % · {decouplingNote(t, decoupling)}
           </p>
         )}
         {verdict && <p className="ios-foot ios-dim mt-1">{verdict.text}</p>}
@@ -195,16 +207,18 @@ export function DayScreen() {
   const score = useRideScore(d.activities[0], d.day, d.ftp)
   const [sheet, setSheet] = useState<'checkin' | 'after' | 'brief' | 'coach' | null>(null)
   const [sending, setSending] = useState(false)
+  const t = useT()
+  const tx = t.ios.day
 
   const day = d.day
-  const title = isToday ? 'Dziś' : (WEEKDAY_TITLE[day?.weekday ?? ''] ?? 'Dzień')
+  const title = isToday ? t.common.today : (weekdayTitle(day?.weekday) ?? tx.day)
 
   if (!day) {
     return (
       <Screen title={title} subtitle={fmtLong(date)} back={isToday ? undefined : () => navigate(-1)}>
-        <Section footer="Plan obejmuje tylko dni programu. Zmień daty w ustawieniach pełnej aplikacji.">
+        <Section footer={tx.outsidePlanFooter}>
           <List>
-            <Row title="Ten dzień jest poza planem" />
+            <Row title={tx.outsidePlan} />
           </List>
         </Section>
       </Screen>
@@ -214,7 +228,7 @@ export function DayScreen() {
   async function send() {
     setSending(true)
     try {
-      await toast.run('Wysyłam na Bolta…', d.sendToBolt, (s) => (s === 'updated' ? 'Zaktualizowano na Bolcie. Zsynchronizuj licznik.' : 'Wysłano na Bolta. Zsynchronizuj licznik.'))
+      await toast.run(t.ios.bolt.sending, d.sendToBolt, (s) => (s === 'updated' ? t.ios.bolt.updated : t.ios.bolt.sent))
     } finally {
       setSending(false)
     }
@@ -235,18 +249,13 @@ export function DayScreen() {
 
   const next = d.flow.next
   const allDone = d.flow.progress.total > 0 && d.flow.progress.done === d.flow.progress.total
-  const nextLabel: Record<string, string> = {
-    checkin: 'Zrób check-in',
-    bolt: 'Wyślij na Bolta',
-    train: 'Pokaż trening',
-    log: 'Jak poszło?',
-  }
+  const nextLabel = tx.next as Record<string, string>
 
   const rideStatus = d.rideLog?.status
   const warnings = d.view.warnings
 
   return (
-    <Screen title={title} subtitle={`${fmtLong(date)} · tydzień ${day.week}`} back={isToday ? undefined : () => navigate(-1)}>
+    <Screen title={title} subtitle={tx.subtitle(fmtLong(date), day.week)} back={isToday ? undefined : () => navigate(-1)}>
       <SyncBanner />
       {day.bike && day.workout ? (
         <HeroRide day={day} status={rideStatus} hasActivity={d.activities.length > 0} onOpen={() => navigate(`/i/trening/${date}`)} />
@@ -264,7 +273,7 @@ export function DayScreen() {
         <div className="mb-8 px-4">
           <div className="ios-surface flex items-center justify-center gap-2 px-4 py-3" style={{ color: 'var(--green)' }}>
             <IconCheck size={20} />
-            <span className="ios-headline">Wszystko na dziś zrobione</span>
+            <span className="ios-headline">{tx.allDone}</span>
           </div>
         </div>
       ) : (
@@ -272,7 +281,7 @@ export function DayScreen() {
       )}
 
       {d.activities.length > 0 ? (
-        <Section header="Po treningu">
+        <Section header={tx.after}>
           {d.activities.map((a, i) => (
             <RideResult
               key={a.key}
@@ -280,7 +289,7 @@ export function DayScreen() {
               name={a.name}
               minutes={Math.round(a.moving_time_s / 60)}
               powerW={a.device_watts ? (a.np_w ?? a.avg_watts ?? null) : null}
-              powerLabel={a.np_w ? 'NP' : 'śr. moc'}
+              powerLabel={a.np_w ? 'NP' : tx.avgPower}
               avgHr={a.avg_hr ?? null}
               maxHr={a.max_hr ?? null}
               km={a.distance_m > 0 ? a.distance_m / 1000 : null}
@@ -295,15 +304,15 @@ export function DayScreen() {
           ))}
         </Section>
       ) : d.boltWorkouts.length > 0 ? (
-        <Section header="Po treningu" footer="Liczby z licznika. Gdy jazda dotrze ze Stravy, zastąpi te dane.">
+        <Section header={tx.after} footer={tx.boltFooter}>
           {d.boltWorkouts.map((w, i) => (
             <RideResult
               key={w.id}
               className={i > 0 ? 'mt-3' : ''}
-              name={w.name ?? 'Trening z Bolta'}
+              name={w.name ?? tx.boltWorkout}
               minutes={w.minutes_active}
               powerW={w.np_w ?? w.avg_power ?? null}
-              powerLabel={w.np_w ? 'NP' : 'śr. moc'}
+              powerLabel={w.np_w ? 'NP' : tx.avgPower}
               avgHr={w.avg_hr ?? null}
               maxHr={null}
               km={w.distance_km ?? null}
@@ -318,7 +327,7 @@ export function DayScreen() {
         </Section>
       ) : null}
 
-      <Section header="Dzisiaj">
+      <Section header={isToday ? tx.stepsToday : tx.stepsDay}>
         <List>
           {d.flow.steps.map((s) => {
             const meta = STEP_ICON[s.key]!
@@ -343,12 +352,12 @@ export function DayScreen() {
       </Section>
 
       {brief && (
-        <Section header="Przed wyjazdem">
+        <Section header={tx.beforeRide}>
           <List>
             <Row
               icon={<RowIcon color="var(--orange)"><IconSun size={18} /></RowIcon>}
-              title="Odprawa"
-              subtitle={brief.summary ? `${num(brief.summary.feels_c, 0)} °C odczuwalne · wiatr ${brief.summary.wind_kmh} km/h · deszcz ${brief.summary.precip_prob} %` : brief.location === null ? 'Bez prognozy – ustaw miejscowość w Więcej → Pogoda' : brief.loading ? 'Pobieram prognozę…' : 'Bez prognozy – ubiór i jedzenie z planu'}
+              title={tx.briefing}
+              subtitle={brief.summary ? tx.briefingSummary(num(brief.summary.feels_c, 0), brief.summary.wind_kmh, brief.summary.precip_prob) : brief.location === null ? tx.briefingNoLocation : brief.loading ? tx.briefingLoading : tx.briefingNoForecast}
               onClick={() => setSheet('brief')}
               accessory={<span className="ios-dim-3"><IconChevron size={18} /></span>}
             />
@@ -358,7 +367,7 @@ export function DayScreen() {
       )}
 
       {warnings.length > 0 && (
-        <Section header="Uwagi">
+        <Section header={tx.warnings}>
           <List>
             {warnings.map((w) => (
               <Row
@@ -380,27 +389,27 @@ export function DayScreen() {
       )}
 
       {d.view.overrides.length > 0 && (
-        <Section header="Zmiany w planie">
+        <Section header={tx.changes}>
           <List>
             {d.view.overrides.map((o) => (
-              <Row key={o.id} icon={<RowIcon color="var(--indigo)"><IconTimer size={18} /></RowIcon>} title={OVERRIDE_LABEL[o.kind] ?? o.kind} accessory={<button className="ios-btn ios-btn-sm ios-btn-gray shrink-0" onClick={() => void d.view.undo(o.id)}>Cofnij</button>} />
+              <Row key={o.id} icon={<RowIcon color="var(--indigo)"><IconTimer size={18} /></RowIcon>} title={(tx.override as Record<string, string>)[o.kind] ?? o.kind} accessory={<button className="ios-btn ios-btn-sm ios-btn-gray shrink-0" onClick={() => void d.view.undo(o.id)}>{t.common.undo}</button>} />
             ))}
           </List>
         </Section>
       )}
 
       {canChat && (
-        <Section header="Trener" footer="Podaj dane zdaniem (zapisze je), zapytaj o plan albo poproś o przeniesienie jazdy.">
+        <Section header={tx.coach} footer={tx.coachFooter}>
           <List>
-            <Row icon={<RowIcon color="var(--indigo)"><IconHeart size={18} /></RowIcon>} title="Zapytaj trenera" onClick={() => setSheet('coach')} accessory={<span className="ios-dim-3"><IconChevron size={18} /></span>} />
+            <Row icon={<RowIcon color="var(--indigo)"><IconHeart size={18} /></RowIcon>} title={tx.coachRow} onClick={() => setSheet('coach')} accessory={<span className="ios-dim-3"><IconChevron size={18} /></span>} />
           </List>
         </Section>
       )}
 
-      <Section header="Żywienie" footer={day.nutrition.post_workout ?? undefined}>
+      <Section header={tx.nutrition} footer={day.nutrition.post_workout ?? undefined}>
         <List>
-          <Row icon={<RowIcon color="var(--green)"><IconHeart size={18} /></RowIcon>} title="Dziś" subtitle={day.nutrition.label} value={`${day.protein_g} g białka`} />
-          {day.nutrition.on_bike_carbs_g_per_h[1] > 0 && <Row icon={<RowIcon color="var(--yellow)"><IconBolt size={18} /></RowIcon>} title="Na rowerze" value={`${day.nutrition.on_bike_carbs_g_per_h[0]}–${day.nutrition.on_bike_carbs_g_per_h[1]} g/h`} />}
+          <Row icon={<RowIcon color="var(--green)"><IconHeart size={18} /></RowIcon>} title={isToday ? t.common.today : tx.nutritionDay} subtitle={day.nutrition.label} value={tx.protein(day.protein_g)} />
+          {day.nutrition.on_bike_carbs_g_per_h[1] > 0 && <Row icon={<RowIcon color="var(--yellow)"><IconBolt size={18} /></RowIcon>} title={tx.onBike} value={`${day.nutrition.on_bike_carbs_g_per_h[0]}–${day.nutrition.on_bike_carbs_g_per_h[1]} g/h`} />}
         </List>
       </Section>
 
@@ -422,17 +431,9 @@ export function DayScreen() {
 }
 
 /** Odsprzężenie moc:tętno – ile tętno „ucieka” przy stałej mocy w drugiej połowie jazdy. */
-function decouplingNote(pct: number): string {
-  if (pct < 5) return 'bardzo dobra baza tlenowa'
-  if (pct < 10) return 'w normie'
-  return 'tętno mocno rosło – zmęczenie, upał albo za wysokie tempo'
-}
-
-const OVERRIDE_LABEL: Record<string, string> = {
-  indoor: 'Trening pod dachem',
-  sick: 'Dostosowane do choroby',
-  downgrade: 'Obniżony dzień',
-  skip: 'Trening pominięty',
-  swap: 'Dni zamienione',
-  move: 'Trening przeniesiony',
+function decouplingNote(t: Messages, pct: number): string {
+  const n = t.ios.day.decoupling
+  if (pct < 5) return n.good
+  if (pct < 10) return n.ok
+  return n.high
 }

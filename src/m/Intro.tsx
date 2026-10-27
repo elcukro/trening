@@ -121,6 +121,8 @@ function IntroScreen({ req }: { req: Request }) {
       <img className="intro-sky-art intro-orb" src={scene.time === 'night' ? '/m/art/night.png' : '/m/art/sun.png'} alt="" />
       <img className="intro-sky-art intro-cloud intro-cloud-a" src="/m/art/cloud.png" alt="" />
       <img className="intro-sky-art intro-cloud intro-cloud-b" src="/m/art/cloud.png" alt="" />
+      {/* tytuł „Bicycle Coach” (fal.ai, docs/34 § 1) – nad krajobrazem, pod nim słońce/księżyc i chmury */}
+      <img className="intro-sky-art intro-title" src="/m/intro/intro-title.webp" alt="" />
       <div className="intro-land">
         <div className="intro-fill" />
         <img className="intro-layer intro-far" src={`/m/intro/intro-${scene.season}-far.webp`} alt="" />

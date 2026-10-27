@@ -12,11 +12,11 @@ a calendar.json służy jako "golden file" do testów jednostkowych.
 
 Uruchom: python3 data/reference_generator.py
 """
-import json, datetime as dt, os
+import json, datetime as dt, os, re
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 D = dt.date
-PROGRAM_VERSION = "2026.10.26-1"
+PROGRAM_VERSION = "2026.10.27-1"
 
 DEFAULT_SETTINGS = {
     "program_start": "2026-09-14",          # poniedziałek tygodnia 1
@@ -33,7 +33,7 @@ DEFAULT_SETTINGS = {
     "timezone": "Europe/Warsaw",
     "volume_scale": 1.0,                    # 0.7–1.0: skaluje czas jazd niekluczowych (Z2, długie, pagórki)
     "units": "metric",
-    "language": "pl",
+    "language": "system",
 }
 
 # ---------------------------------------------------------------- STREFY
@@ -582,6 +582,55 @@ def week_table(days):
             weeks[wno]["event"] = wk.get("event"); weeks[wno]["notes"] = wk.get("notes")
     return [weeks[k] for k in sorted(weeks)]
 
+# ── Tłumaczenia treści programu (docs/34 § 5) ────────────────────────────────
+# Tabela „tekst polski” → „tekst angielski” wspólna dla obu programów. Do programu trafiają tylko użyte wpisy;
+# brak tłumaczenia któregokolwiek tekstu dla ludzi przerywa generowanie. Ta sama reguła wyboru tekstów co
+# `localizeProgram` (src/data/localize.ts) i test src/data/__tests__/translations.test.ts.
+TRANSLATION_SKIP_KEYS = {"id", "version", "program_id", "language", "kind", "phase", "type", "intensity", "day_type", "workout", "translations"}
+# pola, w których jednowyrazowa wartość też jest tekstem dla ludzi („Rozgrzewka”, „Rower”, „wyjazd”)
+TRANSLATION_WORD_KEYS = {"name", "title", "short", "default", "label", "until", "today", "after"}
+_PL_LETTERS = re.compile(r"[ąćęłńóśźżĄĆĘŁŃÓŚŹŻ]")
+_LOWER_WORD = re.compile(r"[a-ząćęłńóśźż]{2,}")
+
+
+def is_human_text(key, s):
+    """Tekst dla ludzi: ma słowo małymi literami i spację, polską literę albo stoi w polu z `TRANSLATION_WORD_KEYS`.
+    Kody („LONG 150′”, „Z2”, „SS_2x10”), daty i identyfikatory odpadają."""
+    if not _LOWER_WORD.search(s):
+        return False
+    return " " in s.strip() or bool(_PL_LETTERS.search(s)) or key in TRANSLATION_WORD_KEYS
+
+
+def human_texts(value, key=None, out=None):
+    """Wszystkie teksty dla ludzi w programie, w kolejności wystąpienia (bez powtórzeń)."""
+    out = {} if out is None else out
+    if key in TRANSLATION_SKIP_KEYS:
+        return out
+    if isinstance(value, str):
+        if is_human_text(key, value):
+            out.setdefault(value, None)
+    elif isinstance(value, list):
+        for v in value:
+            human_texts(v, key, out)  # element listy dziedziczy klucz rodzica (np. `rules.hierarchy`)
+    elif isinstance(value, dict):
+        for k, v in value.items():
+            human_texts(v, k, out)
+    return list(out)
+
+
+def add_translations(program, name):
+    """Dopisuje `program["translations"]["en"]` z tabeli data/i18n/program_en.json; przerywa przy brakach."""
+    with open(os.path.join(HERE, "i18n", "program_en.json"), encoding="utf-8") as f:
+        table = json.load(f)
+    texts = human_texts(program)
+    missing = [t for t in texts if t not in table]
+    if missing:
+        lines = "\n".join(f"  {json.dumps(t, ensure_ascii=False)}" for t in missing)
+        raise SystemExit(f"{name}: brak tłumaczeń w data/i18n/program_en.json ({len(missing)}):\n{lines}")
+    program["translations"] = {"en": {t: table[t] for t in texts}}
+    return program
+
+
 def main():
     # Parametry osobiste TEGO zawodnika – ustalone z jego danych, nie ogólne prawdy.
     # Ustawiamy je przed przebudowaniem biblioteki, żeby nie wyciekły na inne programy (docs/13 § 24.09.2026).
@@ -616,6 +665,7 @@ def main():
         "weeks": {str(k): v for k, v in WEEKS.items()},
         "week_summary": week_table(days),
     }
+    add_translations(program, "program.json")
     with open(os.path.join(HERE, "program.json"), "w", encoding="utf-8") as f:
         json.dump(program, f, ensure_ascii=False, indent=1)
     with open(os.path.join(HERE, "calendar.json"), "w", encoding="utf-8") as f:

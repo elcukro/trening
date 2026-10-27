@@ -1,6 +1,7 @@
 import type { PlanRow } from '@/db'
 import { GENERATED_PROGRAM_ID, GENERATOR_VERSION, generateFromInputs } from '@/engine/generator'
 import type { Program } from '@/engine/schema'
+import { getLang, type Lang } from '@/i18n/core'
 import { DEFAULT_PROGRAM_ID, loadProgram } from './program'
 
 /**
@@ -10,8 +11,8 @@ import { DEFAULT_PROGRAM_ID, loadProgram } from './program'
 
 let cache: { key: string; program: Program } | null = null
 
-export function generatedProgram(row: PlanRow): Program {
-  const key = `${row.id}|${row.updated_at}|${GENERATOR_VERSION}`
+export function generatedProgram(row: PlanRow, lang: Lang = getLang()): Program {
+  const key = `${row.id}|${row.updated_at}|${GENERATOR_VERSION}|${lang}`
   if (cache?.key === key) return cache.program
   const program = generateFromInputs(row.inputs, row.extras, row.generated_for, row.tuning).program
   cache = { key, program }
@@ -28,9 +29,9 @@ export function planOutdated(row: PlanRow | null | undefined): boolean {
  * `generated` bez wiersza (świeże urządzenie przed synchronizacją, usunięty plan) spada na program domyślny –
  * o tym, czy to chwilowe, decyduje `useSettings` (stan oczekiwania).
  */
-export function resolveProgram(programId: string | undefined, plan: PlanRow | null | undefined): Program {
-  if (programId === GENERATED_PROGRAM_ID && plan && !plan.deleted_at) return generatedProgram(plan)
-  return loadProgram(programId === GENERATED_PROGRAM_ID ? DEFAULT_PROGRAM_ID : programId)
+export function resolveProgram(programId: string | undefined, plan: PlanRow | null | undefined, lang: Lang = getLang()): Program {
+  if (programId === GENERATED_PROGRAM_ID && plan && !plan.deleted_at) return generatedProgram(plan, lang)
+  return loadProgram(programId === GENERATED_PROGRAM_ID ? DEFAULT_PROGRAM_ID : programId, lang)
 }
 
 export { GENERATED_PROGRAM_ID }

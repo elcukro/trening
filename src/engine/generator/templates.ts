@@ -1,5 +1,6 @@
 import { z } from 'zod'
 import { DISCIPLINES, GOAL_TYPES } from '../onboarding'
+import { getLang } from '../../i18n/core'
 import plansJson from '../../../data/templates/plan_templates.json'
 import workoutsJson from '../../../data/templates/workouts.json'
 
@@ -24,6 +25,8 @@ const familySchema = z.object({
   warmup_min: z.number().int(),
   description: z.string(),
   rungs: z.array(rung).min(1),
+  /** wersja angielska (docs/34) – `familyText` wybiera wg języka */
+  en: z.object({ label: z.string(), description: z.string() }).optional(),
 })
 export type WorkoutFamily = z.infer<typeof familySchema>
 
@@ -43,6 +46,8 @@ const templateSchema = z.object({
   name: z.string(),
   summary: z.string(),
   intensity: z.string(),
+  /** wersja angielska (docs/34) – `templateText` wybiera wg języka */
+  en: z.object({ name: z.string(), summary: z.string(), intensity: z.string() }).optional(),
   disciplines: z.array(z.enum(DISCIPLINES)).min(1),
   goals: z.array(z.enum(GOAL_TYPES)).min(1),
   min_experience: z.enum(EXPERIENCE),
@@ -61,6 +66,16 @@ const plansSchema = z.object({ version: z.number(), templates: z.array(templateS
 
 export const WORKOUT_FAMILIES = workoutsSchema.parse(workoutsJson).families as Record<LadderId, WorkoutFamily>
 export const PLAN_TEMPLATES: readonly PlanTemplate[] = plansSchema.parse(plansJson).templates
+
+/** Nazwa i opisy szablonu w bieżącym języku (prompt AI dostaje zawsze polskie z `PLAN_TEMPLATES`). */
+export function templateText(t: PlanTemplate): { name: string; summary: string; intensity: string } {
+  return getLang() === 'en' && t.en ? t.en : t
+}
+
+/** Nazwa i opis rodziny akcentów w bieżącym języku. */
+export function familyText(f: WorkoutFamily): { label: string; description: string } {
+  return getLang() === 'en' && f.en ? f.en : f
+}
 
 export function templateById(id: TemplateId): PlanTemplate {
   return PLAN_TEMPLATES.find((t) => t.id === id)!

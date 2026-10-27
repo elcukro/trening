@@ -19,7 +19,9 @@ import { useEmailSnapshots } from '@/sync/emailSnapshots'
 import { MovedBanner } from './MovedBanner'
 import { iosPathFor, isNavigateMessage, mobilePathFor } from './pushNav'
 import { usePushKeepalive } from '@/sync/usePush'
-import { SettingsGate, SettingsProvider, useEngine } from '@/app/useSettings'
+import { SettingsGate, SettingsProvider, useEngine, useSettings } from '@/app/useSettings'
+import { LangProvider, useLang, useT } from '@/i18n/react'
+import { t as tNow } from '@/i18n'
 import { todayISO } from '@/lib/dates'
 import { addDays, diffDays } from '@/engine/dates'
 import { days as daysLabel } from '@/lib/format'
@@ -39,28 +41,30 @@ const DesktopOnboarding = lazy(() => import('@/m/onboarding/DesktopOnboarding').
 const ReportPage = lazy(() => import('@/features/progress/ReportPage').then((m) => ({ default: m.ReportPage })))
 
 /** Dolny pasek na telefonie – bez zmian; Kalendarz jest dostępny przez „Więcej”. */
-const TABS = [
-  { to: '/', label: 'Dziś', icon: '📅', end: true },
-  { to: '/tydzien', label: 'Tydzień', icon: '🗓️' },
-  { to: '/postep', label: 'Postęp', icon: '📈' },
-  { to: '/biblioteka', label: 'Biblioteka', icon: '📚' },
-  { to: '/wiecej', label: 'Więcej', icon: '⋯' },
+type NavKey = 'today' | 'calendar' | 'week' | 'progress' | 'library' | 'more' | 'season' | 'gear' | 'trip' | 'settings'
+
+const TABS: { to: string; label: NavKey; icon: string; end?: boolean }[] = [
+  { to: '/', label: 'today', icon: '📅', end: true },
+  { to: '/tydzien', label: 'week', icon: '🗓️' },
+  { to: '/postep', label: 'progress', icon: '📈' },
+  { to: '/biblioteka', label: 'library', icon: '📚' },
+  { to: '/wiecej', label: 'more', icon: '⋯' },
 ]
 
 /** Boczna nawigacja na komputerze ma własną listę – z Kalendarzem, bez „Więcej”. */
-const SIDE_MAIN = [
-  { to: '/', label: 'Dziś', icon: '📅', end: true },
-  { to: '/kalendarz', label: 'Kalendarz', icon: '🗓️' },
-  { to: '/tydzien', label: 'Tydzień', icon: '📋' },
-  { to: '/postep', label: 'Postęp', icon: '📈' },
-  { to: '/biblioteka', label: 'Biblioteka', icon: '📚' },
+const SIDE_MAIN: { to: string; label: NavKey; icon: string; end?: boolean }[] = [
+  { to: '/', label: 'today', icon: '📅', end: true },
+  { to: '/kalendarz', label: 'calendar', icon: '🗓️' },
+  { to: '/tydzien', label: 'week', icon: '📋' },
+  { to: '/postep', label: 'progress', icon: '📈' },
+  { to: '/biblioteka', label: 'library', icon: '📚' },
 ]
 
-const SIDE_MORE: { to: string; label: string; feature?: Feature }[] = [
-  { to: '/wiecej/sezon', label: 'Sezon' },
-  { to: '/wiecej/sprzet', label: 'Sprzęt' },
-  { to: '/wiecej/wyjazd', label: 'Wyjazd', feature: 'trip' },
-  { to: '/wiecej/ustawienia', label: 'Ustawienia' },
+const SIDE_MORE: { to: string; label: NavKey; feature?: Feature }[] = [
+  { to: '/wiecej/sezon', label: 'season' },
+  { to: '/wiecej/sprzet', label: 'gear' },
+  { to: '/wiecej/wyjazd', label: 'trip', feature: 'trip' },
+  { to: '/wiecej/ustawienia', label: 'settings' },
 ]
 
 /** Ekran włączany przez program (`program.features`); bez niego trasa wraca do „Więcej”. */
@@ -70,8 +74,9 @@ function FeatureRoute({ feature, children }: { feature: Feature; children: React
 }
 
 function BottomNav() {
+  const tr = useT()
   return (
-    <nav className="safe-bottom fixed inset-x-0 bottom-0 z-20 border-t border-slate-200 bg-white/95 backdrop-blur lg:hidden dark:border-slate-700 dark:bg-slate-900/95" aria-label="Nawigacja główna">
+    <nav className="safe-bottom fixed inset-x-0 bottom-0 z-20 border-t border-slate-200 bg-white/95 backdrop-blur lg:hidden dark:border-slate-700 dark:bg-slate-900/95" aria-label={tr.classic.nav.mainLabel}>
       <ul className="mx-auto flex max-w-lg">
         {TABS.map((t) => (
           <li key={t.to} className="flex-1">
@@ -85,7 +90,7 @@ function BottomNav() {
               <span className="text-xl leading-none" aria-hidden>
                 {t.icon}
               </span>
-              {t.label}
+              {tr.classic.nav[t.label]}
             </NavLink>
           </li>
         ))}
@@ -97,6 +102,7 @@ function BottomNav() {
 /** Pasek sezonu: fazy w kolorach, znacznik „dziś” i odliczanie – ten sam obraz co na ekranie Sezon. */
 function SeasonStrip() {
   const engine = useEngine()
+  const t = useT()
   const today = todayISO()
   const { program_start, trip_start } = engine.ctx.settings
   const target = engine.ctx.program.meta.target
@@ -121,14 +127,14 @@ function SeasonStrip() {
         <span className="text-xs font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">{engine.ctx.program.meta.short}</span>
         <span className="text-xs tabular-nums text-slate-500 dark:text-slate-400">{Math.round((elapsed / span) * 100)} %</span>
       </div>
-      <p className="mt-0.5 text-sm font-semibold">{left > 0 ? `za ${daysLabel(left)}` : left === 0 ? target.today : target.after}</p>
+      <p className="mt-0.5 text-sm font-semibold">{left > 0 ? t.classic.season.inDays(daysLabel(left)) : left === 0 ? target.today : target.after}</p>
       <div className="relative mt-2 flex h-2 w-full overflow-hidden rounded-full">
         {phases.map((p, i) => (
           <div key={`${p.id}-${i}`} className={PHASE_COLOR[p.id]} style={{ width: `${(p.count / total) * 100}%` }} title={PHASE_SHORT[p.id]} />
         ))}
         <span className="absolute top-0 h-2 w-0.5 bg-slate-900 dark:bg-white" style={{ left: `${(elapsed / span) * 100}%` }} aria-hidden />
       </div>
-      {currentPhase && <p className="mt-1.5 truncate text-xs text-slate-500 dark:text-slate-400">{PHASE_SHORT[currentPhase.phase]} · tydzień {currentPhase.week}</p>}
+      {currentPhase && <p className="mt-1.5 truncate text-xs text-slate-500 dark:text-slate-400">{t.classic.season.phaseWeek(PHASE_SHORT[currentPhase.phase], currentPhase.week)}</p>}
     </div>
   )
 }
@@ -136,10 +142,11 @@ function SeasonStrip() {
 /** Boczna nawigacja na komputerze (≥ 1024 px); na telefonie zostaje dolny pasek. */
 function SideNav() {
   const engine = useEngine()
+  const tr = useT()
   return (
-    <nav className="sticky top-0 hidden h-dvh w-64 shrink-0 flex-col border-r border-slate-200 bg-white px-4 py-6 lg:flex dark:border-slate-700 dark:bg-slate-900" aria-label="Nawigacja główna">
+    <nav className="sticky top-0 hidden h-dvh w-64 shrink-0 flex-col border-r border-slate-200 bg-white px-4 py-6 lg:flex dark:border-slate-700 dark:bg-slate-900" aria-label={tr.classic.nav.mainLabel}>
       <div className="mb-6 px-3">
-        <div className="text-xl font-bold tracking-tight">Trening</div>
+        <div className="text-xl font-bold tracking-tight">{tr.common.appName}</div>
         <div className="text-xs text-slate-500 dark:text-slate-400">{engine.ctx.program.meta.short}</div>
       </div>
       <ul className="space-y-1">
@@ -155,12 +162,12 @@ function SideNav() {
               <span className="w-6 text-center text-lg" aria-hidden>
                 {t.icon}
               </span>
-              {t.label}
+              {tr.classic.nav[t.label]}
             </NavLink>
           </li>
         ))}
       </ul>
-      <p className="mt-6 mb-1 px-3 text-xs font-semibold uppercase tracking-wide text-slate-400 dark:text-slate-500">Więcej</p>
+      <p className="mt-6 mb-1 px-3 text-xs font-semibold uppercase tracking-wide text-slate-400 dark:text-slate-500">{tr.classic.nav.more}</p>
       <ul className="space-y-0.5 text-sm">
         {SIDE_MORE.filter((t) => !t.feature || engine.ctx.program.features.includes(t.feature)).map((t) => (
           <li key={t.to}>
@@ -170,7 +177,7 @@ function SideNav() {
                 `flex min-h-10 items-center rounded-xl px-3 transition-colors ${isActive ? 'bg-slate-100 font-semibold text-slate-900 dark:bg-slate-800 dark:text-white' : 'text-slate-600 hover:bg-slate-100 hover:text-slate-900 dark:text-slate-300 dark:hover:bg-slate-800 dark:hover:text-white'}`
               }
             >
-              {t.label}
+              {tr.classic.nav[t.label]}
             </NavLink>
           </li>
         ))}
@@ -242,12 +249,14 @@ class ErrorBoundary extends Component<{ children: ReactNode }, { error: Error | 
   }
   render() {
     if (this.state.error) {
+      // poza LangProvider – tekst z bieżącego języka modułu
+      const t = tNow()
       return (
         <div className="p-6">
-          <h1 className="text-lg font-bold">Coś poszło nie tak</h1>
+          <h1 className="text-lg font-bold">{t.classic.crash.title}</h1>
           <pre className="mt-2 whitespace-pre-wrap text-xs text-red-600">{this.state.error.message}</pre>
           <button className="mt-4 min-h-11 rounded-xl bg-sky-600 px-4 text-sm font-semibold text-white hover:bg-sky-500" onClick={() => location.reload()}>
-            Odśwież
+            {t.classic.crash.reload}
           </button>
         </div>
       )
@@ -258,16 +267,36 @@ class ErrorBoundary extends Component<{ children: ReactNode }, { error: Error | 
 
 /** Ekran oczekiwania bez danych programu: nie wiadomo jeszcze, czyje ustawienia pokazać. */
 function WaitingScreen({ waiting, sync }: { waiting: 'settings' | 'session' | 'profile' | 'plan'; sync: { state: string; error?: string } }) {
-  const text = waiting === 'profile' ? (sync.state === 'syncing' ? 'Pobieram ustawienia konta…' : 'Czekam na ustawienia konta…') : waiting === 'plan' ? 'Pobieram Twój plan…' : waiting === 'session' ? 'Sprawdzam logowanie…' : 'Wczytuję…'
+  const t = useT()
+  const w = t.classic.waiting
+  const text = waiting === 'profile' ? (sync.state === 'syncing' ? w.profileSyncing : w.profile) : waiting === 'plan' ? w.plan : waiting === 'session' ? w.session : w.settings
   return (
     <div className="flex min-h-dvh w-full items-center justify-center bg-slate-50 px-6 text-center dark:bg-slate-900" role="status" aria-live="polite">
       <div>
-        <div className="text-lg font-semibold text-slate-800 dark:text-slate-100">Trening</div>
+        <div className="text-lg font-semibold text-slate-800 dark:text-slate-100">{t.common.appName}</div>
         <div className="mt-2 text-sm text-slate-500 dark:text-slate-400">{text}</div>
         {sync.error && <div className="mt-2 text-xs text-amber-600 dark:text-amber-400">{sync.error}</div>}
       </div>
     </div>
   )
+}
+
+function LoadingLine() {
+  const t = useT()
+  return <p className="py-8 text-center text-sm text-slate-500">{t.common.loading}</p>
+}
+
+/** Język z ustawień konta (`system` | `pl` | `en`, docs/34); zmiana przemontowuje ekrany. */
+function LangFromSettings({ children }: { children: ReactNode }) {
+  const { settings, ready, update } = useSettings()
+  const lang = useLang()
+  const { session } = useAuth()
+  // tylko zalogowane konto: zapis bez konta założyłby lokalny wiersz ustawień i ominął czekanie na profil po logowaniu
+  // serwer (maile, push, AI) pisze w języku, w którym aplikacja ostatnio się wyświetlała
+  useEffect(() => {
+    if (ready && session && settings.locale !== lang) void update({ locale: lang })
+  }, [ready, session, settings.locale, lang, update])
+  return <LangProvider choice={settings.language}>{children}</LangProvider>
 }
 
 export function App() {
@@ -277,6 +306,7 @@ export function App() {
       <Intro />
       <ToastProvider>
         <SettingsProvider>
+        <LangFromSettings>
         <MovedBanner />
         <BrowserRouter>
           <PushNavigator />
@@ -297,9 +327,9 @@ export function App() {
               <Route path="tydzien/:date" element={<ModeGate><WeekPage /></ModeGate>} />
               <Route path="kalendarz" element={<CalendarPage />} />
               <Route path="kalendarz/:month" element={<CalendarPage />} />
-              <Route path="postep" element={<ModeGate><Suspense fallback={<p className="py-8 text-center text-sm text-slate-500">Ładowanie…</p>}><ProgressPage /></Suspense></ModeGate>} />
-              <Route path="postep/tydzien/:monday" element={<Suspense fallback={<p className="py-8 text-center text-sm text-slate-500">Ładowanie…</p>}><ReportPage kind="week" /></Suspense>} />
-              <Route path="postep/miesiac/:month" element={<Suspense fallback={<p className="py-8 text-center text-sm text-slate-500">Ładowanie…</p>}><ReportPage kind="month" /></Suspense>} />
+              <Route path="postep" element={<ModeGate><Suspense fallback={<LoadingLine />}><ProgressPage /></Suspense></ModeGate>} />
+              <Route path="postep/tydzien/:monday" element={<Suspense fallback={<LoadingLine />}><ReportPage kind="week" /></Suspense>} />
+              <Route path="postep/miesiac/:month" element={<Suspense fallback={<LoadingLine />}><ReportPage kind="month" /></Suspense>} />
               <Route path="biblioteka" element={<LibraryPage />} />
               <Route path="biblioteka/trening/:id" element={<WorkoutPage />} />
               <Route path="biblioteka/strefy" element={<ZonesPage />} />
@@ -319,6 +349,7 @@ export function App() {
           </Routes>
           </SettingsGate>
         </BrowserRouter>
+        </LangFromSettings>
         </SettingsProvider>
       </ToastProvider>
     </ErrorBoundary>

@@ -6,7 +6,8 @@
  */
 import webpush from 'npm:web-push@3.6.7'
 import { CORS, env, json } from '../_shared/env.ts'
-import { adminClient, userFromRequest } from '../_shared/supabase.ts'
+import { adminClient, requestLang, userFromRequest, userLang } from '../_shared/supabase.ts'
+import { strings } from '../_shared/i18n.ts'
 import type { SupabaseClient } from 'npm:@supabase/supabase-js@2'
 
 const SUBJECT = 'mailto:noreply@trening-inky.vercel.app'
@@ -79,7 +80,7 @@ function todayWarsaw(): string {
 Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') return new Response(null, { headers: CORS })
   if (req.method !== 'POST') return json({ error: 'method' }, 405)
-  const body = (await req.json().catch(() => ({}))) as { action?: string; kind?: 'morning' | 'evening'; secret?: string; title?: string; text?: string; payloads?: Record<string, Payload> }
+  const body = (await req.json().catch(() => ({}))) as { action?: string; kind?: 'morning' | 'evening' | 'weekly'; secret?: string; title?: string; text?: string; payloads?: Record<string, Payload> }
 
   if (body.action === 'public_key') return json({ public_key: env('VAPID_PUBLIC_KEY') })
 
@@ -101,18 +102,19 @@ Deno.serve(async (req) => {
       const subs = await subsFor(admin, userId)
       if (subs.length === 0) continue
       // Bolt: gdy ostatnia wysyłka planu jest starsza niż 36 h, treningi na liczniku mogą być nieaktualne
+      const P = strings(await userLang(admin, userId)).push
       let boltHint = ''
       if (kind === 'evening') {
         const { data: wahoo } = await admin.from('integration_tokens').select('user_id').eq('user_id', userId).eq('provider', 'wahoo').maybeSingle()
         if (wahoo) {
           const { data: lastPush } = await admin.from('wahoo_pushes').select('updated_at').eq('user_id', userId).order('updated_at', { ascending: false }).limit(1).maybeSingle()
           const age = lastPush ? Date.now() - new Date(lastPush.updated_at as string).getTime() : Infinity
-          if (age > 36 * 3600 * 1000) boltHint = ' Otwórz aplikację – treningi na Bolcie od dawna nie były odświeżane.'
+          if (age > 36 * 3600 * 1000) boltHint = ` ${P.boltStale}`
         }
       }
       const payload = body.payloads?.[userId] ?? {
-        title: kind === 'morning' ? 'Plan na dziś' : kind === 'evening' ? 'Odhacz dzisiejszy trening' : 'Przegląd tygodnia',
-        body: kind === 'morning' ? 'Otwórz aplikację, żeby zobaczyć dzisiejszy trening i odprawę (pogoda, ubiór, jedzenie).' : kind === 'evening' ? `Wpisz RPE i jedno zdanie o jeździe – zajmie 20 s.${boltHint}` : 'Godziny, TSS, co poszło i co czeka w przyszłym tygodniu.',
+        title: kind === 'morning' ? P.morningTitle : kind === 'evening' ? P.eveningTitle : P.weeklyTitle,
+        body: kind === 'morning' ? P.morningBody : kind === 'evening' ? `${P.eveningBody}${boltHint}` : P.weeklyBody,
         url: kind === 'weekly' ? `/postep/tydzien/${weekMonday}` : kind === 'evening' ? `/dzien/${date}` : '/',
         tag: `${kind}-${date}`,
       }
@@ -130,7 +132,8 @@ Deno.serve(async (req) => {
   if (body.action === 'test') {
     const subs = await subsFor(admin, user.id)
     if (subs.length === 0) return json({ error: 'no_subscriptions' }, 400)
-    const res = await sendTo(admin, subs, { title: body.title ?? 'Trening', body: body.text ?? 'Powiadomienia działają.', url: '/', tag: 'test' })
+    const S = strings(await requestLang(req, admin, user.id))
+    const res = await sendTo(admin, subs, { title: body.title ?? S.appName, body: body.text ?? S.push.testBody, url: '/', tag: 'test' })
     // wygasłe subskrypcje (404/410) są wykreślane po drodze – test jest udany, gdy dotarł na choć jedno żywe urządzenie
     return json({ ok: res.ok > 0, sent: res.ok, failed: res.failed, expired: res.expired, detail: res.detail })
   }

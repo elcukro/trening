@@ -12,9 +12,12 @@ import { num } from '@/lib/format'
 import { useAuth } from '@/sync/auth'
 import { resetSyncCursors, runSync } from '@/sync/sync'
 import { fmtDayMonth } from '@/lib/dates'
+import { helpUrl } from '@/lib/help'
 import { useOpenFull, useSyncStatus, useUiMode } from '@/day/useIos'
 import { Btn, List, Row, RowIcon, Screen, Section, Seg, Sheet } from '../components/Chrome'
 import { IconBolt, IconCheck, IconChevron, IconFlag, IconGear, IconHeart, IconSun, IconWatch } from '../components/Icons'
+import { useT } from '@/i18n/react'
+import type { Messages } from '@/i18n'
 
 /** Moje liczby: FTP i LTHR – jedyne ustawienia, które zmienia się często (po każdym teście). */
 function NumbersSheet({ onClose }: { onClose: () => void }) {
@@ -32,6 +35,8 @@ function NumbersSheetLoaded({ onClose }: { onClose: () => void }) {
   const [lthr, setLthr] = useState(settings.lthr_bpm != null ? String(settings.lthr_bpm) : '')
   const [power, setPower] = useState(settings.power_meter)
   const [busy, setBusy] = useState(false)
+  const t = useT()
+  const tx = t.ios.more.numbers
 
   async function save() {
     setBusy(true)
@@ -50,35 +55,35 @@ function NumbersSheetLoaded({ onClose }: { onClose: () => void }) {
   }
 
   return (
-    <Sheet title="Moje liczby" onClose={onClose} done={{ label: 'Zapisz', onClick: save, disabled: busy }}>
-      <Section header="Progi" footer="Po teście progowym wpisz tu nowe wartości – strefy mocy i tętna przeliczą się same, a plany na Bolta pojadą z nowymi watami.">
+    <Sheet title={tx.title} onClose={onClose} done={{ label: t.common.save, onClick: save, disabled: busy }}>
+      <Section header={tx.thresholds} footer={tx.thresholdsFooter}>
         <List>
           <Row
             title="FTP"
             accessory={
               <span className="flex items-center gap-1">
-                <input className="ios-input ios-num w-20 text-right" inputMode="numeric" value={ftp} onChange={(e) => setFtp(e.target.value)} aria-label="FTP w watach" />
+                <input className="ios-input ios-num w-20 text-right" inputMode="numeric" value={ftp} onChange={(e) => setFtp(e.target.value)} aria-label={tx.ftpLabel} />
                 <span className="ios-body ios-dim shrink-0">W</span>
               </span>
             }
           />
           <Row
-            title="Tętno progowe"
+            title={tx.lthr}
             accessory={
               <span className="flex items-center gap-1">
-                <input className="ios-input ios-num w-20 text-right" inputMode="numeric" placeholder="—" value={lthr} onChange={(e) => setLthr(e.target.value)} aria-label="Tętno progowe" />
+                <input className="ios-input ios-num w-20 text-right" inputMode="numeric" placeholder="—" value={lthr} onChange={(e) => setLthr(e.target.value)} aria-label={tx.lthr} />
                 <span className="ios-body ios-dim shrink-0">bpm</span>
               </span>
             }
           />
         </List>
       </Section>
-      <Section header="Sprzęt" footer="Z miernikiem plany na Bolcie mają cele w watach, a aplikacja liczy TSS z mocy zamiast z tętna.">
+      <Section header={tx.gear} footer={tx.gearFooter}>
         <List>
           <Row
-            title="Mam miernik mocy"
+            title={tx.powerMeter}
             accessory={
-              <button role="switch" aria-checked={power} aria-label="Mam miernik mocy" onClick={() => setPower((v) => !v)} className="relative h-8 w-[52px] shrink-0 rounded-full transition-colors" style={{ background: power ? 'var(--green)' : 'var(--fill-2)' }}>
+              <button role="switch" aria-checked={power} aria-label={tx.powerMeter} onClick={() => setPower((v) => !v)} className="relative h-8 w-[52px] shrink-0 rounded-full transition-colors" style={{ background: power ? 'var(--green)' : 'var(--fill-2)' }}>
                 <span className="absolute top-0.5 h-7 w-7 rounded-full bg-white shadow transition-all" style={{ left: power ? 22 : 2 }} />
               </button>
             }
@@ -94,31 +99,32 @@ function LocationSheet({ onClose }: { onClose: () => void }) {
   const toast = useToast()
   const [query, setQuery] = useState('')
   const [found, setFound] = useState<WeatherLocation[]>([])
+  const tx = useT().ios.more.location
 
   async function search() {
     if (!query.trim()) return
-    const r = await toast.run('Szukam…', () => geocode(query), (list) => (list.length ? `Znaleziono ${list.length}` : 'Nic nie znaleziono'))
+    const r = await toast.run(tx.searching, () => geocode(query), (list) => (list.length ? tx.found(list.length) : tx.notFound))
     setFound(r ?? [])
   }
 
   return (
-    <Sheet title="Pogoda" onClose={onClose}>
-      <Section header="Miejscowość" footer="Prognoza z Open-Meteo dla tej miejscowości trafia do odprawy przed jazdą. Zapis zostaje na tym urządzeniu.">
+    <Sheet title={tx.title} onClose={onClose}>
+      <Section header={tx.header} footer={tx.footer}>
         <List>
           <Row
             title={
               <input
                 className="ios-input w-full"
-                placeholder="Nazwa miejscowości"
+                placeholder={tx.placeholder}
                 value={query}
                 onChange={(e) => setQuery(e.target.value)}
                 onKeyDown={(e) => e.key === 'Enter' && void search()}
-                aria-label="Miejscowość"
+                aria-label={tx.header}
               />
             }
             accessory={
               <Btn small kind="tinted" onClick={() => void search()} disabled={!query.trim()}>
-                Szukaj
+                {tx.search}
               </Btn>
             }
           />
@@ -146,17 +152,9 @@ function Switch({ on, label, onChange }: { on: boolean; label: string; onChange:
   )
 }
 
-function linkLabel(x: StravaStatus | WahooStatus | 'error' | null): string {
-  return x === null ? '…' : x === 'error' ? 'brak danych' : x.connected ? 'połączone' : 'brak'
-}
-
-const SYNC_FOOTER: Record<string, string> = {
-  idle: 'Konto, połączenia i dane są wspólne z pełną aplikacją – nic nie trzeba łączyć drugi raz.',
-  syncing: 'Synchronizuję…',
-  offline: 'Brak sieci. Zapisy czekają w kolejce i pojadą po powrocie zasięgu.',
-  unauthenticated: 'Bez logowania aplikacja działa offline: plan i zapisy zostają na telefonie.',
-  disabled: 'Aplikacja działa lokalnie – bez konfiguracji Supabase nie ma synchronizacji.',
-  error: 'Ostatnia synchronizacja się nie udała. Szczegóły w pełnej aplikacji.',
+function linkLabel(t: Messages, x: StravaStatus | WahooStatus | 'error' | null): string {
+  const l = t.ios.more.link
+  return x === null ? l.loading : x === 'error' ? l.error : x.connected ? l.connected : l.disconnected
 }
 
 export function MoreScreen() {
@@ -167,6 +165,8 @@ export function MoreScreen() {
   const ui = useUiMode()
   const auth = useAuth()
   const sync = useSyncStatus()
+  const t = useT()
+  const tx = t.ios.more
   const [theme, setTheme] = useState<ThemePref>(getThemePref())
   const [sheet, setSheet] = useState<'numbers' | 'location' | null>(null)
   const loc = useLiveQuery(getLocation, [], undefined)
@@ -198,56 +198,56 @@ export function MoreScreen() {
 
   async function togglePush() {
     const on = !!push?.subscribed
-    await toast.run(on ? 'Wyłączam powiadomienia…' : 'Włączam powiadomienia…', async () => {
+    await toast.run(on ? tx.pushOff : tx.pushOn, async () => {
       if (on) await unsubscribePush()
       else await subscribePush('iPhone')
       setPush(await pushStatus())
-    }, () => (on ? 'Powiadomienia wyłączone' : 'Powiadomienia włączone'))
+    }, () => (on ? tx.pushOffDone : tx.pushOnDone))
   }
 
   return (
-    <Screen title="Więcej" subtitle={`Program ${engine.ctx.program.version}`}>
-      <Section header="Konto i synchronizacja" footer={sync.error ?? SYNC_FOOTER[sync.state]}>
+    <Screen title={tx.title} subtitle={tx.program(engine.ctx.program.version)}>
+      <Section header={tx.account} footer={sync.error ?? (tx.syncFooter as Record<string, string>)[sync.state]}>
         <List>
           {!auth.configured ? (
-            <Row icon={<RowIcon color="var(--label-3)"><IconGear size={18} /></RowIcon>} title="Tryb lokalny" subtitle="Bez konfiguracji Supabase dane zostają w tej przeglądarce" />
+            <Row icon={<RowIcon color="var(--label-3)"><IconGear size={18} /></RowIcon>} title={tx.localMode} subtitle={tx.localModeSub} />
           ) : auth.session ? (
             <Row
               icon={<RowIcon color="var(--green)"><IconCheck size={18} /></RowIcon>}
-              title="Zalogowany"
+              title={tx.signedIn}
               subtitle={auth.session.user.email ?? undefined}
               value={sync.last_sync ? fmtDayMonth(sync.last_sync.slice(0, 10)) : '—'}
             />
           ) : (
             <Row
               icon={<RowIcon color="var(--red)"><IconGear size={18} /></RowIcon>}
-              title={auth.loading ? 'Sprawdzam konto…' : 'Nie jesteś zalogowany'}
-              subtitle={auth.loading ? undefined : 'Jazdy, check-iny i zmiany planu nie pobierają się z konta'}
+              title={auth.loading ? tx.checkingAccount : tx.notSignedIn}
+              subtitle={auth.loading ? undefined : tx.notSignedInSub}
               onClick={() => openFull('/wiecej/ustawienia')}
               accessory={<span className="ios-dim-3"><IconChevron size={18} /></span>}
             />
           )}
-          {sync.pending > 0 && <Row title="Czeka na wysłanie" value={`${sync.pending}`} />}
+          {sync.pending > 0 && <Row title={tx.pending} value={`${sync.pending}`} />}
           {auth.session && (
             <Row
               icon={<RowIcon color="var(--blue)"><IconBolt size={18} /></RowIcon>}
-              title={sync.state === 'syncing' ? 'Synchronizuję…' : 'Synchronizuj teraz'}
-              onClick={sync.state === 'syncing' ? undefined : () => void toast.run('Synchronizuję…', () => runSync({ programVersion: engine.ctx.program.version }), () => 'Zsynchronizowano')}
+              title={sync.state === 'syncing' ? tx.syncing : tx.syncNow}
+              onClick={sync.state === 'syncing' ? undefined : () => void toast.run(tx.syncing, () => runSync({ programVersion: engine.ctx.program.version }), () => tx.synced)}
               accessory={<span className="ios-dim-3"><IconChevron size={18} /></span>}
             />
           )}
           {auth.session && (
             <Row
               danger
-              title="Wyloguj"
+              title={tx.signOut}
               onClick={() =>
                 void toast.run(
-                  'Wylogowuję…',
+                  tx.signingOut,
                   async () => {
                     await auth.signOut()
                     await resetSyncCursors()
                   },
-                  () => 'Wylogowano',
+                  () => tx.signedOut,
                 )
               }
             />
@@ -255,20 +255,20 @@ export function MoreScreen() {
         </List>
       </Section>
 
-      <Section header="Moje liczby">
+      <Section header={tx.numbers.title}>
         <List>
           <Row
             icon={<RowIcon color="var(--yellow)"><IconBolt size={18} /></RowIcon>}
-            title="Progi"
-            subtitle={`${s.ftp_w_estimate} W${s.lthr_bpm ? ` · ${s.lthr_bpm} bpm` : ' · brak LTHR'} · ${s.power_meter ? 'z miernikiem mocy' : 'bez miernika'}`}
+            title={tx.numbers.thresholds}
+            subtitle={`${s.ftp_w_estimate} W · ${s.lthr_bpm ? `${s.lthr_bpm} bpm` : tx.numbers.noLthr} · ${s.power_meter ? tx.numbers.withMeter : tx.numbers.withoutMeter}`}
             onClick={() => setSheet('numbers')}
             accessory={<span className="ios-dim-3"><IconChevron size={18} /></span>}
           />
-          <Row icon={<RowIcon color="var(--indigo)"><IconHeart size={18} /></RowIcon>} title="Waga docelowa" value={`${num(s.body_weight_target_kg, 1)} kg`} />
+          <Row icon={<RowIcon color="var(--indigo)"><IconHeart size={18} /></RowIcon>} title={tx.numbers.targetWeight} value={`${num(s.body_weight_target_kg, 1)} kg`} />
           <Row
             icon={<RowIcon color="var(--orange)"><IconSun size={18} /></RowIcon>}
-            title="Pogoda"
-            subtitle={loc ? loc.name : loc === null ? 'Ustaw miejscowość prognozy' : undefined}
+            title={tx.location.title}
+            subtitle={loc ? loc.name : loc === null ? tx.location.set : undefined}
             onClick={() => setSheet('location')}
             accessory={<span className="ios-dim-3"><IconChevron size={18} /></span>}
           />
@@ -276,42 +276,42 @@ export function MoreScreen() {
       </Section>
 
       {auth.session && (
-        <Section header="E-mail" footer="Poranna odprawa o 7:00 tylko w dni z treningiem; podsumowanie zaraz po wgraniu jazdy ze Stravy. Z adresu trening@felsztukier.pl.">
+        <Section header={tx.email.header} footer={tx.email.footer}>
           <List>
-            <Row title="Poranna odprawa" accessory={<Switch on={!!s.email_morning} label="Poranna odprawa mailem" onChange={(v) => void engine.settingsApi.update({ email_morning: v })} />} />
-            <Row title="Podsumowanie po treningu" accessory={<Switch on={!!s.email_workout} label="Podsumowanie po treningu mailem" onChange={(v) => void engine.settingsApi.update({ email_workout: v })} />} />
-            <Row title="List trenera w niedzielę" accessory={<Switch on={!!s.email_weekly} label="List trenera w niedzielę mailem" onChange={(v) => void engine.settingsApi.update({ email_weekly: v })} />} />
+            <Row title={tx.email.morning} accessory={<Switch on={!!s.email_morning} label={tx.email.morningLabel} onChange={(v) => void engine.settingsApi.update({ email_morning: v })} />} />
+            <Row title={tx.email.workout} accessory={<Switch on={!!s.email_workout} label={tx.email.workoutLabel} onChange={(v) => void engine.settingsApi.update({ email_workout: v })} />} />
+            <Row title={tx.email.weekly} accessory={<Switch on={!!s.email_weekly} label={tx.email.weeklyLabel} onChange={(v) => void engine.settingsApi.update({ email_weekly: v })} />} />
           </List>
         </Section>
       )}
 
-      <Section header="Połączenia" footer="Logowanie, ponowne łączenie i pobieranie historii są w pełnej aplikacji.">
+      <Section header={tx.connections} footer={tx.connectionsFooter}>
         <List>
           <Row
             icon={<RowIcon color="#FC4C02"><IconHeart size={18} /></RowIcon>}
             title="Strava"
-            value={linkLabel(sv)}
-            subtitle={sv !== null && sv !== 'error' && sv.connected ? 'jazdy wpadają same' : undefined}
+            value={linkLabel(t, sv)}
+            subtitle={sv !== null && sv !== 'error' && sv.connected ? tx.stravaOn : undefined}
             onClick={() => openFull('/wiecej/ustawienia')}
             accessory={<span className="ios-dim-3"><IconChevron size={18} /></span>}
           />
           <Row
             icon={<RowIcon color="var(--teal)"><IconWatch size={18} /></RowIcon>}
             title="Wahoo"
-            value={linkLabel(wh)}
-            subtitle={wh !== null && wh !== 'error' && wh.connected ? 'plany lecą na Bolta' : undefined}
+            value={linkLabel(t, wh)}
+            subtitle={wh !== null && wh !== 'error' && wh.connected ? tx.wahooOn : undefined}
             onClick={() => openFull('/wiecej/ustawienia')}
             accessory={<span className="ios-dim-3"><IconChevron size={18} /></span>}
           />
           <Row
             icon={<RowIcon color="var(--red)"><IconSun size={18} /></RowIcon>}
-            title="Powiadomienia"
-            subtitle={push?.supported === false ? 'dodaj aplikację do ekranu początkowego' : 'rano o planie, wieczorem podsumowanie'}
+            title={tx.notifications}
+            subtitle={push?.supported === false ? tx.notificationsUnsupported : tx.notificationsSub}
             accessory={
               <button
                 role="switch"
                 aria-checked={!!push?.subscribed}
-                aria-label="Powiadomienia"
+                aria-label={tx.notifications}
                 disabled={push?.supported === false}
                 onClick={() => void togglePush()}
                 className="relative h-8 w-[52px] shrink-0 rounded-full transition-colors disabled:opacity-40"
@@ -324,22 +324,22 @@ export function MoreScreen() {
         </List>
       </Section>
 
-      <Section header="Wygląd">
+      <Section header={tx.appearance}>
         <List>
           <div className="ios-row">
-            <span className="ios-body flex-1">Motyw</span>
+            <span className="ios-body flex-1">{tx.theme}</span>
             <span className="w-44">
               <Seg
-                label="Motyw"
+                label={tx.theme}
                 value={theme}
                 onChange={(v) => {
                   setTheme(v)
                   setThemePref(v)
                 }}
                 options={[
-                  { value: 'system', label: 'System' },
-                  { value: 'light', label: 'Jasny' },
-                  { value: 'dark', label: 'Ciemny' },
+                  { value: 'system', label: tx.themeSystem },
+                  { value: 'light', label: tx.themeLight },
+                  { value: 'dark', label: tx.themeDark },
                 ]}
               />
             </span>
@@ -347,28 +347,28 @@ export function MoreScreen() {
         </List>
       </Section>
 
-      <Section header="Pomoc" footer="Instrukcja: pierwsze uruchomienie, dzień po dniu, Strava i Bolt, maile, ustawienia. Działa też bez sieci.">
+      <Section header={tx.help} footer={tx.helpFooter}>
         <List>
-          <Row icon={<RowIcon color="var(--teal, #30b0c7)"><IconFlag size={18} /></RowIcon>} title="Jak korzystać z aplikacji" onClick={() => window.location.assign('/pomoc.html')} accessory={<span className="ios-dim-3"><IconChevron size={18} /></span>} />
+          <Row icon={<RowIcon color="var(--teal, #30b0c7)"><IconFlag size={18} /></RowIcon>} title={tx.helpRow} onClick={() => window.location.assign(helpUrl())} accessory={<span className="ios-dim-3"><IconChevron size={18} /></span>} />
         </List>
       </Section>
 
-      <Section header="Pełna aplikacja" footer={`Kalendarz z przenoszeniem treningów, krzywa mocy, wykres formy, biblioteka ćwiczeń, sprzęt${engine.ctx.program.features.includes('trip') ? ', wyjazd' : ''}, kopia danych.`}>
+      <Section header={tx.fullApp} footer={tx.fullAppFooter(engine.ctx.program.features.includes('trip'))}>
         <List>
-          <Row icon={<RowIcon color="var(--label-3)"><IconGear size={18} /></RowIcon>} title="Otwórz pełną aplikację" onClick={() => openFull('/')} accessory={<span className="ios-dim-3"><IconChevron size={18} /></span>} />
+          <Row icon={<RowIcon color="var(--label-3)"><IconGear size={18} /></RowIcon>} title={tx.openFull} onClick={() => openFull('/')} accessory={<span className="ios-dim-3"><IconChevron size={18} /></span>} />
         </List>
       </Section>
 
-      <Section header="Nowy wygląd" footer="Mobilny interfejs v2: jedna karta stanu dnia, trener pod kciukiem. W budowie – ten widok zostaje, dopóki nowy nie będzie gotowy.">
+      <Section header={tx.newLook} footer={tx.newLookFooter}>
         <List>
-          <Row icon={<RowIcon color="var(--blue)"><IconFlag size={18} /></RowIcon>} title="Wypróbuj nowy wygląd" onClick={() => void ui.set('m').then(() => navigate('/m'))} accessory={<span className="ios-dim-3"><IconChevron size={18} /></span>} />
+          <Row icon={<RowIcon color="var(--blue)"><IconFlag size={18} /></RowIcon>} title={tx.tryNewLook} onClick={() => void ui.set('m').then(() => navigate('/m'))} accessory={<span className="ios-dim-3"><IconChevron size={18} /></span>} />
         </List>
       </Section>
 
-      <Section footer={ui.mode === 'ios' ? 'Ten widok otwiera się domyślnie na telefonie i tablecie; na komputerze zawsze startuje pełna aplikacja.' : ui.mode === 'm' ? 'Domyślnie na telefonie otwiera się nowy wygląd. Włącz, żeby zamiast niego startował ten widok.' : 'Włącz, żeby ten widok otwierał się domyślnie po uruchomieniu.'}>
+      <Section footer={ui.mode === 'ios' ? tx.defaultIos : ui.mode === 'm' ? tx.defaultM : tx.defaultOther}>
         <div className="px-4">
           <Btn kind="gray" className="w-full" onClick={() => void ui.set(ui.mode === 'ios' ? 'classic' : 'ios')}>
-            {ui.mode === 'ios' ? 'Nie otwieraj domyślnie' : 'Otwieraj ten widok domyślnie'}
+            {ui.mode === 'ios' ? tx.stopDefault : tx.makeDefault}
           </Btn>
         </div>
       </Section>

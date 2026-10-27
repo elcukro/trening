@@ -1,3 +1,4 @@
+import { t as tr } from '../i18n'
 import type { BikeWorkout } from './schema'
 import type { CalendarDay, EngineContext, LayoutWeek, PlanOverride, ResolvedWorkout, ZoneBpm } from './types'
 import { applyOverrides } from './rules'
@@ -75,7 +76,7 @@ export function enrichDay(day: CalendarDay, ctx: EngineContext): DayPlan {
   const fb: BikeWorkout | undefined = day.bike?.fallback_workout_id ? program.bike_workouts[day.bike.fallback_workout_id] : undefined
   const warnings: PlanWarning[] = []
   if (!lthr && day.bike && day.bike.workout_id !== 'TRIP' && day.bike.workout_id !== 'TRAVEL_REST') {
-    warnings.push({ rule: 'LTHR', message: 'Zrób test progowy i wpisz LTHR, żeby zobaczyć cele w bpm.' })
+    warnings.push({ rule: 'LTHR', message: tr().engine.plan.noLthr })
   }
   return {
     ...day,

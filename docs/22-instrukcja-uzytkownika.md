@@ -1,7 +1,7 @@
 # 22 · Instrukcja użytkownika (17.10.2026)
 
 Instrukcja dla zawodnika (pierwsze uruchomienie, cztery kroki dnia, tydzień i zmiany planu, Strava, Bolt, maile,
-Postęp, żywienie, siłownia, każda sekcja ustawień, pełna aplikacja, rozwiązywanie problemów) to statyczna strona
+Postęp, żywienie, każda sekcja ustawień, pełna aplikacja, rozwiązywanie problemów) to statyczna strona
 `public/pomoc.html` – dostępna w aplikacji jako **Pomoc** (pełna aplikacja: Więcej → Pomoc; `/i`: Więcej → sekcja Pomoc)
 pod adresem `/pomoc.html`. Jest w precache (działa offline) i poza routerem SPA (`denylist` w `src/sw.ts`).
 Strona ma własne style (jasny i ciemny motyw, jedna kolumna na telefonie, spis treści z boku od 900 px) i link
@@ -23,3 +23,8 @@ aktualizuj odpowiednią sekcję; przy nowej ikonie w `public/m/art` można jej u
 `window.Capacitor`) chowa elementy `.only-web` (Safari, ekran początkowy, pełna aplikacja na telefonie, Web Push)
 i pokazuje `.only-app`. Nowy tekst o przeglądarce albo pełnej aplikacji dostaje `only-web` i, jeśli trzeba, odpowiednik
 `only-app`. Kroki „Pierwsze uruchomienie” są numerowane licznikiem CSS (`.steps`), więc ukryty krok nie zostawia luki.
+
+**Dwa języki (26.10.2026, docs/34):** angielska wersja to `public/help.html` – ta sama struktura, klasy `only-web`/`only-app`,
+style i ikony; nagłówek ma link „English” / „Polski” do drugiej wersji (`location.replace`, więc „Wróć” dalej prowadzi do
+aplikacji). Aplikacja otwiera wersję wg języka przez `helpUrl()` z `src/lib/help.ts`. Obie strony są w precache i w `denylist`
+w `src/sw.ts`. **Zmiana treści pomocy = zmiana w obu plikach.**

@@ -93,25 +93,33 @@
   animation: intro-fade 1.2s ease-out both;
 }
 .intro-orb {
-  width: calc(30 * var(--u));
-  top: calc(env(safe-area-inset-top) + 10 * var(--u));
+  width: calc(24 * var(--u));
+  top: calc(env(safe-area-inset-top) + 60 * var(--u));
   animation: intro-rise 1.1s cubic-bezier(0.2, 0.7, 0.3, 1) both;
 }
+/* słońce i księżyc pod tytułem (docs/34 § 1); pora dnia = strona i wysokość */
 .intro[data-time='morning'] .intro-orb {
-  left: calc(10 * var(--u));
-  top: calc(env(safe-area-inset-top) + 28 * var(--u));
+  left: calc(8 * var(--u));
+  top: calc(env(safe-area-inset-top) + 66 * var(--u));
 }
 .intro[data-time='noon'] .intro-orb {
-  right: calc(12 * var(--u));
+  right: calc(10 * var(--u));
 }
 .intro[data-time='evening'] .intro-orb {
-  right: calc(8 * var(--u));
-  top: calc(env(safe-area-inset-top) + 40 * var(--u));
+  right: calc(6 * var(--u));
+  top: calc(env(safe-area-inset-top) + 70 * var(--u));
   filter: saturate(1.4) hue-rotate(-18deg);
 }
 .intro[data-time='night'] .intro-orb {
-  right: calc(14 * var(--u));
-  width: calc(26 * var(--u));
+  right: calc(12 * var(--u));
+  width: calc(20 * var(--u));
+}
+.intro-title {
+  width: calc(70 * var(--u));
+  left: calc(15 * var(--u));
+  top: calc(env(safe-area-inset-top) + 14 * var(--u));
+  filter: drop-shadow(0 calc(0.8 * var(--u)) calc(2 * var(--u)) rgb(0 0 0 / 0.18));
+  animation: intro-rise 1s 0.15s cubic-bezier(0.2, 0.7, 0.3, 1) both;
 }
 .intro-cloud {
   width: calc(34 * var(--u));
@@ -119,8 +127,9 @@
   animation: intro-drift 1.3s cubic-bezier(0.2, 0.7, 0.3, 1) both;
 }
 .intro-cloud-a {
-  left: calc(52 * var(--u));
-  top: calc(env(safe-area-inset-top) + 52 * var(--u));
+  left: calc(36 * var(--u));
+  top: calc(env(safe-area-inset-top) + 74 * var(--u));
+  width: calc(28 * var(--u));
 }
 .intro-cloud-b {
   left: calc(-6 * var(--u));

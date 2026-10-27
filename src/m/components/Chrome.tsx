@@ -4,6 +4,8 @@ import { IconChevronLeft, IconClose } from '@/ios/components/Icons'
 import { useEdgeBack } from '../useEdgeBack'
 import { confirmAction } from '@/native'
 import { Spinner } from './Waiting'
+import { t as tr } from '@/i18n'
+import { useT } from '@/i18n/react'
 
 /* ------------------------------------------------------------------ ekran z dużym tytułem */
 
@@ -12,6 +14,7 @@ import { Spinner } from './Waiting'
  * `day` ustawia kolor dnia (`--day`) dla kart i przycisków na tym ekranie.
  */
 export function Screen({ title, subtitle, back, action, day, children }: { title: string; subtitle?: ReactNode; back?: string | (() => void); action?: ReactNode; day?: { color: string; soft: string; fill?: string }; children: ReactNode }) {
+  const t = useT()
   const [scrolled, setScrolled] = useState(false)
   const navigate = useNavigate()
   const sentinel = useRef<HTMLDivElement>(null)
@@ -44,7 +47,7 @@ export function Screen({ title, subtitle, back, action, day, children }: { title
       <div className="m-nav" data-scrolled={scrolled}>
         <div className="m-nav-inner">
           {back ? (
-            <button className="m-nav-btn" onClick={() => goBack?.()} aria-label="Wróć">
+            <button className="m-nav-btn" onClick={() => goBack?.()} aria-label={t.common.back}>
               <IconChevronLeft size={22} />
             </button>
           ) : (
@@ -145,6 +148,7 @@ function snapBack(panel: HTMLElement | null, backdrop: HTMLElement | null) {
  * zmiany?” – tło, ✕, Esc i gest nie gubią już wpisanego check-inu ani posiłku. Zapis zamyka arkusz sam (`onClose`).
  */
 export function Sheet({ title, onClose, children, action, dirty = false }: { title: string; onClose: () => void; children: ReactNode; action?: ReactNode; dirty?: boolean }) {
+  const tx = useT()
   const panel = useRef<HTMLDivElement>(null)
   const body = useRef<HTMLDivElement>(null)
   const backdrop = useRef<HTMLDivElement>(null)
@@ -159,7 +163,7 @@ export function Sheet({ title, onClose, children, action, dirty = false }: { tit
   const requestClose = useCallback(async () => {
     const st = state.current
     if (st.closing) return
-    if (st.dirty && !(await confirmAction({ title: 'Odrzucić zmiany?', action: 'Odrzuć zmiany' }))) {
+    if (st.dirty && !(await confirmAction({ title: tr().m.chrome.discardTitle, action: tr().m.chrome.discardAction }))) {
       snapBack(panel.current, backdrop.current)
       return
     }
@@ -262,7 +266,7 @@ export function Sheet({ title, onClose, children, action, dirty = false }: { tit
         <div ref={panel} tabIndex={-1} className="m-sheet focus:outline-none" data-closing={closing || undefined} role="dialog" aria-modal="true" aria-label={title}>
           <div className="m-grabber" aria-hidden />
           <div className="relative flex items-center justify-between px-2 py-1">
-            <button className="m-nav-btn" onClick={() => void requestClose()} aria-label="Zamknij">
+            <button className="m-nav-btn" onClick={() => void requestClose()} aria-label={tx.common.close}>
               <IconClose size={20} />
             </button>
             {/* długi tytuł skracany wielokropkiem między przyciskami, nie pod nimi */}
@@ -279,9 +283,9 @@ export function Sheet({ title, onClose, children, action, dirty = false }: { tit
 /* ------------------------------------------------------------------ dolny pasek */
 
 const TABS = [
-  { to: '/m', label: 'Dziś', icon: '/m/art/tab-today.png', end: true },
-  { to: '/m/plan', label: 'Plan', icon: '/m/art/tab-plan.png', end: false },
-  { to: '/m/ja', label: 'Ja', icon: '/m/art/tab-me.png', end: false },
+  { to: '/m', label: 'today', icon: '/m/art/tab-today.png', end: true },
+  { to: '/m/plan', label: 'plan', icon: '/m/art/tab-plan.png', end: false },
+  { to: '/m/ja', label: 'me', icon: '/m/art/tab-me.png', end: false },
 ] as const
 
 /**
@@ -289,17 +293,18 @@ const TABS = [
  * Trenera z jego twarzą (docs/24 § 3). Pasek nie dotyka krawędzi ekranu – treść przewija się pod nim.
  */
 export function TabBar({ onCoach }: { onCoach: () => void }) {
+  const t = useT()
   return (
-    <nav className="m-tabbar" aria-label="Nawigacja główna">
+    <nav className="m-tabbar" aria-label={t.m.chrome.mainNav}>
       <div className="m-tabs">
-        {TABS.map((t) => (
-          <NavLink key={t.to} to={t.to} end={t.end} className="m-tab">
-            <img src={t.icon} alt="" width={26} height={26} />
-            {t.label}
+        {TABS.map((tab) => (
+          <NavLink key={tab.to} to={tab.to} end={tab.end} className="m-tab">
+            <img src={tab.icon} alt="" width={26} height={26} />
+            {t.m.chrome.tabs[tab.label]}
           </NavLink>
         ))}
       </div>
-      <button className="m-fab" onClick={onCoach} aria-label="Trener">
+      <button className="m-fab" onClick={onCoach} aria-label={t.m.chrome.coach}>
         <img src="/m/art/coach-face.png" alt="" width={64} height={64} />
       </button>
     </nav>

@@ -7,6 +7,8 @@ import { SYNCED_TABLES_KEY } from '@/sync/sync'
 import type { Program } from '@/engine/schema'
 import { useAuth } from '@/sync/auth'
 import { useSyncRunner } from '@/sync/useSync'
+import { useLang } from '@/i18n/react'
+import { t as tNow } from '@/i18n'
 import type { SyncStatus } from '@/sync/sync'
 import { changedKeys, withFieldStamps } from '@/sync/profileMerge'
 import type { Settings } from '@/engine/schema'
@@ -69,7 +71,9 @@ function useSettingsSource(): SettingsApi {
   const programId = (row?.value?.program_id as string | undefined) ?? DEFAULT_PROGRAM_ID
   // plan z generatora: program liczony z wiersza `plans` (regeneracja deterministyczna, pamięć podręczna po `updated_at`)
   const plan = useLiveQuery(async () => (await db.plans.get('current')) ?? null, [], undefined)
-  const program = resolveProgram(programId, plan)
+  // język z modułu i18n (docs/34): zmiana języka przelicza program z przetłumaczonymi tekstami
+  const lang = useLang()
+  const program = resolveProgram(programId, plan, lang)
   const settings = useMemo<Settings>(() => ({ ...program.default_settings, ...row?.value, program_id: programId }), [program, row, programId])
   const update = useCallback(
     async (patch: Partial<Settings>) => {
@@ -140,7 +144,7 @@ export function useEngine(): Engine {
       return { ctx: { program, settings, tests, current_weight_kg: lastWeigh }, weeks: layoutWeeks(program, settings), settingsError: null }
     } catch (e) {
       const safe = { ...settings, trip_start: program.default_settings.trip_start }
-      const msg = e instanceof TripDateError ? e.message : 'Nieprawidłowe ustawienia – użyto domyślnej daty wyjazdu.'
+      const msg = e instanceof TripDateError ? e.message : tNow().classic.settingsInvalid
       return { ctx: { program, settings: safe, tests, current_weight_kg: lastWeigh }, weeks: layoutWeeks(program, safe), settingsError: msg }
     }
   }, [program, settings, tests, lastWeigh])

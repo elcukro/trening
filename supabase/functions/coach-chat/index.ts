@@ -4,10 +4,11 @@
  * tu tylko rozmowa z modelem (ten sam co notatki, sekret AI_MODEL) i limity w `ai_calls`. Każda tura = jedno wywołanie.
  */
 import { CORS, json } from '../_shared/env.ts'
-import { adminClient, userFromRequest } from '../_shared/supabase.ts'
+import { adminClient, requestLang, userFromRequest } from '../_shared/supabase.ts'
+import { strings } from '../_shared/i18n.ts'
 import { callClaudeChat, underLimit, underUserDailyLimit } from '../_shared/ai_note.ts'
 import { assertAiSafe } from '../_shared/provenance.ts'
-import { COACH_SYSTEM, sanitizeContext, sanitizeMessages, splitAssistant, TOOLS, withContext, type Block } from '../_shared/coach_chat.ts'
+import { coachSystem, sanitizeContext, sanitizeMessages, splitAssistant, TOOLS, withContext, type Block } from '../_shared/coach_chat.ts'
 
 Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') return new Response(null, { headers: CORS })
@@ -24,13 +25,16 @@ Deno.serve(async (req) => {
     return json({ error: e instanceof Error ? e.message : String(e) }, 422)
   }
   const admin = adminClient()
-  if (!Deno.env.get('ANTHROPIC_API_KEY')) return json({ error: 'brak klucza' }, 503)
-  if (!(await underLimit(admin))) return json({ error: 'limit miesięczny' }, 429)
+  // język rozmowy i komunikatów: nagłówek x-app-lang (język, w którym aplikacja się wyświetla), inaczej profil
+  const lang = await requestLang(req, admin, user.id)
+  const E = strings(lang).errors
+  if (!Deno.env.get('ANTHROPIC_API_KEY')) return json({ error: E.aiUnavailable }, 503)
+  if (!(await underLimit(admin))) return json({ error: E.monthlyLimit }, 429)
   // czat zużywa więcej tur niż check-in zdaniem (narzędzie = dodatkowa tura), stąd wyższy limit dzienny
-  if (!(await underUserDailyLimit(admin, user.id, 80))) return json({ error: 'limit dzienny rozmów – spróbuj jutro' }, 429)
+  if (!(await underUserDailyLimit(admin, user.id, 80))) return json({ error: E.dailyLimitChat }, 429)
   const { data: call } = await admin.from('ai_calls').insert({ user_id: user.id, activity_id: null }).select('id').single()
   try {
-    const r = await callClaudeChat(COACH_SYSTEM, withContext(messages, sanitizeContext(body.context)), TOOLS)
+    const r = await callClaudeChat(coachSystem(lang), withContext(messages, sanitizeContext(body.context)), TOOLS)
     if (call) await admin.from('ai_calls').update({ input_tokens: r.usage.input_tokens ?? 0, output_tokens: r.usage.output_tokens ?? 0, cache_read_tokens: r.usage.cache_read_input_tokens ?? 0, cache_write_tokens: r.usage.cache_creation_input_tokens ?? 0 }).eq('id', call.id)
     const content = r.content as unknown as Block[]
     const { text, tools } = splitAssistant(content)

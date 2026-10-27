@@ -14,17 +14,23 @@ import { RpeRow, Stat, TONE_COLOR } from '../components/Bits'
 import { dayColor } from '../dayColor'
 import { ART } from '../art'
 import { useOpenCoach } from '../coach'
+import { t as tr } from '@/i18n'
+import { useT } from '@/i18n/react'
 
 const LOGGED = ['done', 'modified']
 
 function decouplingNote(pct: number): string {
-  if (pct < 5) return 'bardzo dobra baza tlenowa'
-  if (pct < 10) return 'w normie'
-  return 'tętno mocno rosło – zmęczenie, upał albo za wysokie tempo'
+  const n = tr().m.summary.decoupling
+  if (pct < 5) return n.good
+  if (pct < 10) return n.normal
+  return n.high
 }
 
 /** Podsumowanie po jeździe (docs/24 § 4): trzy liczby, notatka trenera, czas w strefach, szczegóły, RPE jednym dotknięciem. */
 export function SummaryScreen() {
+  const t = useT()
+  const ts = t.m.summary
+  const tt = t.m.today
   const params = useParams()
   const toast = useToast()
   const openCoach = useOpenCoach()
@@ -42,15 +48,15 @@ export function SummaryScreen() {
 
   async function saveRpe(v: number) {
     const status = log && LOGGED.includes(log.status) ? (log.status as 'done' | 'modified') : score != null && score < 70 ? 'modified' : 'done'
-    await toast.run('Zapisuję RPE…', () => d.logRide(status, { rpe: v }), () => `RPE ${v} zapisane`, undefined, { quiet: true, errorTitle: 'Nie zapisano RPE' })
+    await toast.run(tt.rpeSaving, () => d.logRide(status, { rpe: v }), () => tt.rpeSaved(v), undefined, { quiet: true, errorTitle: tt.rpeFailed })
   }
 
   if (!a) {
     return (
-      <Screen title="Podsumowanie" subtitle={fmtLong(date)} back={back} day={color}>
+      <Screen title={tt.after.summary} subtitle={fmtLong(date)} back={back} day={color}>
         <Card>
-          <p className="m-title">Jeszcze bez zapisanej jazdy</p>
-          <p className="m-sub m-dim mt-2">{log && LOGGED.includes(log.status) ? 'Trening jest zapisany ręcznie. Gdy jazda dotrze z Wahoo albo Stravy, pojawią się liczby i notatka trenera.' : 'Po imporcie jazdy (Wahoo, Strava) zobaczysz tu zgodność z planem, obciążenie, strefy i notatkę trenera.'}</p>
+          <p className="m-title">{ts.noRide}</p>
+          <p className="m-sub m-dim mt-2">{log && LOGGED.includes(log.status) ? ts.manualLogged : ts.afterImport}</p>
           <div className="mt-4">
             <RpeRow value={rpe} onPick={(v) => void saveRpe(v)} />
           </div>
@@ -67,12 +73,12 @@ export function SummaryScreen() {
   const km = a.distance_m != null ? a.distance_m / 1000 : null
 
   return (
-    <Screen title="Podsumowanie" subtitle={`${fmtLong(date)}${day?.bike ? ` · ${day.bike.name}` : ''}`} back={back} day={color}>
+    <Screen title={tt.after.summary} subtitle={`${fmtLong(date)}${day?.bike ? ` · ${day.bike.name}` : ''}`} back={back} day={color}>
       {d.activities.length > 1 && (
         <div className="flex gap-2">
           {d.activities.map((x, i) => (
             <button key={x.key} className="m-chip" style={i === idx ? { background: 'var(--accent)', color: '#fff' } : undefined} onClick={() => setIdx(i)}>
-              {x.name ?? `Jazda ${i + 1}`}
+              {x.name ?? ts.rideN(i + 1)}
             </button>
           ))}
         </div>
@@ -80,16 +86,16 @@ export function SummaryScreen() {
 
       <Card day>
         <p className="m-eyebrow" style={{ color: verdict ? TONE_COLOR[verdict.tone] : 'var(--day)' }}>
-          {verdict?.text ?? 'Jazda'}
+          {verdict?.text ?? t.m.me.rides.fallbackName}
         </p>
         <p className="m-title mt-1">{a.name}</p>
         <p className="m-foot m-dim">{rideSourceLabel(a)}</p>
         <div className="mt-3 grid grid-cols-3 gap-2">
-          <Stat value={score != null ? `${score} %` : '—'} label="zgodność" />
+          <Stat value={score != null ? `${score} %` : '—'} label={tt.after.compliance} />
           <Stat value={load ? String(Math.round(load.tss)) : '—'} label="TSS" />
-          <Stat value={continuous && a.decoupling_pct != null ? `${num(a.decoupling_pct)} %` : a.avg_hr ? `${Math.round(a.avg_hr)}` : '—'} label={continuous && a.decoupling_pct != null ? 'dryf tętna' : 'śr. tętno'} />
+          <Stat value={continuous && a.decoupling_pct != null ? `${num(a.decoupling_pct)} %` : a.avg_hr ? `${Math.round(a.avg_hr)}` : '—'} label={continuous && a.decoupling_pct != null ? tt.after.hrDrift : tt.after.avgHr} />
         </div>
-        {continuous && a.decoupling_pct != null && <p className="m-foot m-dim mt-2">Dryf tętna (Pw:HR): {decouplingNote(a.decoupling_pct)}.</p>}
+        {continuous && a.decoupling_pct != null && <p className="m-foot m-dim mt-2">{ts.driftLine(decouplingNote(a.decoupling_pct))}</p>}
         <div className="mt-4">
           <RpeRow value={rpe} onPick={(v) => void saveRpe(v)} />
         </div>
@@ -99,19 +105,19 @@ export function SummaryScreen() {
         <Card>
           <div className="flex items-center gap-2">
             <img src="/m/art/coach-face.png" alt="" width={28} height={28} className="h-7 w-7 rounded-full object-cover" />
-            <p className="m-eyebrow">Notatka trenera</p>
+            <p className="m-eyebrow">{ts.coachNote}</p>
           </div>
           <p className="m-sub mt-2 whitespace-pre-wrap">{a.note}</p>
-          <Btn soft onClick={() => openCoach('Po dzisiejszej jeździe: ')} className="mt-3 w-full">
-            Odpowiedz trenerowi
+          <Btn soft onClick={() => openCoach(ts.coachPrefill)} className="mt-3 w-full">
+            {ts.reply}
           </Btn>
         </Card>
       )}
 
       {zones.length > 0 && (
         <Card>
-          <p className="m-eyebrow">Czas w strefach tętna</p>
-          <div className="mt-3 flex h-3 w-full gap-px overflow-hidden rounded-full" role="img" aria-label="Strefy tętna">
+          <p className="m-eyebrow">{ts.zonesTitle}</p>
+          <div className="mt-3 flex h-3 w-full gap-px overflow-hidden rounded-full" role="img" aria-label={ts.zonesAria}>
             {zones.map((z) => (
               <div key={z.id} className={zoneColor(z.id)} style={{ width: `${(z.seconds / zonesTotal) * 100}%` }} />
             ))}
@@ -129,15 +135,15 @@ export function SummaryScreen() {
         </Card>
       )}
 
-      <Group label="Liczby">
+      <Group label={ts.stats}>
         <div className="grid grid-cols-3 gap-px" style={{ background: 'var(--separator)' }}>
           {[
-            { v: minutes(Math.round(a.moving_time_s / 60)), l: 'w ruchu' },
-            { v: km != null ? `${num(km, 1)} km` : '—', l: 'dystans' },
-            { v: a.elevation_m != null ? `${Math.round(a.elevation_m)} m` : '—', l: 'przewyższenie' },
-            { v: a.device_watts && a.np_w ? `${Math.round(a.np_w)} W` : a.device_watts && a.avg_watts ? `${Math.round(a.avg_watts)} W` : '—', l: a.np_w ? 'NP' : 'śr. moc' },
-            { v: a.avg_hr ? `${Math.round(a.avg_hr)} bpm` : '—', l: 'śr. tętno' },
-            { v: a.avg_cadence ? `${Math.round(a.avg_cadence)} rpm` : '—', l: 'kadencja' },
+            { v: minutes(Math.round(a.moving_time_s / 60)), l: ts.moving },
+            { v: km != null ? `${num(km, 1)} km` : '—', l: ts.distance },
+            { v: a.elevation_m != null ? `${Math.round(a.elevation_m)} m` : '—', l: ts.elevation },
+            { v: a.device_watts && a.np_w ? `${Math.round(a.np_w)} W` : a.device_watts && a.avg_watts ? `${Math.round(a.avg_watts)} W` : '—', l: a.np_w ? 'NP' : ts.avgPower },
+            { v: a.avg_hr ? `${Math.round(a.avg_hr)} bpm` : '—', l: tt.after.avgHr },
+            { v: a.avg_cadence ? `${Math.round(a.avg_cadence)} rpm` : '—', l: ts.cadence },
           ].map((c) => (
             <div key={c.l} className="px-3 py-3 text-center" style={{ background: 'var(--card)' }}>
               <div className="m-num m-headline whitespace-nowrap">{c.v}</div>
@@ -148,9 +154,9 @@ export function SummaryScreen() {
       </Group>
 
       {!a.note && (
-        <Btn soft onClick={() => openCoach('Po dzisiejszej jeździe: ')} className="w-full">
+        <Btn soft onClick={() => openCoach(ts.coachPrefill)} className="w-full">
           <img src={ART.heart} alt="" width={22} height={22} className="h-5 w-5 object-contain" />
-          Powiedz trenerowi, jak było
+          {ts.tellCoach}
         </Btn>
       )}
     </Screen>

@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import type { Session } from '@supabase/supabase-js'
+import { t } from '@/i18n'
 import { supabase } from './supabase'
 import { authErrorFromLocation, parseMagicLink } from './magicLink'
 import { consumeAuthReturn, signInWithGoogle, signInWithStrava, type OAuthResult } from './oauth'
@@ -56,7 +57,7 @@ export function useAuth(): AuthState {
     loading,
     configured: !!supabase,
     async signIn(email) {
-      if (!supabase) return { error: 'Brak konfiguracji Supabase.' }
+      if (!supabase) return { error: t().sync.noBackend }
       const { error } = await supabase.auth.signInWithOtp({
         email: email.trim().toLowerCase(),
         options: { emailRedirectTo: window.location.origin + '/wiecej/ustawienia', shouldCreateUser: true },
@@ -64,16 +65,16 @@ export function useAuth(): AuthState {
       return { error: error ? translateAuthError(error.message) : null }
     },
     async signInWithLink(link) {
-      if (!supabase) return { error: 'Brak konfiguracji Supabase.' }
+      if (!supabase) return { error: t().sync.noBackend }
       const parsed = parseMagicLink(link)
-      if (!parsed) return { error: 'To nie wygląda na link logowania z maila.' }
+      if (!parsed) return { error: t().sync.auth.notMagicLink }
       const { error } = await supabase.auth.verifyOtp({ token_hash: parsed.token_hash, type: parsed.type })
       return { error: error ? translateAuthError(error.message) : null }
     },
     async signInWithCode(email, code) {
-      if (!supabase) return { error: 'Brak konfiguracji Supabase.' }
+      if (!supabase) return { error: t().sync.noBackend }
       const token = code.replace(/\D/g, '')
-      if (token.length < 6) return { error: 'Kod ma 6–8 cyfr.' }
+      if (token.length < 6) return { error: t().sync.auth.codeLength }
       const { error } = await supabase.auth.verifyOtp({ email: email.trim().toLowerCase(), token, type: 'email' })
       return { error: error ? translateAuthError(error.message) : null }
     },
@@ -94,9 +95,10 @@ function initialUrlError(): string | null {
 }
 
 function translateAuthError(msg: string): string {
-  if (/nie ma dostępu/.test(msg)) return 'Ten adres e-mail nie ma dostępu do aplikacji.'
-  if (/rate limit/i.test(msg)) return 'Za dużo prób – spróbuj za chwilę.'
-  if (/Signups not allowed/i.test(msg)) return 'Rejestracja wyłączona – ten adres nie jest dozwolony.'
-  if (/expired|invalid/i.test(msg)) return 'Kod/link wygasł lub został już użyty (działa raz) – wyślij nowy.'
+  // „nie ma dostępu” to treść wyjątku z triggera check_allowed_email (serwer)
+  if (/nie ma dostępu/.test(msg)) return t().sync.auth.notAllowed
+  if (/rate limit/i.test(msg)) return t().sync.auth.rateLimit
+  if (/Signups not allowed/i.test(msg)) return t().sync.auth.signupsDisabled
+  if (/expired|invalid/i.test(msg)) return t().sync.auth.codeExpired
   return msg
 }

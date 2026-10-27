@@ -7,7 +7,7 @@ import type { CapacitorConfig } from '@capacitor/cli'
  */
 const config: CapacitorConfig = {
   appId: 'pl.felsztukier.trening',
-  appName: 'Trening',
+  appName: 'Bicycle Coach',
   webDir: 'dist',
   // tło WebView takie jak tło `/m` (#f2f2f7) – bez białego błysku przed pierwszym rysunkiem
   backgroundColor: '#f2f2f7',

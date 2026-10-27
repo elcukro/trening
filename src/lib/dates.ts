@@ -1,6 +1,7 @@
 import { TZDate } from '@date-fns/tz'
 import { format } from 'date-fns'
-import { pl } from 'date-fns/locale'
+import { enGB, pl } from 'date-fns/locale'
+import { getLang } from '@/i18n/core'
 import { addDays, toUtc, type ISODate } from '@/engine/dates'
 
 export const TIMEZONE = 'Europe/Warsaw'
@@ -42,33 +43,41 @@ function asDate(iso: ISODate): Date {
   return new Date(toUtc(iso))
 }
 
-/** „śr 16.09” */
+const loc = () => (getLang() === 'pl' ? pl : enGB)
+const isPl = () => getLang() === 'pl'
+
+/** „śr 16.09” / „Wed 16 Sep” */
 export function fmtShort(iso: ISODate): string {
-  return format(asDate(iso), 'EEEEEE d.MM', { locale: pl })
+  return isPl() ? format(asDate(iso), 'EEEEEE d.MM', { locale: pl }) : format(asDate(iso), 'EEE d MMM', { locale: enGB })
 }
 
-/** „środa, 16 września 2026” */
+/** „środa, 16 września 2026” / „Wednesday, 16 September 2026” */
 export function fmtLong(iso: ISODate): string {
-  return format(asDate(iso), 'EEEE, d MMMM yyyy', { locale: pl })
+  return format(asDate(iso), 'EEEE, d MMMM yyyy', { locale: loc() })
 }
 
-/** „16.09” */
+/** „16.09” / „16 Sep” */
 export function fmtDayMonth(iso: ISODate): string {
-  return format(asDate(iso), 'd.MM')
+  return isPl() ? format(asDate(iso), 'd.MM') : format(asDate(iso), 'd MMM', { locale: enGB })
 }
 
-/** „16.09.2026” */
+/** „16.09.2026” / „16 Sep 2026” */
 export function fmtDate(iso: ISODate): string {
-  return format(asDate(iso), 'dd.MM.yyyy')
+  return isPl() ? format(asDate(iso), 'dd.MM.yyyy') : format(asDate(iso), 'd MMM yyyy', { locale: enGB })
 }
 
 export function fmtRange(a: ISODate, b: ISODate): string {
-  return `${format(asDate(a), 'd.MM')}–${format(asDate(b), 'd.MM')}`
+  return `${fmtDayMonth(a)}–${fmtDayMonth(b)}`
 }
 
-/** „wrzesień 2026” */
+/** „wrzesień 2026” / „September 2026” */
 export function fmtMonth(iso: ISODate): string {
-  return format(asDate(iso), 'LLLL yyyy', { locale: pl })
+  return format(asDate(iso), 'LLLL yyyy', { locale: loc() })
+}
+
+/** Locale date-fns dla bieżącego języka – do własnych formatów (`format(d, 'EEEE', { locale: dateLocale() })`). */
+export function dateLocale() {
+  return loc()
 }
 
 /** Pierwszy dzień miesiąca (`YYYY-MM-01`) dla daty ISO. */

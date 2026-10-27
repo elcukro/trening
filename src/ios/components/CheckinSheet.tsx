@@ -3,17 +3,20 @@ import type { Checkin } from '@/db'
 import { fmtDayMonth } from '@/lib/dates'
 import { num } from '@/lib/format'
 import { canParseCheckin, parseCheckinText } from '@/sync/checkinParse'
+import { getLang } from '@/i18n/core'
+import { useT } from '@/i18n/react'
 import { Btn, List, Row, Section, Sheet } from './Chrome'
 
-const SCALES = [
-  { key: 'sleep', label: 'Sen', low: 'fatalny', high: 'świetny' },
-  { key: 'legs', label: 'Nogi', low: 'ciężkie', high: 'lekkie' },
-  { key: 'motivation', label: 'Motywacja', low: 'żadna', high: 'pełna' },
-] as const
+const SCALES = ['sleep', 'legs', 'motivation'] as const
 
-type ScaleKey = (typeof SCALES)[number]['key']
+type ScaleKey = (typeof SCALES)[number]
 
-/** Liczba z pola z przecinkiem dziesiętnym; puste albo bezsensowne = null. */
+/** Liczba do pola: przecinek dziesiętny po polsku, kropka po angielsku. */
+function decimalStr(x: number): string {
+  return getLang() === 'pl' ? String(x).replace('.', ',') : String(x)
+}
+
+/** Liczba z pola (przecinek albo kropka dziesiętna); puste albo bezsensowne = null. */
 function numOrNull(v: string): number | null {
   const x = Number(v.replace(',', '.'))
   return v.trim() && Number.isFinite(x) ? x : null
@@ -48,7 +51,7 @@ function Scale({ label, low, high, value, onChange }: { label: string; low: stri
 
 /** Poranny check-in: waga (co drugi dzień), tętno spoczynkowe i trzy suwaki samopoczucia. */
 export function CheckinSheet({ checkin, weighDue, lastWeight, onClose, onSave }: { checkin: Checkin | undefined; weighDue: boolean; lastWeight: { date: string; kg: number } | null; onClose: () => void; onSave: (patch: Partial<Checkin>) => Promise<void> }) {
-  const [weight, setWeight] = useState(checkin?.weight_kg != null ? String(checkin.weight_kg).replace('.', ',') : '')
+  const [weight, setWeight] = useState(checkin?.weight_kg != null ? decimalStr(checkin.weight_kg) : '')
   const [rhr, setRhr] = useState(checkin?.resting_hr != null ? String(checkin.resting_hr) : '')
   const [scale, setScale] = useState<Record<ScaleKey, number | null>>({
     sleep: checkin?.sleep ?? null,
@@ -61,6 +64,8 @@ export function CheckinSheet({ checkin, weighDue, lastWeight, onClose, onSave }:
   const [parsing, setParsing] = useState(false)
   const [parsed, setParsed] = useState<{ sick: boolean | null; notes: string | null } | null>(null)
   const [parseMsg, setParseMsg] = useState<string | null>(null)
+  const t = useT()
+  const tx = t.ios.checkin
 
   async function recognise() {
     setParsing(true)
@@ -68,17 +73,18 @@ export function CheckinSheet({ checkin, weighDue, lastWeight, onClose, onSave }:
     try {
       const { fields, empty } = await parseCheckinText(sentence, { last_weight_kg: lastWeight?.kg ?? null, last_resting_hr: checkin?.resting_hr ?? null })
       if (empty) {
-        setParseMsg('Nie rozpoznałem żadnej wartości – wpisz np. „104,8, tętno 52, spałem słabo, nogi 3”.')
+        setParseMsg(tx.nothingFound)
         return
       }
-      if (fields.weight_kg != null) setWeight(String(fields.weight_kg).replace('.', ','))
+      if (fields.weight_kg != null) setWeight(decimalStr(fields.weight_kg))
       if (fields.resting_hr != null) setRhr(String(fields.resting_hr))
       setScale((x) => ({ sleep: fields.sleep ?? x.sleep, legs: fields.legs ?? x.legs, motivation: fields.motivation ?? x.motivation }))
       setParsed({ sick: fields.sick, notes: fields.notes })
-      const got = [fields.weight_kg != null && 'waga', fields.resting_hr != null && 'tętno', fields.sleep != null && 'sen', fields.legs != null && 'nogi', fields.motivation != null && 'motywacja', fields.sick && 'choroba: tak', fields.notes && `uwagi: „${fields.notes}”`].filter(Boolean)
-      setParseMsg(`Rozpoznane: ${got.join(', ')}. Sprawdź i zapisz.`)
+      const f = tx.found
+      const got = [fields.weight_kg != null && f.weight, fields.resting_hr != null && f.rhr, fields.sleep != null && f.sleep, fields.legs != null && f.legs, fields.motivation != null && f.motivation, fields.sick && f.sick, fields.notes && f.notes(fields.notes)].filter(Boolean)
+      setParseMsg(tx.recognised(got.join(', ')))
     } catch (e) {
-      setParseMsg(e instanceof Error ? e.message : 'Nie udało się rozpoznać')
+      setParseMsg(e instanceof Error ? e.message : tx.parseFailed)
     } finally {
       setParsing(false)
     }
@@ -105,61 +111,61 @@ export function CheckinSheet({ checkin, weighDue, lastWeight, onClose, onSave }:
   const nothing = !numOrNull(weight) && !numOrNull(rhr) && !scale.sleep && !scale.legs && !scale.motivation
 
   return (
-    <Sheet title="Check-in" onClose={onClose} done={{ label: 'Zapisz', onClick: save, disabled: busy || nothing }}>
+    <Sheet title={tx.title} onClose={onClose} done={{ label: t.common.save, onClick: save, disabled: busy || nothing }}>
       {canParseCheckin && (
-        <Section header="Jednym zdaniem" footer={parseMsg ?? 'Wpisz albo podyktuj (mikrofon na klawiaturze): waga, tętno, sen, nogi, motywacja, ewentualnie co boli. Pola poniżej wypełnią się do sprawdzenia.'}>
+        <Section header={tx.sentenceHeader} footer={parseMsg ?? tx.sentenceFooter}>
           <div className="px-4 py-3">
             <textarea
               id="checkin-sentence"
               className="ios-input ios-input-block w-full"
               style={{ padding: '10px 12px', resize: 'none' }}
               rows={2}
-              placeholder="np. 104,8, tętno 52, spałem słabo, nogi 3, motywacja 5"
+              placeholder={tx.sentencePlaceholder}
               value={sentence}
               onChange={(e) => setSentence(e.target.value)}
-              aria-label="Check-in jednym zdaniem"
+              aria-label={tx.sentenceLabel}
             />
             <Btn kind="gray" className="mt-2 w-full" disabled={parsing || sentence.trim().length < 2} onClick={() => void recognise()}>
-              {parsing ? 'Rozpoznaję…' : 'Rozpoznaj'}
+              {parsing ? tx.recognising : tx.recognise}
             </Btn>
           </div>
         </Section>
       )}
       <Section
-        header={weighDue ? 'Pomiary · dziś wypada ważenie' : 'Pomiary'}
+        header={weighDue ? tx.measurementsWeighDue : tx.measurements}
         footer={
           <>
-            {lastWeight ? `Poprzednio ${num(lastWeight.kg, 1)} kg (${fmtDayMonth(lastWeight.date)}). Wpisuj z dziesiątkami – z nich liczy się trend. ` : ''}
-            {weighDue ? 'Waż się co drugi dzień, rano, po toalecie – dzienne wahania to głównie woda.' : 'Dziś nie musisz się ważyć. Pole zostaw puste.'}
+            {lastWeight ? tx.previous(num(lastWeight.kg, 1), fmtDayMonth(lastWeight.date)) : ''}
+            {weighDue ? tx.weighDueHint : tx.noWeighHint}
           </>
         }
       >
         <List>
           <Row
-            title="Waga"
+            title={tx.weight}
             accessory={
               <span className="flex items-center gap-1">
-                <input className="ios-input ios-num w-20 text-right" inputMode="decimal" placeholder={lastWeight ? num(lastWeight.kg, 1) : '—'} value={weight} onChange={(e) => setWeight(e.target.value)} aria-label="Waga w kilogramach" />
+                <input className="ios-input ios-num w-20 text-right" inputMode="decimal" placeholder={lastWeight ? num(lastWeight.kg, 1) : '—'} value={weight} onChange={(e) => setWeight(e.target.value)} aria-label={tx.weightLabel} />
                 <span className="ios-body ios-dim shrink-0">kg</span>
               </span>
             }
           />
           <Row
-            title="Tętno spoczynkowe"
+            title={tx.rhr}
             accessory={
               <span className="flex items-center gap-1">
-                <input className="ios-input ios-num w-20 text-right" inputMode="numeric" placeholder="—" value={rhr} onChange={(e) => setRhr(e.target.value)} aria-label="Tętno spoczynkowe" />
+                <input className="ios-input ios-num w-20 text-right" inputMode="numeric" placeholder="—" value={rhr} onChange={(e) => setRhr(e.target.value)} aria-label={tx.rhr} />
                 <span className="ios-body ios-dim shrink-0">bpm</span>
               </span>
             }
           />
         </List>
       </Section>
-      <Section header="Jak się czujesz">
+      <Section header={tx.feeling}>
         <List>
-          {SCALES.map((s) => (
-            <div key={s.key} className="ios-cell">
-              <Scale label={s.label} low={s.low} high={s.high} value={scale[s.key]} onChange={(v) => setScale((x) => ({ ...x, [s.key]: v }))} />
+          {SCALES.map((key) => (
+            <div key={key} className="ios-cell">
+              <Scale label={tx.scales[key].label} low={tx.scales[key].low} high={tx.scales[key].high} value={scale[key]} onChange={(v) => setScale((x) => ({ ...x, [key]: v }))} />
             </div>
           ))}
         </List>

@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="theme-color" content="#f2f2f7">
 <link rel="icon" href="/favicon.ico">
-<title>Pomoc – Trening</title>
+<title>Pomoc – Bicycle Coach</title>
 <style>
 /* Pomoc wygląda jak ekran aplikacji w nowym wyglądzie (/m, docs/24): te same tokeny co src/m/m.css, tylko jasny motyw. */
 html{color-scheme:light;background:#f2f2f7}
@@ -22,6 +22,8 @@ body{margin:0;background:var(--bg);color:var(--label);font:17px/22px -apple-syst
 .back{display:inline-flex;align-items:center;gap:2px;min-height:44px;padding:0 8px;color:var(--accent);text-decoration:none;font-size:17px}
 .back svg{width:22px;height:22px}
 .nav-title{position:absolute;left:50%;transform:translateX(-50%);font-weight:600}
+/* przełącznik języka: link do drugiej wersji pomocy (help.html ↔ pomoc.html) */
+.lang{margin-left:auto;display:inline-flex;align-items:center;min-height:44px;padding:0 8px;color:var(--accent);text-decoration:none;font-size:15px}
 main{max-width:640px;margin:0 auto;padding:4px 16px calc(env(safe-area-inset-bottom,0px) + 40px)}
 h1{font-size:34px;line-height:40px;font-weight:800;letter-spacing:-.8px;margin:8px 4px 4px}
 .lead{color:var(--label-2);font-size:15px;line-height:20px;margin:0 4px 20px}
@@ -85,14 +87,15 @@ if (window.Capacitor && window.Capacitor.isNativePlatform && window.Capacitor.is
 <div class="nav"><div class="nav-inner">
   <a class="back" href="/" id="back" aria-label="Wróć do aplikacji"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5l-7 7 7 7"/></svg>Wróć</a>
   <span class="nav-title">Pomoc</span>
+  <a class="lang" href="/help.html" id="lang" hreflang="en" lang="en">English</a>
 </div></div>
 
 <main>
 <h1>Pomoc</h1>
-<p class="lead">Jak korzystać z aplikacji Trening na telefonie. Działa też bez sieci.</p>
+<p class="lead">Jak korzystać z Bicycle Coach na telefonie. Aplikacja działa też bez sieci.</p>
 
 <div class="hero">
-  <p><b>Aplikacja prowadzi dzień po dniu</b>Check-in rano, trening na Bolcie, jazda ze Stravy i komentarz trenera po każdej z nich. Gdy czegoś nie wiesz, zapytaj trenera – przycisk z jego twarzą jest zawsze pod kciukiem.</p>
+  <p><b>Aplikacja prowadzi dzień po dniu</b>Rano check-in, potem trening na Bolcie, a po jeździe – wgranej na Stravę – notatka trenera. Gdy czegoś nie wiesz, zapytaj trenera: okrągły przycisk z jego twarzą jest zawsze pod kciukiem.</p>
   <img src="/m/art/coach-wave.png" alt="">
 </div>
 
@@ -104,10 +107,10 @@ if (window.Capacitor && window.Capacitor.isNativePlatform && window.Capacitor.is
 <div class="list steps">
   <div class="row only-web"><span class="n"></span><div><b>Otwórz adres aplikacji w Safari</b><span>Adres dostaniesz od osoby, która założyła Ci konto. Na telefonie otwiera się widok z trzema zakładkami: Dziś, Plan, Ja – i przyciskiem Trener.</span></div></div>
   <div class="row only-web"><span class="n"></span><div><b>Dodaj do ekranu początkowego</b><span>Safari → Udostępnij → „Do ekranu początkowego”. Aplikacja działa wtedy jak natywna, na pełnym ekranie, bez sieci i z powiadomieniami.</span></div></div>
-  <div class="row"><span class="n"></span><div><b>Zaloguj się przez Google albo Stravę</b><span>Jedno dotknięcie: Google z adresem konta albo Strava, jeśli masz ją już połączoną z aplikacją (Ustawienia → Integracje). Inny adres Google niż adres konta dostanie komunikat „nie ma dostępu”.</span></div></div>
-  <div class="row"><span class="n"></span><div><b>…albo kodem z maila</b><span>Wpisz adres e-mail konta. Przyjdzie 8-cyfrowy kod, wpisz go w aplikacji. Hasła nie ma. Gdy sesja wygaśnie, ekran Dziś pokaże żółty pasek z prośbą o ponowne zalogowanie.</span></div></div>
-  <div class="row"><span class="n"></span><div><b>Sprawdź progi</b><span>Ja → „Progi i miernik”: FTP, tętno progowe, czy masz miernik mocy. Od tych liczb zależą strefy w każdym treningu.</span></div></div>
-  <div class="row"><span class="n"></span><div><b>Połącz Stravę i Bolta</b><span>Opisane niżej. Bez nich aplikacja działa, ale jazdy trzeba wpisywać ręcznie.</span></div></div>
+  <div class="row"><span class="n"></span><div><b>Zaloguj się przez Google albo Stravę</b><span>Jedno dotknięcie: Google z adresem konta albo Strava, jeśli masz ją już połączoną z aplikacją (Ustawienia → Integracje). Konto Google z innym adresem niż adres konta zobaczy komunikat „nie ma dostępu”.</span></div></div>
+  <div class="row"><span class="n"></span><div><b>…albo kodem z maila</b><span>Wpisz adres e-mail konta. Przyjdzie 6-cyfrowy kod – wpisz go w aplikacji. Hasła nie ma. Gdy sesja wygaśnie, ekran Dziś pokaże żółty pasek z prośbą o ponowne zalogowanie.</span></div></div>
+  <div class="row"><span class="n"></span><div><b>Sprawdź progi</b><span>Ja → „Progi i miernik”: FTP, tętno progowe, czy masz miernik mocy. Od tych liczb zależą strefy we wszystkich treningach.</span></div></div>
+  <div class="row"><span class="n"></span><div><b>Połącz Stravę i Bolta</b><span>Opisane niżej. Bez nich aplikacja też działa, ale jazdy trzeba wpisywać ręcznie.</span></div></div>
 </div>
 
 <h2>Nawigacja</h2>
@@ -119,97 +122,97 @@ if (window.Capacitor && window.Capacitor.isNativePlatform && window.Capacitor.is
   <div class="row"><img src="/m/art/tab-today.png" alt=""><div><b>Dziś</b><span>Co teraz: jedna karta, która zmienia się w ciągu dnia.</span></div></div>
   <div class="row"><img src="/m/art/tab-plan.png" alt=""><div><b>Plan</b><span>Co dalej: tydzień z bilansem godzin, przewijany gestem.</span></div></div>
   <div class="row"><img src="/m/art/tab-me.png" alt=""><div><b>Ja</b><span>Jak idzie: FTP, masa, forma, jazdy, test, ustawienia.</span></div></div>
-  <div class="row"><img src="/m/art/coach-face.png" alt="" style="border-radius:50%"><div><b>Trener</b><span>Rozmowa: dane zdaniem, pytania o plan, przenoszenie jazd.</span></div></div>
+  <div class="row"><img src="/m/art/coach-face.png" alt="" style="border-radius:50%"><div><b>Trener</b><span>Rozmowa: dane jednym zdaniem, pytania o plan, przenoszenie treningów.</span></div></div>
 </div>
 
 <h2 id="dzis">Dziś – karta dnia</h2>
 <p>Karta na górze ekranu Dziś pokazuje zawsze jedną rzecz: to, co jest teraz do zrobienia.</p>
 <div class="list">
-  <div class="row"><img src="/m/art/coach-face.png" alt="" style="border-radius:50%"><div><b>Rano: „Jak się czujesz?”</b><span>„Powiedz trenerowi” otwiera rozmowę z gotowym początkiem („Waga 104,8, tętno …”) – dopisz resztę i wyślij. „Wpisz ręcznie” to arkusz z wagą, tętnem spoczynkowym i trzema ocenami 1–5. Z tych liczb liczy się deficyt dnia, trend masy i sygnały przemęczenia.</span></div></div>
+  <div class="row"><img src="/m/art/coach-face.png" alt="" style="border-radius:50%"><div><b>Rano: „Jak się czujesz?”</b><span>„Powiedz trenerowi” otwiera rozmowę z gotowym początkiem („Waga 80,5, tętno …”) – dopisz resztę i wyślij. „Wpisz ręcznie” to arkusz z wagą, tętnem spoczynkowym i trzema ocenami 1–5. Z tych liczb aplikacja liczy deficyt kalorii na dziś, trend masy i sygnały przemęczenia.</span></div></div>
   <div class="row"><img src="/m/art/ride-easy.png" alt=""><div><b>Przed jazdą: trening z celami</b><span>Nazwa, czas, cele W / bpm / rpm głównego kroku, pogoda na godzinę jazdy z ubiorem i stan Bolta („Na liczniku” albo „Wyślij na Bolta”). „Pokaż kroki” otwiera ekran jazdy.</span></div></div>
   <div class="row"><img src="/m/art/heart.png" alt=""><div><b>Po jeździe: jak poszło</b><span>Po imporcie ze Stravy: zgodność z planem, TSS, dryf tętna, notatka trenera i rząd RPE 1–10 – jedno dotknięcie zapisuje. „Podsumowanie” pokazuje całość ze strefami tętna.</span></div></div>
-  <div class="row"><img src="/m/art/rest.png" alt=""><div><b>Dzień wolny i odpuszczone</b><span>Wolne pokazuje check-in i żywienie na odpoczynek. Trening pominięty ma „Cofnij”; dzień z przeszłości bez jazdy – „Oznacz jako pominięte”, żeby raporty o niego nie pytały.</span></div></div>
+  <div class="row"><img src="/m/art/rest.png" alt=""><div><b>Dzień wolny i pominięty trening</b><span>W dzień wolny karta pokazuje check-in i żywienie na odpoczynek. Pominięty trening ma „Cofnij”; miniony dzień bez jazdy – „Oznacz jako pominięte”, żeby raporty o niego nie pytały.</span></div></div>
 </div>
-<p>Pod kartą: oś dnia (check-in · Bolt · trening · RPE), bilans tygodnia (słupki: zielony zrobione, pomarańczowy inaczej niż plan, czerwona ramka pominięte, szara bez jazdy), żywienie, ostatnia jazda i jutro.</p>
+<p>Pod kartą: oś dnia (check-in · Bolt · trening · RPE), bilans tygodnia (słupki: zielony – zrobione, pomarańczowy – inaczej niż w planie, czerwona ramka – pominięte, szary – bez jazdy), żywienie, ostatnia jazda i jutro.</p>
 
 <h2 id="jazda">Jazda i podsumowanie</h2>
 <div class="list">
-  <div class="row"><img src="/m/art/ride-key.png" alt=""><div><b>Ekran jazdy</b><span>Pasek struktury w kolorach stref, cele, kroki jeden pod drugim (rozgrzewka, interwały, przerwy, schłodzenie) z watami, tętnem i kadencją. „Wersja pod dachem” przełącza na trening na trenażer i da się ją cofnąć. „Wyślij na Bolta”, gdy automat jeszcze nie wysłał.</span></div></div>
-  <div class="row"><img src="/m/art/heart.png" alt=""><div><b>Podsumowanie</b><span>Zgodność z planem (jak jazda pasuje do kroków), TSS, dryf tętna na jazdach spokojnych, RPE, pełna notatka trenera z „Odpowiedz trenerowi”, czas w strefach tętna, liczby: czas, dystans, przewyższenie, moc, tętno, kadencja. Przy dwóch jazdach w dniu przełącznik na górze.</span></div></div>
-  <div class="row"><img src="/m/art/test.png" alt=""><div><b>Test FTP</b><span>Co kilka tygodni zastępuje mocny trening: rozgrzewka, 20 min równo na maksa, FTP = 95 % średniej mocy. Nowe wartości wpisz w Ja → „Progi i miernik”; strefy przeliczą się same.</span></div></div>
+  <div class="row"><img src="/m/art/ride-key.png" alt=""><div><b>Ekran jazdy</b><span>Pasek struktury w kolorach stref, cele, kroki jeden pod drugim (rozgrzewka, interwały, przerwy, schłodzenie) z watami, tętnem i kadencją. „Wersja pod dachem” zamienia trening na wersję na trenażer (da się to cofnąć). „Wyślij na Bolta” – gdy wysyłka automatyczna jeszcze nie zadziałała.</span></div></div>
+  <div class="row"><img src="/m/art/heart.png" alt=""><div><b>Podsumowanie</b><span>Zgodność z planem (jak jazda pasuje do kroków), TSS, dryf tętna na jazdach spokojnych, RPE, pełna notatka trenera z „Odpowiedz trenerowi”, czas w strefach tętna, liczby: czas, dystans, przewyższenie, moc, tętno, kadencja. Gdy w dniu są dwie jazdy, przełączasz je u góry.</span></div></div>
+  <div class="row"><img src="/m/art/test.png" alt=""><div><b>Test FTP</b><span>Co kilka tygodni zastępuje akcent tygodnia: rozgrzewka, 20 min równo na maksa, FTP = 95 % średniej mocy. Nowe wartości wpisz w Ja → „Progi i miernik”; strefy przeliczą się same.</span></div></div>
 </div>
-<div class="note"><p><b>Zgodność a notatka.</b> Zgodność porównuje jazdę z krokami planu, więc dwa razy dłuższa jazda da niską zgodność, nawet gdy trener pisze, że było „spokojnie, jak trzeba”. To dwie różne miary.</p></div>
+<div class="note"><p><b>Zgodność a notatka.</b> Zgodność porównuje jazdę z krokami planu, więc dwa razy dłuższa jazda ma niską zgodność, nawet gdy trener pisze, że było „spokojnie, jak trzeba”. To dwie różne miary.</p></div>
 
 <h2 id="plan">Plan</h2>
 <div class="list">
-  <div class="row"><img src="/m/art/tab-plan.png" alt=""><div><b>Tydzień</b><span>Bilans godzin i siedem dni z ikoną typu, czasem i wynikiem (✓ zrobione, ✕ pominięte, – bez jazdy, + jazda poza planem). Trening kluczowy ma ★. Przesuń w bok albo użyj strzałek, żeby zobaczyć inne tygodnie. Dotknięcie dnia otwiera jego kartę.</span></div></div>
+  <div class="row"><img src="/m/art/tab-plan.png" alt=""><div><b>Tydzień</b><span>Bilans godzin i siedem dni z ikoną typu, czasem i wynikiem (✓ zrobione, ✕ pominięte, – bez jazdy, + jazda poza planem). Akcent tygodnia ma ★. Przesuń w bok albo użyj strzałek, żeby zobaczyć inne tygodnie. Dotknięcie dnia otwiera jego kartę.</span></div></div>
   <div class="row"><img src="/m/art/ride-long.png" alt=""><div><b>Przytrzymaj dzień</b><span>Menu: „Przenieś na inny dzień” (tylko dzień wolny w tym miesiącu; dni zabronione przez reguły planu są wyszarzone z powodem), „Zamień z innym dniem” tego tygodnia, „Wersja pod dachem”, „Pomiń ten trening”, „Cofnij zmiany tego dnia”. Każda zmiana kończy się komunikatem z „Cofnij”.</span></div></div>
-  <div class="row"><img src="/m/art/bolt.png" alt=""><div><b>Po zmianie wyślij na Bolta</b><span>Gdy plan odjedzie od tego, co jest na liczniku, nad listą pojawi się pomarańczowy baner z „Wyślij”. Zmiany zapisują się w chmurze i wracają na wszystkie urządzenia.</span></div></div>
+  <div class="row"><img src="/m/art/bolt.png" alt=""><div><b>Po zmianie wyślij na Bolta</b><span>Gdy plan różni się od tego, co jest na liczniku, nad listą pojawia się pomarańczowy baner z „Wyślij”. Zmiany zapisują się w chmurze i wracają na wszystkie urządzenia.</span></div></div>
 </div>
 
 <h2 id="trener">Trener</h2>
 <div class="card">
-  <p>Okrągły przycisk z twarzą trenera otwiera rozmowę. Trener widzi Twój plan na dwa tygodnie, ostatnie jazdy z notatkami, check-iny i ustalenia o Tobie. Wątek jest jeden, z ostatnich 7 dni; „Wyczyść” kasuje go.</p>
+  <p>Okrągły przycisk z twarzą trenera otwiera rozmowę. Trener widzi Twój plan na dwa tygodnie, ostatnie jazdy z notatkami, check-iny i ustalenia o Tobie. Rozmowa jest jedna i obejmuje ostatnie 7 dni; „Wyczyść” ją kasuje.</p>
   <p>Nad klawiaturą są podpowiedzi zależne od pory dnia: rano „Waga …”, po jeździe „RPE …”, wieczorem „Co jutro?”, „Jutro nie dam rady”. Możesz pisać albo dyktować (mikrofon na klawiaturze).</p>
-  <p>Trener zapisuje check-in i RPE, oznacza pominięcie, przenosi jazdę na dzień wolny (po sprawdzeniu reguł planu) i wysyła plan na Bolta. Każdy zapis widać w rozmowie jako zieloną linię; odmowę jako czerwoną z powodem. Trener nie zmienia struktury planu i nie stawia diagnoz – przy objawach odsyła do lekarza.</p>
+  <p>Trener zapisuje check-in i RPE, oznacza trening jako pominięty, przenosi trening na dzień wolny (po sprawdzeniu reguł planu) i wysyła plan na Bolta. Każdy zapis widać w rozmowie jako zieloną linię, odmowę – jako czerwoną z powodem. Trener nie zmienia struktury planu i nie stawia diagnoz – przy objawach odsyła do lekarza.</p>
 </div>
 
 <h2 id="ja">Ja</h2>
 <div class="list">
-  <div class="row"><img src="/m/art/test.png" alt=""><div><b>Trzy liczby</b><span>FTP i ile watów brakuje do celu programu, masa z trendem na tydzień i celem, forma słownie z CTL (kondycja) i TSB (świeżość). Gdy jazdy pokazują moc wyraźnie wyższą niż FTP, pojawia się propozycja nowej wartości.</span></div></div>
-  <div class="row"><img src="/m/art/ride-key.png" alt=""><div><b>Test FTP i ostatnie jazdy</b><span>Ostatni test z wynikiem, następny z planu (ostatnie 2–3 dni przed nim lekko), jazdy z czterech tygodni z TSS – każda prowadzi do podsumowania.</span></div></div>
+  <div class="row"><img src="/m/art/test.png" alt=""><div><b>Trzy liczby</b><span>FTP i ile watów brakuje do celu programu, masa z trendem na tydzień i celem, forma słownie z CTL (kondycja) i TSB (świeżość). Gdy jazdy pokazują moc wyraźnie wyższą niż FTP, aplikacja proponuje nową wartość.</span></div></div>
+  <div class="row"><img src="/m/art/ride-key.png" alt=""><div><b>Test FTP i ostatnie jazdy</b><span>Ostatni test z wynikiem, następny z planu (2–3 dni przed nim jeździsz lekko) i jazdy z czterech tygodni z TSS – każda otwiera podsumowanie.</span></div></div>
   <div class="row"><img src="/m/art/ob-goal.png" alt=""><div><b>Twoje potrzeby</b><span>Ty i Twój cel → „Uzupełnij / Zmień swoje potrzeby”: dziesięć krótkich kroków (czas, forma, pomiar, sprzęt, zgoda, ciało, zdrowie, cel) i podsumowanie, w którym dotknięciem poprawisz każdą odpowiedź. Nowe konto zobaczy je samo po pierwszym logowaniu; „Później” odkłada je, a postęp zostaje. Tam też usuniesz odpowiedzi i wycofasz zgodę na dane o zdrowiu.</span></div></div>
-  <div class="row only-app"><img src="/m/art/bolt.png" alt=""><div><b>Ustawienia</b><span>Progi i miernik mocy, miejscowość prognozy, maile (odprawa rano, podsumowanie po treningu, list w niedzielę), stan połączeń Strava i Wahoo, konto (synchronizacja, wylogowanie).</span></div></div>
-  <div class="row only-web"><img src="/m/art/bolt.png" alt=""><div><b>Ustawienia</b><span>Progi i miernik mocy, miejscowość prognozy, powiadomienia na ten telefon, maile (odprawa rano, podsumowanie po treningu, list w niedzielę), stan połączeń Strava i Wahoo, konto (synchronizacja, wylogowanie).</span></div></div>
+  <div class="row only-app"><img src="/m/art/bolt.png" alt=""><div><b>Ustawienia</b><span>Progi i miernik mocy, miejscowość prognozy, Apple Health (waga, tętno, HRV i sen trafiają do check-inu), maile (odprawa rano, podsumowanie jazdy, list tygodnia w niedzielę), stan połączeń Strava i Wahoo, język, konto (synchronizacja, wylogowanie).</span></div></div>
+  <div class="row only-web"><img src="/m/art/bolt.png" alt=""><div><b>Ustawienia</b><span>Progi i miernik mocy, miejscowość prognozy, powiadomienia na ten telefon, maile (odprawa rano, podsumowanie jazdy, list tygodnia w niedzielę), stan połączeń Strava i Wahoo, język, konto (synchronizacja, wylogowanie).</span></div></div>
 </div>
 <p class="only-web">Reszta ustawień (profil, daty, kopia danych) i łączenie Stravy i Wahoo są w pełnej aplikacji: Ja → „Otwórz pełną aplikację”.</p>
 <p class="only-app">Reszta ustawień (profil, daty, kopia danych) i łączenie Stravy i Wahoo są na stronie trening.felsztukier.pl (najwygodniej na komputerze) – konto jest wspólne, zmiany wracają do aplikacji same.</p>
 
 <h2 id="strava">Strava</h2>
 <div class="card">
-  <p>Strava jest źródłem wykonanych jazd. Połączenie: <span class="only-web">pełna aplikacja</span><span class="only-app">trening.felsztukier.pl</span> → Więcej → Ustawienia → Integracje → „Połącz ze Stravą”. Od tej chwili każda jazda wgrana na Stravę pojawia się w aplikacji w ciągu kilku minut, z mocą, tętnem, kadencją i czasem w strefach.</p>
-  <p><b>Notatka trenera.</b> Po każdej jeździe trener AI pisze kilka zdań: co było planem, jak poszło, porównanie z poprzednimi razami, co z tego wynika na jutro. Każda liczba w notatce pochodzi z danych jazdy.</p>
-  <p><b>Tytuł i opis na Stravie.</b> Opcjonalnie trener nadaje jeździe tytuł i krótki opis z podpisem „Notatki: Kolarski Trener AI”. Włączasz to w karcie Strava <span class="only-web">w pełnej aplikacji</span><span class="only-app">na trening.felsztukier.pl</span>; przy pierwszym włączeniu trzeba połączyć się ponownie, bo potrzebna jest zgoda na zapis. Twoje własne tytuły zostają. „Pobierz ostatnie 30 dni” ściąga jazdy wstecz.</p>
+  <p>Strava jest źródłem wykonanych jazd. Połączenie: <span class="only-web">pełna aplikacja</span><span class="only-app">trening.felsztukier.pl</span> → Więcej → Ustawienia → Integracje → „Połącz ze Stravą”. Od tej chwili każda jazda wgrana na Stravę pojawia się w aplikacji po kilku minutach – z mocą, tętnem, kadencją i czasem w strefach.</p>
+  <p><b>Notatka trenera.</b> Po każdej jeździe trener AI pisze kilka zdań: co było w planie, jak poszło, jak wypada na tle poprzednich jazd i co z tego wynika na jutro. Każda liczba w notatce pochodzi z danych jazdy.</p>
+  <p><b>Tytuł i opis na Stravie.</b> Opcjonalnie trener nadaje jeździe tytuł i krótki opis z podpisem „Notatki: Bicycle Coach”. Włączasz to w karcie Strava <span class="only-web">w pełnej aplikacji</span><span class="only-app">na trening.felsztukier.pl</span>; przy pierwszym włączeniu połącz Stravę ponownie, bo potrzebna jest zgoda na zapis. Twoje własne tytuły zostają. „Pobierz ostatnie 30 dni” ściąga jazdy wstecz.</p>
 </div>
 
 <h2 id="bolt">Wahoo ELEMNT Bolt</h2>
 <div class="list">
-  <div class="row"><img src="/m/art/bolt.png" alt=""><div><b>Automat</b><span>Raz dziennie wysyła plan na dziś i 6 kolejnych dni. Na Bolcie treningi są w Planned Workouts pod datą. Stan widać na karcie dnia i w Planie („na Bolcie”).</span></div></div>
+  <div class="row"><img src="/m/art/bolt.png" alt=""><div><b>Wysyłka automatyczna</b><span>Raz dziennie aplikacja wysyła plan na dziś i 6 kolejnych dni. Na Bolcie treningi są w Planned Workouts pod datą. Stan widać na karcie dnia i w Planie („na Bolcie”).</span></div></div>
   <div class="row"><img src="/m/art/ride-easy.png" alt=""><div><b>Ręcznie</b><span>„Wyślij na Bolta” na karcie dnia i na ekranie jazdy; w Planie baner z „Wyślij” po zmianach. Trener też wyśle na prośbę.</span></div></div>
-  <div class="row"><img src="/m/art/heart.png" alt=""><div><b>Tętno w nazwie</b><span>Bolt nie obsługuje celów tętna w planach, więc zakres bpm jest w nazwie interwału, a cel mocy (z miernikiem) jako zakres watów. Wykonane treningi z Bolta wracają do aplikacji; gdy ta sama jazda jest na Stravie, Strava ma pierwszeństwo.</span></div></div>
+  <div class="row"><img src="/m/art/heart.png" alt=""><div><b>Tętno w nazwie</b><span>Bolt nie obsługuje celów tętna w planach, więc zakres bpm jest w nazwie interwału; cel mocy (gdy masz miernik) przychodzi jako zakres watów. Wykonane treningi z Bolta wracają do aplikacji; gdy ta sama jazda jest na Stravie, Strava ma pierwszeństwo.</span></div></div>
 </div>
 
 <h2 id="maile">Maile i powiadomienia</h2>
 <div class="tbl"><table>
 <tr><th>Co</th><th>Kiedy</th><th>Treść</th></tr>
 <tr><td>Poranna odprawa</td><td>7:00, w dni z treningiem</td><td>Kroki z watami i tętnem, pogoda, ubiór, co jeść, uwagi trenera; linki „nogi 1–5” jednym kliknięciem.</td></tr>
-<tr><td>Po treningu</td><td>Kilka minut po imporcie</td><td>Dla jazdy wypełniającej plan (≥ 80 % czasu): plan a wykonanie, strefy, notatka; linki RPE 1–10.</td></tr>
-<tr><td>Dzień w liczbach</td><td>21:00</td><td>Krótsze i dodatkowe jazdy dnia w jednym mailu; nie przychodzi bez nowych jazd.</td></tr>
-<tr><td>List trenera</td><td>Niedziela 19:00</td><td>Tydzień w kilku akapitach: co się wydarzyło, ciało, na czym skupić się w następnym.</td></tr>
+<tr><td>Podsumowanie jazdy</td><td>Kilka minut po imporcie</td><td>Dla jazdy, która wypełnia plan (≥ 80 % czasu): plan a wykonanie, strefy, notatka; linki RPE 1–10.</td></tr>
+<tr><td>Dzień w liczbach</td><td>21:00</td><td>Krótsze i dodatkowe jazdy dnia w jednym mailu; przychodzi tylko wtedy, gdy są nowe jazdy.</td></tr>
+<tr><td>List tygodnia</td><td>Niedziela 19:00</td><td>Tydzień w kilku akapitach: co się wydarzyło, jak reaguje ciało, na czym się skupić w następnym.</td></tr>
 <tr class="only-web"><td>Powiadomienia</td><td>Rano, wieczorem, w niedzielę</td><td>Plan dnia, podsumowanie, raport tygodnia. Na iPhonie tylko z ekranu początkowego.</td></tr>
 </table></div>
 <p>Włączasz w Ja → E-mail (trzy przełączniki)<span class="only-web"> i Ja → Powiadomienia</span>.</p>
 
 <h2 id="zywienie">Żywienie</h2>
 <div class="card">
-  <p>Wiersz „Żywienie” na Dziś mówi, ile kalorii w deficycie (albo bez deficytu) i ile białka. Dzień wolny ma większy deficyt, dzień ciężki mały albo żaden, dzień testu żaden. Deficyt liczy się z masy z check-inu i masy docelowej, z limitem bezpieczeństwa na tydzień. Na rowerze: węglowodany na godzinę według treningu. To ogólne wskazówki, nie dieta ani narzędzie medyczne.</p>
+  <p>Wiersz „Żywienie” na Dziś podaje deficyt kalorii na dziś (albo „bez deficytu”) i ile zjeść białka. Dzień wolny ma większy deficyt, dzień ciężki mały albo żaden, dzień testu – żaden. Deficyt liczy się z masy z check-inu i masy docelowej, z limitem bezpieczeństwa na tydzień. Na rowerze: węglowodany na godzinę według treningu. To ogólne wskazówki, nie dieta ani narzędzie medyczne.</p>
 </div>
 
 <h2 id="komputer">Pełna aplikacja na komputerze</h2>
 <div class="card">
-  <p><span class="only-web">Ten sam adres na komputerze otwiera pełny widok z boczną nawigacją; na telefonie: Ja → „Otwórz pełną aplikację”.</span><span class="only-app">Na komputerze trening.felsztukier.pl otwiera pełny widok z boczną nawigacją – to samo konto co w aplikacji.</span> Dodatkowe ekrany: Kalendarz z przenoszeniem treningów przeciągnięciem, Sezon (wszystkie tygodnie programu), Biblioteka (treningi, strefy, zasady), Postęp z krzywą mocy, wykresem formy i raportami, Sprzęt i serwis, Wyjazd, kopia danych.</p>
+  <p><span class="only-web">Ten sam adres na komputerze otwiera pełny widok z boczną nawigacją; na telefonie: Ja → „Otwórz pełną aplikację”.</span><span class="only-app">Na komputerze trening.felsztukier.pl otwiera pełny widok z boczną nawigacją – to samo konto co w aplikacji.</span> Dodatkowe ekrany: Kalendarz z przenoszeniem treningów przeciągnięciem, Sezon (wszystkie tygodnie programu), Biblioteka (treningi, strefy, zasady), Postęp z krzywą mocy, wykresem formy i raportami, Sprzęt i serwis, Wyjazd (w programach z wyjazdem), kopia danych.</p>
   <p class="only-web">Poprzedni widok na telefon (<code>/i</code>) zostaje jako zapas: Ja → „Wróć do poprzedniego wyglądu”; w nim Więcej → „Wypróbuj nowy wygląd”.</p>
 </div>
 
 <h2 id="problemy">Gdy coś nie działa</h2>
 <div class="list">
-  <div class="row"><img src="/m/art/night.png" alt=""><div><b>Żółty pasek „sesja wygasła”</b><span>Ja → Wyloguj, zaloguj kodem ponownie. Dane lokalne zostają.</span></div></div>
+  <div class="row"><img src="/m/art/night.png" alt=""><div><b>Żółty pasek „sesja wygasła”</b><span>Ja → Wyloguj, potem zaloguj się ponownie. Dane na telefonie zostają.</span></div></div>
   <div class="row only-app"><img src="/m/art/heart.png" alt=""><div><b>Jazda nie pojawia się ze Stravy</b><span>Odczekaj 10 minut; potem na trening.felsztukier.pl: Więcej → Ustawienia → Integracje → „Sprawdź webhook” i „Pobierz ostatnie 30 dni”.</span></div></div>
   <div class="row only-web"><img src="/m/art/heart.png" alt=""><div><b>Jazda nie pojawia się ze Stravy</b><span>Odczekaj 10 minut; potem w pełnej aplikacji Integracje → „Sprawdź webhook” i „Pobierz ostatnie 30 dni”.</span></div></div>
   <div class="row"><img src="/m/art/bolt.png" alt=""><div><b>Treningu nie ma na Bolcie</b><span>Karta dnia → „Wyślij na Bolta”; na Bolcie odśwież Planned Workouts (synchronizacja z aplikacją ELEMNT).</span></div></div>
   <div class="row"><img src="/m/art/sun.png" alt=""><div><b>Brak pogody na karcie</b><span>Ja → Pogoda → ustaw miejscowość. Prognoza jest na godzinę jazdy z ustawień.</span></div></div>
   <div class="row"><img src="/m/art/test.png" alt=""><div><b>Strefy wyglądają źle</b><span>Sprawdź FTP i tętno progowe w Ja → „Progi i miernik”; po teście wpisz nowe wartości.</span></div></div>
-  <div class="row"><img src="/m/art/rest.png" alt=""><div><b>Bez sieci</b><span>Dziś, Plan, Ja i jazdy działają offline. Zapisy wysyłają się, gdy wróci zasięg. Trener wymaga sieci.</span></div></div>
+  <div class="row"><img src="/m/art/rest.png" alt=""><div><b>Bez sieci</b><span>Dziś, Plan, Ja i jazdy działają offline. Zapisy wyślą się same, gdy wróci zasięg. Trener potrzebuje sieci.</span></div></div>
 </div>
 </main>
 <script>
@@ -218,6 +221,8 @@ try {
   var wroc = sessionStorage.getItem('trening:pomoc-wroc')
   if (wroc && wroc.charAt(0) === '/' && wroc.charAt(1) !== '/') document.getElementById('back').setAttribute('href', wroc)
 } catch (e) { /* brak pamięci sesji */ }
+// przełącznik języka zastępuje bieżący wpis historii – „Wróć” dalej prowadzi do aplikacji, nie do drugiej wersji pomocy
+document.getElementById('lang').addEventListener('click', function (e) { e.preventDefault(); location.replace(this.getAttribute('href')) })
 document.getElementById('back').addEventListener('click', function (e) {
   if (history.length > 1 && document.referrer && new URL(document.referrer).origin === location.origin) { e.preventDefault(); history.back() }
 })

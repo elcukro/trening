@@ -2,6 +2,8 @@ import { useState } from 'react'
 import { db } from '@/db'
 import { runSync } from '@/sync/sync'
 import { useSettings } from '@/app/useSettings'
+import { useT } from '@/i18n/react'
+import { t as tNow } from '@/i18n'
 
 /** Stary adres aplikacji – od 25.09.2026 serwer przekierowuje go na własną domenę (vercel.json). */
 const OLD_HOST = 'trening-inky.vercel.app'
@@ -15,6 +17,7 @@ export function MovedBanner() {
   const [busy, setBusy] = useState(false)
   const [msg, setMsg] = useState<string | null>(null)
   const { program } = useSettings()
+  const t = useT()
   if (typeof location === 'undefined' || location.host !== OLD_HOST) return null
 
   async function go() {
@@ -23,7 +26,7 @@ export function MovedBanner() {
       await runSync({ programVersion: program.version })
       const pending = await db.outbox.count()
       if (pending > 0) {
-        setMsg(`${pending} zmian czeka na wysłanie – połącz się z siecią i zaloguj, inaczej zostaną na tym adresie.`)
+        setMsg(tNow().classic.moved.pending(pending))
         return
       }
       location.href = `${NEW_ORIGIN}${location.pathname}${location.search}`
@@ -36,11 +39,13 @@ export function MovedBanner() {
     <div role="status" className="safe-top relative z-50 bg-sky-600 px-4 py-2 text-sm text-white shadow">
       <div className="mx-auto flex max-w-lg items-center gap-3">
         <span className="min-w-0 flex-1">
-          Aplikacja ma nowy adres: <b>trening.felsztukier.pl</b>. Zaloguj się tam kodem i dodaj do ekranu początkowego.
+          {t.classic.moved.before}
+          <b>trening.felsztukier.pl</b>
+          {t.classic.moved.after}
           {msg && <span className="mt-0.5 block text-xs">{msg}</span>}
         </span>
         <button onClick={() => void go()} disabled={busy} className="min-h-11 shrink-0 rounded-xl bg-white px-3 font-semibold text-sky-700 disabled:opacity-60">
-          {busy ? 'Wysyłam…' : 'Przejdź'}
+          {busy ? t.common.sending : t.classic.moved.go}
         </button>
       </div>
     </div>

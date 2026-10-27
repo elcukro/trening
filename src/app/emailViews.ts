@@ -4,6 +4,7 @@ import type { ResolvedStep } from '@/engine/types'
 import { computeZones } from '@/engine/zones'
 import { mondayOf } from '@/engine/dates'
 import { fmtLong } from '@/lib/dates'
+import { getLang } from '@/i18n/core'
 import { days as daysLabel } from '@/lib/format'
 import type { MorningView, StepView, WorkoutView } from '../../supabase/functions/_shared/email_templates'
 import { buildWorkoutView, type DaySnapshot, type PlanContext, type RideLite, type WorkStep, type ZoneBpmLite } from '../../supabase/functions/_shared/email_views'
@@ -155,6 +156,6 @@ export function workoutView(
     next: opts.next ?? null,
     morning: null,
   }
-  const v = buildWorkoutView(ride, snap, { athlete: opts.athlete, appUrl: opts.appUrl, rideDateLabel: fmtLong(ride.date) })
+  const v = buildWorkoutView(ride, snap, { athlete: opts.athlete, appUrl: opts.appUrl, rideDateLabel: fmtLong(ride.date), lang: getLang() })
   return { ...v, week: opts.week ?? null }
 }

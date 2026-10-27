@@ -1,3 +1,4 @@
+import { t } from '../i18n'
 import type { BikeWorkout, HrZone, PowerZone, Program, Step, StepBlock } from './schema'
 import type { ResolvedStep, ResolvedWorkout, ZoneBpm } from './types'
 
@@ -43,11 +44,11 @@ function isRepeat(b: StepBlock): b is { repeat: number; steps: StepBlock[] } {
 }
 
 export function totalSeconds(blocks: StepBlock[]): number {
-  let t = 0
+  let sum = 0
   for (const b of blocks) {
-    t += isRepeat(b) ? b.repeat * totalSeconds(b.steps) : b.duration_s
+    sum += isRepeat(b) ? b.repeat * totalSeconds(b.steps) : b.duration_s
   }
-  return t
+  return sum
 }
 
 interface FlattenOpts {
@@ -100,7 +101,7 @@ export function resolveWorkout(
       const rest = Math.max(0, total - insertSec)
       const before = Math.round(rest / 2 / 60) * 60
       const after = Math.max(0, rest - before)
-      blocks = [{ ...base, duration_s: before }, workout.insert, { ...base, name: `${base.name} (c.d.)`, duration_s: after }]
+      blocks = [{ ...base, duration_s: before }, workout.insert, { ...base, name: t().engine.plan.continued(base.name), duration_s: after }]
     } else {
       blocks = [{ ...base, duration_s: total }]
     }

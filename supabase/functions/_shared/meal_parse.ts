@@ -2,6 +2,8 @@
 // Czysty TS: prompt, parsowanie odpowiedzi modelu i walidacja zakresów – testy w src/engine/__tests__/meal_parse.test.ts.
 // Model rozpoznaje i przepisuje; kcal produktu z etykiety liczy aplikacja z ilości (`labelTotals` w src/engine/intake.ts).
 
+import type { Lang } from './i18n.ts'
+
 export interface ParsedItem {
   name: string
   grams: number | null
@@ -56,8 +58,10 @@ const round1 = (v: number | null): number | null => (v == null ? null : Math.rou
 const text = (v: unknown, max: number): string | null => (typeof v === 'string' && v.trim() ? v.trim().slice(0, max) : null)
 
 /** Notatka i cel białka – jedyne, co z klienta trafia do modelu poza zdjęciami. */
-export function userPrompt(note: string | null | undefined, hint: { protein_target?: unknown } = {}): string {
+export function userPrompt(note: string | null | undefined, hint: { protein_target?: unknown } = {}, lang: Lang = 'pl'): string {
   const lines = ['Rozpoznaj posiłek albo produkt ze zdjęcia.']
+  // zawodnik z aplikacją po angielsku: nazwy i pytanie po angielsku (zamiast „krótka polska nazwa”), liczby w JSON bez zmian
+  if (lang === 'en') lines.push('Zawodnik używa aplikacji po angielsku: "name", nazwy pozycji w "items" i "question" napisz po angielsku (np. "Pork cutlet with potatoes and slaw", "How big was the plate?").')
   const n = text(note, 200)
   if (n) lines.push(`Notatka zawodnika: ${n}`)
   const p = numIn(hint.protein_target, 30, 400)

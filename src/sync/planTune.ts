@@ -1,4 +1,4 @@
-import { supabase } from './supabase'
+import { langHeaders, supabase } from './supabase'
 import { allowedTemplates, clampTuning, defaultTuning, tuningBounds, type PlanTuning } from '@/engine/generator'
 import type { PlanInputs } from '@/engine/onboarding'
 
@@ -19,7 +19,7 @@ export async function requestTuning(inputs: PlanInputs, note?: string | null): P
   if (!supabase) return { ...rules, detail: 'bez konta' }
   try {
     const templates = allowedTemplates(inputs).map((t) => ({ id: t.id, name: t.name, summary: t.summary, intensity: t.intensity }))
-    const { data, error } = await supabase.functions.invoke<{ tuning?: unknown; error?: string }>('plan-tune', { body: { inputs, templates, bounds: tuningBounds(inputs), note: note ?? null } })
+    const { data, error } = await supabase.functions.invoke<{ tuning?: unknown; error?: string }>('plan-tune', { body: { inputs, templates, bounds: tuningBounds(inputs), note: note ?? null }, headers: langHeaders() })
     if (error || !data?.tuning) return { ...rules, detail: data?.error ?? error?.message ?? 'brak odpowiedzi' }
     const { tuning, adjustments } = clampTuning(inputs, data.tuning)
     return { tuning, source: 'ai', adjustments }

@@ -1,7 +1,9 @@
 import { z } from 'zod'
 import { WEEKDAYS, type Weekday } from '../dates'
 import type { PlanInputs } from '../onboarding'
-import { allowedTemplates, templateById, TEMPLATE_IDS, type TemplateId } from './templates'
+import { allowedTemplates, templateById, templateText, TEMPLATE_IDS, type TemplateId } from './templates'
+import { t as tr } from '../../i18n'
+import { WEEKDAY_LONG } from '../../lib/labels'
 
 /**
  * Dopasowanie planu (docs/33 § 8.2): model wybiera szablon i stroi parametry generatora, kod pilnuje granic.
@@ -55,19 +57,19 @@ export function tuningBounds(inp: PlanInputs) {
   }
 }
 
-const DAY_PL: Record<Weekday, string> = { mon: 'poniedziałek', tue: 'wtorek', wed: 'środa', thu: 'czwartek', fri: 'piątek', sat: 'sobota', sun: 'niedziela' }
-
-/** Uzasadnienia z reguł – gdy model milczy, zmyśla liczby albo zawodnik sam zmienił parametr. */
+/** Uzasadnienia z reguł – gdy model milczy, zmyśla liczby albo zawodnik sam zmienił parametr. Teksty w bieżącym języku (docs/34). */
 export function ruleWhy(inp: PlanInputs, t: Omit<PlanTuning, 'why'>): PlanTuning['why'] {
-  const tpl = templateById(t.template)
+  const tpl = templateText(templateById(t.template))
   const h = Math.round(inp.weekly_hours * t.volume_pct) / 100
+  const W = tr().engine.generator.why
+  const day = (d: Weekday) => (WEEKDAY_LONG[d] ?? d).toLowerCase()
   return {
     template: `${tpl.name}: ${tpl.summary}`,
-    volume: t.volume_pct === 100 ? `Plan wykorzystuje cały czas, który podałeś (${h} h w tygodniu).` : `Plan bierze ${t.volume_pct} % podanego czasu (${h} h w tygodniu) – zapas na życie i regenerację.`,
-    ramp: `Objętość rośnie najwyżej o ${t.ramp_pct} % z tygodnia na tydzień${gentle(inp) ? ' – spokojniej, bo organizm dopiero się przyzwyczaja' : ''}.`,
-    blocks: `Co ${t.block_weeks}. tydzień lżejszy, test co ${t.test_every_blocks === 1 ? 'blok' : `${t.test_every_blocks} bloki`}.`,
-    keys: t.key_sessions === 0 ? 'Bez akcentów – na razie tylko spokojne jazdy.' : t.key_sessions === 1 ? 'Jeden akcent w tygodniu – reszta spokojnie, żeby akcent był jakościowy.' : 'Dwa akcenty w tygodniu, nigdy dzień po dniu.',
-    days: t.long_day ? `Długa jazda: ${DAY_PL[t.long_day]}${t.key_days?.length ? `, akcenty: ${t.key_days.map((d) => DAY_PL[d]).join(' i ')}` : ''}.` : 'Dni dobiera generator: długa w dniu z największym zapasem czasu, akcenty z dala od niej.',
+    volume: t.volume_pct === 100 ? W.volumeAll(h) : W.volumePart(t.volume_pct, h),
+    ramp: W.ramp(t.ramp_pct, gentle(inp)),
+    blocks: W.blocks(t.block_weeks, t.test_every_blocks),
+    keys: t.key_sessions === 0 ? W.keys0 : t.key_sessions === 1 ? W.keys1 : W.keys2,
+    days: t.long_day ? W.days(day(t.long_day), (t.key_days ?? []).map(day)) : W.daysAuto,
   }
 }
 

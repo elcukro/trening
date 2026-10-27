@@ -1,4 +1,5 @@
 import { Geolocation } from '@capacitor/geolocation'
+import { t, UserError } from '@/i18n'
 
 /**
  * Bieżąca pozycja do prognozy pogody (docs/27 § 1 pkt 12) – jednorazowo, „przy używaniu aplikacji”, bez śledzenia.
@@ -12,8 +13,8 @@ export async function currentPosition(): Promise<{ lat: number; lon: number }> {
   } catch (e) {
     const msg = e instanceof Error ? e.message : String(e)
     if (/denied|permission|not authorized|User denied/i.test(msg)) {
-      throw new Error('Brak zgody na lokalizację. Włączysz ją w Ustawieniach iPhone’a → Trening → Lokalizacja („Podczas używania aplikacji”).', { cause: e })
+      throw new UserError(t().sync.location.denied(t().common.appName), { cause: e })
     }
-    throw new Error('Nie udało się ustalić lokalizacji. Spróbuj na zewnątrz albo wpisz miejscowość.', { cause: e })
+    throw new UserError(t().sync.location.failed, { cause: e })
   }
 }

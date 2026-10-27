@@ -1,4 +1,5 @@
-import { supabase } from './supabase'
+import { t, UserError } from '@/i18n'
+import { langHeaders, supabase } from './supabase'
 
 /**
  * Powiadomienia Web Push. Na iOS działają wyłącznie w aplikacji dodanej do ekranu początkowego
@@ -42,8 +43,8 @@ export function pushSupported(): boolean {
 }
 
 async function call<T>(action: string, extra: Record<string, unknown> = {}): Promise<T> {
-  if (!supabase) throw new Error('Brak konfiguracji Supabase.')
-  const { data, error } = await supabase.functions.invoke('push-send', { body: { action, ...extra } })
+  if (!supabase) throw new UserError(t().sync.noBackend)
+  const { data, error } = await supabase.functions.invoke('push-send', { body: { action, ...extra }, headers: langHeaders() })
   if (error) {
     let detail = error.message
     try {
@@ -52,8 +53,8 @@ async function call<T>(action: string, extra: Record<string, unknown> = {}): Pro
     } catch {
       /* ignoruj */
     }
-    if (detail === 'no_subscriptions') throw new Error('To urządzenie nie jest zapisane do powiadomień.')
-    if (detail === 'unauthorized') throw new Error('Zaloguj się w Ustawieniach → Konto.')
+    if (detail === 'no_subscriptions') throw new UserError(t().sync.push.notSubscribed)
+    if (detail === 'unauthorized') throw new UserError(t().sync.push.signIn)
     throw new Error(detail)
   }
   return data as T
@@ -119,10 +120,10 @@ async function subscriptionId(endpoint: string): Promise<string> {
 async function registerSubscription(sub: PushSubscription, label?: string): Promise<void> {
   const json = sub.toJSON() as { endpoint?: string; keys?: { p256dh?: string; auth?: string } }
   const endpoint = json.endpoint ?? sub.endpoint
-  if (!supabase) throw new Error('Brak konfiguracji Supabase.')
+  if (!supabase) throw new UserError(t().sync.noBackend)
   const { data: session } = await supabase.auth.getSession()
   const userId = session.session?.user.id
-  if (!userId) throw new Error('Zaloguj się w Ustawieniach → Konto.')
+  if (!userId) throw new UserError(t().sync.push.signIn)
   const { error } = await supabase.from('push_subscriptions').upsert(
     {
       id: await subscriptionId(endpoint),
@@ -130,7 +131,7 @@ async function registerSubscription(sub: PushSubscription, label?: string): Prom
       endpoint,
       p256dh: json.keys?.p256dh ?? bytesToB64url(sub.getKey('p256dh')),
       auth: json.keys?.auth ?? bytesToB64url(sub.getKey('auth')),
-      label: label ?? navigator.platform ?? 'urządzenie',
+      label: label ?? navigator.platform ?? t().sync.push.deviceFallback,
       deleted_at: null,
       updated_at: new Date().toISOString(),
     },
@@ -146,12 +147,12 @@ async function subscribeInBrowser(reg: ServiceWorkerRegistration): Promise<PushS
 
 /** Zapisuje to urządzenie do powiadomień. Musi być wywołane z gestu użytkownika. */
 export async function subscribePush(label?: string): Promise<void> {
-  if (!pushSupported()) throw new Error('Ta przeglądarka nie obsługuje powiadomień.')
+  if (!pushSupported()) throw new UserError(t().sync.push.unsupported)
   if (!isStandalone() && /iphone|ipad|ipod/i.test(navigator.userAgent)) {
-    throw new Error('Na iPhonie dodaj aplikację do ekranu początkowego, a potem włącz powiadomienia z jej poziomu.')
+    throw new UserError(t().sync.push.iosHomeScreen)
   }
   const permission = await Notification.requestPermission()
-  if (permission !== 'granted') throw new Error('Nie wyraziłeś zgody na powiadomienia.')
+  if (permission !== 'granted') throw new UserError(t().sync.push.denied)
   const reg = await registration()
   const sub = (await reg.pushManager.getSubscription()) ?? (await subscribeInBrowser(reg))
   await registerSubscription(sub, label)
@@ -181,12 +182,12 @@ export async function unsubscribePush(): Promise<void> {
   const id = await subscriptionId(sub.endpoint)
   // najpierw serwer: gdy zapis się nie uda (brak sieci), urządzenie zostaje zapisane i nic nie „znika” po cichu
   const { error } = (await supabase?.from('push_subscriptions').update({ deleted_at: new Date().toISOString(), updated_at: new Date().toISOString() }).eq('id', id)) ?? {}
-  if (error) throw new Error(`Nie udało się wypisać urządzenia na serwerze: ${error.message}`)
+  if (error) throw new UserError(t().sync.push.unsubscribeFailed(error.message))
   await sub.unsubscribe()
 }
 
 /** Próbne powiadomienie; `expired` = wygasłe subskrypcje wykreślone przy okazji (nie liczą się jako błąd). */
 export async function sendTestPush(): Promise<{ ok: boolean; sent: number; failed: number; expired: number; detail: string[] }> {
-  const r = await call<{ ok: boolean; sent?: number; failed: number; expired?: number; detail: string[] }>('test', { title: 'Trening', text: 'Powiadomienia działają. Tak będzie wyglądał plan dnia.' })
+  const r = await call<{ ok: boolean; sent?: number; failed: number; expired?: number; detail: string[] }>('test', { title: t().common.appName, text: t().sync.push.testText })
   return { ok: r.ok, sent: r.sent ?? 0, failed: r.failed, expired: r.expired ?? 0, detail: r.detail }
 }
