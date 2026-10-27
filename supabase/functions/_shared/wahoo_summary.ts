@@ -45,7 +45,11 @@ export interface WahooWorkoutRow {
   avg_cadence: number | null
   avg_speed_kmh: number | null
   ascent_m: number | null
-  summary: WahooSummary
+  summary: WahooSummary | null
+  /** jazda z innej aplikacji (`fitness_app_id`, np. 1085 = MyWhoosh), której podsumowania Wahoo nam nie oddaje (401) */
+  foreign_app_id?: number | null
+  /** jazda „tylko czas”: pliku FIT nie ma (pobieranie go pomija) */
+  fit_error?: string | null
 }
 
 function n(v: unknown): number | null {
@@ -116,8 +120,53 @@ export function needsSummaryFetch(w: WahooWorkoutRaw, from: string, to: string, 
   return d >= from && d <= to
 }
 
-/** Dlaczego trening z listy Wahoo nie trafia do `wahoo_workouts` (null = trafia). Te same warunki co `summaryToRow`. */
+/** Nazwy aplikacji, z których Wahoo dostaje jazdy (`fitness_app_id`); inne – „inna aplikacja”. */
+export const FOREIGN_APPS: Record<number, string> = { 1085: 'MyWhoosh' }
+
+/** Krótsza jazda z innej aplikacji to zwykle rozgrzewka albo przerwany start – jak `summaryToRow` (300 s). */
+const FOREIGN_MIN_MINUTES = 5
+
+/**
+ * Jazda z innej aplikacji „tylko czas” (27.10.2026): Wahoo pokazuje ją na liście z nazwą, startem i minutami, ale
+ * podsumowania i pliku nie oddaje (401 „not authorized”, dane należą do aplikacji, która jazdę wgrała). Zapisujemy,
+ * że się odbyła; moc, tętno i notatkę daje dopiero wgrany plik FIT (docs/33 § 7a). Pomijamy nasze plany, przyszłość,
+ * wpisy o północy UTC (plany innych aplikacji, np. SYSTM) i wpisy bez aplikacji źródłowej.
+ */
+export function foreignToRow(w: WahooWorkoutRaw, now = Date.now()): WahooWorkoutRow | null {
+  if (w.workout_summary || !w.starts || isOurPlan(w)) return null
+  const app = typeof w.fitness_app_id === 'number' ? w.fitness_app_id : null
+  const minutes = typeof w.minutes === 'number' ? w.minutes : null
+  if (app == null || minutes == null || minutes < FOREIGN_MIN_MINUTES) return null
+  const t = Date.parse(w.starts)
+  if (!Number.isFinite(t) || t > now || /T00:00:00(\.0+)?Z$/.test(w.starts)) return null
+  return {
+    id: w.id,
+    date: warsawDate(w.starts),
+    starts: w.starts,
+    name: w.name ?? null,
+    minutes_active: Math.round(minutes),
+    moving_time_s: Math.round(minutes * 60),
+    distance_km: null,
+    avg_hr: null,
+    avg_power: null,
+    np_w: null,
+    avg_cadence: null,
+    avg_speed_kmh: null,
+    ascent_m: null,
+    summary: null,
+    foreign_app_id: app,
+    fit_error: 'tylko czas',
+  }
+}
+
+/** Wiersz do zapisu: pełny z podsumowania albo „tylko czas” dla jazdy z innej aplikacji. */
+export function workoutToRow(w: WahooWorkoutRaw, now = Date.now()): WahooWorkoutRow | null {
+  return summaryToRow(w) ?? foreignToRow(w, now)
+}
+
+/** Dlaczego trening z listy Wahoo nie trafia do `wahoo_workouts` (null = trafia). Te same warunki co `workoutToRow`. */
 export function dropReason(w: WahooWorkoutRaw): string | null {
+  if (foreignToRow(w)) return null
   const s = w.workout_summary
   if (!s) return 'brak workout_summary'
   if (!w.starts) return 'brak starts'
@@ -174,11 +223,11 @@ export function droppedWorkouts(list: WahooWorkoutRaw[], from: string, to: strin
   return out
 }
 
-/** Treningi z okna [from, to] (daty lokalne) z podsumowaniem – do zapisu. */
+/** Treningi z okna [from, to] (daty lokalne) z podsumowaniem albo „tylko czas” z innej aplikacji – do zapisu. */
 export function completedInRange(list: WahooWorkoutRaw[], from: string, to: string): WahooWorkoutRow[] {
   const out: WahooWorkoutRow[] = []
   for (const w of list) {
-    const row = summaryToRow(w)
+    const row = workoutToRow(w)
     if (row && row.date >= from && row.date <= to) out.push(row)
   }
   return out

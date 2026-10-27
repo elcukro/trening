@@ -190,6 +190,15 @@ bez nowego konta, dane są nasze (źródło `fit`, bez limitu 7 dni).
   `duration_*`, `our_plan` – bez adresów i tokenów. Po wdrożeniu `wahoo-push` i backfillu dla Ferdynanda widać, czy jazdy
   z MyWhoosh nie mają `workout_summary` w liście (wtedy np. `GET /v1/workouts/:id`), czy mają je w innym kształcie.
 
+### Jazda „tylko czas” z Wahoo (27.10.2026)
+
+Sprawdzone trybem `inspect` w `wahoo-push`: jazdy z MyWhoosh są na liście Wahoo (`fitness_app_id: 1085`, typ 12, nazwa, start, `minutes`), ale `GET /v1/workouts/{id}/workout_summary` zwraca **401 „You are not authorized to view this workout summary”** – podsumowanie i plik należą do aplikacji, która jazdę wgrała. „External Sharing” w portalu Wahoo tego nie zmienia.
+
+- `foreignToRow` (`_shared/wahoo_summary.ts`) zapisuje taką jazdę w `wahoo_workouts` z `foreign_app_id`, czasem z `minutes`, bez metryk i z `fit_error = 'tylko czas'` (pobieranie pliku ją pomija); bez notatki i maila (`processWahooRides`). Pomijane: nasze plany, przyszłość, wpisy o północy UTC (plany innych aplikacji, np. SYSTM), < 5 min.
+- Pasujący plik FIT ją zastępuje w obu miejscach naraz: `mergeRides` (`time_only`) i `private.rebuild_day_log` (migracja `20261027150000_wahoo_time_only.sql`, wspólna reguła `private.rides_match`). Kolejność wgrania bez znaczenia.
+- Podsumowanie jazdy w `/m` pokazuje „Wahoo · tylko czas (MyWhoosh)” i przycisk „Wgraj plik FIT”.
+- `fillSummaries` (pojedyncze podsumowania) zostaje dla innych aplikacji – dla MyWhoosh kończy się 401 i jazda idzie jako „tylko czas”.
+
 ## 8. Szablony planów i dopasowanie przez AI
 
 ### 8.1 Biblioteka szablonów (`data/templates/`)

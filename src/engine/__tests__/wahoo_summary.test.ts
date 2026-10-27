@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { completedInRange, dropReason, droppedWorkouts, isOurPlan, needsSummaryFetch, summaryToRow, warsawDate } from '../../../supabase/functions/_shared/wahoo_summary'
+import { completedInRange, dropReason, droppedWorkouts, foreignToRow, isOurPlan, needsSummaryFetch, summaryToRow, warsawDate } from '../../../supabase/functions/_shared/wahoo_summary'
 
 const done = {
   id: 498978425,
@@ -89,5 +89,29 @@ describe('podsumowanie dociągane osobno – jazdy z innych aplikacji (27.10.202
   it('po dociągnięciu podsumowania jazda przechodzi przez summaryToRow', () => {
     const filled = { ...mywhoosh, workout_summary: { duration_active_accum: 6007, distance_accum: 47880, power_avg: 153, heart_rate_avg: 130, cadence_avg: 87 } }
     expect(summaryToRow(filled)).toMatchObject({ id: 509043014, date: '2026-10-23', minutes_active: 100, distance_km: 47.9, avg_power: 153, avg_hr: 130 })
+  })
+})
+
+describe('jazda z innej aplikacji „tylko czas” (foreignToRow)', () => {
+  const now = Date.parse('2026-10-27T10:00:00Z')
+  // dokładnie jak zwraca Wahoo (tryb inspect, 27.10.2026)
+  const raw = { id: 509043014, name: 'MyWhoosh - Baza_Z2_158W_120min', starts: '2026-10-23T18:19:11.000Z', minutes: 100, plan_id: null, workout_token: 'FID1085 20704316212:0', fitness_app_id: 1085, workout_summary: null, workout_type_id: 12 }
+
+  it('zapisuje nazwę, start i czas, bez metryk; pliku nie szuka', () => {
+    expect(foreignToRow(raw, now)).toMatchObject({ id: 509043014, date: '2026-10-23', minutes_active: 100, moving_time_s: 6000, avg_hr: null, summary: null, foreign_app_id: 1085, fit_error: 'tylko czas' })
+    expect(dropReason(raw)).toBeNull()
+  })
+
+  it('pomija nasze plany, plany innych aplikacji o północy, przyszłość, brak aplikacji i krótkie wpisy', () => {
+    expect(foreignToRow({ ...raw, workout_token: '2026-10-23:Z2:2026.09.26-2', fitness_app_id: 3830 }, now)).toBeNull()
+    expect(foreignToRow({ ...raw, name: 'The Model', starts: '2026-10-27T00:00:00.000Z' }, now)).toBeNull()
+    expect(foreignToRow({ ...raw, starts: '2026-10-28T18:00:00.000Z' }, now)).toBeNull()
+    expect(foreignToRow({ ...raw, fitness_app_id: undefined }, now)).toBeNull()
+    expect(foreignToRow({ ...raw, minutes: 3 }, now)).toBeNull()
+    expect(foreignToRow({ ...raw, workout_summary: { duration_active_accum: 6000 } }, now)).toBeNull()
+  })
+
+  it('completedInRange bierze ją razem z jazdami z podsumowaniem', () => {
+    expect(completedInRange([raw, done], '2026-09-01', '2026-10-27').map((r) => r.id).sort()).toEqual([498978425, 509043014])
   })
 })

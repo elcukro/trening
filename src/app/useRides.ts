@@ -29,7 +29,8 @@ export async function ridesBetween(from: ISODate, to: ISODate): Promise<RideRow[
 }
 
 /** Skąd jazda – jazdy ze Stravy znikają po 7 dniach (polityka API, docs/33). */
-export function rideSourceLabel(a: Pick<RideRow, 'source'>): string {
+export function rideSourceLabel(a: Pick<RideRow, 'source' | 'time_only' | 'app'>): string {
+  if (a.time_only) return t().classic.rideSource.timeOnly(a.app)
   return a.source === 'wahoo' ? 'Wahoo' : a.source === 'fit' ? t().classic.rideSource.fit : t().classic.rideSource.stravaExpires
 }
 

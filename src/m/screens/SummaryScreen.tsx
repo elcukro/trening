@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { useParams } from 'react-router'
+import { useNavigate, useParams } from 'react-router'
 import { isValidISODate } from '@/engine/dates'
 import { zoneDistribution } from '@/engine/zones'
 import { useIosDay, useRideScore } from '@/day/useIos'
@@ -14,6 +14,8 @@ import { RpeRow, Stat, TONE_COLOR } from '../components/Bits'
 import { dayColor } from '../dayColor'
 import { ART } from '../art'
 import { useOpenCoach } from '../coach'
+import { FitUploadSheet } from '../components/FitUploadSheet'
+import { canUploadFit } from '@/sync/fitUpload'
 import { t as tr } from '@/i18n'
 import { useT } from '@/i18n/react'
 
@@ -39,6 +41,8 @@ export function SummaryScreen() {
   const d = useIosDay(date)
   const day = d.day
   const [idx, setIdx] = useState(0)
+  const [fitSheet, setFitSheet] = useState(false)
+  const navigate = useNavigate()
   const a = d.activities[idx] ?? d.activities[0]
   const score = useRideScore(idx === 0 ? a : undefined, day, d.ftp)
   const back = date === today ? '/m' : `/m/dzien/${date}`
@@ -90,6 +94,14 @@ export function SummaryScreen() {
         </p>
         <p className="m-title mt-1">{a.name}</p>
         <p className="m-foot m-dim">{rideSourceLabel(a)}</p>
+        {a.time_only && canUploadFit && (
+          <div className="mt-3">
+            <p className="m-sub m-dim">{ts.timeOnly(a.app ?? ts.timeOnlyApp)}</p>
+            <div className="mt-2">
+              <Btn onClick={() => setFitSheet(true)}>{ts.uploadFit}</Btn>
+            </div>
+          </div>
+        )}
         <div className="mt-3 grid grid-cols-3 gap-2">
           <Stat value={score != null ? `${score} %` : '—'} label={tt.after.compliance} />
           <Stat value={load ? String(Math.round(load.tss)) : '—'} label="TSS" />
@@ -159,6 +171,7 @@ export function SummaryScreen() {
           {ts.tellCoach}
         </Btn>
       )}
+      {fitSheet && <FitUploadSheet onClose={() => setFitSheet(false)} onOpenRide={(rideDate) => { setFitSheet(false); navigate(`/m/podsumowanie/${rideDate}`) }} />}
     </Screen>
   )
 }

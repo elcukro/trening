@@ -5,6 +5,7 @@ const en: typeof pl = {
   rideSource: {
     stravaExpires: 'Strava · removed after 7 days',
     fit: 'FIT file',
+    timeOnly: (app: string | null) => `Wahoo · duration only${app ? ` (${app})` : ''}`,
   },
   nav: {
     mainLabel: 'Main navigation',

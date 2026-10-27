@@ -7,6 +7,7 @@
  * dla AI – a jazdę ze Stravy tylko wtedy, gdy żadna z nich jej nie ma.
  */
 import type { DataSource } from './provenance.ts'
+import { FOREIGN_APPS } from './wahoo_summary.ts'
 
 export type RideSource = Extract<DataSource, 'wahoo' | 'strava' | 'fit'>
 
@@ -37,6 +38,13 @@ export interface RideRow {
   note: string | null
   note_source: 'ai' | 'rules' | null
   note_facts: unknown
+  /**
+   * Jazda z innej aplikacji, z której Wahoo oddaje tylko nazwę, start i czas (MyWhoosh, 27.10.2026). Ustępuje
+   * pasującemu plikowi FIT; w widokach – przycisk „Wgraj plik FIT”.
+   */
+  time_only: boolean
+  /** aplikacja źródłowa jazdy „tylko czas” (np. „MyWhoosh”), inaczej null */
+  app: string | null
 }
 
 const num = (v: unknown): number | null => (v == null || v === '' ? null : Number.isFinite(Number(v)) ? Number(v) : null)
@@ -76,6 +84,8 @@ function fromStravaLike(source: 'strava' | 'fit', a: Record<string, unknown>): R
     note: (a.note as string | null) ?? null,
     note_source: (a.note_source as RideRow['note_source']) ?? null,
     note_facts: a.note_facts ?? null,
+    time_only: false,
+    app: null,
   }
 }
 
@@ -110,6 +120,8 @@ export function fromWahoo(w: Record<string, unknown>): RideRow {
     note: (w.note as string | null) ?? null,
     note_source: (w.note_source as RideRow['note_source']) ?? null,
     note_facts: w.note_facts ?? null,
+    time_only: num(w.foreign_app_id) != null && !w.has_streams,
+    app: num(w.foreign_app_id) != null ? (FOREIGN_APPS[Number(w.foreign_app_id)] ?? null) : null,
   }
 }
 
@@ -134,8 +146,10 @@ export function sameRide(a: Pick<RideRow, 'date' | 'start_at' | 'moving_time_s'>
  * Wynik po dacie i godzinie startu.
  */
 export function mergeRides(wahoo: readonly RideRow[], strava: readonly RideRow[], fit: readonly RideRow[] = []): RideRow[] {
-  const out: RideRow[] = [...wahoo]
-  for (const f of fit) if (!wahoo.some((w) => sameRide(w, f))) out.push(f)
+  // jazda „tylko czas” z Wahoo ustępuje pasującemu plikowi FIT (kolejność wgrania bez znaczenia)
+  const kept = wahoo.filter((w) => !(w.time_only && fit.some((f) => sameRide(w, f))))
+  const out: RideRow[] = [...kept]
+  for (const f of fit) if (!kept.some((w) => sameRide(w, f))) out.push(f)
   const ours = [...out]
   for (const s of strava) if (!ours.some((o) => sameRide(o, s))) out.push(s)
   return out.sort((x, y) => (x.date === y.date ? (x.start_at ?? '').localeCompare(y.start_at ?? '') : x.date.localeCompare(y.date)))

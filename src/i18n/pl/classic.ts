@@ -5,6 +5,7 @@ export default {
   rideSource: {
     stravaExpires: 'Strava · znika po 7 dniach',
     fit: 'Plik FIT',
+    timeOnly: (app: string | null) => `Wahoo · tylko czas${app ? ` (${app})` : ''}`,
   },
   nav: {
     mainLabel: 'Nawigacja główna',

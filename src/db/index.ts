@@ -167,6 +167,8 @@ export interface WahooWorkout extends SyncedRow {
   device_watts?: boolean | null
   has_streams?: boolean | null
   summary?: Record<string, unknown> | null
+  /** jazda z innej aplikacji „tylko czas” (np. 1085 = MyWhoosh) – docs/33 § 7a */
+  foreign_app_id?: number | null
   /** notatka trenera po jeździe – z AI tylko na danych Wahoo (docs/33) */
   note?: string | null
   note_source?: 'ai' | 'rules' | null

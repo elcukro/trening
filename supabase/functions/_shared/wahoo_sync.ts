@@ -11,7 +11,7 @@ import { decodeFit, fitToStreams } from './fit.ts'
 import { hrHistogram, movingTotals, resample, rideMetrics } from './metrics.ts'
 import { accessTokenFor, getWorkoutSummary, listWorkoutsDetailed } from './wahoo.ts'
 import { redact } from './provenance.ts'
-import { completedInRange, droppedWorkouts, fitStart, fitUrl, needsSummaryFetch, isFitHost, isTransientFitError, summaryToRow, warsawDate, type WahooSummary, type WahooWorkoutRaw } from './wahoo_summary.ts'
+import { completedInRange, droppedWorkouts, fitStart, fitUrl, needsSummaryFetch, isFitHost, isTransientFitError, warsawDate, workoutToRow, type WahooSummary, type WahooWorkoutRaw } from './wahoo_summary.ts'
 
 /** Plik FIT nie liczy się do limitów Wahoo, ale nie ściągamy go bez końca: ≤ 8 MB, 30 s. */
 const FIT_MAX_BYTES = 8 * 1024 * 1024
@@ -187,7 +187,7 @@ export async function backfillWahoo(admin: SupabaseClient, userId: string, opts:
   }
   const today = warsawDate(new Date().toISOString())
   const summaries = await fillSummaries(admin, userId, tok, all, from, today, 40)
-  const rows = all.map(summaryToRow).filter((r): r is NonNullable<typeof r> => !!r && r.date >= from)
+  const rows = all.map((w) => workoutToRow(w)).filter((r): r is NonNullable<typeof r> => !!r && r.date >= from)
   await saveCompleted(admin, userId, rows)
   const dropped = droppedWorkouts(all, from, today, 60)
   if (dropped.length) console.log('wahoo backfill dropped', userId.slice(0, 8), JSON.stringify(dropped))

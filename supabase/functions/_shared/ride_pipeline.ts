@@ -40,10 +40,15 @@ export async function processFitRide(admin: SupabaseClient, userId: string, id: 
 export async function processWahooRides(admin: SupabaseClient, userId: string, ids: number[]): Promise<Record<string, string>> {
   const out: Record<string, string> = {}
   if (!ids.length) return out
-  const { data } = await admin.from('wahoo_workouts').select('id, date, summary, has_streams, fit_error, note').eq('user_id', userId).in('id', ids).is('deleted_at', null)
+  const { data } = await admin.from('wahoo_workouts').select('id, date, summary, has_streams, fit_error, note, foreign_app_id').eq('user_id', userId).in('id', ids).is('deleted_at', null)
   for (const w of data ?? []) {
     const id = Number(w.id)
     const steps: string[] = []
+    // jazda z innej aplikacji „tylko czas”: bez danych nie ma notatki ani maila – dadzą je dopiero z wgranego pliku FIT
+    if (w.foreign_app_id != null && !w.has_streams) {
+      out[String(id)] = 'tylko czas'
+      continue
+    }
     if (!w.has_streams && !w.fit_error) steps.push(`fit: ${await ingestFit(admin, userId, id, w.summary as WahooSummary).catch(errText)}`)
     if ((w.date as string) >= daysAgo(FRESH_DAYS)) {
       if (!w.note) {

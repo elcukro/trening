@@ -84,3 +84,29 @@ describe('jazda z pliku zastępuje bliźniaka ze Stravy (mergeRides)', () => {
     expect(rideFromRow('strava', { id: 3, date: '2026-10-27', moving_time_s: 60 }).source).toBe('strava')
   })
 })
+
+describe('jazda z innej aplikacji „tylko czas” w Wahoo i pasujący plik FIT (27.10.2026)', () => {
+  // kształt z produkcji: MyWhoosh w Wahoo – nazwa, start, minuty, bez podsumowania (401)
+  const timeOnly = fromWahoo({ id: 509043014, date: '2026-10-23', starts: '2026-10-23T18:19:11Z', name: 'MyWhoosh - Baza_Z2_158W_120min', minutes_active: 100, moving_time_s: 6000, foreign_app_id: 1085, has_streams: false })
+  const file = fromFit({ id: 7, date: '2026-10-23', start_at: '2026-10-23T18:19:15Z', name: 'MyWhoosh - Baza_Z2_158W_120min', moving_time_s: 5990, distance_m: 47880, avg_hr: 130, avg_watts: 153, has_streams: true })
+
+  it('bez pliku jazda jest – tylko czas, z nazwą aplikacji', () => {
+    expect(timeOnly).toMatchObject({ time_only: true, app: 'MyWhoosh', moving_time_s: 6000, avg_hr: null })
+    expect(mergeRides([timeOnly], []).map((r) => r.key)).toEqual(['wahoo:509043014'])
+  })
+
+  it('pasujący plik ją zastępuje – w dowolnej kolejności, jedna jazda na liście', () => {
+    expect(mergeRides([timeOnly], [], [file]).map((r) => r.key)).toEqual(['fit:7'])
+  })
+
+  it('plik z innej jazdy tego dnia nie zastępuje jazdy „tylko czas”', () => {
+    const other = fromFit({ ...file, id: 8, start_at: '2026-10-23T07:00:00Z', moving_time_s: 1800 })
+    expect(mergeRides([timeOnly], [], [other]).map((r) => r.key).sort()).toEqual(['fit:8', 'wahoo:509043014'])
+  })
+
+  it('zwykła jazda z Wahoo (z danymi) nadal wygrywa z plikiem tej samej jazdy', () => {
+    const bolt = fromWahoo({ id: 1, date: '2026-10-23', starts: '2026-10-23T18:19:11Z', name: 'Szosa', minutes_active: 100, moving_time_s: 6000, has_streams: true })
+    expect(bolt.time_only).toBe(false)
+    expect(mergeRides([bolt], [], [file]).map((r) => r.key)).toEqual(['wahoo:1'])
+  })
+})
