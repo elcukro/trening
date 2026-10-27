@@ -170,6 +170,20 @@ html:has(.m) body {
   height: 44px;
   padding: 0 8px;
 }
+/* ekran główny: duży tytuł w pasku, obok dzwonek i zdjęcie; po przewinięciu tytuł maleje */
+.m-nav-inline {
+  height: 52px;
+  padding: 0 4px 0 20px;
+}
+.m-nav-display {
+  transition:
+    font-size 0.2s ease,
+    line-height 0.2s ease;
+}
+.m-nav[data-scrolled='true'] .m-nav-display {
+  font-size: 22px;
+  line-height: 28px;
+}
 .m-nav-title {
   position: absolute;
   left: 50%;

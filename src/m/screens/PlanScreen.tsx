@@ -153,11 +153,6 @@ export function PlanScreen() {
       lead={<NavAvatar />}
       action={
         <span className="flex items-center">
-          {monday !== thisMonday && (
-            <button className="m-nav-btn m-sub font-semibold" onClick={() => go(thisMonday)}>
-              {tp.thisWeek}
-            </button>
-          )}
           <button className="m-nav-btn disabled:opacity-30" aria-label={tp.prevWeek} disabled={!!minMonday && addDays(monday, -7) < minMonday} onClick={() => go(addDays(monday, -7))}>
             <IconChevronLeft size={22} />
           </button>
@@ -168,6 +163,14 @@ export function PlanScreen() {
         </span>
       }
     >
+      {/* poza bieżącym tygodniem: powrót jako pigułka pod tytułem – w pasku obok strzałek, dzwonka i zdjęcia ucinał tytuł */}
+      {monday !== thisMonday && (
+        <div className="-mt-1 px-1">
+          <button className="m-chip" onClick={() => go(thisMonday)}>
+            {tp.thisWeek}
+          </button>
+        </div>
+      )}
       <WeekPager
         monday={monday}
         onChange={go}

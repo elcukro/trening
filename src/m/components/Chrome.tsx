@@ -13,7 +13,7 @@ import { useT } from '@/i18n/react'
  * Ekran mobilnego v2: duży tytuł, który po przewinięciu zwija się do środka paska (jak w natywnym iOS).
  * `day` ustawia kolor dnia (`--day`) dla kart i przycisków na tym ekranie.
  */
-/** `lead` – element po lewej w pasku (avatar na Dziś i Planie), gdy ekran nie ma przycisku Wstecz. */
+/** `lead` – zdjęcie profilowe na ekranach głównych (Dziś, Plan): wtedy tytuł, `action` i `lead` stoją w jednym wierszu paska. */
 export function Screen({ title, subtitle, back, lead, action, day, children }: { title: string; subtitle?: ReactNode; back?: string | (() => void); lead?: ReactNode; action?: ReactNode; day?: { color: string; soft: string; fill?: string }; children: ReactNode }) {
   const t = useT()
   const [scrolled, setScrolled] = useState(false)
@@ -43,26 +43,43 @@ export function Screen({ title, subtitle, back, lead, action, day, children }: {
     return () => io.disconnect()
   }, [])
 
+  // ekran główny (Dziś, Plan): duży tytuł w jednym wierszu z dzwonkiem i zdjęciem – bez pustego paska nad tytułem;
+  // po przewinięciu tytuł zmniejsza się, a pasek zostaje (docs/24)
+  const inline = !!lead && !back
   return (
     <div ref={root} className="m-pb-tab m-screen" style={day ? ({ '--day': day.color, '--day-soft': day.soft, '--day-fill': day.fill ?? day.color } as React.CSSProperties) : undefined}>
       <div className="m-nav" data-scrolled={scrolled}>
-        <div className="m-nav-inner">
-          {back ? (
-            <button className="m-nav-btn" onClick={() => goBack?.()} aria-label={t.common.back}>
-              <IconChevronLeft size={22} />
-            </button>
-          ) : (
-            (lead ?? <span className="w-2" />)
-          )}
-          {/* tytuł w pasku powtarza h1 – VoiceOver czyta go raz (docs/27 § 3.3) */}
-          <span className="m-nav-title" aria-hidden>{title}</span>
-          <span className="ml-auto">{action}</span>
-        </div>
+        {inline ? (
+          <div className="m-nav-inner m-nav-inline">
+            <h1 className="m-display m-nav-display min-w-0 flex-1 truncate">{title}</h1>
+            <span className="flex shrink-0 items-center">
+              {action}
+              {lead}
+            </span>
+          </div>
+        ) : (
+          <div className="m-nav-inner">
+            {back ? (
+              <button className="m-nav-btn" onClick={() => goBack?.()} aria-label={t.common.back}>
+                <IconChevronLeft size={22} />
+              </button>
+            ) : (
+              <span className="w-2" />
+            )}
+            {/* tytuł w pasku powtarza h1 – VoiceOver czyta go raz (docs/27 § 3.3) */}
+            <span className="m-nav-title" aria-hidden>{title}</span>
+            <span className="ml-auto">{action}</span>
+          </div>
+        )}
       </div>
-      <header className="px-5 pt-1 pb-3">
-        <h1 className="m-display">{title}</h1>
-        {subtitle && <p className="m-sub m-dim mt-1">{subtitle}</p>}
-      </header>
+      {inline ? (
+        subtitle && <p className="m-sub m-dim px-5 pb-3">{subtitle}</p>
+      ) : (
+        <header className="px-5 pt-1 pb-3">
+          <h1 className="m-display">{title}</h1>
+          {subtitle && <p className="m-sub m-dim mt-1">{subtitle}</p>}
+        </header>
+      )}
       <div ref={sentinel} className="h-px" />
       <div className="flex flex-col gap-4 px-4">{children}</div>
     </div>
