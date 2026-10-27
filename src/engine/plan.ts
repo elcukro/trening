@@ -62,6 +62,7 @@ function personalized(day: CalendarDay, ctx: EngineContext): CalendarDay['nutrit
     targetKg: t.kg,
     deficitWeeksLeft: deficitWeeksLeft(weeksFor(ctx), program.nutrition, day.date, t.date),
     targetDate: t.milestone ? t.date : null,
+    finalKg: settings.body_weight_target_kg,
   })
 }
 

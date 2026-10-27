@@ -11,7 +11,7 @@ import { CheckinCard } from './CheckinCard'
 import { BikeLogCard } from './BikeLogCard'
 import { TestResultCard } from './TestResultCard'
 import { StravaActivities } from './StravaCard'
-import { effectiveFtp } from '@/engine/progress'
+import { loadFtp } from '@/engine/progress'
 import { RulesCard } from './RulesCard'
 import { BriefingCard } from './BriefingCard'
 import { WahooCompleted } from './WahooStatus'
@@ -71,7 +71,7 @@ export function BikeCard({ day, engine, onAction }: { day: DayPlan; engine: Engi
           <CardTitle icon="🛋️">{D.restTitle}</CardTitle>
           <p className="text-sm text-slate-600 dark:text-slate-300">{D.restText}</p>
         </Card>
-        <StravaActivities date={day.date} zones={program.hr_zones_lthr_fraction} lthr={day.lthr} extra />
+        <StravaActivities date={day.date} zones={program.hr_zones_lthr_fraction} lthr={day.lthr} extra ftp={loadFtp(day.date, engine.ctx.settings, engine.ctx.tests ?? [])} />
       </>
     )
   }
@@ -137,7 +137,7 @@ export function BikeCard({ day, engine, onAction }: { day: DayPlan; engine: Engi
         </div>
       )}
       <WahooButton day={day} />
-      <StravaActivities date={day.date} zones={program.hr_zones_lthr_fraction} lthr={day.lthr} workout={w} ftp={day.ftp ?? effectiveFtp(day.date, engine.ctx.settings.ftp_w_estimate, engine.ctx.tests ?? []).ftp} />
+      <StravaActivities date={day.date} zones={program.hr_zones_lthr_fraction} lthr={day.lthr} workout={w} ftp={loadFtp(day.date, engine.ctx.settings, engine.ctx.tests ?? [])} />
       <WahooCompleted date={day.date} hasStrava={acts.length > 0} />
       <BikeLogCard day={day} />
     </Card>

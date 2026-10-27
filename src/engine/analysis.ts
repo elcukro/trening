@@ -231,8 +231,11 @@ export function matchSteps(workout: ResolvedWorkout, s: RideSamples, opts: { off
 }
 
 /** Status dnia na podstawie zgodności: ≥ 60 % kroków pracy w celu = wykonane, inaczej zmienione. */
+/** Poniżej tej zgodności jazda jest „inaczej niż plan” – jedna granica dla Planu, Dziś, podsumowania i werdyktu (docs/35 S1). */
+export const MODIFIED_BELOW = 70
+
 export function statusFromScore(score: number | null): 'done' | 'modified' {
-  return score == null || score >= 60 ? 'done' : 'modified'
+  return score == null || score >= MODIFIED_BELOW ? 'done' : 'modified'
 }
 
 export interface ChartPoint {

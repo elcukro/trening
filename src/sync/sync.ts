@@ -3,6 +3,8 @@ import { db, SYNC_TABLES, UPDATE_ONLY_TABLES, USER_SCOPED_ID_TABLES, type Settin
 import { supabase } from './supabase'
 import { purgeLocalStrava } from './strava'
 import type { Settings } from '@/engine/schema'
+import { t, UserError } from '@/i18n'
+import { friendlyError } from '@/lib/errors'
 
 /**
  * Synchronizacja: push outboxa (upsert po `id`), potem pull zmian po `server_updated_at` > kursor.
@@ -18,6 +20,12 @@ export type SyncStatus = {
 }
 
 let running: Promise<void> | null = null
+/** Zawieszone żądanie trzymało `running` na zawsze – „Synchronizuję…” bez końca i żadnej kolejnej próby (docs/35 N4). */
+export const SYNC_TIMEOUT_MS = 45_000
+/** Numer bieżącej próby: przeterminowana próba, która skończy się później, nie nadpisuje stanu nowszej. */
+let generation = 0
+/** Do której próby należy `running`. */
+let runningGen = 0
 const listeners = new Set<(s: SyncStatus) => void>()
 let status: SyncStatus = { state: supabase ? 'idle' : 'disabled', last_sync: null, pending: 0 }
 
@@ -161,36 +169,56 @@ export const SYNCED_TABLES_KEY = 'synced_tables'
 export async function runSync(opts: { programVersion: string }): Promise<void> {
   if (!supabase) return
   if (running) return running
+  const gen = ++generation
+  const current = () => gen === generation
+  let timer: ReturnType<typeof setTimeout> | undefined
+  const timeout = new Promise<never>((_, reject) => {
+    timer = setTimeout(() => reject(new UserError(t().sync.timeout(SYNC_TIMEOUT_MS / 1000))), SYNC_TIMEOUT_MS)
+  })
+  runningGen = gen
   running = (async () => {
     try {
-      if (typeof navigator !== 'undefined' && !navigator.onLine) {
-        await setStatus({ state: 'offline' })
-        return
-      }
-      const { data } = await supabase.auth.getSession()
-      const userId = data.session?.user.id
-      if (!userId) {
-        await setStatus({ state: 'unauthenticated' })
-        return
-      }
-      await setStatus({ state: 'syncing', error: undefined })
-      await pushOutbox(userId)
-      await syncProfile(userId, opts.programVersion)
-      for (const t of SYNC_TABLES) await pullTable(t)
-      // twarde usunięcia Stravy (7 dni) nie przychodzą pullem – sprzątamy lokalnie
-      await purgeLocalStrava()
-      const now = new Date().toISOString()
-      await db.kv.put({ key: 'last_sync', value: now, updated_at: now })
-      // które tabele mają za sobą pełne pobranie – `last_sync` sprzed dodania tabeli nie mówi, że jej wiersze już są (onboarding)
-      await db.kv.put({ key: SYNCED_TABLES_KEY, value: [...SYNC_TABLES], updated_at: now })
-      await setStatus({ state: 'idle', last_sync: now })
+      await Promise.race([syncOnce(opts, current), timeout])
     } catch (e) {
-      await setStatus({ state: 'error', error: e instanceof Error ? e.message : String(e) })
+      if (!current()) return
+      // ta próba przestaje być bieżąca: zawieszone żądanie, które skończy się później, nie nadpisze stanu następnej
+      generation++
+      await setStatus({ state: 'error', error: friendlyError(e).message })
     } finally {
-      running = null
+      clearTimeout(timer)
+      if (runningGen === gen) running = null
     }
   })()
   return running
+}
+
+async function syncOnce(opts: { programVersion: string }, current: () => boolean): Promise<void> {
+  if (!supabase) return
+  const set = async (patch: Partial<SyncStatus>) => {
+    if (current()) await setStatus(patch)
+  }
+  if (typeof navigator !== 'undefined' && !navigator.onLine) {
+    await set({ state: 'offline' })
+    return
+  }
+  const { data } = await supabase.auth.getSession()
+  const userId = data.session?.user.id
+  if (!userId) {
+    await set({ state: 'unauthenticated' })
+    return
+  }
+  await set({ state: 'syncing', error: undefined })
+  await pushOutbox(userId)
+  await syncProfile(userId, opts.programVersion)
+  for (const table of SYNC_TABLES) await pullTable(table)
+  // twarde usunięcia Stravy (7 dni) nie przychodzą pullem – sprzątamy lokalnie
+  await purgeLocalStrava()
+  if (!current()) return
+  const now = new Date().toISOString()
+  await db.kv.put({ key: 'last_sync', value: now, updated_at: now })
+  // które tabele mają za sobą pełne pobranie – `last_sync` sprzed dodania tabeli nie mówi, że jej wiersze już są (onboarding)
+  await db.kv.put({ key: SYNCED_TABLES_KEY, value: [...SYNC_TABLES], updated_at: now })
+  await set({ state: 'idle', last_sync: now })
 }
 
 /** Po wylogowaniu: kursory od zera, dane lokalne zostają (offline-first). */

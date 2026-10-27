@@ -34,9 +34,22 @@ describe('weekState', () => {
     expect(w.done_min).toBe(105)
     expect(w.rides_planned).toBe(5)
     expect(w.rides_done).toBe(1)
+    expect(w.rides_extra).toBe(1)
   })
   it('przeszły dzień z planem bez jazdy to missed; log done bez Stravy też liczy się jako done', () => {
     const w = weekState({ days: [day('2026-10-12', 'mon', { bike: bike('Z2', 60) }), day('2026-10-13', 'tue', { bike: bike('Z2', 60) })], today: '2026-10-15', logs: [{ date: '2026-10-13', kind: 'bike', status: 'done' }], activities: [] })
     expect(w.days.map((d) => d.outcome)).toEqual(['missed', 'done'])
+  })
+  it('zgodność < 70 % to „inaczej niż plan” mimo logu done z serwera; bez wyniku decyduje log (docs/35 S1)', () => {
+    const days = [day('2026-10-12', 'mon', { bike: bike('Z2', 60) }), day('2026-10-13', 'tue', { bike: bike('SS', 60) }), day('2026-10-14', 'wed', { bike: bike('Z2', 60) })]
+    const w = weekState({
+      days,
+      today: '2026-10-15',
+      logs: days.map((d) => ({ date: d.date, kind: 'bike', status: 'done' })),
+      activities: days.map((d) => ({ date: d.date, moving_time_s: 3600 })),
+      scores: { '2026-10-12': 69, '2026-10-13': 70 },
+    })
+    expect(w.days.map((d) => d.outcome)).toEqual(['modified', 'done', 'done'])
+    expect(w.rides_done).toBe(3)
   })
 })

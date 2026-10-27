@@ -16,7 +16,7 @@ import { loadRideStreams } from '@/sync/strava'
 import { useRides, type RideRow } from '@/app/useRides'
 import { matchSteps, rideLoad, statusFromScore, type RideLoad } from '@/engine/analysis'
 import { pmcSeries, weekTss } from '@/engine/pmc'
-import { effectiveFtp, effectiveLthr, weightTrend } from '@/engine/progress'
+import { effectiveFtp, effectiveLthr, loadFtp, weightTrend } from '@/engine/progress'
 import { cdaFromRide, programGoal } from '@/engine/baseline'
 import { suggestFtp, type FtpSuggestion } from '@/engine/power'
 import { onSyncStatus, type SyncStatus } from '@/sync/sync'
@@ -149,7 +149,7 @@ export function useIosDay(date: ISODate): IosDay {
   const bolt = useBolt(day)
 
   const { settings, tests } = engine.ctx
-  const ftp = settings.power_meter ? effectiveFtp(date, settings.ftp_w_estimate, tests ?? []).ftp : null
+  const ftp = loadFtp(date, settings, tests ?? [])
   const lthr = effectiveLthr(date, settings.lthr_bpm, (tests ?? []).filter((t): t is { date: string; lthr_bpm: number } => !!t.lthr_bpm)).lthr
 
   /** Obciążenie pojedynczej jazdy (moc → tętno → RPE). Dwie jazdy w jednym dniu liczą się osobno. */

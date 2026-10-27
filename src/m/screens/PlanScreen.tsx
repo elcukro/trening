@@ -28,7 +28,7 @@ import { useT } from '@/i18n/react'
 
 const MARK: Partial<Record<DayOutcome, { text: string; color: string }>> = {
   done: { text: '✓', color: 'var(--green)' },
-  modified: { text: '✓', color: 'var(--orange)' },
+  modified: { text: '≈', color: 'var(--orange)' },
   extra: { text: '+', color: 'var(--green)' },
   skipped: { text: '✕', color: 'var(--red)' },
   missed: { text: '–', color: 'var(--label-3)' },

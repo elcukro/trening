@@ -75,9 +75,9 @@ const en: typeof pl = {
     dayFallback: 'Day',
     reached: (kind: string) => `${kind}: maintenance – target weight reached`,
     almostThere: (kind: string) => `${kind}: maintenance – nearly at your target`,
-    target: (n: number, date: string | null) => (date ? `${kg(n, 1)} kg by ${dm(date)}` : `${kg(n, 1)} kg`),
+    target: (n: number, date: string | null, finalKg: number | null) => (date ? `the checkpoint of ${kg(n, 1)} kg by ${dm(date)}${finalKg != null ? ` (goal ${kg(finalKg, 1)} kg)` : ''}` : `${kg(n, 1)} kg`),
     weekCapped: (kgPerWeek: number, target: string, needKgPerWeek: number) =>
-      `≈ ${kg(kgPerWeek, 2)} kg over the week – the most the safety limit allows; ${target} would need ${kg(needKgPerWeek, 2)} kg/week, so it will come later`,
+      `≈ ${kg(kgPerWeek, 2)} kg over the week – the most the safety limit allows; reaching ${target} on time would need ${kg(needKgPerWeek, 2)} kg/week, so it will come later`,
     week: (kgPerWeek: number, target: string) => `≈ ${kg(kgPerWeek, 2)} kg over the week, towards ${target}`,
     deficit: (kind: string, kcal: number, week: string) => `${kind}: deficit approx. ${kcal} kcal (${week})`,
   },

@@ -84,13 +84,13 @@ export default {
     dayFallback: 'Dzień',
     reached: (kind: string) => `${kind}: bilans zerowy – masa docelowa osiągnięta`,
     almostThere: (kind: string) => `${kind}: bilans zerowy – do celu zostało niewiele`,
-    /** masa docelowa z datą punktu kontrolnego albo bez */
-    target: (kg: number, date: string | null) => {
-      const k = kg.toLocaleString('pl-PL', { maximumFractionDigits: 1 })
-      return date ? `${k} kg na ${Number(date.slice(8))}.${date.slice(5, 7)}` : `${k} kg`
+    /** cel końcowy albo punkt kontrolny z datą i celem końcowym – dwie masy obok siebie wyglądały na sprzeczne (docs/35 W4) */
+    target: (kg: number, date: string | null, finalKg: number | null) => {
+      const f = (n: number) => n.toLocaleString('pl-PL', { maximumFractionDigits: 1 })
+      return date ? `punktu kontrolnego ${f(kg)} kg na ${Number(date.slice(8))}.${date.slice(5, 7)}${finalKg != null ? ` (cel ${f(finalKg)} kg)` : ''}` : `${f(kg)} kg`
     },
     weekCapped: (kgPerWeek: number, target: string, needKgPerWeek: number) =>
-      `cały tydzień ≈ ${kgPerWeek.toLocaleString('pl-PL', { maximumFractionDigits: 2 })} kg – tyle pozwala limit bezpieczeństwa; ${target} wymagałoby ${needKgPerWeek.toLocaleString('pl-PL', { maximumFractionDigits: 2 })} kg/tydz., więc wypadnie później`,
+      `cały tydzień ≈ ${kgPerWeek.toLocaleString('pl-PL', { maximumFractionDigits: 2 })} kg – tyle pozwala limit bezpieczeństwa; dojście do ${target} w terminie wymagałoby ${needKgPerWeek.toLocaleString('pl-PL', { maximumFractionDigits: 2 })} kg/tydz., więc wypadnie później`,
     week: (kgPerWeek: number, target: string) => `cały tydzień ≈ ${kgPerWeek.toLocaleString('pl-PL', { maximumFractionDigits: 2 })} kg, do ${target}`,
     deficit: (kind: string, kcal: number, week: string) => `${kind}: deficyt ok. ${kcal} kcal (${week})`,
   },

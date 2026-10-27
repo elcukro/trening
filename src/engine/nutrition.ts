@@ -104,7 +104,7 @@ export function weightBasedDeficit(inp: {
  * Zamienia stałą etykietę dnia z deficytem na deficyt policzony z masy zawodnika (gdy program ma `weight_based`).
  * Dni bez deficytu i programy bez tej polityki zostają bez zmian.
  */
-export function personalizeNutrition(n: Nutrition, policy: NutritionPolicy, inp: { currentKg: number; targetKg: number; deficitWeeksLeft: number; targetDate?: ISODate | null }): Nutrition {
+export function personalizeNutrition(n: Nutrition, policy: NutritionPolicy, inp: { currentKg: number; targetKg: number; deficitWeeksLeft: number; targetDate?: ISODate | null; finalKg?: number | null }): Nutrition {
   const wb = policy.weight_based
   if (!wb || !n.energy.startsWith('deficit')) return n
   const d = weightBasedDeficit({ ...inp, maxKcalPerDay: wb.max_kcal_per_day, maxLossPctPerWeek: wb.max_loss_pct_per_week, sharesPerWeek: wb.deficit_shares_per_week, share: n.deficit_share ?? 1 })
@@ -112,8 +112,8 @@ export function personalizeNutrition(n: Nutrition, policy: NutritionPolicy, inp:
   // etykieta programu (już w języku zawodnika) ma postać „Rodzaj dnia: …” – bierzemy część przed dwukropkiem
   const kind = n.label.split(':')[0] ?? T.dayFallback
   if (d.kcal < 100) return { ...n, energy: 'maintenance', deficit_kcal: 0, label: inp.currentKg <= inp.targetKg ? T.reached(kind) : T.almostThere(kind) }
-  // punkt kontrolny ma datę w etykiecie („do 91 kg na 1.03”), cel końcowy – nie
-  const target = T.target(inp.targetKg, inp.targetDate ?? null)
+  // punkt kontrolny ma datę i cel końcowy w etykiecie („do punktu kontrolnego 91 kg na 1.03 (cel 82 kg)”), cel końcowy – nie
+  const target = T.target(inp.targetKg, inp.targetDate ?? null, inp.targetDate ? (inp.finalKg ?? null) : null)
   // tempo dotyczy całego tygodnia (dni lekkie mają większy deficyt niż ten dzień) – mówimy to wprost;
   // przy obciętym deficycie podajemy, ile wymagałby cel w terminie, bez udawania, że się zdąży
   const week = d.capped ? T.weekCapped(d.kg_per_week, target, d.need_kg_per_week) : T.week(d.kg_per_week, target)

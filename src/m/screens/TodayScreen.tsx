@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { useNavigate, useParams } from 'react-router'
 import { upsertSessionLog } from '@/db/repo'
+import { statusFromScore } from '@/engine/analysis'
 import { addDays, isValidISODate } from '@/engine/dates'
 import type { DayPlan } from '@/engine/plan'
 import { useIosDay, useRideScore, type IosDay } from '@/day/useIos'
@@ -64,7 +65,7 @@ export function TodayScreen() {
 
   async function saveRpe(rpe: number) {
     const log = d.rideLog
-    const status = log && LOGGED.includes(log.status) && log.status !== 'skipped' ? (log.status as 'done' | 'modified') : score != null && score < 70 ? 'modified' : 'done'
+    const status = score != null ? statusFromScore(score) : log && LOGGED.includes(log.status) && log.status !== 'skipped' ? (log.status as 'done' | 'modified') : 'done'
     await toast.run(tt.rpeSaving, () => d.logRide(status, { rpe }), () => tt.rpeSaved(rpe), undefined, { quiet: true, errorTitle: tt.rpeFailed })
   }
   async function unskip() {
@@ -102,7 +103,8 @@ export function TodayScreen() {
         <StateCard phase={phase} day={day} d={d} brief={brief} score={score} onCoach={openCoach} onCheckin={() => setSheet('checkin')} onSteps={() => navigate(`/m/jazda/${date}`)} onSummary={() => navigate(`/m/podsumowanie/${date}`)} onBolt={sendBolt} boltBusy={bolt.pending} onRpe={saveRpe} onUnskip={unskip} onSkip={markSkipped} />
       )}
 
-      {day && isToday && phase !== 'rest' && (
+      {/* oś kroków ma sens od dwóch kroków – dzień wolny przed check-inem miał samotną kropkę (docs/35 N3) */}
+      {day && isToday && phase !== 'rest' && d.flow.steps.length > 1 && (
         <div className="px-1">
           <div className="m-dots" aria-label={tt.dayAxis}>
             {d.flow.steps.map((s, i) => (
@@ -273,12 +275,12 @@ function StateCard(p: CardProps) {
       return (
         <Card day>
           <p className="m-eyebrow" style={{ color: verdict ? TONE_COLOR[verdict.tone] : 'var(--day)' }}>
-            {verdict?.text ?? (phase === 'evening' ? tt.after.evening : tt.after.howItWent)}
+            {verdict?.text ?? (!day.bike ? tt.after.extra : phase === 'evening' ? tt.after.evening : tt.after.howItWent)}
           </p>
           <p className="m-title mt-1">{a?.name ?? name}</p>
           {a && (
             <div className="mt-3 grid grid-cols-3 gap-2">
-              <Stat value={p.score != null ? `${p.score} %` : '—'} label={tt.after.compliance} />
+              {day.bike ? <Stat value={p.score != null ? `${p.score} %` : '—'} label={tt.after.compliance} /> : <Stat value={minutes(Math.round(a.moving_time_s / 60))} label={tt.after.time} />}
               <Stat value={load ? String(Math.round(load.tss)) : '—'} label="TSS" />
               <Stat value={a.decoupling_pct != null ? `${num(a.decoupling_pct)} %` : a.avg_hr ? `${Math.round(a.avg_hr)}` : '—'} label={a.decoupling_pct != null ? tt.after.hrDrift : tt.after.avgHr} />
             </div>

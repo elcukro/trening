@@ -14,7 +14,18 @@ export function useWeekState(anyDate: ISODate, window: CalendarDay[], today: ISO
   const acts = useRides(monday, sunday)
   const pushes = useLiveQuery(async () => (await db.wahoo_pushes.where('date').between(monday, sunday, true, true).toArray()).filter((p) => !p.deleted_at && (p.status === 'created' || p.status === 'updated')), [monday, sunday], [] as WahooPushRow[])
   const days = useMemo(() => window.filter((d) => d.date >= monday && d.date <= sunday), [window, monday, sunday])
-  const state = useMemo(() => weekState({ days, today, logs, activities: acts, boltDates: pushes.map((p) => p.date) }), [days, today, logs, acts, pushes])
+  // zgodność policzona przy otwarciu dnia (`useRideScore` zapisuje ją w kv) – pierwsza jazda dnia, jak na ekranie dnia
+  const scores = useLiveQuery(
+    async () => {
+      const first = new Map<string, RideRow>()
+      for (const a of acts) if (!first.has(a.date)) first.set(a.date, a)
+      const rows = await db.kv.bulkGet([...first.values()].map((a) => `analysis:${a.key}`))
+      return Object.fromEntries([...first.keys()].map((date, i) => [date, (rows[i]?.value as { score?: number | null } | undefined)?.score ?? null]))
+    },
+    [acts],
+    {} as Record<string, number | null>,
+  )
+  const state = useMemo(() => weekState({ days, today, logs, activities: acts, boltDates: pushes.map((p) => p.date), scores }), [days, today, logs, acts, pushes, scores])
   return { ...state, monday, pushes }
 }
 

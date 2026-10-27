@@ -1,4 +1,5 @@
 import { diffDays, type ISODate } from '@/engine/dates'
+import { MODIFIED_BELOW } from '@/engine/analysis'
 import { t } from '@/i18n'
 
 /**
@@ -124,7 +125,7 @@ export function rideVerdict(score: number | null): { text: string; tone: 'good' 
   if (score == null) return null
   const v = t().day.verdict
   if (score >= 85) return { text: v.onPlan, tone: 'good' }
-  if (score >= 70) return { text: v.close, tone: 'ok' }
+  if (score >= MODIFIED_BELOW) return { text: v.close, tone: 'ok' }
   if (score >= 45) return { text: v.off, tone: 'warn' }
   return { text: v.different, tone: 'warn' }
 }
@@ -160,6 +161,8 @@ export function dayPhase(inp: DayPhaseInput): DayPhase {
   if (inp.ride && inp.rideLog === 'skipped') return 'skipped'
   const trained = inp.hasActivity || LOGGED.includes(inp.rideLog)
   if (!inp.ride) {
+    // jazda w dzień bez planu to „dodatkowa jazda” – karta pokazuje ją jak po treningu (docs/35 W3)
+    if (inp.hasActivity) return !past && (inp.hasRpe || inp.hour >= EVENING_HOUR) ? 'evening' : 'after'
     if (!past && !inp.checkedIn) return 'morning'
     return 'rest'
   }

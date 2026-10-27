@@ -58,6 +58,7 @@ export function WeekStrip({ week, today, compact = false }: { week: WeekState; t
       {!compact && (
         <p className="m-foot m-dim mt-2">
           {t.m.week.workoutsDone(week.rides_done, week.rides_planned)}
+          {week.rides_extra > 0 ? t.m.week.extra(week.rides_extra) : ''}
           {week.days.some((d) => d.key) ? t.m.week.keySession(week.days.find((d) => d.key)?.name ?? '') : ''}
         </p>
       )}

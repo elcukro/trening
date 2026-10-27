@@ -121,4 +121,10 @@ describe('dayPhase (karta stanu dnia w /m)', () => {
     expect(dayPhase({ ...P, ride: null, date: '2026-09-20' })).toBe('rest')
     expect(dayPhase({ ...P, ride: null, checkedIn: true, rideLog: 'skipped' })).toBe('rest')
   })
+  it('dzień wolny z jazdą: dodatkowa jazda jak po treningu, nie „odpoczynek” (docs/35 W3)', () => {
+    expect(dayPhase({ ...P, ride: null, hasActivity: true })).toBe('after')
+    expect(dayPhase({ ...P, ride: null, checkedIn: true, hasActivity: true, hasRpe: true })).toBe('evening')
+    expect(dayPhase({ ...P, ride: null, hasActivity: true, hour: 21 })).toBe('evening')
+    expect(dayPhase({ ...P, ride: null, date: '2026-09-20', hasActivity: true })).toBe('after')
+  })
 })

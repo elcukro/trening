@@ -46,6 +46,8 @@ Klasy: **BŁĄD** – kod robi coś złego; **UX** – działa zgodnie z kodem, 
 
 **Paczka 1 – błędy logiki:** W3, S1, W4 TSS, N3, N4 + W4 LTHR/masa (etykiety). Testy w `src/day/__tests__` (dayPhase, weekState), e2e `mobile.spec.ts`.
 
+*Stan 27.10.2026 – zrobione:* W3 – `dayPhase` daje `after`/`evening` dla jazdy w dzień bez planu, karta „Dodatkowa jazda” z czasem zamiast zgodności. S1 – jedna granica `MODIFIED_BELOW = 70` w `src/engine/analysis.ts` (`statusFromScore`, werdykt, Dziś, podsumowanie, Plan); `weekState` bierze zgodność z kv `analysis:<klucz>` i ma ona pierwszeństwo przed logiem „done” z serwera; symbol ≈ w Planie; „+ 1 dodatkowa” w bilansie tygodnia. W4 TSS – `loadFtp` w `src/engine/progress.ts` (moc tylko z `power_meter`) w `/m` i w `/`. N3 – oś kroków od dwóch kroków. N4 – `runSync` z limitem 45 s (`SYNC_TIMEOUT_MS`, numer próby zamiast wiecznego `running`), błąd po ludzku; Ja: „zsynchronizowano HH:MM”, przy błędzie zdanie + „Ponów synchronizację”. W4 LTHR – wiersz „Progi i miernik” pokazuje obowiązujące FTP/LTHR ze źródłem (test z datą / szacunek / wpisane). W4 masa – etykieta „do punktu kontrolnego 91 kg na 1.03 (cel 82 kg)”. Testy: `dayState`, `weekState`, `progress`, `syncTimeout`, `weight_deficit`. Legenda symboli Planu i reszta N5 – paczka 2.
+
 **Paczka 2 – szybkie UX (każde S):** S2, S5, S8, S9, S10, N1, N2, N5, N6, N7.
 
 **Paczka 3 – większe, do decyzji użytkownika:** W5 + S7 (integracje, konto i ustawienia w `/m`, wygaszenie `/i`), S4 (objaśnienia), N8 (karta celu), S6 (wpis ręczny posiłku), W4 CTL (wspólna formuła albo trend w notatce).

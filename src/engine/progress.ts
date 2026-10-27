@@ -24,6 +24,14 @@ export function effectiveFtp(date: ISODate, estimate: number, tests: { date: ISO
   return { ftp: estimate, source: 'estimate' }
 }
 
+/**
+ * FTP do TSS jazdy: tylko z miernikiem mocy (`power_meter`), bez niego TSS idzie z tętna. Jedna reguła dla `/` i `/m` –
+ * pełna aplikacja liczyła dzień bez planu z tętna, a `/m` z mocy (45 vs 53 TSS, docs/35 W4).
+ */
+export function loadFtp(date: ISODate, settings: { power_meter?: boolean | null; ftp_w_estimate: number }, tests: { date: ISODate; ftp_w?: number | null }[]): number | null {
+  return settings.power_meter ? effectiveFtp(date, settings.ftp_w_estimate, tests).ftp : null
+}
+
 // ---------------------------------------------------------------- masa
 export interface WeightPoint {
   date: ISODate

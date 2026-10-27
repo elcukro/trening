@@ -17,6 +17,7 @@ import { NO_ACCOUNT, useIosDay, useOpenFull, useSnapshot, useSyncStatus, useUiMo
 import { formLabel } from '@/day/dayState'
 import { fmtDayMonth, fmtShort, todayISO } from '@/lib/dates'
 import { num } from '@/lib/format'
+import { effectiveFtp, effectiveLthr } from '@/engine/progress'
 import { Group, Row, Screen } from '../components/Chrome'
 import { LanguageSheet, LocationSheet, NumbersSheet, Switch, langChoiceLabel } from '../components/SettingsSheets'
 import { FitUploadSheet } from '../components/FitUploadSheet'
@@ -33,7 +34,7 @@ import { STEPS, firstIncomplete, stepNumber, type Step } from '@/engine/onboardi
 import type { OnboardingRow } from '@/db'
 import { goalSummary } from '../onboarding/labels'
 import { WaitArt } from '../components/Waiting'
-import { t as tr } from '@/i18n'
+import { intlLocale, t as tr } from '@/i18n'
 import type { LangChoice } from '@/i18n/core'
 import { useT } from '@/i18n/react'
 
@@ -53,6 +54,14 @@ function onboardingSub(row: OnboardingRow | null | undefined): string | undefine
 }
 
 /** Stopka pod Kontem wg stanu synchronizacji. */
+/** Kiedy ostatnio: „18:05” dziś, „26.10 18:05” wcześniej (czas warszawski, jak reszta aplikacji). */
+function syncTime(iso: string): string {
+  const d = new Date(iso)
+  const date = d.toLocaleDateString('sv-SE', { timeZone: 'Europe/Warsaw' })
+  const time = d.toLocaleTimeString(intlLocale(), { timeZone: 'Europe/Warsaw', hour: '2-digit', minute: '2-digit' })
+  return date === todayISO() ? time : `${fmtDayMonth(date)} ${time}`
+}
+
 function syncFooter(state: string): string {
   const f = tr().m.me.syncFooter
   // aplikacja iOS nie odsyła do „pełnej aplikacji” (docs/26 § 3 pkt 9)
@@ -120,6 +129,16 @@ export function MeScreen() {
   const rides = useMemo(() => allRides.toReversed().slice(0, 6), [allRides])
 
   // test FTP: ostatni z wyników, następny z kalendarza programu (znacznik `test`)
+  // obowiązujące progi ze źródłem – test wygrywa z wpisanymi (R11), a pokazywanie wpisanego LTHR 175 obok testowego 160
+  // wyglądało jak dwie prawdy (docs/35 W4)
+  const tests = engine.ctx.tests ?? []
+  const ftpNow = effectiveFtp(today, s.ftp_w_estimate, tests)
+  const lthrNow = effectiveLthr(today, s.lthr_bpm, tests.filter((x): x is typeof x & { lthr_bpm: number } => !!x.lthr_bpm))
+  const thresholdsSub = [
+    `FTP ${ftpNow.ftp} W (${ftpNow.test_date ? tm.settings.fromTest(fmtDayMonth(ftpNow.test_date)) : tm.settings.estimate})`,
+    lthrNow.lthr ? `LTHR ${lthrNow.lthr} bpm (${lthrNow.test_date ? tm.settings.fromTest(fmtDayMonth(lthrNow.test_date)) : tm.settings.entered})` : tm.settings.noLthr,
+    s.power_meter ? tm.settings.withMeter : tm.settings.noMeter,
+  ].join(' · ')
   const lastTest = useMemo(() => (engine.ctx.tests ?? []).filter((x) => x.ftp_w || x.lthr_bpm).toSorted((a, b) => (a.date < b.date ? 1 : -1))[0] ?? null, [engine.ctx.tests])
   const nextTest = useMemo(() => buildCalendar(engine.ctx).find((x) => x.date > today && x.flags.includes('test')) ?? null, [engine.ctx, today])
 
@@ -207,7 +226,7 @@ export function MeScreen() {
       </Group>
 
       <Group label={tm.settings.group}>
-        <Row icon={<img src={ART.bolt} alt="" width={28} height={28} className="h-7 w-7 object-contain" />} title={t.m.numbers.title} sub={`${s.ftp_w_estimate} W · ${s.lthr_bpm ? `${s.lthr_bpm} bpm` : tm.settings.noLthr} · ${s.power_meter ? tm.settings.withMeter : tm.settings.noMeter}`} onClick={() => setSheet('numbers')} />
+        <Row icon={<img src={ART.bolt} alt="" width={28} height={28} className="h-7 w-7 object-contain" />} title={t.m.numbers.title} sub={thresholdsSub} onClick={() => setSheet('numbers')} />
         <Row icon={<img src="/m/art/sun.png" alt="" width={28} height={28} className="h-7 w-7 object-contain" />} title={t.m.location.title} sub={loc ? loc.name : loc === null ? tm.settings.setPlace : undefined} onClick={() => setSheet('location')} />
         <Row icon={<img src="/m/art/coach-wave.png" alt="" width={28} height={28} className="h-7 w-7 object-contain" />} title={t.common.language.title} sub={langChoiceLabel(langChoice)} onClick={() => setSheet('language')} />
         {healthAvail && (
@@ -264,14 +283,15 @@ export function MeScreen() {
         {!auth.configured ? (
           <Row title={tm.account.local} sub={tm.account.localSub(IS_IOS_APP)} />
         ) : auth.session ? (
-          <Row title={tm.account.signedIn} sub={`${auth.session.user.email ?? ''}${sync.last_sync ? tm.account.lastSync(fmtDayMonth(sync.last_sync.slice(0, 10))) : ''}${sync.pending > 0 ? tm.account.pending(sync.pending) : ''}`} />
+          <Row title={tm.account.signedIn} sub={`${auth.session.user.email ?? ''}${sync.last_sync ? tm.account.lastSync(syncTime(sync.last_sync)) : ''}${sync.pending > 0 ? tm.account.pending(sync.pending) : ''}`} />
         ) : (
           <Row title={auth.loading ? tm.account.checking : tm.account.notSignedIn} sub={auth.loading ? undefined : tm.account.notSignedInSub} onClick={IS_IOS_APP ? backToLogin : () => openFull('/wiecej/ustawienia')} />
         )}
         {/* synchronizacja trwa kilka sekund – animacja w wierszu zamiast komunikatu (docs/27 § 6) */}
         {auth.session && (
           <Row
-            title={sync.state === 'syncing' ? tm.syncFooter.states.syncing : tm.account.syncNow}
+            title={sync.state === 'syncing' ? tm.syncFooter.states.syncing : sync.state === 'error' ? tm.account.syncRetry : tm.account.syncNow}
+            sub={sync.state === 'error' && sync.error ? <span style={{ color: 'var(--red)' }}>{sync.error}</span> : undefined}
             value={sync.state === 'syncing' ? <WaitArt size={52} /> : undefined}
             chevron={false}
             onClick={sync.state === 'syncing' ? undefined : () => void toast.run(tm.syncFooter.states.syncing, () => runSync({ programVersion: engine.ctx.program.version }), () => tm.account.synced, undefined, { quiet: true, errorTitle: tm.account.syncFailed })}
@@ -298,7 +318,7 @@ export function MeScreen() {
           />
         )}
       </Group>
-      <p className="m-foot m-dim px-1">{sync.error ?? syncFooter(sync.state)}</p>
+      <p className="m-foot m-dim px-1">{syncFooter(sync.state)}</p>
 
       <Group label={tm.more.group}>
         <Row title={tm.more.help} sub={tm.more.helpSub} onClick={openHelp} />

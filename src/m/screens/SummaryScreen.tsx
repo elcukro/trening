@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { useNavigate, useParams } from 'react-router'
+import { statusFromScore } from '@/engine/analysis'
 import { isValidISODate } from '@/engine/dates'
 import { zoneDistribution } from '@/engine/zones'
 import { useIosDay, useRideScore } from '@/day/useIos'
@@ -51,7 +52,7 @@ export function SummaryScreen() {
   const rpe = log?.rpe ?? null
 
   async function saveRpe(v: number) {
-    const status = log && LOGGED.includes(log.status) ? (log.status as 'done' | 'modified') : score != null && score < 70 ? 'modified' : 'done'
+    const status = score != null ? statusFromScore(score) : log && LOGGED.includes(log.status) ? (log.status as 'done' | 'modified') : 'done'
     await toast.run(tt.rpeSaving, () => d.logRide(status, { rpe: v }), () => tt.rpeSaved(v), undefined, { quiet: true, errorTitle: tt.rpeFailed })
   }
 

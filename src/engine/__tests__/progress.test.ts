@@ -75,6 +75,12 @@ describe('FTP i waty na ekranie', () => {
     expect(effectiveFtp('2027-01-05', 220, tests)).toMatchObject({ ftp: 235, source: 'test' })
     expect(effectiveFtp('2027-03-01', 220, tests)).toMatchObject({ ftp: 248 })
   })
+  it('loadFtp: FTP do TSS tylko z miernikiem mocy – ta sama reguła w / i /m (docs/35 W4)', async () => {
+    const { loadFtp } = await import('../progress')
+    const tests = [{ date: '2027-01-05', ftp_w: 240 }]
+    expect(loadFtp('2027-02-01', { power_meter: true, ftp_w_estimate: 220 }, tests)).toBe(240)
+    expect(loadFtp('2027-02-01', { power_meter: false, ftp_w_estimate: 220 }, tests)).toBeNull()
+  })
   it('plan dnia ma waty tylko przy włączonym mierniku', () => {
     const off = getDayPlan('2026-09-30', { program, settings: { ...settings, lthr_bpm: 160 } })!
     expect(off.ftp).toBeNull()
