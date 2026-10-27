@@ -105,6 +105,8 @@ describe('jazda z innej aplikacji „tylko czas” (foreignToRow)', () => {
   it('pomija nasze plany, plany innych aplikacji o północy, przyszłość, brak aplikacji i krótkie wpisy', () => {
     expect(foreignToRow({ ...raw, workout_token: '2026-10-23:Z2:2026.09.26-2', fitness_app_id: 3830 }, now)).toBeNull()
     expect(foreignToRow({ ...raw, name: 'The Model', starts: '2026-10-27T00:00:00.000Z' }, now)).toBeNull()
+    // plan innej aplikacji o pełnej godzinie (23.09.2026, aplikacja 1199) – w dniu z prawdziwą jazdą z Bolta liczył się podwójnie
+    expect(foreignToRow({ ...raw, name: '3x12 Sweet Spot - Dell', starts: '2026-09-23T21:00:00.000Z', fitness_app_id: 1199, minutes: 105 }, now)).toBeNull()
     expect(foreignToRow({ ...raw, starts: '2026-10-28T18:00:00.000Z' }, now)).toBeNull()
     expect(foreignToRow({ ...raw, fitness_app_id: undefined }, now)).toBeNull()
     expect(foreignToRow({ ...raw, minutes: 3 }, now)).toBeNull()
