@@ -17,14 +17,15 @@ function fileFromBase64(name: string, b64: string): File {
 
 /**
  * Pliki .fit wysłane do aplikacji iOS z innej aplikacji (Pliki, Safari, MyWhoosh). Zdarzenie z zimnego startu czeka
- * w wtyczce na pierwszego słuchacza. Zwraca funkcję odpinającą; w przeglądarce nic nie robi.
+ * w wtyczce na pierwszego słuchacza. Błąd bez opisu = `null` (tekst dobiera ekran w języku zawodnika).
+ * Zwraca funkcję odpinającą; w przeglądarce nic nie robi.
  */
-export function onSharedFit(cb: (r: { file: File } | { name: string; error: string }) => void): () => void {
+export function onSharedFit(cb: (r: { file: File } | { name: string; error: string | null }) => void): () => void {
   if (!IS_IOS_APP || !isNative()) return () => undefined
   let handle: PluginListenerHandle | null = null
   let off = false
   void plugin
-    .addListener('fitFile', (e) => cb(e.data ? { file: fileFromBase64(e.name, e.data) } : { name: e.name, error: e.error ?? 'Nie udało się odczytać pliku' }))
+    .addListener('fitFile', (e) => cb(e.data ? { file: fileFromBase64(e.name, e.data) } : { name: e.name, error: e.error ?? null }))
     .then((h) => (off ? void h.remove() : (handle = h)))
     .catch(() => undefined)
   return () => {

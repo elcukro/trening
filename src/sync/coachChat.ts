@@ -56,6 +56,9 @@ function isNetworkError(e: unknown): boolean {
 
 export async function askCoach(messages: ChatMessage[], context: unknown, signal?: AbortSignal): Promise<ChatReply> {
   if (!supabase) throw new UserError(t().sync.coach.noAccount)
+  // bez sesji funkcja odpowiada 401, które wyglądałoby jak „sesja wygasła” – zawodnik bez konta dostaje prawdziwy powód
+  const { data: auth } = await supabase.auth.getSession()
+  if (!auth.session) throw new UserError(t().sync.coach.noAccount)
   const call = () => supabase!.functions.invoke<ChatReply & { error?: string }>('coach-chat', { body: { messages, context }, headers: langHeaders(), signal })
   let { data, error } = await call()
   // iOS po wybudzeniu aplikacji potrafi zerwać pierwsze żądanie, zanim wyjdzie z telefonu (21.10.2026: serwer nie dostał nic) –

@@ -190,6 +190,8 @@ const en: typeof pl = {
       noneSub: 'Rides appear after syncing with Wahoo or Strava',
       fitUpload: 'Upload a ride (FIT)',
       fitUploadSub: 'From MyWhoosh or another app without Wahoo – with a coach note',
+      fitShareFailed: 'Ride not uploaded',
+      fitReadError: 'Couldn’t read the file',
     },
     goal: {
       group: 'You and your goal',

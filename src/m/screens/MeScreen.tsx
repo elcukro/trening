@@ -209,7 +209,7 @@ export function MeScreen() {
       <Group label={tm.settings.group}>
         <Row icon={<img src={ART.bolt} alt="" width={28} height={28} className="h-7 w-7 object-contain" />} title={t.m.numbers.title} sub={`${s.ftp_w_estimate} W · ${s.lthr_bpm ? `${s.lthr_bpm} bpm` : tm.settings.noLthr} · ${s.power_meter ? tm.settings.withMeter : tm.settings.noMeter}`} onClick={() => setSheet('numbers')} />
         <Row icon={<img src="/m/art/sun.png" alt="" width={28} height={28} className="h-7 w-7 object-contain" />} title={t.m.location.title} sub={loc ? loc.name : loc === null ? tm.settings.setPlace : undefined} onClick={() => setSheet('location')} />
-        <Row icon={<img src="/m/art/coach-wave.png" alt="" width={28} height={28} className="h-7 w-7 object-contain" />} title={t.common.language.title} value={langChoiceLabel(langChoice)} onClick={() => setSheet('language')} />
+        <Row icon={<img src="/m/art/coach-wave.png" alt="" width={28} height={28} className="h-7 w-7 object-contain" />} title={t.common.language.title} sub={langChoiceLabel(langChoice)} onClick={() => setSheet('language')} />
         {healthAvail && (
           <div className="m-row">
             <img src={ART.heart} alt="" width={28} height={28} className="h-7 w-7 object-contain" />

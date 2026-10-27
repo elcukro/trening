@@ -1,7 +1,8 @@
-import { useEffect, useSyncExternalStore } from 'react'
+import { useEffect, useRef, useSyncExternalStore } from 'react'
 import { useNavigate } from 'react-router'
 import { onSharedFit } from '@/native'
 import { useToast } from '@/components/Toast'
+import { t } from '@/i18n'
 
 // plik .fit przysłany z „Udostępnij” (docs/33 § 7a) czeka tu, aż ekran Ja otworzy arkusz wgrywania
 let pending: File | null = null
@@ -15,17 +16,24 @@ const set = (f: File | null) => {
 export function useSharedFitListener(): void {
   const navigate = useNavigate()
   const toast = useToast()
+  // słuchacz rejestrowany raz: nowe `navigate`/`toast` po każdej nawigacji odpinałyby go i przypinały od nowa,
+  // a plik przysłany w tej chwili mógłby przepaść
+  const deps = useRef({ navigate, toast })
+  useEffect(() => {
+    deps.current = { navigate, toast }
+  })
   useEffect(
     () =>
       onSharedFit((r) => {
         if ('error' in r) {
-          toast.notify('Nie wgrano jazdy', 'error', r.error)
+          const tr = t().m.me.rides
+          deps.current.toast.notify(tr.fitShareFailed, 'error', r.error ?? tr.fitReadError)
           return
         }
         set(r.file)
-        navigate('/m/ja')
+        deps.current.navigate('/m/ja')
       }),
-    [navigate, toast],
+    [],
   )
 }
 
