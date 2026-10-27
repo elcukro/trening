@@ -11,7 +11,7 @@ import { decodeFit, fitToStreams } from './fit.ts'
 import { hrHistogram, movingTotals, resample, rideMetrics } from './metrics.ts'
 import { accessTokenFor, listWorkoutsDetailed } from './wahoo.ts'
 import { redact } from './provenance.ts'
-import { completedInRange, fitUrl, isFitHost, isTransientFitError, summaryToRow, warsawDate, type WahooSummary, type WahooWorkoutRaw } from './wahoo_summary.ts'
+import { completedInRange, fitStart, fitUrl, isFitHost, isTransientFitError, summaryToRow, warsawDate, type WahooSummary, type WahooWorkoutRaw } from './wahoo_summary.ts'
 
 /** Plik FIT nie liczy się do limitów Wahoo, ale nie ściągamy go bez końca: ≤ 8 MB, 30 s. */
 const FIT_MAX_BYTES = 8 * 1024 * 1024
@@ -49,7 +49,8 @@ export async function ingestFit(admin: SupabaseClient, userId: string, workoutId
   const url = fitUrl(summary)
   if (!url) return 'brak pliku'
   try {
-    const streams = fitToStreams(decodeFit(await fetchFit(url)))
+    const decoded = decodeFit(await fetchFit(url))
+    const streams = fitToStreams(decoded)
     const samples = resample(streams, 5)
     if (!streams || !samples) throw new Error('plik bez próbek')
     const deviceWatts = !!samples.watts?.some((w) => (w ?? 0) > 0)
@@ -66,6 +67,8 @@ export async function ingestFit(admin: SupabaseClient, userId: string, workoutId
       updated_at: new Date().toISOString(),
     }
     if (avg_cadence_moving != null) update.avg_cadence = avg_cadence_moving
+    // start z pliku: jazda z innej aplikacji (MyWhoosh) przypięta do naszego planu ma w Wahoo godzinę planu, nie jazdy
+    Object.assign(update, fitStart(decoded))
     // średnia moc i czas w ruchu z pliku – `power_avg` Wahoo pomija zera i wychodzi ponad NP
     const totals = movingTotals(samples, deviceWatts)
     if (totals.moving_time_s) update.moving_time_s = totals.moving_time_s
@@ -86,7 +89,7 @@ export async function ingestFit(admin: SupabaseClient, userId: string, workoutId
 }
 
 /** Pola liczone z pliku FIT (`ingestFit`), których nie nadpisuje ponowny zapis podsumowania. */
-const FIT_OWNED = ['avg_power', 'np_w', 'avg_cadence', 'moving_time_s'] as const
+export const FIT_OWNED = ['avg_power', 'np_w', 'avg_cadence', 'moving_time_s', 'starts', 'date'] as const
 
 /** Zapis listy z Wahoo; zwraca identyfikatory jazd, którym brakuje próbek albo notatki (do dalszej obróbki). */
 export async function saveCompleted(admin: SupabaseClient, userId: string, rows: ReturnType<typeof completedInRange>): Promise<number[]> {

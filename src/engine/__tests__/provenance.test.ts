@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import { aiSafe, assertAiSafe, isAiSource, redact } from '../../../supabase/functions/_shared/provenance'
-import { fitUrl, isFitHost, isTransientFitError } from '../../../supabase/functions/_shared/wahoo_summary'
+import { fitStart, fitUrl, isFitHost, isTransientFitError } from '../../../supabase/functions/_shared/wahoo_summary'
 import { fromStrava, fromWahoo, mergeRides, sameRide, twinOf } from '../../../supabase/functions/_shared/rides'
 
 const wahoo = (o: Record<string, unknown> = {}) => fromWahoo({ id: 1, date: '2026-10-25', starts: '2026-10-25T08:00:00Z', name: 'Z2', minutes_active: 90, moving_time_s: 5400, distance_km: 45.2, ascent_m: 300, avg_power: 180, ...o })
@@ -28,6 +28,23 @@ describe('jedna jazda z dwóch źródeł: kopia z Wahoo wygrywa', () => {
     expect(sameRide(wahoo(), strava())).toBe(true)
     expect(sameRide(wahoo(), strava({ start_at: '2026-10-25T15:00:00Z' }))).toBe(false)
     expect(sameRide(wahoo(), strava({ moving_time_s: 1800 }))).toBe(false)
+  })
+
+  it('jazda z MyWhoosh przypięta w Wahoo do planu: godzina planu, ten sam czas jazdy (10.10.2026)', () => {
+    const plan = fromWahoo({ id: 5, date: '2026-10-10', starts: '2026-10-10T19:00:00Z', name: 'Korba vs Kickr', minutes_active: 96, moving_time_s: 5760 })
+    const mw = fromStrava({ id: 77, date: '2026-10-10', start_at: '2026-10-10T18:08:40Z', name: 'MyWhoosh - Korba_vs_Kickr', moving_time_s: 5740, is_ride: true })
+    expect(sameRide(plan, mw)).toBe(true)
+    expect(mergeRides([plan], [mw]).map((r) => r.key)).toEqual(['wahoo:5'])
+    // inna jazda tego samego dnia: czas różny o > 2 % albo start > 3 h dalej
+    expect(sameRide(plan, fromStrava({ ...mw, moving_time_s: 5400 }))).toBe(false)
+    expect(sameRide(plan, fromStrava({ ...mw, start_at: '2026-10-10T08:00:00Z' }))).toBe(false)
+    // krótkie jazdy (< 10 min) tylko po starcie
+    expect(sameRide({ date: '2026-10-10', start_at: '2026-10-10T08:00:00Z', moving_time_s: 400 }, { date: '2026-10-10', start_at: '2026-10-10T09:00:00Z', moving_time_s: 400 })).toBe(false)
+  })
+
+  it('start i data z pliku FIT zamiast godziny planu', () => {
+    expect(fitStart({ start: '2026-10-09T22:30:00.000Z' })).toEqual({ starts: '2026-10-09T22:30:00.000Z', date: '2026-10-10' })
+    expect(fitStart({ start: null })).toEqual({})
   })
 
   it('mergeRides: Wahoo zamiast Stravy, jazda tylko ze Stravy zostaje', () => {

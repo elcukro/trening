@@ -113,9 +113,18 @@ export function fromWahoo(w: Record<string, unknown>): RideRow {
   }
 }
 
-/** Ta sama jazda w dwóch źródłach: start w odległości ≤ 10 min i czas jazdy różny o ≤ 25 %. Bez godziny – ta sama data i czas. */
+/**
+ * Ta sama jazda w dwóch źródłach: start w odległości ≤ 10 min i czas jazdy różny o ≤ 25 %. Bez godziny – ta sama data
+ * i czas. Do tego ten sam dzień, prawie ten sam czas jazdy (±2 %, ≥ 10 min) i start ≤ 3 h od siebie: jazda z MyWhoosh
+ * przypięta w Wahoo do naszego planu ma godzinę planu (10.10.2026: 21:00 w Wahoo, 20:08 na Stravie, obie 96 min).
+ * Nowe pliki z Wahoo mają już start z pliku FIT (`fitStart`); ten warunek łata wiersze zapisane wcześniej.
+ */
 export function sameRide(a: Pick<RideRow, 'date' | 'start_at' | 'moving_time_s'>, b: Pick<RideRow, 'date' | 'start_at' | 'moving_time_s'>): boolean {
-  const dur = Math.abs(a.moving_time_s - b.moving_time_s) <= 0.25 * Math.max(a.moving_time_s, b.moving_time_s, 1)
+  const diff = Math.abs(a.moving_time_s - b.moving_time_s)
+  const longer = Math.max(a.moving_time_s, b.moving_time_s, 1)
+  const dur = diff <= 0.25 * longer
+  const near = (h: number) => !a.start_at || !b.start_at || Math.abs(Date.parse(a.start_at) - Date.parse(b.start_at)) <= h * 3_600_000
+  if (a.date === b.date && longer >= 10 * 60 && diff <= 0.02 * longer && near(3)) return true
   if (a.start_at && b.start_at) return dur && Math.abs(Date.parse(a.start_at) - Date.parse(b.start_at)) <= 10 * 60_000
   return dur && a.date === b.date
 }

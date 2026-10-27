@@ -175,6 +175,15 @@ bez nowego konta, dane są nasze (źródło `fit`, bez limitu 7 dni).
   `FIT: <nazwy>`; trigger `fit_ride_changed`. Typy pól zbiorczych rzutowane jawnie – plan PL/pgSQL pamięta typy rekordu
   z pierwszego wywołania w sesji (dzień, który przechodził z Wahoo na Stravę, dawał błąd „type of parameter … does not match”).
 
+- **Jazda z innej aplikacji przypięta w Wahoo do naszego planu** (27.10.2026): MyWhoosh raz (10.10) wysłał jazdę do Wahoo
+  i trafiła ona do treningu z naszym planem na ten dzień – `starts` w Wahoo to godzina planu (21:00), nie jazdy (20:08 na
+  Stravie), więc `sameRide` (≤ 10 min) jej nie łączył i jazda była widoczna dwa razy. Poprawki: `ingestFit` bierze
+  `starts` i `date` z pierwszej próbki pliku (`fitStart` w `wahoo_summary.ts`; `FIT_OWNED` chroni je przed ponownym
+  zapisem podsumowania), a `sameRide` i `rebuild_day_log` uznają też ten sam dzień, czas jazdy ±2 % (≥ 10 min) i start
+  ≤ 3 h od siebie – dla wierszy zapisanych przed poprawką (plik FIT nie jest pobierany drugi raz). Stan produkcji
+  27.10: kopie z Wahoo dla jazd MyWhoosh z 11–23.10 **nie istnieją** (backfill przeczytał całą listę: 2 strony, 24 jazdy,
+  ostatnia 10.10) – wgranie pliku zostaje drogą dla tych jazd.
+
 ## 8. Szablony planów i dopasowanie przez AI
 
 ### 8.1 Biblioteka szablonów (`data/templates/`)

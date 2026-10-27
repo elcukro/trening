@@ -83,13 +83,18 @@ begin
       from public.wahoo_workouts w
      where w.user_id = p_user and w.date = p_date and w.deleted_at is null
     union all
-    -- plik z Bolta wgrany ręcznie to bliźniak kopii z Wahoo (start ≤ 10 min) – liczy się raz
+    -- plik z Bolta wgrany ręcznie to bliźniak kopii z Wahoo – liczy się raz; jak `sameRide`: start ≤ 10 min albo czas
+    -- jazdy ±2 % i start ≤ 3 h (jazda z MyWhoosh przypięta w Wahoo do planu ma godzinę planu)
     select f.moving_time_s, f.distance_m, f.elevation_m, f.avg_hr, f.max_hr, f.avg_cadence, coalesce(f.name, 'trening'), f.start_at, 'fit'
       from public.fit_rides f
      where f.user_id = p_user and f.date = p_date and f.deleted_at is null
        and not exists (select 1 from public.wahoo_workouts w
                         where w.user_id = p_user and w.date = p_date and w.deleted_at is null
-                          and abs(extract(epoch from (w.starts - f.start_at))) <= 600)
+                          and (abs(extract(epoch from (w.starts - f.start_at))) <= 600
+                               or (abs(extract(epoch from (w.starts - f.start_at))) <= 3 * 3600
+                                   and greatest(f.moving_time_s, coalesce(w.moving_time_s, w.minutes_active * 60)) >= 600
+                                   and abs(f.moving_time_s - coalesce(w.moving_time_s, w.minutes_active * 60))
+                                       <= 0.02 * greatest(f.moving_time_s, coalesce(w.moving_time_s, w.minutes_active * 60)))))
   )
   -- typy pól `agg` jawnie i tak samo w obu zapytaniach – plan PL/pgSQL pamięta typy z pierwszego wywołania w sesji
   select count(*) as n,

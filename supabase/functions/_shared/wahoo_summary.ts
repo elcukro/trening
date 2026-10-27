@@ -59,6 +59,16 @@ export function warsawDate(iso: string): string {
   return new Intl.DateTimeFormat('sv-SE', { timeZone: 'Europe/Warsaw' }).format(new Date(iso))
 }
 
+/**
+ * Start i data jazdy z pliku FIT (pierwsza próbka). Jazda z MyWhoosh, która trafiła do Wahoo przez nasz plan na dany
+ * dzień, ma w podsumowaniu `starts` planu (10.10.2026: 21:00 zamiast 20:08) – plik mówi, kiedy naprawdę jechano.
+ * Pusto, gdy plik nie ma czasu.
+ */
+export function fitStart(d: { start: string | null }): { starts?: string; date?: string } {
+  if (!d.start) return {}
+  return { starts: d.start, date: warsawDate(d.start) }
+}
+
 /** Wiersz do zapisu albo null, gdy trening nie ma podsumowania (niewykonany) lub sensownego czasu. */
 export function summaryToRow(w: WahooWorkoutRaw): WahooWorkoutRow | null {
   const s = w.workout_summary
