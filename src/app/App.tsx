@@ -19,7 +19,8 @@ import { useEmailSnapshots } from '@/sync/emailSnapshots'
 import { MovedBanner } from './MovedBanner'
 import { iosPathFor, isNavigateMessage, mobilePathFor } from './pushNav'
 import { usePushKeepalive } from '@/sync/usePush'
-import { SettingsGate, SettingsProvider, useEngine, useSettings } from '@/app/useSettings'
+import { SettingsGate, SettingsProvider, useEngine, useSettings, type SettingsApi } from '@/app/useSettings'
+import { WaitArt } from '@/m/components/Waiting'
 import { LangProvider, useLang, useT } from '@/i18n/react'
 import { t as tNow } from '@/i18n'
 import { todayISO } from '@/lib/dates'
@@ -266,13 +267,15 @@ class ErrorBoundary extends Component<{ children: ReactNode }, { error: Error | 
 }
 
 /** Ekran oczekiwania bez danych programu: nie wiadomo jeszcze, czyje ustawienia pokazać. */
-function WaitingScreen({ waiting, sync }: { waiting: 'settings' | 'session' | 'profile' | 'plan'; sync: { state: string; error?: string } }) {
+function WaitingScreen({ waiting, sync }: { waiting: NonNullable<SettingsApi['waiting']>; sync: { state: string; error?: string } }) {
   const t = useT()
   const w = t.classic.waiting
-  const text = waiting === 'profile' ? (sync.state === 'syncing' ? w.profileSyncing : w.profile) : waiting === 'plan' ? w.plan : waiting === 'session' ? w.session : w.settings
+  const text = waiting === 'profile' ? (sync.state === 'syncing' ? w.profileSyncing : w.profile) : waiting === 'plan' ? w.plan : waiting === 'sync' ? w.sync : waiting === 'session' ? w.session : w.settings
   return (
     <div className="flex min-h-dvh w-full items-center justify-center bg-slate-50 px-6 text-center dark:bg-slate-900" role="status" aria-live="polite">
-      <div>
+      <div className="flex flex-col items-center">
+        {/* pierwsze pobranie danych trwa kilka sekund – rowerzysta zamiast pustego ekranu (docs/27 § 6) */}
+        {waiting === 'sync' && <WaitArt size={120} />}
         <div className="text-lg font-semibold text-slate-800 dark:text-slate-100">{t.common.appName}</div>
         <div className="mt-2 text-sm text-slate-500 dark:text-slate-400">{text}</div>
         {sync.error && <div className="mt-2 text-xs text-amber-600 dark:text-amber-400">{sync.error}</div>}

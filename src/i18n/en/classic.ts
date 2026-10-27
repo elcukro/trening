@@ -32,6 +32,7 @@ const en: typeof pl = {
     profileSyncing: 'Downloading your account settings…',
     profile: 'Waiting for your account settings…',
     plan: 'Downloading your plan…',
+    sync: 'Downloading your data – the first time takes a moment…',
     session: 'Checking sign-in…',
     settings: 'Loading…',
   },

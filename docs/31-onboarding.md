@@ -105,6 +105,9 @@ kwestionariusza) i kluczem `(user_id, id)`, więc jest w `USER_SCOPED_ID_TABLES`
 CHECK: `done` wymaga obiektu `data` i zgody. LWW przez `lww_guard`, RLS „all own”.
 
 - **Istniejące konta** dostają w migracji wiersz `legacy` (wszyscy z `auth.users`), więc nie są zmuszane do onboardingu.
+  Szkic nie zmienia `legacy` na `draft` (wyzwalacz `onboarding_keep_legacy`, migracja `20261027190000`): 26.10.2026 urządzenie
+  bez pobranego wiersza zapisało pusty szkic z nowszym `updated_at` i główne konto dostawało kwestionariusz na każdym świeżym
+  urządzeniu. Status `legacy` zmienia tylko ukończenie (`done`); szkic konta `legacy` wznawia się z Ja → „Ty i Twój cel”.
   Wejście zostaje w Ja → „Ty i Twój cel” → „Uzupełnij swoje potrzeby”, z progami już wypełnionymi z profilu.
 - **Kiedy pokazać sam** (`useOnboardingDue`): zalogowane konto, brak wiersza, szkic (`draft`) albo usunięte odpowiedzi.
   Warunek dodatkowy: tabela przeszła pełne pobranie. `runSync` zapisuje w kv `synced_tables` listę tabel po udanej

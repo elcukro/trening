@@ -1,6 +1,6 @@
 import React, { createContext, createElement, useCallback, useContext, useMemo, type ReactNode } from 'react'
 import { useLiveQuery } from 'dexie-react-hooks'
-import { db, type Checkin, type PlanRow, type TestResult } from '@/db'
+import { db, SYNC_TABLES, type Checkin, type PlanRow, type TestResult } from '@/db'
 import { DEFAULT_PROGRAM_ID } from '@/data/program'
 import { GENERATED_PROGRAM_ID, planOutdated, resolveProgram } from '@/data/generated'
 import { SYNCED_TABLES_KEY } from '@/sync/sync'
@@ -28,7 +28,7 @@ export interface SettingsApi {
    */
   ready: boolean
   /** dlaczego jeszcze nie `ready` – do ekranu oczekiwania */
-  waiting: 'settings' | 'session' | 'profile' | 'plan' | null
+  waiting: 'settings' | 'session' | 'profile' | 'plan' | 'sync' | null
   /** wiersz planu z generatora (docs/32 § 7); `null` = brak, `undefined` = jeszcze nie wczytany */
   plan: PlanRow | null | undefined
   /** plan liczony starszą wersją generatora – warto zaproponować przeliczenie */
@@ -107,12 +107,17 @@ function useSettingsSource(): SettingsApi {
   const firstPullPending = freshAccount && sync.last_sync === null && sync.state !== 'error' && sync.state !== 'disabled' && sync.state !== 'offline'
   // profil wskazuje plan z generatora, ale wiersza jeszcze nie ma: czekamy na pełne pobranie tabeli `plans`
   // (świeże urządzenie); po pobraniu bez wiersza spadamy na program domyślny – onboarding pokaże się sam
-  const plansSynced = useLiveQuery(async () => {
+  const syncedTables = useLiveQuery(async () => {
     const v = (await db.kv.get(SYNCED_TABLES_KEY))?.value
-    return Array.isArray(v) && v.includes('plans')
-  }, [], false)
-  const planPending = programId === GENERATED_PROGRAM_ID && plan === null && !!auth.session && !plansSynced && sync.state !== 'error' && sync.state !== 'disabled' && sync.state !== 'offline'
-  const waiting: SettingsApi['waiting'] = !loaded || plan === undefined ? 'settings' : auth.loading ? 'session' : firstPullPending ? 'profile' : planPending ? 'plan' : null
+    return Array.isArray(v) ? (v as string[]) : []
+  }, [], undefined)
+  const syncBlocked = sync.state === 'error' || sync.state === 'disabled' || sync.state === 'offline'
+  const planPending = programId === GENERATED_PROGRAM_ID && plan === null && !!auth.session && !syncedTables?.includes('plans') && !syncBlocked
+  // urządzenie, które ani razu nie pobrało wszystkich tabel (świeża instalacja, nowa tabela po aktualizacji), czeka na pełne
+  // pobranie: inaczej Dziś przez chwilę pokazywał plan bez przeniesień konta (zielone → szare przyciski), a onboarding
+  // widział szkic zamiast wiersza `legacy` (docs/35). Błąd, brak sieci i limit czasu synchronizacji otwierają ekrany.
+  const firstSyncPending = !!auth.session && syncedTables !== undefined && !SYNC_TABLES.every((t) => syncedTables.includes(t)) && !syncBlocked
+  const waiting: SettingsApi['waiting'] = !loaded || plan === undefined || syncedTables === undefined ? 'settings' : auth.loading ? 'session' : firstPullPending ? 'profile' : planPending ? 'plan' : firstSyncPending ? 'sync' : null
   return { settings, program, loaded, ready: waiting === null, waiting, plan, plan_outdated: planOutdated(plan), sync, update, reset }
 }
 

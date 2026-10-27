@@ -32,6 +32,7 @@ export default {
     profileSyncing: 'Pobieram ustawienia konta…',
     profile: 'Czekam na ustawienia konta…',
     plan: 'Pobieram Twój plan…',
+    sync: 'Pobieram Twoje dane – za pierwszym razem trwa to chwilę…',
     session: 'Sprawdzam logowanie…',
     settings: 'Wczytuję…',
   },
