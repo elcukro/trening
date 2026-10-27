@@ -22,6 +22,41 @@ Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') return new Response(null, { headers: CORS })
   if (req.method !== 'POST') return json({ error: 'method' }, 405)
   const body = (await req.json().catch(() => ({}))) as { items?: PushItem[]; mode?: 'update' | 'replace' | 'diagnose' | 'cleanup' | 'completed' | 'backfill' | 'cron'; remove?: string[]; days?: number; secret?: string }
+  if ((body as { mode?: string }).mode === 'inspect') {
+    // diagnostyka (27.10.2026, jazdy z MyWhoosh): surowe odpowiedzi Wahoo dla wskazanych dni konta, bez filtrów.
+    // Tylko z sekretem harmonogramu; adresy bez parametrów (podpisy plików), tokenów konta nie zwracamy.
+    const b = body as { secret?: string; user_id?: string; dates?: string[] }
+    if (!b.secret || !timingSafeEqual(b.secret, env('PUSH_CRON_SECRET'))) return json({ error: 'unauthorized' }, 401)
+    const tok = b.user_id ? await accessTokenFor(adminClient(), b.user_id).catch(() => null) : null
+    if (!tok) return json({ error: 'no_token' }, 400)
+    const dates = new Set(b.dates ?? [])
+    const strip = (v: unknown): unknown =>
+      typeof v === 'string' ? v.replace(/(https?:\/\/[^\s"'?]+)\?[^\s"']*/g, '$1?<…>')
+      : Array.isArray(v) ? v.map(strip)
+      : v && typeof v === 'object' ? Object.fromEntries(Object.entries(v).map(([k, x]) => [k, /token|signature|secret/i.test(k) && k !== 'workout_token' ? '<…>' : strip(x)]))
+      : v
+    const get = async (path: string) => {
+      const res = await fetch(`https://api.wahooligan.com${path}`, { headers: { authorization: `Bearer ${tok}` } })
+      const text = await res.text()
+      let parsed: unknown = text.slice(0, 2000)
+      try { parsed = JSON.parse(text) } catch { /* zostaje tekst */ }
+      return { status: res.status, body: strip(parsed) }
+    }
+    const list: Record<string, unknown>[] = []
+    for (let page = 1; page <= 2; page++) {
+      const r = await get(`/v1/workouts?page=${page}&per_page=50`)
+      const items = (Array.isArray(r.body) ? r.body : ((r.body as { workouts?: unknown[] })?.workouts ?? [])) as Record<string, unknown>[]
+      list.push(...items)
+      if (items.length < 50) break
+    }
+    const day = (s: unknown) => (typeof s === 'string' ? new Intl.DateTimeFormat('sv-SE', { timeZone: 'Europe/Warsaw' }).format(new Date(s)) : '')
+    const picked = list.filter((w) => dates.has(day(w.starts)))
+    const out = []
+    for (const w of picked) {
+      out.push({ list_entry: w, workout: await get(`/v1/workouts/${w.id}`), workout_summary: await get(`/v1/workouts/${w.id}/workout_summary`) })
+    }
+    return json({ scanned: list.length, picked: out.length, workouts: out })
+  }
   if (body.mode === 'cron') {
     // harmonogram bazy bez sesji – sekret zamiast JWT (sprawdzany przed logowaniem użytkownika)
     if (!body.secret || !timingSafeEqual(body.secret, env('PUSH_CRON_SECRET'))) return json({ error: 'unauthorized' }, 401)
