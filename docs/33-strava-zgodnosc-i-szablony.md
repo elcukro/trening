@@ -210,14 +210,20 @@ na płacącego < 0,10 USD/rok. Limit: 10 wywołań/dzień na konto w `ai_calls`.
 4. **(d) Szablony i `plan-tune`** – `data/templates/`, `tuning.ts`, generator czyta szablony, Edge Function `plan-tune`,
    sekcja „Dlaczego taki plan” i arkusz poprawek.
 
-## 10. Stan wdrożenia (26.10.2026)
+## 10. Stan wdrożenia (27.10.2026)
 
 | Krok | Kod | Wdrożone |
 |---|---|---|
-| (a) proweniencja, AI tylko na Wahoo | `_shared/provenance.ts`, `_shared/rides.ts`, `ai_note.ts` (`RideRef`, `loadRidesRange`), `email_send.ts`, `coachContext.ts`, migracja `20261026230000_wahoo_ai_source.sql` | czeka na `supabase db push` i wdrożenie funkcji |
+| (a) proweniencja, AI tylko na Wahoo | `_shared/provenance.ts`, `_shared/rides.ts`, `ai_note.ts` (`RideRef`, `loadRidesRange`), `email_send.ts`, `coachContext.ts`, migracja `20261026230000_wahoo_ai_source.sql` | wdrożone 26–27.10.2026 |
 | (b) FIT i webhook Wahoo | `_shared/fit.ts`, `_shared/wahoo_sync.ts`, `_shared/ride_pipeline.ts`, `wahoo-webhook`, `wahoo-push {completed, backfill, cron}` | jw. |
 | (c) retencja Stravy | migracja `20261026240000_strava_retention.sql` (`purge_strava` za flagą `strava_purge`, `purge_strava_user` przy rozłączeniu, `strava_purge_enabled` dla aplikacji), `strava-oauth` (sync 7 dni, backfill 410), widoki na `useRides` (`src/app/useRides.ts`), `purgeLocalStrava` | jw.; **flaga wyłączona** do sprawdzenia historii Wahoo obu kont |
 | (d) szablony i dopasowanie | `data/templates/*.json`, `src/engine/generator/templates.ts`, `tuning.ts`, `plan-tune`, `src/sync/planTune.ts`, `PlanWhy.tsx`, migracja `20261026250000_plan_tuning.sql` | jw. |
+
+Pierwsze odpytania (27.10.2026): historia z Wahoo – konto Łukasza 44 jazdy od 13.03.2026, **w każdym miesiącu tyle samo
+co na Stravie**; konto Ferdynanda 24 jazdy od 12.09.2026. Plik FIT dekoduje się poprawnie (NP, MMP 20 min i dryf jak u
+Stravy). Poprawki po pierwszym przebiegu: średnia moc i czas w ruchu z próbek (`movingTotals` – `power_avg` Wahoo pomija
+zera i wychodzi ponad NP), ponowny zapis podsumowania nie nadpisuje pól z pliku (`FIT_OWNED`), przekroczony czas pobrania
+jest ponawiany (`isTransientFitError`), a nie zapisywany jako `fit_error`.
 
 Kolejność po zgodzie: `supabase db push` (trzy migracje) → wdrożenie `wahoo-webhook`, `wahoo-push`, `strava-webhook`,
 `strava-oauth`, `ride-note`, `coach-chat`, `email-send`, `plan-tune` → `wahoo-push {mode: 'backfill'}` dla obu kont →
@@ -227,7 +233,10 @@ sprawdzenie, że `wahoo_workouts` pokrywa historię jazd ze Stravy → `insert i
 
 Decyzje użytkownika (26.10.2026, po lekturze tego dokumentu):
 1. **Zapis na Stravę wyłączony wszystkim** – migracja `strava_write = false`, serwer pisze tylko z `STRAVA_WRITE_ENABLED=1`.
-2. Oba konta jeżdżą z Wahoo – historia i AI z Wahoo nic nie tracą po retencji Stravy.
+2. Oba konta jeżdżą z Wahoo – **ale nie całkiem (27.10.2026)**: Ferdynand od 11.10 trenuje w domu na MyWhoosh (prosto
+   na Stravę, bez Wahoo), a jazdy sprzed 12.09 nagrywał innym urządzeniem (46 jazd V–VIII). **Czyszczenie Stravy zostaje
+   wyłączone, dopóki jazdy z MyWhoosh nie mają innego źródła** (np. wgranie pliku FIT w aplikacji – źródło `fit`). Do tego
+   czasu jego jazdy z MyWhoosh dostają notatkę z reguł, bez AI.
 3. Webhook Wahoo ustawia użytkownik (portal Wahoo: adres `https://kgllegvlnmchdvkkbitt.supabase.co/functions/v1/wahoo-webhook`,
    token = sekret `WAHOO_WEBHOOK_TOKEN`, sprawdzany w polu `webhook_token` treści zdarzenia). Do tego czasu odpytanie co 30 min.
 4. Pierwsze czyszczenie danych Stravy starszych niż 7 dni – dopiero po sprawdzeniu historii z Wahoo dla obu kont.
