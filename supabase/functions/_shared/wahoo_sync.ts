@@ -122,7 +122,7 @@ export interface SyncResult {
   /** odrzucone wpisy z okna (diagnostyka MyWhoosh, docs/33 § 7a) */
   dropped: ReturnType<typeof droppedWorkouts>
   /** podsumowania dociągnięte pojedynczo (jazdy z innych aplikacji) */
-  summaries: { asked: number; found: number }
+  summaries: { asked: number; found: number; statuses?: Record<string, number> }
 }
 
 /**
@@ -130,24 +130,27 @@ export interface SyncResult {
  * `limit` na wywołanie (limity Wahoo) i tylko te, których jeszcze nie mamy. Uzupełnia wpisy listy na miejscu; zwraca
  * liczbę zapytań i znalezionych podsumowań.
  */
-export async function fillSummaries(admin: SupabaseClient, userId: string, token: string, list: WahooWorkoutRaw[], from: string, to: string, limit: number): Promise<{ asked: number; found: number }> {
+export async function fillSummaries(admin: SupabaseClient, userId: string, token: string, list: WahooWorkoutRaw[], from: string, to: string, limit: number): Promise<{ asked: number; found: number; statuses?: Record<string, number> }> {
   const want = list.filter((w) => needsSummaryFetch(w, from, to))
   if (!want.length) return { asked: 0, found: 0 }
   const { data: known } = await admin.from('wahoo_workouts').select('id').eq('user_id', userId).in('id', want.map((w) => w.id))
   const have = new Set((known ?? []).map((k) => Number(k.id)))
   let asked = 0
   let found = 0
+  const statuses: Record<string, number> = {}
   for (const w of want) {
     if (have.has(w.id)) continue
     if (asked >= limit) break
     asked++
-    const s = await getWorkoutSummary(token, w.id)
-    if (s) {
-      w.workout_summary = s
+    const { summary, status } = await getWorkoutSummary(token, w.id)
+    statuses[status] = (statuses[status] ?? 0) + 1
+    if (summary) {
+      w.workout_summary = summary
       found++
     }
   }
-  return { asked, found }
+  console.log('wahoo summaries', userId.slice(0, 8), JSON.stringify({ candidates: want.length, asked, found, statuses }))
+  return { asked, found, statuses }
 }
 
 /** Wykonane treningi z ostatnich `days` dni → baza. Dwa zapytania do Wahoo (2 strony po 50). */
@@ -169,7 +172,7 @@ export async function syncCompleted(admin: SupabaseClient, userId: string, days:
  * Historia z Wahoo (zamiast 400 dni ze Stravy – docs/33 § 3): strony `/v1/workouts` od najnowszych, aż do `days` wstecz.
  * Plik FIT tylko dla jazd z ostatnich `fitDays` dni (pobranie pliku nie liczy się do limitu, ale trwa).
  */
-export async function backfillWahoo(admin: SupabaseClient, userId: string, opts: { days: number; fitDays: number; maxPages: number; fitLimit: number }): Promise<{ pages: number; scanned: number; saved: number; fit: Record<string, number>; dropped: ReturnType<typeof droppedWorkouts>; summaries: { asked: number; found: number } }> {
+export async function backfillWahoo(admin: SupabaseClient, userId: string, opts: { days: number; fitDays: number; maxPages: number; fitLimit: number }): Promise<{ pages: number; scanned: number; saved: number; fit: Record<string, number>; dropped: ReturnType<typeof droppedWorkouts>; summaries: { asked: number; found: number; statuses?: Record<string, number> } }> {
   const tok = await accessTokenFor(admin, userId)
   if (!tok) throw new Error('not_connected')
   const from = warsawDate(new Date(Date.now() - opts.days * 86400000).toISOString())

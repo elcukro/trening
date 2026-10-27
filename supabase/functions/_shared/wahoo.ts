@@ -348,14 +348,19 @@ export async function listWorkouts(token: string, pages = 3): Promise<{ id: numb
   return out
 }
 
-/** Podsumowanie jednego treningu (jazdy z innych aplikacji przychodzą na liście bez niego); null = brak (404). */
-export async function getWorkoutSummary(token: string, id: number): Promise<WahooSummary | null> {
+/**
+ * Podsumowanie jednego treningu (jazdy z innych aplikacji przychodzą na liście bez niego). `status` – kod HTTP, a przy
+ * 200 bez podsumowania nazwy kluczy odpowiedzi (diagnostyka, bez wartości).
+ */
+export async function getWorkoutSummary(token: string, id: number): Promise<{ summary: WahooSummary | null; status: string }> {
   const res = await fetch(`${WAHOO_API}/v1/workouts/${id}/workout_summary`, { headers: { authorization: `Bearer ${token}` } })
   if (res.status === 429) throw new Error('wahoo 429 – limit zapytań')
-  if (!res.ok) return null
-  const body = (await res.json().catch(() => null)) as WahooSummary | { workout_summary?: WahooSummary } | null
-  if (!body || typeof body !== 'object') return null
-  return ('workout_summary' in body ? body.workout_summary : body) as WahooSummary | null
+  if (!res.ok) return { summary: null, status: String(res.status) }
+  const body = (await res.json().catch(() => null)) as Record<string, unknown> | null
+  if (!body || typeof body !== 'object') return { summary: null, status: '200 bez JSON' }
+  const s = ('workout_summary' in body ? body.workout_summary : body) as WahooSummary | null
+  const ok = !!s && typeof s === 'object' && (s.duration_active_accum != null || s.duration_total_accum != null)
+  return ok ? { summary: s, status: '200' } : { summary: null, status: `200 bez czasu: ${Object.keys(body).sort().join(',')}` }
 }
 
 /** Lista treningów z pełnymi obiektami (w tym `workout_summary`, gdy trening został wykonany). */
