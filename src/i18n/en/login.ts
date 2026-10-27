@@ -13,7 +13,7 @@ const en: typeof pl = {
   signingIn: 'Signing in…',
   codeSentBefore: 'We sent a code to',
   codeSentAfter: '.',
-  codeLabel: '6-digit code from the email',
+  codeLabel: (n: number) => `${n}-digit code from the email`,
   signIn: 'Sign in',
   resend: 'Didn’t get it? Send again',
   linkLabel: 'Link from the email',

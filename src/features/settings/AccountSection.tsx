@@ -1,5 +1,5 @@
 import { useRef, useState } from 'react'
-import { useAuth } from '@/sync/auth'
+import { OTP_LENGTH, useAuth } from '@/sync/auth'
 import { useSettings } from '@/app/useSettings'
 import { resetSyncCursors, runSync } from '@/sync/sync'
 import { db, SYNC_TABLES } from '@/db'
@@ -104,7 +104,7 @@ export function AccountSection() {
           {msg && <p className="mt-2 text-sm">{msg}</p>}
           <Inset tone={sent ? 'info' : 'default'} className="mt-3 py-3">
             <Field label={ta.code}>
-              <Input className="text-center text-2xl tracking-[0.3em]" inputMode="numeric" autoComplete="one-time-code" maxLength={8} value={code} onChange={(e) => setCode(e.target.value)} placeholder="········" />
+              <Input className="text-center text-2xl tracking-[0.3em]" inputMode="numeric" autoComplete="one-time-code" maxLength={OTP_LENGTH} value={code} onChange={(e) => setCode(e.target.value.replace(/\D/g, ''))} placeholder={'·'.repeat(OTP_LENGTH)} />
             </Field>
             <Button onClick={useCode} disabled={code.replace(/\D/g, '').length < 6 || !email.includes('@')} className="mt-3 w-full">
               {ta.signInWithCode}

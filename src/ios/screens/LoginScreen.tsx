@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import type { AuthState } from '@/sync/auth'
+import { OTP_LENGTH, type AuthState } from '@/sync/auth'
 import { useToast } from '@/components/Toast'
 import { OAuthButtons } from '@/components/OAuthButtons'
 import { Btn, List, Row, Section } from '../components/Chrome'
@@ -93,9 +93,10 @@ export function LoginScreen({ auth, onSkip }: { auth: AuthState; onSkip: () => v
                   className="ios-input ios-input-block ios-num text-center tracking-[0.3em]"
                   inputMode="numeric"
                   autoComplete="one-time-code"
-                  placeholder="000000"
+                  placeholder={'0'.repeat(OTP_LENGTH)}
+                  maxLength={OTP_LENGTH}
                   value={code}
-                  onChange={(e) => setCode(e.target.value)}
+                  onChange={(e) => setCode(e.target.value.replace(/\D/g, ''))}
                   aria-label={tx.code}
                 />
               </div>
@@ -128,7 +129,7 @@ export function LoginScreen({ auth, onSkip }: { auth: AuthState; onSkip: () => v
             </Btn>
           ) : sent ? (
             <>
-              <Btn className="w-full" disabled={code.trim().length < 4 || toast.busy} onClick={() => void useCode()}>
+              <Btn className="w-full" disabled={code.length !== OTP_LENGTH || toast.busy} onClick={() => void useCode()}>
                 {tx.signIn}
               </Btn>
               <Btn kind="gray" className="w-full" disabled={toast.busy} onClick={() => void send()}>

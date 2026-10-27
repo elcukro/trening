@@ -5,6 +5,13 @@ import { supabase } from './supabase'
 import { authErrorFromLocation, parseMagicLink } from './magicLink'
 import { consumeAuthReturn, signInWithGoogle, signInWithStrava, type OAuthResult } from './oauth'
 
+/**
+ * Liczba cyfr kodu z maila – jedna dla wszystkich ekranów logowania i równa `auth.email.otp_length` w Supabase
+ * (projekt w chmurze: 8, sprawdzone `supabase config diff` 27.10.2026). Zgodność z `supabase/config.toml` pilnuje test
+ * `otpLength.test.ts`; zmiana długości = ta stała + config.toml + `supabase config push` naraz.
+ */
+export const OTP_LENGTH = 8
+
 export interface AuthState {
   session: Session | null
   loading: boolean
@@ -62,21 +69,21 @@ export function useAuth(): AuthState {
         email: email.trim().toLowerCase(),
         options: { emailRedirectTo: window.location.origin + '/wiecej/ustawienia', shouldCreateUser: true },
       })
-      return { error: error ? translateAuthError(error.message) : null }
+      return { error: error ? translateAuthError(error.message, error.code) : null }
     },
     async signInWithLink(link) {
       if (!supabase) return { error: t().sync.noBackend }
       const parsed = parseMagicLink(link)
       if (!parsed) return { error: t().sync.auth.notMagicLink }
       const { error } = await supabase.auth.verifyOtp({ token_hash: parsed.token_hash, type: parsed.type })
-      return { error: error ? translateAuthError(error.message) : null }
+      return { error: error ? translateAuthError(error.message, error.code) : null }
     },
     async signInWithCode(email, code) {
       if (!supabase) return { error: t().sync.noBackend }
       const token = code.replace(/\D/g, '')
-      if (token.length < 6) return { error: t().sync.auth.codeLength }
+      if (token.length !== OTP_LENGTH) return { error: t().sync.auth.codeLength(OTP_LENGTH) }
       const { error } = await supabase.auth.verifyOtp({ email: email.trim().toLowerCase(), token, type: 'email' })
-      return { error: error ? translateAuthError(error.message) : null }
+      return { error: error ? translateAuthError(error.message, error.code) : null }
     },
     signInWithGoogle,
     signInWithStrava,
@@ -94,11 +101,12 @@ function initialUrlError(): string | null {
   return firstUrlError
 }
 
-function translateAuthError(msg: string): string {
+function translateAuthError(msg: string, code?: string): string {
   // „nie ma dostępu” to treść wyjątku z triggera check_allowed_email (serwer)
   if (/nie ma dostępu/.test(msg)) return t().sync.auth.notAllowed
-  if (/rate limit/i.test(msg)) return t().sync.auth.rateLimit
+  // limit maili: „For security purposes, you can only request this after N seconds” (`over_email_send_rate_limit`)
+  if (/rate_limit/.test(code ?? '') || /rate limit|security purposes/i.test(msg)) return t().sync.auth.rateLimit
   if (/Signups not allowed/i.test(msg)) return t().sync.auth.signupsDisabled
-  if (/expired|invalid/i.test(msg)) return t().sync.auth.codeExpired
+  if (code === 'otp_expired' || /expired|invalid/i.test(msg)) return t().sync.auth.codeExpired
   return msg
 }

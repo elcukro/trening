@@ -105,8 +105,8 @@
 .m-login-code {
   position: relative;
   display: grid;
-  grid-template-columns: repeat(6, 1fr);
-  gap: 8px;
+  grid-template-columns: repeat(var(--code-len, 8), 1fr);
+  gap: 6px;
 }
 .m-login-code input {
   position: absolute;

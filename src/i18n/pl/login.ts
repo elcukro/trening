@@ -15,7 +15,7 @@ export default {
   /** „Wysłaliśmy kod na <adres>.” – adres pogrubiony między częściami */
   codeSentBefore: 'Wysłaliśmy kod na',
   codeSentAfter: '.',
-  codeLabel: 'Kod z maila, sześć cyfr',
+  codeLabel: (n: number) => `Kod z maila, ${n} cyfr`,
   signIn: 'Zaloguj się',
   resend: 'Nie doszedł? Wyślij ponownie',
   linkLabel: 'Link z maila',

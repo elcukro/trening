@@ -1,17 +1,19 @@
-import { useEffect, useRef, useState, type FormEvent } from 'react'
+import { useEffect, useRef, useState, type CSSProperties, type FormEvent } from 'react'
 import type { AuthState } from '@/sync/auth'
 import { OAuthButtons } from '@/components/OAuthButtons'
 import { friendlyError } from '@/lib/errors'
 import { IS_IOS_APP, haptic } from '@/native'
 import { useT } from '@/i18n/react'
+import { UserError } from '@/i18n'
+import { OTP_LENGTH } from '@/sync/auth'
 import { Btn } from './components/Chrome'
 import './login.css'
 
-const CODE_LEN = 6
+const CODE_LEN = OTP_LENGTH
 
 /**
  * Logowanie w `/m` i aplikacji iOS (docs/27 § 7): ilustracja 3D z trenerem na całą szerokość (fal.ai, styl grafik `/m`),
- * Google i Strava jednym dotknięciem (docs/28), kod z maila jako zapas – sześć pól jak systemowy kod jednorazowy,
+ * Google i Strava jednym dotknięciem (docs/28), kod z maila jako zapas – pola jak systemowy kod jednorazowy (`OTP_LENGTH`),
  * z podpowiedzią z Poczty (`one-time-code`) i logowaniem po ostatniej cyfrze. Błędy i czekanie na miejscu, bez
  * komunikatów (docs/27 § 6). Link z maila tylko w przeglądarce – aplikacja go nie otworzy do czasu Universal Links.
  * `/i` zostaje przy swoim ekranie (`src/ios/screens/LoginScreen.tsx`).
@@ -35,7 +37,8 @@ export function LoginScreen({ auth, onSkip }: { auth: AuthState; onSkip: () => v
     setBusy(label)
     try {
       const { error: e } = await fn()
-      if (e) throw new Error(e)
+      // komunikat z `translateAuthError` jest już zdaniem dla zawodnika – zwykły Error `friendlyError` zamieniłby na „coś poszło nie tak”
+      if (e) throw new UserError(e)
       haptic.success()
       onOk?.()
     } catch (e) {
@@ -120,7 +123,7 @@ export function LoginScreen({ auth, onSkip }: { auth: AuthState; onSkip: () => v
               </button>
             </p>
             {/* jedno pole (podpowiedź kodu z Poczty, wklejanie) pod sześcioma kafelkami */}
-            <label className="m-login-code">
+            <label className="m-login-code" style={{ '--code-len': CODE_LEN } as CSSProperties}>
               <input
                 ref={codeInput}
                 inputMode="numeric"
@@ -133,7 +136,7 @@ export function LoginScreen({ auth, onSkip }: { auth: AuthState; onSkip: () => v
                   setCode(v)
                   if (v.length === CODE_LEN) submitCode(v)
                 }}
-                aria-label={t.login.codeLabel}
+                aria-label={t.login.codeLabel(CODE_LEN)}
               />
               {Array.from({ length: CODE_LEN }, (_, i) => (
                 <span key={i} className="m-login-digit" data-active={i === Math.min(code.length, CODE_LEN - 1) || undefined} aria-hidden>
