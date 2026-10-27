@@ -15,7 +15,7 @@ import { IntegrationsSection } from './IntegrationsSection'
 import { PushSection } from './PushSection'
 import { EmailSection } from './EmailSection'
 import { WeatherSettings } from './WeatherSettings'
-import { t as tr } from '@/i18n'
+import { languagePatch, t as tr } from '@/i18n'
 import { systemLang } from '@/i18n/core'
 import { useT } from '@/i18n/react'
 import { num as fmtNum } from '@/lib/format'
@@ -317,7 +317,7 @@ function LanguageCard() {
   return (
     <Card>
       <CardTitle icon="🌐">{tl.title}</CardTitle>
-      <Select aria-label={tl.title} value={choice} onChange={(e) => void update({ language: e.target.value })}>
+      <Select aria-label={tl.title} value={choice} onChange={(e) => void update(languagePatch(e.target.value))}>
         <option value="system">{tl.system(detected)}</option>
         <option value="pl">{tl.pl}</option>
         <option value="en">{tl.en}</option>

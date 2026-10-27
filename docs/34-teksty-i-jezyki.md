@@ -70,8 +70,10 @@ Serwer (Deno) nie importuje `src/`, więc ma własny słownik `supabase/function
   telefon nadal polski).
 - Przełącznik: `/m` → Ja → Ustawienia → Język oraz pełna aplikacja → Ustawienia → Język. Nazwy języków zawsze we własnym
   języku („Polski”, „English”).
-- Profil: kolumny `profiles.language` (wybór) i `profiles.locale` (`pl`/`en` – język, w którym aplikacja ostatnio się
-  wyświetlała; ustawia go aplikacja po zalogowaniu). Serwer pisze maile, push i odpowiedzi AI w `locale`, a bez niego
+- Profil: kolumny `profiles.language` (wybór) i `profiles.locale` (`pl`/`en` – język maili, push i AI). Konto bez
+  `locale` dostaje język pierwszego wyświetlenia po zalogowaniu; potem zmienia go **wyłącznie jawny wybór języka**
+  (`languagePatch` w `src/i18n/core.ts`). Do 27.10.2026 `locale` szło za językiem, w którym aplikacja ostatnio się
+  wyświetlała – przeglądarka po angielsku przełączała maile całego konta (docs/35 S3). Serwer pisze maile, push i odpowiedzi AI w `locale`, a bez niego
   w `language`, inaczej po polsku. Migracja `20261027090000_language.sql`, wpisy w `PROFILE_MAP`.
 - Aplikacja wysyła nagłówek `x-app-lang` do funkcji AI i integracji (`langHeaders()` w `src/sync/supabase.ts`);
   serwer: nagłówek → `locale` → `language` → `pl`. Do czasu wgrania migracji serwer pisze po polsku.

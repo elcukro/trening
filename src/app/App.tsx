@@ -291,10 +291,11 @@ function LangFromSettings({ children }: { children: ReactNode }) {
   const { settings, ready, update } = useSettings()
   const lang = useLang()
   const { session } = useAuth()
-  // tylko zalogowane konto: zapis bez konta założyłby lokalny wiersz ustawień i ominął czekanie na profil po logowaniu
-  // serwer (maile, push, AI) pisze w języku, w którym aplikacja ostatnio się wyświetlała
+  // tylko zalogowane konto: zapis bez konta założyłby lokalny wiersz ustawień i ominął czekanie na profil po logowaniu.
+  // Serwer (maile, push, AI) pisze w `locale`: konto bez niego dostaje język pierwszego wyświetlenia, potem zmienia go
+  // wyłącznie jawny wybór języka (`languagePatch`) – inne urządzenie po angielsku nie przełącza maili (docs/35 S3)
   useEffect(() => {
-    if (ready && session && settings.locale !== lang) void update({ locale: lang })
+    if (ready && session && !settings.locale) void update({ locale: lang })
   }, [ready, session, settings.locale, lang, update])
   return <LangProvider choice={settings.language}>{children}</LangProvider>
 }

@@ -34,6 +34,15 @@ export function resolveLang(choice: string | null | undefined): Lang {
   return isLang(choice) ? choice : systemLang()
 }
 
+/**
+ * Zapis jawnego wyboru języka: `language` (wybór) i `locale` (język maili, push i AI, docs/34 § 6) razem.
+ * `locale` zmienia się tylko tu – nie z języka, w którym aplikacja akurat się wyświetla (przeglądarka po angielsku,
+ * `?lang=en`), bo to przełączało maile całego konta (docs/35 S3).
+ */
+export function languagePatch(choice: string): { language: string; locale: Lang } {
+  return { language: choice, locale: resolveLang(choice) }
+}
+
 function stored(): Lang | null {
   try {
     const v = typeof localStorage === 'undefined' ? null : localStorage.getItem(STORAGE_KEY)

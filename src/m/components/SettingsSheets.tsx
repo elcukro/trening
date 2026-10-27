@@ -7,7 +7,7 @@ import { fmtDate } from '@/lib/dates'
 import { Btn, Sheet } from './Chrome'
 import { currentPosition, haptic } from '@/native'
 import { num } from '@/lib/format'
-import { t as tr } from '@/i18n'
+import { languagePatch, t as tr } from '@/i18n'
 import { systemLang, type LangChoice } from '@/i18n/core'
 import { useT } from '@/i18n/react'
 
@@ -231,7 +231,7 @@ export function LanguageSheet({ onClose }: { onClose: () => void }) {
     haptic.selection()
     if (v === current) return onClose()
     try {
-      await update({ language: v })
+      await update(languagePatch(v))
       onClose()
     } catch (e) {
       toast.notify(t.m.language.saveFailed, 'error', friendlyError(e).message)

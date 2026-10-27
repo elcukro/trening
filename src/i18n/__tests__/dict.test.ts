@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import { en, pl } from '../dict'
-import { enWord, plWord } from '../core'
+import { enWord, languagePatch, plWord, systemLang } from '../core'
 
 /** Drzewo kluczy z liczbą argumentów funkcji – obie wersje muszą mieć dokładnie ten sam kształt (docs/34 § 2). */
 function shape(v: unknown, path = ''): string[] {
@@ -45,5 +45,13 @@ describe('liczba mnoga', () => {
   })
   it('angielska: 1 / reszta', () => {
     expect([0, 1, 2, 1.5].map((n) => enWord(n, 'day', 'days'))).toEqual(['days', 'day', 'days', 'days'])
+  })
+})
+
+describe('languagePatch', () => {
+  it('jawny wybór ustawia też język maili (locale); „system” – język urządzenia w chwili wyboru', () => {
+    expect(languagePatch('pl')).toEqual({ language: 'pl', locale: 'pl' })
+    expect(languagePatch('en')).toEqual({ language: 'en', locale: 'en' })
+    expect(languagePatch('system')).toEqual({ language: 'system', locale: systemLang() })
   })
 })

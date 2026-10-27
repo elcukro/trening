@@ -13,6 +13,31 @@
     <link rel="icon" href="/pwa-192.png" type="image/png" />
     <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
     <title>Bicycle Coach</title>
+    <script>
+      // Samonaprawa (docs/35 W1): kod aplikacji nie wczytał się (np. z pamięci SW przyszedł HTML zamiast JS) –
+      // raz na kartę wyrejestruj service workera, wyczyść pamięć i przeładuj z sieci zamiast zostawiać biały ekran.
+      ;(function () {
+        var KEY = 'trening:heal'
+        function heal() {
+          try {
+            if (sessionStorage.getItem(KEY)) return
+            sessionStorage.setItem(KEY, '1')
+          } catch (e) {
+            return
+          }
+          var jobs = []
+          if (navigator.serviceWorker)
+            jobs.push(navigator.serviceWorker.getRegistrations().then(function (rs) { return Promise.all(rs.map(function (r) { return r.unregister() })) }))
+          if (window.caches) jobs.push(caches.keys().then(function (ks) { return Promise.all(ks.map(function (k) { return caches.delete(k) })) }))
+          Promise.all(jobs).catch(function () {}).then(function () { location.reload() })
+        }
+        addEventListener('error', function (e) {
+          var el = e.target
+          if (el && (el.tagName === 'SCRIPT' || (el.tagName === 'LINK' && /stylesheet|modulepreload/.test(el.rel)))) heal()
+        }, true)
+        addEventListener('vite:preloadError', heal)
+      })()
+    </script>
   </head>
   <body>
     <div id="root"></div>

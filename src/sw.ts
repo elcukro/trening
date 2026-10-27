@@ -1,6 +1,6 @@
 /// <reference lib="webworker" />
 import { clientsClaim } from 'workbox-core'
-import { cleanupOutdatedCaches, createHandlerBoundToURL, precacheAndRoute } from 'workbox-precaching'
+import { addPlugins, cleanupOutdatedCaches, createHandlerBoundToURL, precacheAndRoute } from 'workbox-precaching'
 import { NavigationRoute, registerRoute } from 'workbox-routing'
 
 /**
@@ -10,9 +10,43 @@ import { NavigationRoute, registerRoute } from 'workbox-routing'
 
 declare const self: ServiceWorkerGlobalScope & { __WB_MANIFEST: { url: string; revision: string | null }[] }
 
-precacheAndRoute(self.__WB_MANIFEST)
-cleanupOutdatedCaches()
-registerRoute(new NavigationRoute(createHandlerBoundToURL('index.html'), { denylist: [/^\/functions\//, /^\/(pomoc|help)\.html$/] }))
+/** Stara domena (docs/35 W2): 301 z `vercel.json` nie działa, bo nawigacje obsługuje zainstalowany tam stary SW. */
+const OLD_HOST = 'trening-inky.vercel.app'
+const NEW_ORIGIN = 'https://trening.felsztukier.pl'
+
+if (self.location.hostname === OLD_HOST) {
+  // nowy SW na starej domenie nic nie zapisuje: wyrejestrowuje się, czyści pamięć i przenosi otwarte okna pod nowy adres
+  self.addEventListener('activate', (event) => {
+    event.waitUntil(
+      (async () => {
+        await self.clients.claim()
+        await self.registration.unregister()
+        for (const key of await caches.keys()) await caches.delete(key)
+        const all = await self.clients.matchAll({ type: 'window', includeUncontrolled: true })
+        // gdy `navigate` się nie uda, następne otwarcie i tak idzie już do sieci, a tam czeka 301 z `vercel.json`
+        for (const c of all) {
+          const u = new URL(c.url)
+          await c.navigate(NEW_ORIGIN + u.pathname + u.search).catch(() => null)
+        }
+      })(),
+    )
+  })
+} else {
+  // Brakujący plik Vercel oddawał jako 200 + index.html, a SW zapisywał tę stronę jako kod aplikacji – biały ekran aż do
+  // następnego wdrożenia (docs/35 W1). Kod podany jako HTML przerywa instalację: przeglądarka spróbuje później.
+  addPlugins([
+    {
+      cacheWillUpdate: async ({ request, response }) => {
+        if (!response || response.status >= 400) return null
+        const html = (response.headers.get('content-type') ?? '').includes('text/html')
+        return html && /\.(js|css)$/.test(new URL(request.url).pathname) ? null : response
+      },
+    },
+  ])
+  precacheAndRoute(self.__WB_MANIFEST)
+  cleanupOutdatedCaches()
+  registerRoute(new NavigationRoute(createHandlerBoundToURL('index.html'), { denylist: [/^\/functions\//, /^\/(pomoc|help)\.html$/] }))
+}
 
 interface PushPayload {
   title?: string
