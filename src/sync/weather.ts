@@ -26,16 +26,25 @@ type ProfileKey = 'weather_location' | 'ride_hours'
 
 /**
  * Miejscowość i godziny jazdy należą do konta (profil, `PROFILE_MAP`) – wracają po zalogowaniu na nowym urządzeniu.
- * Do 27.10.2026 leżały w `kv` urządzenia; stara wartość z `kv` jest zapasem i przy pierwszym odczycie trafia do profilu.
- * Bez konta (brak wiersza ustawień) zostają w `kv` – zapis ustawień ominąłby czekanie na profil po zalogowaniu.
+ * Do 27.10.2026 leżały w `kv` urządzenia; stara wartość z `kv` jest zapasem, a do profilu przenosi ją synchronizacja
+ * (`adoptDeviceWeather`). Bez konta (brak wiersza ustawień) zostają w `kv` – zapis ustawień ominąłby czekanie na profil.
+ * Odczyt tylko czyta: wołają go `useLiveQuery`, w których Dexie zabrania zapisu („Readwrite transaction in liveQuery”).
  */
 async function readField<T>(key: ProfileKey): Promise<T | null> {
-  const row = await db.settings.get('user')
-  const own = row?.value?.[key] as T | null | undefined
+  const own = (await db.settings.get('user'))?.value?.[key] as T | null | undefined
   if (own != null) return own
-  const local = ((await db.kv.get(key))?.value as T | undefined) ?? null
-  if (local != null && row && own === undefined) await writeField(key, local)
-  return local
+  return ((await db.kv.get(key))?.value as T | undefined) ?? null
+}
+
+/** Po pobraniu profilu: wartość z `kv` urządzenia trafia do profilu, jeśli konto jeszcze jej nie ma (raz, w synchronizacji). */
+export async function adoptDeviceWeather(): Promise<void> {
+  const row = await db.settings.get('user')
+  if (!row) return
+  for (const key of ['weather_location', 'ride_hours'] as const) {
+    if (row.value?.[key] !== undefined) continue
+    const local = (await db.kv.get(key))?.value
+    if (local != null) await writeField(key, local)
+  }
 }
 
 async function writeField(key: ProfileKey, value: unknown): Promise<void> {

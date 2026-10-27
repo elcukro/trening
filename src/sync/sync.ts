@@ -2,6 +2,7 @@ import { mergeProfile, type RemoteProfile } from './profileMerge'
 import { db, SYNC_TABLES, UPDATE_ONLY_TABLES, USER_SCOPED_ID_TABLES, type SettingsRow, type SyncTable, type SyncedRow } from '@/db'
 import { supabase } from './supabase'
 import { purgeLocalStrava } from './strava'
+import { adoptDeviceWeather } from './weather'
 import type { Settings } from '@/engine/schema'
 import { t, UserError } from '@/i18n'
 import { friendlyError } from '@/lib/errors'
@@ -212,6 +213,8 @@ async function syncOnce(opts: { programVersion: string }, current: () => boolean
   await set({ state: 'syncing', error: undefined })
   await pushOutbox(userId)
   await syncProfile(userId, opts.programVersion)
+  // stara miejscowość i godziny jazdy z urządzenia → profil; wyślą się przy następnej synchronizacji
+  await adoptDeviceWeather()
   for (const table of SYNC_TABLES) await pullTable(table)
   // twarde usunięcia Stravy (7 dni) nie przychodzą pullem – sprzątamy lokalnie
   await purgeLocalStrava()

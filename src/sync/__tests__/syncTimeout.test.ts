@@ -9,6 +9,7 @@ vi.mock('@/db', () => ({
 }))
 vi.mock('../supabase', () => ({ supabase: { auth: { getSession: h.getSession } } }))
 vi.mock('../strava', () => ({ purgeLocalStrava: async () => undefined }))
+vi.mock('../weather', () => ({ adoptDeviceWeather: async () => undefined }))
 
 import { t } from '@/i18n'
 import { onSyncStatus, runSync, SYNC_TIMEOUT_MS, type SyncStatus } from '../sync'
