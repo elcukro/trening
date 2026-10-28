@@ -2,7 +2,7 @@ import type { Bikes, Settings, WeekSummary, WeekTemplate } from './schema'
 import type { CalendarDay, DayFlag, DayType, EngineContext, LayoutWeek, PhaseId } from './types'
 import { addDays, compareISO, WEEKDAYS, weekdayOf, type ISODate, type Weekday } from './dates'
 import { layoutWeeks } from './layout'
-import { nutritionFor } from './nutrition'
+import { isFullFuelDay, nutritionFor } from './nutrition'
 
 /** Jazdy skalowane przez `volume_scale` (R16) i ich minimalny czas. */
 export const SCALABLE_WORKOUTS: Record<string, number> = {
@@ -76,6 +76,7 @@ export function buildDay(ctx: EngineContext, lw: LayoutWeek, weekday: Weekday, d
   if (wid === 'B2B_DAY' || wid === 'BLOCK_DAY1') flags.push('back_to_back')
   if (wk.type === 'deload') flags.push('deload')
   if (wid === 'Z2_HEAT') flags.push('heat')
+  if (wk.full_fuel && (dayType === 'key' || dayType === 'long')) flags.push('no_deficit')
 
   const bikeMin = wid === 'REST' || wid === 'TRAVEL_REST' || wid === 'TRIP' ? 0 : dur
   const day: CalendarDay = {
@@ -90,7 +91,7 @@ export function buildDay(ctx: EngineContext, lw: LayoutWeek, weekday: Weekday, d
         ? null
         : { workout_id: wid, name: w.name, duration_min: dur, bike: bikeSuggestion(program.bikes, phase, wid), fallback_workout_id: fallback },
 
-    nutrition: nutritionFor(program.nutrition, phase, dayType, bikeMin, key, flags.some((f) => f === 'test' || f === 'mountain_weekend' || f === 'back_to_back')),
+    nutrition: nutritionFor(program.nutrition, phase, dayType, bikeMin, key, isFullFuelDay(flags)),
     flags,
   }
   if (weekday === 'mon' && wk.notes) day.week_notes = wk.notes

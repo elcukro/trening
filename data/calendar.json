@@ -1,5 +1,5 @@
 {
- "version": "2026.10.27-1",
+ "version": "2026.10.28-1",
  "settings": {
   "program_start": "2026-09-14",
   "trip_start": "2027-09-11",
@@ -1361,7 +1361,8 @@
     "post_workout": null,
     "deficit_share": 1
    },
-   "flags": []
+   "flags": [],
+   "week_notes": "Blok mocny między testami (do 22.11): dwa dni jakościowe – środa sweet spot, piątek tempo – i sobota 3 h z ostatnią godziną w tempie; wtorek i niedziela Z2 na tętno. Szukamy sufitu, więc luzujemy tylko na obiektywny sygnał: tętno spoczynkowe +7 bpm ponad średnią dwa dni z rzędu, nogi ≤ 2 dwa dni z rzędu, Pw:HR na Z2 niżej o ponad 5 %, sweet spot nie wchodzi w zakres mocy, choroba. Wtedy 3–4 dni Z1 albo wolne i powrót do planu. Dni z akcentem i długa – bez deficytu."
   },
   {
    "date": "2026-11-03",
@@ -1371,9 +1372,9 @@
    "week_type": "build",
    "day_type": "easy",
    "bike": {
-    "workout_id": "Z2_FORCE",
-    "name": "Z2 + siła na niskiej kadencji",
-    "duration_min": 75,
+    "workout_id": "Z2",
+    "name": "Baza tlenowa Z2",
+    "duration_min": 90,
     "bike": "Roubaix (szosa)",
     "fallback_workout_id": null
    },
@@ -1382,8 +1383,8 @@
     "label": "Dzień treningowy: deficyt ok. 300 kcal",
     "protein_g_per_kg": 2.2,
     "on_bike_carbs_g_per_h": [
-     30,
-     40
+     60,
+     80
     ],
     "post_workout": "30–40 g białka + węglowodany w ciągu 1–2 h",
     "deficit_share": 0.75
@@ -1398,24 +1399,25 @@
    "week_type": "build",
    "day_type": "key",
    "bike": {
-    "workout_id": "SS_2x20",
-    "name": "Sweet spot 2×20 min",
-    "duration_min": 75,
+    "workout_id": "SS_3x15",
+    "name": "Sweet spot 3×15 min",
+    "duration_min": 85,
     "bike": "Roubaix (szosa)",
     "fallback_workout_id": null
    },
    "nutrition": {
-    "energy": "deficit_300",
-    "label": "Dzień ciężki – paliwo na trening bez zmian, reszta dnia lżej: deficyt ok. 300 kcal",
+    "energy": "maintenance",
+    "label": "Dzień ciężki: bez deficytu, paliwo na trening",
     "protein_g_per_kg": 2.2,
     "on_bike_carbs_g_per_h": [
      30,
      40
     ],
-    "post_workout": "30–40 g białka + węglowodany w ciągu 1–2 h",
-    "deficit_share": 0.4
+    "post_workout": "30–40 g białka + węglowodany w ciągu 1–2 h"
    },
-   "flags": []
+   "flags": [
+    "no_deficit"
+   ]
   },
   {
    "date": "2026-11-05",
@@ -1444,26 +1446,27 @@
    "week": 8,
    "phase": "I",
    "week_type": "build",
-   "day_type": "easy",
+   "day_type": "key",
    "bike": {
-    "workout_id": "Z2",
-    "name": "Baza tlenowa Z2",
-    "duration_min": 60,
+    "workout_id": "TEMPO_2x15",
+    "name": "Tempo 2×15 min",
+    "duration_min": 90,
     "bike": "Roubaix (szosa)",
     "fallback_workout_id": null
    },
    "nutrition": {
-    "energy": "deficit_300",
-    "label": "Dzień treningowy: deficyt ok. 300 kcal",
+    "energy": "maintenance",
+    "label": "Dzień ciężki: bez deficytu, paliwo na trening",
     "protein_g_per_kg": 2.2,
     "on_bike_carbs_g_per_h": [
-     30,
-     40
+     60,
+     80
     ],
-    "post_workout": "30–40 g białka + węglowodany w ciągu 1–2 h",
-    "deficit_share": 0.75
+    "post_workout": "30–40 g białka + węglowodany w ciągu 1–2 h"
    },
-   "flags": []
+   "flags": [
+    "no_deficit"
+   ]
   },
   {
    "date": "2026-11-07",
@@ -1473,24 +1476,25 @@
    "week_type": "build",
    "day_type": "long",
    "bike": {
-    "workout_id": "LONG",
-    "name": "Długa jazda",
-    "duration_min": 165,
+    "workout_id": "LONG_TEMPO_END",
+    "name": "Długa jazda – ostatnia godzina w tempie",
+    "duration_min": 180,
     "bike": "Roubaix (szosa)",
     "fallback_workout_id": null
    },
    "nutrition": {
-    "energy": "deficit_300",
-    "label": "Dzień ciężki – paliwo na trening bez zmian, reszta dnia lżej: deficyt ok. 300 kcal",
+    "energy": "maintenance",
+    "label": "Dzień ciężki: bez deficytu, paliwo na trening",
     "protein_g_per_kg": 2.2,
     "on_bike_carbs_g_per_h": [
      60,
      80
     ],
-    "post_workout": "30–40 g białka + węglowodany w ciągu 1–2 h",
-    "deficit_share": 0.4
+    "post_workout": "30–40 g białka + węglowodany w ciągu 1–2 h"
    },
-   "flags": []
+   "flags": [
+    "no_deficit"
+   ]
   },
   {
    "date": "2026-11-08",
@@ -1502,7 +1506,7 @@
    "bike": {
     "workout_id": "Z2",
     "name": "Baza tlenowa Z2",
-    "duration_min": 90,
+    "duration_min": 105,
     "bike": "Roubaix (szosa)",
     "fallback_workout_id": null
    },
@@ -1539,7 +1543,7 @@
     "deficit_share": 1
    },
    "flags": [],
-   "week_notes": "Ostatni tydzień bloku 5 jazd. Od 16.11 plan schodzi do 3 jazd (wt Z2, czw akcent, sb długa) – zimą i tak nie wyjedziesz pięć razy w tygodniu."
+   "week_notes": "Drugi tydzień bloku mocnego: sweet spot 2×20, tempo 2×20. Kryteria luzowania bez zmian – patrz notatka z 2.11."
   },
   {
    "date": "2026-11-10",
@@ -1551,7 +1555,7 @@
    "bike": {
     "workout_id": "Z2",
     "name": "Baza tlenowa Z2",
-    "duration_min": 60,
+    "duration_min": 90,
     "bike": "Roubaix (szosa)",
     "fallback_workout_id": null
    },
@@ -1560,8 +1564,8 @@
     "label": "Dzień treningowy: deficyt ok. 300 kcal",
     "protein_g_per_kg": 2.2,
     "on_bike_carbs_g_per_h": [
-     30,
-     40
+     60,
+     80
     ],
     "post_workout": "30–40 g białka + węglowodany w ciągu 1–2 h",
     "deficit_share": 0.75
@@ -1576,24 +1580,25 @@
    "week_type": "build",
    "day_type": "key",
    "bike": {
-    "workout_id": "SS_3x15",
-    "name": "Sweet spot 3×15 min",
-    "duration_min": 85,
+    "workout_id": "SS_2x20",
+    "name": "Sweet spot 2×20 min",
+    "duration_min": 75,
     "bike": "Roubaix (szosa)",
     "fallback_workout_id": null
    },
    "nutrition": {
-    "energy": "deficit_300",
-    "label": "Dzień ciężki – paliwo na trening bez zmian, reszta dnia lżej: deficyt ok. 300 kcal",
+    "energy": "maintenance",
+    "label": "Dzień ciężki: bez deficytu, paliwo na trening",
     "protein_g_per_kg": 2.2,
     "on_bike_carbs_g_per_h": [
      30,
      40
     ],
-    "post_workout": "30–40 g białka + węglowodany w ciągu 1–2 h",
-    "deficit_share": 0.4
+    "post_workout": "30–40 g białka + węglowodany w ciągu 1–2 h"
    },
-   "flags": []
+   "flags": [
+    "no_deficit"
+   ]
   },
   {
    "date": "2026-11-12",
@@ -1622,26 +1627,27 @@
    "week": 9,
    "phase": "I",
    "week_type": "build",
-   "day_type": "easy",
+   "day_type": "key",
    "bike": {
-    "workout_id": "Z2",
-    "name": "Baza tlenowa Z2",
-    "duration_min": 60,
+    "workout_id": "TEMPO_2x20",
+    "name": "Tempo 2×20 min",
+    "duration_min": 100,
     "bike": "Roubaix (szosa)",
     "fallback_workout_id": null
    },
    "nutrition": {
-    "energy": "deficit_300",
-    "label": "Dzień treningowy: deficyt ok. 300 kcal",
+    "energy": "maintenance",
+    "label": "Dzień ciężki: bez deficytu, paliwo na trening",
     "protein_g_per_kg": 2.2,
     "on_bike_carbs_g_per_h": [
-     30,
-     40
+     60,
+     80
     ],
-    "post_workout": "30–40 g białka + węglowodany w ciągu 1–2 h",
-    "deficit_share": 0.75
+    "post_workout": "30–40 g białka + węglowodany w ciągu 1–2 h"
    },
-   "flags": []
+   "flags": [
+    "no_deficit"
+   ]
   },
   {
    "date": "2026-11-14",
@@ -1651,29 +1657,79 @@
    "week_type": "build",
    "day_type": "long",
    "bike": {
-    "workout_id": "LONG",
-    "name": "Długa jazda",
-    "duration_min": 165,
+    "workout_id": "LONG_TEMPO_END",
+    "name": "Długa jazda – ostatnia godzina w tempie",
+    "duration_min": 180,
+    "bike": "Roubaix (szosa)",
+    "fallback_workout_id": null
+   },
+   "nutrition": {
+    "energy": "maintenance",
+    "label": "Dzień ciężki: bez deficytu, paliwo na trening",
+    "protein_g_per_kg": 2.2,
+    "on_bike_carbs_g_per_h": [
+     60,
+     80
+    ],
+    "post_workout": "30–40 g białka + węglowodany w ciągu 1–2 h"
+   },
+   "flags": [
+    "no_deficit"
+   ]
+  },
+  {
+   "date": "2026-11-15",
+   "weekday": "sun",
+   "week": 9,
+   "phase": "I",
+   "week_type": "build",
+   "day_type": "easy",
+   "bike": {
+    "workout_id": "Z2",
+    "name": "Baza tlenowa Z2",
+    "duration_min": 105,
     "bike": "Roubaix (szosa)",
     "fallback_workout_id": null
    },
    "nutrition": {
     "energy": "deficit_300",
-    "label": "Dzień ciężki – paliwo na trening bez zmian, reszta dnia lżej: deficyt ok. 300 kcal",
+    "label": "Dzień treningowy: deficyt ok. 300 kcal",
     "protein_g_per_kg": 2.2,
     "on_bike_carbs_g_per_h": [
      60,
      80
     ],
     "post_workout": "30–40 g białka + węglowodany w ciągu 1–2 h",
-    "deficit_share": 0.4
+    "deficit_share": 0.75
    },
    "flags": []
   },
   {
-   "date": "2026-11-15",
-   "weekday": "sun",
-   "week": 9,
+   "date": "2026-11-16",
+   "weekday": "mon",
+   "week": 10,
+   "phase": "I",
+   "week_type": "build",
+   "day_type": "rest",
+   "bike": null,
+   "nutrition": {
+    "energy": "deficit_500",
+    "label": "Dzień lekki: deficyt ok. 500 kcal",
+    "protein_g_per_kg": 2.2,
+    "on_bike_carbs_g_per_h": [
+     0,
+     0
+    ],
+    "post_workout": null,
+    "deficit_share": 1
+   },
+   "flags": [],
+   "week_notes": "Najmocniejszy tydzień bloku: sweet spot 3×20. Jeśli w drugim interwale moc nie wchodzi w zakres przy RPE 7, przerwij akcent i jedź Z2 – to sygnał, nie porażka. Od przyszłego tygodnia wygaszenie przed testem."
+  },
+  {
+   "date": "2026-11-17",
+   "weekday": "tue",
+   "week": 10,
    "phase": "I",
    "week_type": "build",
    "day_type": "easy",
@@ -1698,79 +1754,31 @@
    "flags": []
   },
   {
-   "date": "2026-11-16",
-   "weekday": "mon",
-   "week": 10,
-   "phase": "I",
-   "week_type": "deload",
-   "day_type": "rest",
-   "bike": null,
-   "nutrition": {
-    "energy": "deficit_500",
-    "label": "Dzień lekki: deficyt ok. 500 kcal",
-    "protein_g_per_kg": 2.2,
-    "on_bike_carbs_g_per_h": [
-     0,
-     0
-    ],
-    "post_workout": null,
-    "deficit_share": 1
-   },
-   "flags": [
-    "deload"
-   ],
-   "week_notes": "Przed zimą: pełne błotniki SKS Bluemels 45, odzież (merino, rękawice trójpalczaste, ochraniacze na buty), ciśnienie w oponach −0,3 bara."
-  },
-  {
-   "date": "2026-11-17",
-   "weekday": "tue",
-   "week": 10,
-   "phase": "I",
-   "week_type": "deload",
-   "day_type": "easy",
-   "bike": {
-    "workout_id": "Z2",
-    "name": "Baza tlenowa Z2",
-    "duration_min": 60,
-    "bike": "Roubaix (szosa)",
-    "fallback_workout_id": null
-   },
-   "nutrition": {
-    "energy": "deficit_300",
-    "label": "Dzień treningowy: deficyt ok. 300 kcal",
-    "protein_g_per_kg": 2.2,
-    "on_bike_carbs_g_per_h": [
-     30,
-     40
-    ],
-    "post_workout": "30–40 g białka + węglowodany w ciągu 1–2 h",
-    "deficit_share": 0.75
-   },
-   "flags": [
-    "deload"
-   ]
-  },
-  {
    "date": "2026-11-18",
    "weekday": "wed",
    "week": 10,
    "phase": "I",
-   "week_type": "deload",
-   "day_type": "rest",
-   "bike": null,
+   "week_type": "build",
+   "day_type": "key",
+   "bike": {
+    "workout_id": "SS_3x20",
+    "name": "Sweet spot 3×20 min",
+    "duration_min": 100,
+    "bike": "Roubaix (szosa)",
+    "fallback_workout_id": null
+   },
    "nutrition": {
-    "energy": "deficit_500",
-    "label": "Dzień lekki: deficyt ok. 500 kcal",
+    "energy": "maintenance",
+    "label": "Dzień ciężki: bez deficytu, paliwo na trening",
     "protein_g_per_kg": 2.2,
     "on_bike_carbs_g_per_h": [
-     0,
-     0
+     60,
+     80
     ],
-    "post_workout": null,
-    "deficit_share": 1
+    "post_workout": "30–40 g białka + węglowodany w ciągu 1–2 h"
    },
    "flags": [
-    "deload"
+    "no_deficit"
    ]
   },
   {
@@ -1778,12 +1786,89 @@
    "weekday": "thu",
    "week": 10,
    "phase": "I",
-   "week_type": "deload",
+   "week_type": "build",
+   "day_type": "rest",
+   "bike": null,
+   "nutrition": {
+    "energy": "deficit_500",
+    "label": "Dzień lekki: deficyt ok. 500 kcal",
+    "protein_g_per_kg": 2.2,
+    "on_bike_carbs_g_per_h": [
+     0,
+     0
+    ],
+    "post_workout": null,
+    "deficit_share": 1
+   },
+   "flags": []
+  },
+  {
+   "date": "2026-11-20",
+   "weekday": "fri",
+   "week": 10,
+   "phase": "I",
+   "week_type": "build",
+   "day_type": "key",
+   "bike": {
+    "workout_id": "TEMPO_2x20",
+    "name": "Tempo 2×20 min",
+    "duration_min": 100,
+    "bike": "Roubaix (szosa)",
+    "fallback_workout_id": null
+   },
+   "nutrition": {
+    "energy": "maintenance",
+    "label": "Dzień ciężki: bez deficytu, paliwo na trening",
+    "protein_g_per_kg": 2.2,
+    "on_bike_carbs_g_per_h": [
+     60,
+     80
+    ],
+    "post_workout": "30–40 g białka + węglowodany w ciągu 1–2 h"
+   },
+   "flags": [
+    "no_deficit"
+   ]
+  },
+  {
+   "date": "2026-11-21",
+   "weekday": "sat",
+   "week": 10,
+   "phase": "I",
+   "week_type": "build",
+   "day_type": "long",
+   "bike": {
+    "workout_id": "LONG_TEMPO_END",
+    "name": "Długa jazda – ostatnia godzina w tempie",
+    "duration_min": 180,
+    "bike": "Roubaix (szosa)",
+    "fallback_workout_id": null
+   },
+   "nutrition": {
+    "energy": "maintenance",
+    "label": "Dzień ciężki: bez deficytu, paliwo na trening",
+    "protein_g_per_kg": 2.2,
+    "on_bike_carbs_g_per_h": [
+     60,
+     80
+    ],
+    "post_workout": "30–40 g białka + węglowodany w ciągu 1–2 h"
+   },
+   "flags": [
+    "no_deficit"
+   ]
+  },
+  {
+   "date": "2026-11-22",
+   "weekday": "sun",
+   "week": 10,
+   "phase": "I",
+   "week_type": "build",
    "day_type": "easy",
    "bike": {
     "workout_id": "Z2",
     "name": "Baza tlenowa Z2",
-    "duration_min": 60,
+    "duration_min": 90,
     "bike": "Roubaix (szosa)",
     "fallback_workout_id": null
    },
@@ -1792,97 +1877,20 @@
     "label": "Dzień treningowy: deficyt ok. 300 kcal",
     "protein_g_per_kg": 2.2,
     "on_bike_carbs_g_per_h": [
-     30,
-     40
-    ],
-    "post_workout": "30–40 g białka + węglowodany w ciągu 1–2 h",
-    "deficit_share": 0.75
-   },
-   "flags": [
-    "deload"
-   ]
-  },
-  {
-   "date": "2026-11-20",
-   "weekday": "fri",
-   "week": 10,
-   "phase": "I",
-   "week_type": "deload",
-   "day_type": "rest",
-   "bike": null,
-   "nutrition": {
-    "energy": "deficit_500",
-    "label": "Dzień lekki: deficyt ok. 500 kcal",
-    "protein_g_per_kg": 2.2,
-    "on_bike_carbs_g_per_h": [
-     0,
-     0
-    ],
-    "post_workout": null,
-    "deficit_share": 1
-   },
-   "flags": [
-    "deload"
-   ]
-  },
-  {
-   "date": "2026-11-21",
-   "weekday": "sat",
-   "week": 10,
-   "phase": "I",
-   "week_type": "deload",
-   "day_type": "long",
-   "bike": {
-    "workout_id": "LONG",
-    "name": "Długa jazda",
-    "duration_min": 120,
-    "bike": "Roubaix (szosa)",
-    "fallback_workout_id": null
-   },
-   "nutrition": {
-    "energy": "deficit_300",
-    "label": "Dzień ciężki – paliwo na trening bez zmian, reszta dnia lżej: deficyt ok. 300 kcal",
-    "protein_g_per_kg": 2.2,
-    "on_bike_carbs_g_per_h": [
      60,
      80
     ],
     "post_workout": "30–40 g białka + węglowodany w ciągu 1–2 h",
-    "deficit_share": 0.4
+    "deficit_share": 0.75
    },
-   "flags": [
-    "deload"
-   ]
-  },
-  {
-   "date": "2026-11-22",
-   "weekday": "sun",
-   "week": 10,
-   "phase": "I",
-   "week_type": "deload",
-   "day_type": "rest",
-   "bike": null,
-   "nutrition": {
-    "energy": "deficit_500",
-    "label": "Dzień lekki: deficyt ok. 500 kcal",
-    "protein_g_per_kg": 2.2,
-    "on_bike_carbs_g_per_h": [
-     0,
-     0
-    ],
-    "post_workout": null,
-    "deficit_share": 1
-   },
-   "flags": [
-    "deload"
-   ]
+   "flags": []
   },
   {
    "date": "2026-11-23",
    "weekday": "mon",
    "week": 11,
    "phase": "I",
-   "week_type": "build",
+   "week_type": "taper",
    "day_type": "rest",
    "bike": null,
    "nutrition": {
@@ -1897,32 +1905,32 @@
     "deficit_share": 1
    },
    "flags": [],
-   "week_notes": "Rytm zimowy: trzy jazdy, akcent w czwartek. Środa i piątek wolne."
+   "week_notes": "Wygaszenie przed testem 3.12: objętość ok. 40 % niżej, we wtorek krótkie otwarcie 2×12 sweet spot, od środy bez akcentów. Przed zimą: pełne błotniki SKS Bluemels 45, odzież (merino, rękawice trójpalczaste, ochraniacze na buty), ciśnienie w oponach −0,3 bara."
   },
   {
    "date": "2026-11-24",
    "weekday": "tue",
    "week": 11,
    "phase": "I",
-   "week_type": "build",
-   "day_type": "easy",
+   "week_type": "taper",
+   "day_type": "key",
    "bike": {
-    "workout_id": "Z2",
-    "name": "Baza tlenowa Z2",
-    "duration_min": 75,
+    "workout_id": "SS_2x12",
+    "name": "Sweet spot 2×12 min",
+    "duration_min": 59,
     "bike": "Roubaix (szosa)",
     "fallback_workout_id": null
    },
    "nutrition": {
     "energy": "deficit_300",
-    "label": "Dzień treningowy: deficyt ok. 300 kcal",
+    "label": "Dzień ciężki – paliwo na trening bez zmian, reszta dnia lżej: deficyt ok. 300 kcal",
     "protein_g_per_kg": 2.2,
     "on_bike_carbs_g_per_h": [
-     30,
-     40
+     0,
+     0
     ],
     "post_workout": "30–40 g białka + węglowodany w ciągu 1–2 h",
-    "deficit_share": 0.75
+    "deficit_share": 0.4
    },
    "flags": []
   },
@@ -1931,7 +1939,7 @@
    "weekday": "wed",
    "week": 11,
    "phase": "I",
-   "week_type": "build",
+   "week_type": "taper",
    "day_type": "rest",
    "bike": null,
    "nutrition": {
@@ -1952,25 +1960,25 @@
    "weekday": "thu",
    "week": 11,
    "phase": "I",
-   "week_type": "build",
-   "day_type": "key",
+   "week_type": "taper",
+   "day_type": "easy",
    "bike": {
-    "workout_id": "SS_3x15",
-    "name": "Sweet spot 3×15 min",
-    "duration_min": 85,
+    "workout_id": "Z2",
+    "name": "Baza tlenowa Z2",
+    "duration_min": 60,
     "bike": "Roubaix (szosa)",
     "fallback_workout_id": null
    },
    "nutrition": {
     "energy": "deficit_300",
-    "label": "Dzień ciężki – paliwo na trening bez zmian, reszta dnia lżej: deficyt ok. 300 kcal",
+    "label": "Dzień treningowy: deficyt ok. 300 kcal",
     "protein_g_per_kg": 2.2,
     "on_bike_carbs_g_per_h": [
      30,
      40
     ],
     "post_workout": "30–40 g białka + węglowodany w ciągu 1–2 h",
-    "deficit_share": 0.4
+    "deficit_share": 0.75
    },
    "flags": []
   },
@@ -1979,7 +1987,7 @@
    "weekday": "fri",
    "week": 11,
    "phase": "I",
-   "week_type": "build",
+   "week_type": "taper",
    "day_type": "rest",
    "bike": null,
    "nutrition": {
@@ -2000,12 +2008,12 @@
    "weekday": "sat",
    "week": 11,
    "phase": "I",
-   "week_type": "build",
+   "week_type": "taper",
    "day_type": "long",
    "bike": {
     "workout_id": "LONG",
     "name": "Długa jazda",
-    "duration_min": 180,
+    "duration_min": 120,
     "bike": "Roubaix (szosa)",
     "fallback_workout_id": null
    },
@@ -2027,19 +2035,25 @@
    "weekday": "sun",
    "week": 11,
    "phase": "I",
-   "week_type": "build",
-   "day_type": "rest",
-   "bike": null,
+   "week_type": "taper",
+   "day_type": "easy",
+   "bike": {
+    "workout_id": "Z2",
+    "name": "Baza tlenowa Z2",
+    "duration_min": 75,
+    "bike": "Roubaix (szosa)",
+    "fallback_workout_id": null
+   },
    "nutrition": {
-    "energy": "deficit_500",
-    "label": "Dzień lekki: deficyt ok. 500 kcal",
+    "energy": "deficit_300",
+    "label": "Dzień treningowy: deficyt ok. 300 kcal",
     "protein_g_per_kg": 2.2,
     "on_bike_carbs_g_per_h": [
-     0,
-     0
+     30,
+     40
     ],
-    "post_workout": null,
-    "deficit_share": 1
+    "post_workout": "30–40 g białka + węglowodany w ciągu 1–2 h",
+    "deficit_share": 0.75
    },
    "flags": []
   },
@@ -2063,7 +2077,7 @@
     "deficit_share": 1
    },
    "flags": [],
-   "week_notes": "Test FTP w czwartek zamiast akcentu (środa wolna – świeże nogi). Wtorek naprawdę lekko."
+   "week_notes": "Test FTP w czwartek 3.12 – ta sama pętla Dell, ten sam rower (Roubaix) i miernik 4iiii co 28.10. Środa wolna, wtorek naprawdę lekko. Od tego tygodnia rytm zimowy: trzy jazdy, akcent w czwartek."
   },
   {
    "date": "2026-12-01",

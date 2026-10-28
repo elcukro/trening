@@ -4477,7 +4477,7 @@
    "sun": "FTP_TEST 65′",
    "end": "2026-09-27",
    "event": null,
-   "notes": "Tydzień przygotowawczy: zamów/zamontuj napęd, ustaw aplikację i profil, sprawdź wagę startową."
+   "notes": "Tydzień pomiarowy: w niedzielę test FTP 20 min, wcześniej tylko lekkie rozjeżdżenie w piątek. Od jego wyniku liczą się wszystkie strefy mocy i tętna. Plan właściwy startuje w poniedziałek 28.09."
   },
   {
    "week": 1,
@@ -4492,7 +4492,7 @@
    "sun": null,
    "end": "2026-10-04",
    "event": null,
-   "notes": "Wyjście ze zmęczenia po Great Escape. Jedź lekko."
+   "notes": "Start bloku bazowego. Długa w poniedziałek ma być nudna – rozmowa pełnymi zdaniami. Jedyny dzień, w którym wolno się zmęczyć, to środa."
   },
   {
    "week": 2,
@@ -4507,7 +4507,7 @@
    "sun": null,
    "end": "2026-10-11",
    "event": null,
-   "notes": "Tydzień resetu przed fazą: trzy spokojne jazdy (wt/śr/pt, wszystkie w Z2 – żadnych interwałów), w sobotę test FTP 20 min. Zważ się rano na czczo trzy razy – to punkt zero redukcji. Skalibruj miernik (zeruj offset przed każdą jazdą). Jeśli nogi ciężkie – test w niedzielę i faza tydzień później."
+   "notes": null
   },
   {
    "week": 3,
@@ -4522,7 +4522,7 @@
    "sun": null,
    "end": "2026-10-18",
    "event": null,
-   "notes": "Start bloku 5 jazd – jeździmy, póki pogoda pozwala (do 15.11). Jedyny dzień, na którym wolno się zmęczyć, to środa; wtorek, piątek i niedziela mają być nudne (rozmowa pełnymi zdaniami). Kadencja na każdym podjeździe min. 75 rpm (38×46). Minimalna jazda 40 min Z2 liczy się jako wykonana."
+   "notes": null
   },
   {
    "week": 4,
@@ -4550,7 +4550,7 @@
    "sun": null,
    "end": "2026-11-01",
    "event": null,
-   "notes": "Do 18.10 kup lampę przednią ≥ 800 lm i tył z radarem – od zmiany czasu (25.10) wtorek, środa i piątek to jazda po ciemku."
+   "notes": "Tydzień lżejszy: żadnych interwałów, piątek wolny. Nogi mają wyjść świeższe niż weszły."
   },
   {
    "week": 6,
@@ -4565,7 +4565,7 @@
    "sun": null,
    "end": "2026-11-08",
    "event": null,
-   "notes": "Tydzień lżejszy: cztery jazdy, żadnych interwałów. Po nim wracamy do akcentów w środy."
+   "notes": "Od tego tygodnia dwa dni jakościowe: środa mocniejsza, piątek krótszy blok sweet spot."
   },
   {
    "week": 7,
@@ -4580,7 +4580,7 @@
    "sun": null,
    "end": "2026-11-15",
    "event": null,
-   "notes": "Test FTP 20 min w środę – pięć tygodni po pierwszym. Ta sama trasa i protokół co 26.09; wtorek naprawdę lekko."
+   "notes": null
   },
   {
    "week": 8,
@@ -4608,7 +4608,7 @@
    "sun": null,
    "end": "2026-11-29",
    "event": null,
-   "notes": "Ostatni tydzień bloku 5 jazd. Od 16.11 plan schodzi do 3 jazd (wt Z2, czw akcent, sb długa) – zimą i tak nie wyjedziesz pięć razy w tygodniu."
+   "notes": null
   },
   {
    "week": 10,
@@ -4623,7 +4623,7 @@
    "sun": null,
    "end": "2026-12-06",
    "event": null,
-   "notes": "Przed zimą: pełne błotniki SKS Bluemels 45, odzież (merino, rękawice trójpalczaste, ochraniacze na buty), ciśnienie w oponach −0,3 bara."
+   "notes": "Największy tydzień fazy bazowej: ponad 4 godziny w poniedziałek i godzina pracy w sweet spot w środę."
   },
   {
    "week": 11,
@@ -4638,7 +4638,7 @@
    "sun": null,
    "end": "2026-12-13",
    "event": null,
-   "notes": "Rytm zimowy: trzy jazdy, akcent w czwartek. Środa i piątek wolne."
+   "notes": "Drugi test FTP. Jeśli wzrósł, strefy przeliczą się same – kolejne 10 tygodni pojedziesz na nowych watach."
   },
   {
    "week": 12,
@@ -4653,7 +4653,7 @@
    "sun": null,
    "end": "2026-12-20",
    "event": null,
-   "notes": "Test FTP w czwartek zamiast akcentu (środa wolna – świeże nogi). Wtorek naprawdę lekko."
+   "notes": "Blok progowy. Interwały w środę jadą na 95–100% FTP – pierwsze dwie minuty prowadź po odczuciu, tętno dogania z opóźnieniem. Zimą wszystko schodzi na trenażer."
   },
   {
    "week": 13,
@@ -4668,7 +4668,7 @@
    "sun": null,
    "end": "2026-12-27",
    "event": null,
-   "notes": "Największy tydzień fazy. Jeśli pogoda go zabierze, przenieś 3:30 na tydzień wcześniej i potraktuj ten jako rozładowanie. Nie odrabiaj straconych godzin."
+   "notes": null
   },
   {
    "week": 14,
@@ -4683,7 +4683,7 @@
    "sun": null,
    "end": "2027-01-03",
    "event": null,
-   "notes": "Koniec Fazy 1. Zapisz W/kg (FTP z testu w tyg. 12 ÷ masa)."
+   "notes": null
   },
   {
    "week": 15,
@@ -4696,7 +4696,7 @@
    "sun": null,
    "end": "2027-01-10",
    "event": null,
-   "notes": "Święta – tydzień lżejszy. Zima: domyślnie Checkpoint z błotnikami. Czwartek poniżej −10 °C lub gołoledź = INDOOR_4x4."
+   "notes": null
   },
   {
    "week": 16,
@@ -4726,7 +4726,7 @@
    "sun": null,
    "end": "2027-01-24",
    "event": null,
-   "notes": "Test FTP w czwartek; przy gołoledzi wariant Wattbike (przycisk „pod dachem”)."
+   "notes": null
   },
   {
    "week": 18,
@@ -4769,7 +4769,7 @@
    "sun": null,
    "end": "2027-02-14",
    "event": null,
-   "notes": null
+   "notes": "Ostatni tydzień bloku progowego – dwa razy 20 minut na progu to najtrudniejsza sesja programu do tej pory."
   },
   {
    "week": 21,
@@ -4784,7 +4784,7 @@
    "sun": null,
    "end": "2027-02-21",
    "event": null,
-   "notes": null
+   "notes": "Test FTP po bloku progowym. Tu spodziewam się największego pojedynczego skoku w całym programie."
   },
   {
    "week": 22,
@@ -4799,7 +4799,7 @@
    "sun": null,
    "end": "2027-02-28",
    "event": null,
-   "notes": "Test FTP w czwartek (przy gołoledzi Wattbike). Ten wynik jest podstawą kryteriów wejścia do fazy III sprawdzanych w tyg. 24."
+   "notes": "Blok VO2max: objętość w dół, intensywność w górę. Interwały 3-minutowe rób równo (RPE 9), nie sprintem na starcie. Trenażer ERG jest tu przewagą – moc trzyma się sama."
   },
   {
    "week": 23,
@@ -4829,7 +4829,7 @@
    "sun": null,
    "end": "2027-03-14",
    "event": null,
-   "notes": "Koniec zimy. FTP – z testu w tyg. 22. Kryteria wejścia do fazy III: ≥ 2,7 dnia jazdy/tydz. (śr. z 12 tyg.), FTP ≥ 200 W, masa ≤ 102 kg, kadencja na podjazdach ≥ 78 rpm, 3,5 h Z2 pod Łodzią zimą. Przy 2–3 spełnionych przesuń fazę III o 3–4 tygodnie i skróć IV."
+   "notes": null
   },
   {
    "week": 25,
@@ -4842,7 +4842,7 @@
    "sun": null,
    "end": "2027-03-21",
    "event": null,
-   "notes": null
+   "notes": "Po bloku VO2max rozładowanie jest obowiązkowe, nie opcjonalne."
   },
   {
    "week": 26,
@@ -4872,7 +4872,7 @@
    "sun": null,
    "end": "2027-04-04",
    "event": null,
-   "notes": "Test FTP w środę. Pierwsze 100 km z blokiem tempa 30–32 km/h."
+   "notes": "Test po bloku VO2max. Nawet jeśli FTP drgnie mniej niż po fazie II, podniesiony pułap zapłaci w następnej fazie."
   },
   {
    "week": 28,
@@ -4887,7 +4887,7 @@
    "sun": null,
    "end": "2027-04-11",
    "event": null,
-   "notes": null
+   "notes": "Największa objętość programu i praca progowa na nowym FTP. Wiosna, więc długie jazdy wracają na zewnątrz."
   },
   {
    "week": 29,
@@ -4902,7 +4902,7 @@
    "sun": null,
    "end": "2027-04-18",
    "event": null,
-   "notes": "Piątek wolny lub luźna jazda."
+   "notes": null
   },
   {
    "week": 30,
@@ -4917,7 +4917,7 @@
    "sun": null,
    "end": "2027-04-25",
    "event": null,
-   "notes": "Serwis wiosenny: klocki (spiek, jeśli zaciski SRAM HRD), płyn hamulcowy, zużycie łańcucha; przegląd Dogmy."
+   "notes": null
   },
   {
    "week": 31,
@@ -4945,7 +4945,7 @@
    "sun": null,
    "end": "2027-05-09",
    "event": null,
-   "notes": "Tydzień lżejszy z testem FTP w środę – jedyny mocny wysiłek tygodnia, na wypoczętych nogach."
+   "notes": null
   },
   {
    "week": 33,
@@ -4960,7 +4960,7 @@
    "sun": null,
    "end": "2027-05-16",
    "event": null,
-   "notes": "Decyzja o oponach na lato/Alpy dla Checkpointa (GP 5000 S TR 32c z dętkami lub AS TR 35c) – kup w tym tygodniu."
+   "notes": null
   },
   {
    "week": 34,
@@ -4975,7 +4975,7 @@
    "sun": null,
    "end": "2027-05-23",
    "event": null,
-   "notes": null
+   "notes": "Szczyt objętości: ponad 4 godziny w poniedziałek, dwa dni jakościowe i 1,5 h w sobotę."
   },
   {
    "week": 35,
@@ -4987,7 +4987,7 @@
    "sat": "Z2 60′",
    "sun": null,
    "end": "2027-05-30",
-   "event": "Weekend w górach #1: Karkonosze (Kowary → Przełęcz Okraj; Przesieka → Przełęcz Karkonoska). Checkpoint.",
+   "event": null,
    "notes": null
   },
   {
@@ -5003,7 +5003,7 @@
    "sun": null,
    "end": "2027-06-06",
    "event": null,
-   "notes": null
+   "notes": "Ostatni blok VO2max. Objętość schodzi, żeby interwały były naprawdę mocne."
   },
   {
    "week": 37,
@@ -5032,8 +5032,8 @@
    "sat": "Z2 45′",
    "sun": null,
    "end": "2027-06-20",
-   "event": "Weekend back-to-back #1: sobota 120 km / 1000 m, niedziela 120 km / 1200 m.",
-   "notes": null
+   "event": null,
+   "notes": "Od teraz wszystko idzie w świeżość na test."
   },
   {
    "week": 39,
@@ -5047,8 +5047,8 @@
    "sat": "Z2 60′",
    "sun": null,
    "end": "2027-06-27",
-   "event": "Weekend w górach #2: Beskid Śląski (Przełęcz Salmopolska, Kubalonka, Koniaków).",
-   "notes": null
+   "event": null,
+   "notes": "Taper i test końcowy w środę. Rozliczenie 40 tygodni: FTP i W/kg. Po nim ustawiamy następny cel."
   }
  ],
  "layout": {
@@ -5252,32 +5252,7 @@
    "Szczyt objętości: ponad 4 godziny w poniedziałek, dwa dni jakościowe i 1,5 h w sobotę.": "Peak volume: over 4 hours on Monday, two quality days and 1.5 h on Saturday.",
    "Ostatni blok VO2max. Objętość schodzi, żeby interwały były naprawdę mocne.": "Last VO2max block. Volume comes down so the intervals can be truly hard.",
    "Od teraz wszystko idzie w świeżość na test.": "From now on everything goes into freshness for the test.",
-   "Taper i test końcowy w środę. Rozliczenie 40 tygodni: FTP i W/kg. Po nim ustawiamy następny cel.": "Taper and final test on Wednesday. Settling the 40 weeks: FTP and W/kg. After it we set the next goal.",
-   "Tydzień przygotowawczy: zamów/zamontuj napęd, ustaw aplikację i profil, sprawdź wagę startową.": "Preparation week: order/fit the drivetrain, set up the app and your profile, check your starting weight.",
-   "Wyjście ze zmęczenia po Great Escape. Jedź lekko.": "Recovering from the Great Escape fatigue. Ride easy.",
-   "Tydzień resetu przed fazą: trzy spokojne jazdy (wt/śr/pt, wszystkie w Z2 – żadnych interwałów), w sobotę test FTP 20 min. Zważ się rano na czczo trzy razy – to punkt zero redukcji. Skalibruj miernik (zeruj offset przed każdą jazdą). Jeśli nogi ciężkie – test w niedzielę i faza tydzień później.": "Reset week before the phase: three easy rides (Tue/Wed/Fri, all in Z2 – no intervals), 20 min FTP test on Saturday. Weigh yourself three times in the morning before breakfast – that's day zero of the weight loss. Calibrate the power meter (zero the offset before every ride). If your legs feel heavy – test on Sunday and start the phase a week later.",
-   "Start bloku 5 jazd – jeździmy, póki pogoda pozwala (do 15.11). Jedyny dzień, na którym wolno się zmęczyć, to środa; wtorek, piątek i niedziela mają być nudne (rozmowa pełnymi zdaniami). Kadencja na każdym podjeździe min. 75 rpm (38×46). Minimalna jazda 40 min Z2 liczy się jako wykonana.": "Start of the 5-ride block – we ride while the weather allows (until 15.11). The only day you're allowed to get tired is Wednesday; Tuesday, Friday and Sunday should be boring (full-sentence conversation). Cadence on every climb at least 75 rpm (38×46). A minimum ride of 40 min Z2 counts as done.",
-   "Do 18.10 kup lampę przednią ≥ 800 lm i tył z radarem – od zmiany czasu (25.10) wtorek, środa i piątek to jazda po ciemku.": "By 18.10 buy a front light ≥ 800 lm and a rear light with radar – after the clock change (25.10) Tuesday, Wednesday and Friday are rides in the dark.",
-   "Tydzień lżejszy: cztery jazdy, żadnych interwałów. Po nim wracamy do akcentów w środy.": "Lighter week: four rides, no intervals. After it we return to Wednesday key sessions.",
-   "Test FTP 20 min w środę – pięć tygodni po pierwszym. Ta sama trasa i protokół co 26.09; wtorek naprawdę lekko.": "20 min FTP test on Wednesday – five weeks after the first one. Same route and protocol as on 26.09; keep Tuesday truly easy.",
-   "Ostatni tydzień bloku 5 jazd. Od 16.11 plan schodzi do 3 jazd (wt Z2, czw akcent, sb długa) – zimą i tak nie wyjedziesz pięć razy w tygodniu.": "Last week of the 5-ride block. From 16.11 the plan drops to 3 rides (Tue Z2, Thu key session, Sat long) – in winter you won't get out five times a week anyway.",
-   "Przed zimą: pełne błotniki SKS Bluemels 45, odzież (merino, rękawice trójpalczaste, ochraniacze na buty), ciśnienie w oponach −0,3 bara.": "Before winter: full SKS Bluemels 45 mudguards, clothing (merino, lobster gloves, overshoes), tyre pressure −0.3 bar.",
-   "Rytm zimowy: trzy jazdy, akcent w czwartek. Środa i piątek wolne.": "Winter rhythm: three rides, key session on Thursday. Wednesday and Friday off.",
-   "Test FTP w czwartek zamiast akcentu (środa wolna – świeże nogi). Wtorek naprawdę lekko.": "FTP test on Thursday instead of the key session (Wednesday off – fresh legs). Keep Tuesday truly easy.",
-   "Największy tydzień fazy. Jeśli pogoda go zabierze, przenieś 3:30 na tydzień wcześniej i potraktuj ten jako rozładowanie. Nie odrabiaj straconych godzin.": "The biggest week of the phase. If the weather takes it away, move the 3:30 to the week before and treat this one as a recovery week. Don't make up lost hours.",
-   "Koniec Fazy 1. Zapisz W/kg (FTP z testu w tyg. 12 ÷ masa).": "End of Phase 1. Record W/kg (FTP from the week 12 test ÷ body weight).",
-   "Święta – tydzień lżejszy. Zima: domyślnie Checkpoint z błotnikami. Czwartek poniżej −10 °C lub gołoledź = INDOOR_4x4.": "Christmas – lighter week. Winter: Checkpoint with mudguards by default. Thursday below −10 °C or black ice = INDOOR_4x4.",
-   "Test FTP w czwartek; przy gołoledzi wariant Wattbike (przycisk „pod dachem”).": "FTP test on Thursday; on black ice the Wattbike variant (the “indoors” button).",
-   "Test FTP w czwartek (przy gołoledzi Wattbike). Ten wynik jest podstawą kryteriów wejścia do fazy III sprawdzanych w tyg. 24.": "FTP test on Thursday (Wattbike on black ice). This result is the basis for the phase III entry criteria checked in week 24.",
-   "Koniec zimy. FTP – z testu w tyg. 22. Kryteria wejścia do fazy III: ≥ 2,7 dnia jazdy/tydz. (śr. z 12 tyg.), FTP ≥ 200 W, masa ≤ 102 kg, kadencja na podjazdach ≥ 78 rpm, 3,5 h Z2 pod Łodzią zimą. Przy 2–3 spełnionych przesuń fazę III o 3–4 tygodnie i skróć IV.": "End of winter. FTP – from the week 22 test. Phase III entry criteria: ≥ 2.7 riding days/week (average over 12 weeks), FTP ≥ 200 W, body weight ≤ 102 kg, climbing cadence ≥ 78 rpm, 3.5 h of Z2 around Łódź in winter. If 2–3 are met, push phase III back by 3–4 weeks and shorten IV.",
-   "Test FTP w środę. Pierwsze 100 km z blokiem tempa 30–32 km/h.": "FTP test on Wednesday. First 100 km with a 30–32 km/h tempo block.",
-   "Piątek wolny lub luźna jazda.": "Friday off or an easy ride.",
-   "Serwis wiosenny: klocki (spiek, jeśli zaciski SRAM HRD), płyn hamulcowy, zużycie łańcucha; przegląd Dogmy.": "Spring service: brake pads (sintered, if SRAM HRD calipers), brake fluid, chain wear; Dogma service.",
-   "Tydzień lżejszy z testem FTP w środę – jedyny mocny wysiłek tygodnia, na wypoczętych nogach.": "Lighter week with an FTP test on Wednesday – the only hard effort of the week, on rested legs.",
-   "Decyzja o oponach na lato/Alpy dla Checkpointa (GP 5000 S TR 32c z dętkami lub AS TR 35c) – kup w tym tygodniu.": "Decide on summer/Alps tyres for the Checkpoint (GP 5000 S TR 32c with inner tubes or AS TR 35c) – buy them this week.",
-   "Weekend w górach #1: Karkonosze (Kowary → Przełęcz Okraj; Przesieka → Przełęcz Karkonoska). Checkpoint.": "Mountain weekend #1: Karkonosze (Kowary → Okraj Pass; Przesieka → Karkonosze Pass). Checkpoint.",
-   "Weekend back-to-back #1: sobota 120 km / 1000 m, niedziela 120 km / 1200 m.": "Back-to-back weekend #1: Saturday 120 km / 1000 m, Sunday 120 km / 1200 m.",
-   "Weekend w górach #2: Beskid Śląski (Przełęcz Salmopolska, Kubalonka, Koniaków).": "Mountain weekend #2: Silesian Beskids (Salmopol Pass, Kubalonka, Koniaków)."
+   "Taper i test końcowy w środę. Rozliczenie 40 tygodni: FTP i W/kg. Po nim ustawiamy następny cel.": "Taper and final test on Wednesday. Settling the 40 weeks: FTP and W/kg. After it we set the next goal."
   }
  }
 }

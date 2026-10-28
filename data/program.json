@@ -1,5 +1,5 @@
 {
- "version": "2026.10.27-1",
+ "version": "2026.10.28-1",
  "meta": {
   "name": "Alpy 2027 – baza i góry",
   "short": "Alpy 2027",
@@ -87,7 +87,7 @@
   "weight_based": {
    "max_kcal_per_day": 900,
    "max_loss_pct_per_week": 1.0,
-   "deficit_shares_per_week": 4.7,
+   "deficit_shares_per_week": 4.58,
    "milestones": [
     {
      "date": "2027-03-01",
@@ -3160,6 +3160,343 @@
    "duration_min": 0,
    "description": "Dojazd w góry lub pakowanie. Bez treningu albo 20–30 min bardzo luźno.",
    "parametric_duration": true
+  },
+  "LONG_TEMPO_END": {
+   "id": "LONG_TEMPO_END",
+   "name": "Długa jazda – ostatnia godzina w tempie",
+   "category": "long",
+   "key": false,
+   "steps": [
+    {
+     "name": "Długa jazda – ostatnia godzina w tempie",
+     "duration_s": 10800,
+     "zone": "Z2",
+     "target": {
+      "type": "threshold_hr",
+      "low": 0.81,
+      "high": 0.89
+     },
+     "rpe": [
+      3,
+      4
+     ],
+     "intensity_type": "active",
+     "cadence_rpm": [
+      80,
+      95
+     ],
+     "note": "Z2 przez pierwsze dwie godziny (prowadź tętnem), potem ostatnia godzina: 3×15 min w Z3 / 5 min Z2. Uczy trzymać tempo na zmęczonych nogach – tak jak na trzeciej godzinie długiej jazdy. Jedz od 45. minuty 60–80 g węglowodanów/h, przed blokiem tempa żel albo baton."
+    }
+   ],
+   "duration_min": 180,
+   "description": "Z2 przez pierwsze dwie godziny (prowadź tętnem), potem ostatnia godzina: 3×15 min w Z3 / 5 min Z2. Uczy trzymać tempo na zmęczonych nogach – tak jak na trzeciej godzinie długiej jazdy. Jedz od 45. minuty 60–80 g węglowodanów/h, przed blokiem tempa żel albo baton.",
+   "parametric_duration": true,
+   "insert": {
+    "repeat": 3,
+    "steps": [
+     {
+      "name": "Tempo na zmęczeniu",
+      "duration_s": 900,
+      "zone": "Z3",
+      "target": {
+       "type": "threshold_hr",
+       "low": 0.9,
+       "high": 0.93
+      },
+      "rpe": [
+       5,
+       6
+      ],
+      "intensity_type": "tempo",
+      "cadence_rpm": [
+       80,
+       95
+      ]
+     },
+     {
+      "name": "Z2",
+      "duration_s": 300,
+      "zone": "Z2",
+      "target": {
+       "type": "threshold_hr",
+       "low": 0.81,
+       "high": 0.89
+      },
+      "rpe": [
+       3,
+       4
+      ],
+      "intensity_type": "recover",
+      "cadence_rpm": [
+       80,
+       95
+      ]
+     }
+    ]
+   },
+   "insert_at": "end"
+  },
+  "TEMPO_2x15": {
+   "id": "TEMPO_2x15",
+   "name": "Tempo 2×15 min",
+   "category": "tempo",
+   "key": true,
+   "steps": [
+    {
+     "name": "Rozgrzewka",
+     "duration_s": 900,
+     "zone": "Z2",
+     "target": {
+      "type": "threshold_hr",
+      "low": 0.81,
+      "high": 0.89
+     },
+     "rpe": [
+      3,
+      4
+     ],
+     "intensity_type": "wu",
+     "cadence_rpm": [
+      80,
+      95
+     ],
+     "note": "Stopniowo od Z1 do górnej Z2; ostatnie 3 min z 2×20 s przyspieszenia."
+    },
+    {
+     "name": "Z2",
+     "duration_s": 900,
+     "zone": "Z2",
+     "target": {
+      "type": "threshold_hr",
+      "low": 0.81,
+      "high": 0.89
+     },
+     "rpe": [
+      3,
+      4
+     ],
+     "intensity_type": "active",
+     "cadence_rpm": [
+      80,
+      95
+     ]
+    },
+    {
+     "repeat": 2,
+     "steps": [
+      {
+       "name": "Tempo 15 min",
+       "duration_s": 900,
+       "zone": "Z3",
+       "target": {
+        "type": "threshold_hr",
+        "low": 0.9,
+        "high": 0.93
+       },
+       "rpe": [
+        5,
+        6
+       ],
+       "intensity_type": "tempo",
+       "cadence_rpm": [
+        80,
+        95
+       ],
+       "note": "Pierwsze 2–3 min interwału prowadź po odczuciu (RPE) – tętno dogania wysiłek z opóźnieniem. Nie goń tętna na starcie."
+      },
+      {
+       "name": "Z2",
+       "duration_s": 300,
+       "zone": "Z2",
+       "target": {
+        "type": "threshold_hr",
+        "low": 0.81,
+        "high": 0.89
+       },
+       "rpe": [
+        3,
+        4
+       ],
+       "intensity_type": "recover",
+       "cadence_rpm": [
+        80,
+        95
+       ]
+      }
+     ]
+    },
+    {
+     "name": "Z2",
+     "duration_s": 600,
+     "zone": "Z2",
+     "target": {
+      "type": "threshold_hr",
+      "low": 0.81,
+      "high": 0.89
+     },
+     "rpe": [
+      3,
+      4
+     ],
+     "intensity_type": "active",
+     "cadence_rpm": [
+      80,
+      95
+     ]
+    },
+    {
+     "name": "Schłodzenie",
+     "duration_s": 600,
+     "zone": "Z1",
+     "target": {
+      "type": "threshold_hr",
+      "low": 0.0,
+      "high": 0.81
+     },
+     "rpe": [
+      1,
+      2
+     ],
+     "intensity_type": "cd",
+     "cadence_rpm": [
+      85,
+      100
+     ]
+    }
+   ],
+   "duration_min": 90,
+   "description": "Tempo: równo w Z3 (RPE 5–6, tętno 90–93 % LTHR) – mocniej niż Z2, wyraźnie lżej niż sweet spot; da się mówić krótkimi zdaniami. Płasko albo lekko pod wiatr, bez przerw na skrzyżowania. Drugi dzień jakościowy tygodnia: nie dokładaj do sweet spotu."
+  },
+  "TEMPO_2x20": {
+   "id": "TEMPO_2x20",
+   "name": "Tempo 2×20 min",
+   "category": "tempo",
+   "key": true,
+   "steps": [
+    {
+     "name": "Rozgrzewka",
+     "duration_s": 900,
+     "zone": "Z2",
+     "target": {
+      "type": "threshold_hr",
+      "low": 0.81,
+      "high": 0.89
+     },
+     "rpe": [
+      3,
+      4
+     ],
+     "intensity_type": "wu",
+     "cadence_rpm": [
+      80,
+      95
+     ],
+     "note": "Stopniowo od Z1 do górnej Z2; ostatnie 3 min z 2×20 s przyspieszenia."
+    },
+    {
+     "name": "Z2",
+     "duration_s": 900,
+     "zone": "Z2",
+     "target": {
+      "type": "threshold_hr",
+      "low": 0.81,
+      "high": 0.89
+     },
+     "rpe": [
+      3,
+      4
+     ],
+     "intensity_type": "active",
+     "cadence_rpm": [
+      80,
+      95
+     ]
+    },
+    {
+     "repeat": 2,
+     "steps": [
+      {
+       "name": "Tempo 20 min",
+       "duration_s": 1200,
+       "zone": "Z3",
+       "target": {
+        "type": "threshold_hr",
+        "low": 0.9,
+        "high": 0.93
+       },
+       "rpe": [
+        5,
+        6
+       ],
+       "intensity_type": "tempo",
+       "cadence_rpm": [
+        80,
+        95
+       ],
+       "note": "Pierwsze 2–3 min interwału prowadź po odczuciu (RPE) – tętno dogania wysiłek z opóźnieniem. Nie goń tętna na starcie."
+      },
+      {
+       "name": "Z2",
+       "duration_s": 300,
+       "zone": "Z2",
+       "target": {
+        "type": "threshold_hr",
+        "low": 0.81,
+        "high": 0.89
+       },
+       "rpe": [
+        3,
+        4
+       ],
+       "intensity_type": "recover",
+       "cadence_rpm": [
+        80,
+        95
+       ]
+      }
+     ]
+    },
+    {
+     "name": "Z2",
+     "duration_s": 600,
+     "zone": "Z2",
+     "target": {
+      "type": "threshold_hr",
+      "low": 0.81,
+      "high": 0.89
+     },
+     "rpe": [
+      3,
+      4
+     ],
+     "intensity_type": "active",
+     "cadence_rpm": [
+      80,
+      95
+     ]
+    },
+    {
+     "name": "Schłodzenie",
+     "duration_s": 600,
+     "zone": "Z1",
+     "target": {
+      "type": "threshold_hr",
+      "low": 0.0,
+      "high": 0.81
+     },
+     "rpe": [
+      1,
+      2
+     ],
+     "intensity_type": "cd",
+     "cadence_rpm": [
+      85,
+      100
+     ]
+    }
+   ],
+   "duration_min": 100,
+   "description": "Tempo: równo w Z3 (RPE 5–6, tętno 90–93 % LTHR) – mocniej niż Z2, wyraźnie lżej niż sweet spot; da się mówić krótkimi zdaniami. Płasko albo lekko pod wiatr, bez przerw na skrzyżowania. Drugi dzień jakościowy tygodnia: nie dokładaj do sweet spotu."
   }
  },
  "weeks": {
@@ -3388,37 +3725,10 @@
   "8": {
    "phase": "I",
    "type": "build",
+   "full_fuel": true,
    "tue": [
-    "Z2_FORCE",
-    75
-   ],
-   "wed": [
-    "SS_2x20",
-    null
-   ],
-   "thu": [
-    "REST",
-    0
-   ],
-   "fri": [
-    "Z2",
-    60
-   ],
-   "sat": [
-    "LONG",
-    165
-   ],
-   "sun": [
     "Z2",
     90
-   ]
-  },
-  "9": {
-   "phase": "I",
-   "type": "build",
-   "tue": [
-    "Z2",
-    60
    ],
    "wed": [
     "SS_3x15",
@@ -3429,25 +3739,85 @@
     0
    ],
    "fri": [
-    "Z2",
-    60
+    "TEMPO_2x15",
+    null
    ],
    "sat": [
-    "LONG",
-    165
+    "LONG_TEMPO_END",
+    180
+   ],
+   "sun": [
+    "Z2",
+    105
+   ],
+   "notes": "Blok mocny między testami (do 22.11): dwa dni jakościowe – środa sweet spot, piątek tempo – i sobota 3 h z ostatnią godziną w tempie; wtorek i niedziela Z2 na tętno. Szukamy sufitu, więc luzujemy tylko na obiektywny sygnał: tętno spoczynkowe +7 bpm ponad średnią dwa dni z rzędu, nogi ≤ 2 dwa dni z rzędu, Pw:HR na Z2 niżej o ponad 5 %, sweet spot nie wchodzi w zakres mocy, choroba. Wtedy 3–4 dni Z1 albo wolne i powrót do planu. Dni z akcentem i długa – bez deficytu."
+  },
+  "9": {
+   "phase": "I",
+   "type": "build",
+   "full_fuel": true,
+   "tue": [
+    "Z2",
+    90
+   ],
+   "wed": [
+    "SS_2x20",
+    null
+   ],
+   "thu": [
+    "REST",
+    0
+   ],
+   "fri": [
+    "TEMPO_2x20",
+    null
+   ],
+   "sat": [
+    "LONG_TEMPO_END",
+    180
+   ],
+   "sun": [
+    "Z2",
+    105
+   ],
+   "notes": "Drugi tydzień bloku mocnego: sweet spot 2×20, tempo 2×20. Kryteria luzowania bez zmian – patrz notatka z 2.11."
+  },
+  "10": {
+   "phase": "I",
+   "type": "build",
+   "full_fuel": true,
+   "tue": [
+    "Z2",
+    90
+   ],
+   "wed": [
+    "SS_3x20",
+    null
+   ],
+   "thu": [
+    "REST",
+    0
+   ],
+   "fri": [
+    "TEMPO_2x20",
+    null
+   ],
+   "sat": [
+    "LONG_TEMPO_END",
+    180
    ],
    "sun": [
     "Z2",
     90
    ],
-   "notes": "Ostatni tydzień bloku 5 jazd. Od 16.11 plan schodzi do 3 jazd (wt Z2, czw akcent, sb długa) – zimą i tak nie wyjedziesz pięć razy w tygodniu."
+   "notes": "Najmocniejszy tydzień bloku: sweet spot 3×20. Jeśli w drugim interwale moc nie wchodzi w zakres przy RPE 7, przerwij akcent i jedź Z2 – to sygnał, nie porażka. Od przyszłego tygodnia wygaszenie przed testem."
   },
-  "10": {
+  "11": {
    "phase": "I",
-   "type": "deload",
+   "type": "taper",
    "tue": [
-    "Z2",
-    60
+    "SS_2x12",
+    null
    ],
    "wed": [
     "REST",
@@ -3466,39 +3836,10 @@
     120
    ],
    "sun": [
-    "REST",
-    0
-   ],
-   "notes": "Przed zimą: pełne błotniki SKS Bluemels 45, odzież (merino, rękawice trójpalczaste, ochraniacze na buty), ciśnienie w oponach −0,3 bara."
-  },
-  "11": {
-   "phase": "I",
-   "type": "build",
-   "tue": [
     "Z2",
     75
    ],
-   "wed": [
-    "REST",
-    0
-   ],
-   "thu": [
-    "SS_3x15",
-    null
-   ],
-   "fri": [
-    "REST",
-    0
-   ],
-   "sat": [
-    "LONG",
-    180
-   ],
-   "sun": [
-    "REST",
-    0
-   ],
-   "notes": "Rytm zimowy: trzy jazdy, akcent w czwartek. Środa i piątek wolne."
+   "notes": "Wygaszenie przed testem 3.12: objętość ok. 40 % niżej, we wtorek krótkie otwarcie 2×12 sweet spot, od środy bez akcentów. Przed zimą: pełne błotniki SKS Bluemels 45, odzież (merino, rękawice trójpalczaste, ochraniacze na buty), ciśnienie w oponach −0,3 bara."
   },
   "12": {
    "phase": "I",
@@ -3527,7 +3868,7 @@
     "REST",
     0
    ],
-   "notes": "Test FTP w czwartek zamiast akcentu (środa wolna – świeże nogi). Wtorek naprawdę lekko."
+   "notes": "Test FTP w czwartek 3.12 – ta sama pętla Dell, ten sam rower (Roubaix) i miernik 4iiii co 28.10. Środa wolna, wtorek naprawdę lekko. Od tego tygodnia rytm zimowy: trzy jazdy, akcent w czwartek."
   },
   "13": {
    "phase": "I",
@@ -4777,58 +5118,58 @@
    "phase": "I",
    "type": "build",
    "start": "2026-11-02",
-   "bike_min": 465,
+   "bike_min": 550,
    "key": [
-    "SS_2x20"
+    "SS_3x15"
    ],
-   "sat": "LONG 165′",
-   "sun": "Z2 90′",
+   "sat": "LONG_TEMPO_END 180′",
+   "sun": "Z2 105′",
    "end": "2026-11-08",
    "event": null,
-   "notes": null
+   "notes": "Blok mocny między testami (do 22.11): dwa dni jakościowe – środa sweet spot, piątek tempo – i sobota 3 h z ostatnią godziną w tempie; wtorek i niedziela Z2 na tętno. Szukamy sufitu, więc luzujemy tylko na obiektywny sygnał: tętno spoczynkowe +7 bpm ponad średnią dwa dni z rzędu, nogi ≤ 2 dwa dni z rzędu, Pw:HR na Z2 niżej o ponad 5 %, sweet spot nie wchodzi w zakres mocy, choroba. Wtedy 3–4 dni Z1 albo wolne i powrót do planu. Dni z akcentem i długa – bez deficytu."
   },
   {
    "week": 9,
    "phase": "I",
    "type": "build",
    "start": "2026-11-09",
-   "bike_min": 460,
+   "bike_min": 550,
    "key": [
-    "SS_3x15"
+    "SS_2x20"
    ],
-   "sat": "LONG 165′",
-   "sun": "Z2 90′",
+   "sat": "LONG_TEMPO_END 180′",
+   "sun": "Z2 105′",
    "end": "2026-11-15",
    "event": null,
-   "notes": "Ostatni tydzień bloku 5 jazd. Od 16.11 plan schodzi do 3 jazd (wt Z2, czw akcent, sb długa) – zimą i tak nie wyjedziesz pięć razy w tygodniu."
+   "notes": "Drugi tydzień bloku mocnego: sweet spot 2×20, tempo 2×20. Kryteria luzowania bez zmian – patrz notatka z 2.11."
   },
   {
    "week": 10,
    "phase": "I",
-   "type": "deload",
+   "type": "build",
    "start": "2026-11-16",
-   "bike_min": 240,
-   "key": [],
-   "sat": "LONG 120′",
-   "sun": null,
+   "bike_min": 560,
+   "key": [
+    "SS_3x20"
+   ],
+   "sat": "LONG_TEMPO_END 180′",
+   "sun": "Z2 90′",
    "end": "2026-11-22",
    "event": null,
-   "notes": "Przed zimą: pełne błotniki SKS Bluemels 45, odzież (merino, rękawice trójpalczaste, ochraniacze na buty), ciśnienie w oponach −0,3 bara."
+   "notes": "Najmocniejszy tydzień bloku: sweet spot 3×20. Jeśli w drugim interwale moc nie wchodzi w zakres przy RPE 7, przerwij akcent i jedź Z2 – to sygnał, nie porażka. Od przyszłego tygodnia wygaszenie przed testem."
   },
   {
    "week": 11,
    "phase": "I",
-   "type": "build",
+   "type": "taper",
    "start": "2026-11-23",
-   "bike_min": 340,
-   "key": [
-    "SS_3x15"
-   ],
-   "sat": "LONG 180′",
-   "sun": null,
+   "bike_min": 314,
+   "key": [],
+   "sat": "LONG 120′",
+   "sun": "Z2 75′",
    "end": "2026-11-29",
    "event": null,
-   "notes": "Rytm zimowy: trzy jazdy, akcent w czwartek. Środa i piątek wolne."
+   "notes": "Wygaszenie przed testem 3.12: objętość ok. 40 % niżej, we wtorek krótkie otwarcie 2×12 sweet spot, od środy bez akcentów. Przed zimą: pełne błotniki SKS Bluemels 45, odzież (merino, rękawice trójpalczaste, ochraniacze na buty), ciśnienie w oponach −0,3 bara."
   },
   {
    "week": 12,
@@ -4843,7 +5184,7 @@
    "sun": null,
    "end": "2026-12-06",
    "event": null,
-   "notes": "Test FTP w czwartek zamiast akcentu (środa wolna – świeże nogi). Wtorek naprawdę lekko."
+   "notes": "Test FTP w czwartek 3.12 – ta sama pętla Dell, ten sam rower (Roubaix) i miernik 4iiii co 28.10. Środa wolna, wtorek naprawdę lekko. Od tego tygodnia rytm zimowy: trzy jazdy, akcent w czwartek."
   },
   {
    "week": 13,
@@ -5652,6 +5993,14 @@
    "Dzień wyjazdu. Pacing, jedzenie i hamowanie wg Części „Strategia na przełęcz”.": "Trip day. Pacing, fuelling and braking according to the “Pass strategy” section.",
    "Odpoczynek / dojazd": "Rest / travel",
    "Dojazd w góry lub pakowanie. Bez treningu albo 20–30 min bardzo luźno.": "Travel to the mountains or packing. No training, or 20–30 min very easy.",
+   "Długa jazda – ostatnia godzina w tempie": "Long ride – last hour at tempo",
+   "Z2 przez pierwsze dwie godziny (prowadź tętnem), potem ostatnia godzina: 3×15 min w Z3 / 5 min Z2. Uczy trzymać tempo na zmęczonych nogach – tak jak na trzeciej godzinie długiej jazdy. Jedz od 45. minuty 60–80 g węglowodanów/h, przed blokiem tempa żel albo baton.": "Z2 for the first two hours (ride by heart rate), then the last hour: 3×15 min in Z3 / 5 min Z2. Teaches you to hold tempo on tired legs – just like in the third hour of a long ride. Eat from minute 45, 60–80 g carbohydrate/h; a gel or bar before the tempo block.",
+   "Tempo na zmęczeniu": "Tempo on tired legs",
+   "Tempo 2×15 min": "Tempo 2×15 min",
+   "Tempo 15 min": "Tempo 15 min",
+   "Tempo: równo w Z3 (RPE 5–6, tętno 90–93 % LTHR) – mocniej niż Z2, wyraźnie lżej niż sweet spot; da się mówić krótkimi zdaniami. Płasko albo lekko pod wiatr, bez przerw na skrzyżowania. Drugi dzień jakościowy tygodnia: nie dokładaj do sweet spotu.": "Tempo: steady in Z3 (RPE 5–6, heart rate 90–93% of LTHR) – harder than Z2, clearly easier than sweet spot; you can talk in short sentences. Flat or slightly into the wind, no stops at junctions. The second quality day of the week: don't add to the sweet spot.",
+   "Tempo 2×20 min": "Tempo 2×20 min",
+   "Tempo 20 min": "Tempo 20 min",
    "Tydzień przygotowawczy: zamów/zamontuj napęd, ustaw aplikację i profil, sprawdź wagę startową.": "Preparation week: order/fit the drivetrain, set up the app and your profile, check your starting weight.",
    "Wyjście ze zmęczenia po Great Escape. Jedź lekko.": "Recovering from the Great Escape fatigue. Ride easy.",
    "Tydzień resetu przed fazą: trzy spokojne jazdy (wt/śr/pt, wszystkie w Z2 – żadnych interwałów), w sobotę test FTP 20 min. Zważ się rano na czczo trzy razy – to punkt zero redukcji. Skalibruj miernik (zeruj offset przed każdą jazdą). Jeśli nogi ciężkie – test w niedzielę i faza tydzień później.": "Reset week before the phase: three easy rides (Tue/Wed/Fri, all in Z2 – no intervals), 20 min FTP test on Saturday. Weigh yourself three times in the morning before breakfast – that's day zero of the weight loss. Calibrate the power meter (zero the offset before every ride). If your legs feel heavy – test on Sunday and start the phase a week later.",
@@ -5659,10 +6008,11 @@
    "Do 18.10 kup lampę przednią ≥ 800 lm i tył z radarem – od zmiany czasu (25.10) wtorek, środa i piątek to jazda po ciemku.": "By 18.10 buy a front light ≥ 800 lm and a rear light with radar – after the clock change (25.10) Tuesday, Wednesday and Friday are rides in the dark.",
    "Tydzień lżejszy: cztery jazdy, żadnych interwałów. Po nim wracamy do akcentów w środy.": "Lighter week: four rides, no intervals. After it we return to Wednesday key sessions.",
    "Test FTP 20 min w środę – pięć tygodni po pierwszym. Ta sama trasa i protokół co 26.09; wtorek naprawdę lekko.": "20 min FTP test on Wednesday – five weeks after the first one. Same route and protocol as on 26.09; keep Tuesday truly easy.",
-   "Ostatni tydzień bloku 5 jazd. Od 16.11 plan schodzi do 3 jazd (wt Z2, czw akcent, sb długa) – zimą i tak nie wyjedziesz pięć razy w tygodniu.": "Last week of the 5-ride block. From 16.11 the plan drops to 3 rides (Tue Z2, Thu key session, Sat long) – in winter you won't get out five times a week anyway.",
-   "Przed zimą: pełne błotniki SKS Bluemels 45, odzież (merino, rękawice trójpalczaste, ochraniacze na buty), ciśnienie w oponach −0,3 bara.": "Before winter: full SKS Bluemels 45 mudguards, clothing (merino, lobster gloves, overshoes), tyre pressure −0.3 bar.",
-   "Rytm zimowy: trzy jazdy, akcent w czwartek. Środa i piątek wolne.": "Winter rhythm: three rides, key session on Thursday. Wednesday and Friday off.",
-   "Test FTP w czwartek zamiast akcentu (środa wolna – świeże nogi). Wtorek naprawdę lekko.": "FTP test on Thursday instead of the key session (Wednesday off – fresh legs). Keep Tuesday truly easy.",
+   "Blok mocny między testami (do 22.11): dwa dni jakościowe – środa sweet spot, piątek tempo – i sobota 3 h z ostatnią godziną w tempie; wtorek i niedziela Z2 na tętno. Szukamy sufitu, więc luzujemy tylko na obiektywny sygnał: tętno spoczynkowe +7 bpm ponad średnią dwa dni z rzędu, nogi ≤ 2 dwa dni z rzędu, Pw:HR na Z2 niżej o ponad 5 %, sweet spot nie wchodzi w zakres mocy, choroba. Wtedy 3–4 dni Z1 albo wolne i powrót do planu. Dni z akcentem i długa – bez deficytu.": "Hard block between tests (until 22.11): two quality days – Wednesday sweet spot, Friday tempo – and a 3 h Saturday with the last hour at tempo; Tuesday and Sunday Z2 by heart rate. We're looking for your ceiling, so we back off only on an objective signal: resting heart rate +7 bpm above average two days in a row, legs ≤ 2 two days in a row, Z2 Pw:HR more than 5% lower, sweet spot power not reaching the range, illness. Then 3–4 days of Z1 or rest and back to the plan. Key days and the long ride – no deficit.",
+   "Drugi tydzień bloku mocnego: sweet spot 2×20, tempo 2×20. Kryteria luzowania bez zmian – patrz notatka z 2.11.": "Second week of the hard block: sweet spot 2×20, tempo 2×20. Back-off criteria unchanged – see the note from 2.11.",
+   "Najmocniejszy tydzień bloku: sweet spot 3×20. Jeśli w drugim interwale moc nie wchodzi w zakres przy RPE 7, przerwij akcent i jedź Z2 – to sygnał, nie porażka. Od przyszłego tygodnia wygaszenie przed testem.": "The hardest week of the block: sweet spot 3×20. If power won't reach the range in the second interval at RPE 7, stop the session and ride Z2 – that's a signal, not a failure. From next week, easing off before the test.",
+   "Wygaszenie przed testem 3.12: objętość ok. 40 % niżej, we wtorek krótkie otwarcie 2×12 sweet spot, od środy bez akcentów. Przed zimą: pełne błotniki SKS Bluemels 45, odzież (merino, rękawice trójpalczaste, ochraniacze na buty), ciśnienie w oponach −0,3 bara.": "Easing off before the 3.12 test: volume about 40% lower, a short 2×12 sweet spot opener on Tuesday, no key sessions from Wednesday. Before winter: full SKS Bluemels 45 mudguards, clothing (merino, lobster gloves, overshoes), tyre pressure −0.3 bar.",
+   "Test FTP w czwartek 3.12 – ta sama pętla Dell, ten sam rower (Roubaix) i miernik 4iiii co 28.10. Środa wolna, wtorek naprawdę lekko. Od tego tygodnia rytm zimowy: trzy jazdy, akcent w czwartek.": "FTP test on Thursday 3.12 – the same Dell loop, the same bike (Roubaix) and 4iiii power meter as on 28.10. Wednesday off, Tuesday really easy. From this week the winter rhythm: three rides, key session on Thursday.",
    "Największy tydzień fazy. Jeśli pogoda go zabierze, przenieś 3:30 na tydzień wcześniej i potraktuj ten jako rozładowanie. Nie odrabiaj straconych godzin.": "The biggest week of the phase. If the weather takes it away, move the 3:30 to the week before and treat this one as a recovery week. Don't make up lost hours.",
    "Koniec Fazy 1. Zapisz W/kg (FTP z testu w tyg. 12 ÷ masa).": "End of Phase 1. Record W/kg (FTP from the week 12 test ÷ body weight).",
    "Święta – tydzień lżejszy. Zima: domyślnie Checkpoint z błotnikami. Czwartek poniżej −10 °C lub gołoledź = INDOOR_4x4.": "Christmas – lighter week. Winter: Checkpoint with mudguards by default. Thursday below −10 °C or black ice = INDOOR_4x4.",

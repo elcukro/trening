@@ -42,6 +42,7 @@ export const FLAG_LABEL: Record<DayFlag, string> = localized({
     mountain_weekend: 'Góry',
     back_to_back: 'Back-to-back',
     heat: 'Upał',
+    no_deficit: 'Bez deficytu',
   },
   en: {
     test: 'Test',
@@ -49,6 +50,7 @@ export const FLAG_LABEL: Record<DayFlag, string> = localized({
     mountain_weekend: 'Mountains',
     back_to_back: 'Back-to-back',
     heat: 'Heat',
+    no_deficit: 'No deficit',
   },
 })
 
@@ -90,6 +92,7 @@ export const FLAG_COLOR: Record<DayFlag, string> = {
   mountain_weekend: 'bg-orange-600',
   back_to_back: 'bg-red-600',
   heat: 'bg-amber-500',
+  no_deficit: 'bg-lime-600',
 }
 
 /** Kolor paska jazdy wg typu dnia – zgodny z kolorami stref (lekko = Z2, długa = Z3, akcent = próg). */

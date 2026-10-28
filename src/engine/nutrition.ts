@@ -12,12 +12,20 @@ import type { Nutrition, PhaseId, DayType } from './types'
 export const NO_RIDE_WORKOUTS = new Set(['REST', 'TRAVEL_REST', 'TRIP'])
 
 /**
+ * Dni bez deficytu także w fazach z `heavy_deficit_phases`: test, góry, back-to-back i dni ciężkie tygodni
+ * oznaczonych w programie `full_fuel` (znacznik `no_deficit`, wędruje z treningiem).
+ */
+export function isFullFuelDay(flags: readonly string[]): boolean {
+  return flags.some((f) => f === 'test' || f === 'mountain_weekend' || f === 'back_to_back' || f === 'no_deficit')
+}
+
+/**
  * Żywienie policzone z gotowego dnia – te same reguły co przy budowie kalendarza. Używane po nadpisaniach
  * (przeniesienie, zamiana, choroba…), żeby dzień, który stracił jazdę, nie trzymał etykiety „Dzień treningowy”.
  */
 export function nutritionForDay(policy: NutritionPolicy, day: { phase: PhaseId; day_type: DayType; bike: { workout_id: string; duration_min: number } | null; flags: string[] }): Nutrition {
   const bikeMin = day.bike && !NO_RIDE_WORKOUTS.has(day.bike.workout_id) ? day.bike.duration_min : 0
-  return nutritionFor(policy, day.phase, day.day_type, bikeMin, day.day_type === 'key', day.flags.some((f) => f === 'test' || f === 'mountain_weekend' || f === 'back_to_back'))
+  return nutritionFor(policy, day.phase, day.day_type, bikeMin, day.day_type === 'key', isFullFuelDay(day.flags))
 }
 
 export function nutritionFor(policy: NutritionPolicy, phase: PhaseId, dayType: DayType, bikeMin: number, key: boolean, protectedDay = false): Nutrition {

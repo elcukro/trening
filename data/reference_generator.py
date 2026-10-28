@@ -16,7 +16,7 @@ import json, datetime as dt, os, re
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 D = dt.date
-PROGRAM_VERSION = "2026.10.27-1"
+PROGRAM_VERSION = "2026.10.28-1"
 
 DEFAULT_SETTINGS = {
     "program_start": "2026-09-14",          # poniedziałek tygodnia 1
@@ -113,6 +113,7 @@ def endurance(wid, name, minutes, zone="Z2", desc="", category="endurance", cade
 
 SS_DESC = "Sweet spot: mocno, ale kontrolowanie (RPE 6–7), tętno 92–96% LTHR. Na podjeździe lub płaskim bez przerw na skrzyżowania. Kadencja 80–90."
 THR_DESC = "Interwały progowe pod górę (lub pod wiatr): RPE 7–8, tętno 95–100% LTHR pod koniec interwału. Kadencja 75–85 – jak na alpejskim podjeździe, na miękkim przełożeniu."
+TEMPO_DESC = "Tempo: równo w Z3 (RPE 5–6, tętno 90–93 % LTHR) – mocniej niż Z2, wyraźnie lżej niż sweet spot; da się mówić krótkimi zdaniami. Płasko albo lekko pod wiatr, bez przerw na skrzyżowania. Drugi dzień jakościowy tygodnia: nie dokładaj do sweet spotu."
 VO2_DESC = "VO2max: 3 min mocno, ale równo (RPE 9) – nie sprint na starcie. Tętno dojdzie do 103–106% LTHR dopiero w końcówce kolejnych powtórzeń. Przerwa 3 min bardzo luźno."
 
 
@@ -190,10 +191,26 @@ def build_library():
     add(endurance("TRAVEL_REST", "Odpoczynek / dojazd", 0, "Z1", "Dojazd w góry lub pakowanie. Bez treningu albo 20–30 min bardzo luźno.", "rest"))
 
 
+def add_block_workouts():
+    """Treningi bloku mocnego 2.11–22.11.2026 (docs/13 § Zmiana 28.10.2026) – tylko program alpejski,
+    dokładane po build_library(), żeby nie trafiały do bibliotek innych programów."""
+    add(endurance("LONG_TEMPO_END", "Długa jazda – ostatnia godzina w tempie", 180, "Z2", "Z2 przez pierwsze dwie godziny (prowadź tętnem), potem ostatnia godzina: 3×15 min w Z3 / 5 min Z2. Uczy trzymać tempo na zmęczonych nogach – tak jak na trzeciej godzinie długiej jazdy. Jedz od 45. minuty 60–80 g węglowodanów/h, przed blokiem tempa żel albo baton.", "long", extras={"insert": repeat(3, [step("Tempo na zmęczeniu", 15, "Z3", "tempo", CAD_EASY), step("Z2", 5, "Z2", "recover", CAD_EASY)]), "insert_at": "end"}))
+    for reps, m in [(2, 15), (2, 20)]:
+        tempo_steps = [WU(15), step("Z2", 15, "Z2", "active", CAD_EASY),
+                       repeat(reps, [step(f"Tempo {m} min", m, "Z3", "tempo", CAD_EASY, HR_LAG), step("Z2", 5, "Z2", "recover", CAD_EASY)]),
+                       step("Z2", 10, "Z2", "active", CAD_EASY), CD(10)]
+        add({"id": f"TEMPO_{reps}x{m}", "name": f"Tempo {reps}×{m} min", "category": "tempo", "key": True, "steps": tempo_steps,
+             "duration_min": round(total_s(tempo_steps) / 60), "description": TEMPO_DESC})
+
+
 build_library()
 
 # ---------------------------------------------------------------- TYGODNIE SEZONU
 def W(**kw): return kw
+BLOCK_NOTE = ("Blok mocny między testami (do 22.11): dwa dni jakościowe – środa sweet spot, piątek tempo – i sobota 3 h z ostatnią godziną "
+              "w tempie; wtorek i niedziela Z2 na tętno. Szukamy sufitu, więc luzujemy tylko na obiektywny sygnał: tętno spoczynkowe "
+              "+7 bpm ponad średnią dwa dni z rzędu, nogi ≤ 2 dwa dni z rzędu, Pw:HR na Z2 niżej o ponad 5 %, sweet spot nie wchodzi "
+              "w zakres mocy, choroba. Wtedy 3–4 dni Z1 albo wolne i powrót do planu. Dni z akcentem i długa – bez deficytu.")
 # Legenda: tue/wed/thu/fri/sat/sun = (workout_id, duration_min) ; type = build|deload|test|taper|prep
 WEEKS = {
  # Plan z 20.09.2026 („Faza 1 — baza przed Alpami”), od 26.10.2026 bez siłowni: 3 jazdy. Wt Z2, CZW akcent,
@@ -216,15 +233,18 @@ WEEKS = {
        notes="Tydzień lżejszy: cztery jazdy, żadnych interwałów. Po nim wracamy do akcentów w środy."),
  7:  W(phase="I", type="test", tue=("Z2", 60), wed=("FTP_TEST", None), thu=("REST", 0), fri=("Z2", 60), sat=("LONG", 150), sun=("Z2", 90),
        notes="Test FTP 20 min w środę – pięć tygodni po pierwszym. Ta sama trasa i protokół co 26.09; wtorek naprawdę lekko."),
- 8:  W(phase="I", type="build", tue=("Z2_FORCE", 75), wed=("SS_2x20", None), thu=("REST", 0), fri=("Z2", 60), sat=("LONG", 165), sun=("Z2", 90)),
- 9:  W(phase="I", type="build", tue=("Z2", 60), wed=("SS_3x15", None), thu=("REST", 0), fri=("Z2", 60), sat=("LONG", 165), sun=("Z2", 90),
-       notes="Ostatni tydzień bloku 5 jazd. Od 16.11 plan schodzi do 3 jazd (wt Z2, czw akcent, sb długa) – zimą i tak nie wyjedziesz pięć razy w tygodniu."),
- 10: W(phase="I", type="deload", tue=("Z2", 60), wed=("REST", 0), thu=("Z2", 60), fri=("REST", 0), sat=("LONG", 120), sun=("REST", 0),
-       notes="Przed zimą: pełne błotniki SKS Bluemels 45, odzież (merino, rękawice trójpalczaste, ochraniacze na buty), ciśnienie w oponach −0,3 bara."),
- 11: W(phase="I", type="build", tue=("Z2", 75), wed=("REST", 0), thu=("SS_3x15", None), fri=("REST", 0), sat=("LONG", 180), sun=("REST", 0),
-       notes="Rytm zimowy: trzy jazdy, akcent w czwartek. Środa i piątek wolne."),
+ # Blok mocny między testami (2.11–22.11.2026, docs/13 § Zmiana 28.10.2026): pięć jazd, dwa dni jakościowe (śr sweet spot,
+ # pt tempo), długa z ostatnią godziną w tempie. Luzujemy tylko na obiektywny sygnał spadku formy. Tydzień 11 wygasza przed testem.
+ 8:  W(phase="I", type="build", full_fuel=True, tue=("Z2", 90), wed=("SS_3x15", None), thu=("REST", 0), fri=("TEMPO_2x15", None), sat=("LONG_TEMPO_END", 180), sun=("Z2", 105),
+       notes=BLOCK_NOTE),
+ 9:  W(phase="I", type="build", full_fuel=True, tue=("Z2", 90), wed=("SS_2x20", None), thu=("REST", 0), fri=("TEMPO_2x20", None), sat=("LONG_TEMPO_END", 180), sun=("Z2", 105),
+       notes="Drugi tydzień bloku mocnego: sweet spot 2×20, tempo 2×20. Kryteria luzowania bez zmian – patrz notatka z 2.11."),
+ 10: W(phase="I", type="build", full_fuel=True, tue=("Z2", 90), wed=("SS_3x20", None), thu=("REST", 0), fri=("TEMPO_2x20", None), sat=("LONG_TEMPO_END", 180), sun=("Z2", 90),
+       notes="Najmocniejszy tydzień bloku: sweet spot 3×20. Jeśli w drugim interwale moc nie wchodzi w zakres przy RPE 7, przerwij akcent i jedź Z2 – to sygnał, nie porażka. Od przyszłego tygodnia wygaszenie przed testem."),
+ 11: W(phase="I", type="taper", tue=("SS_2x12", None), wed=("REST", 0), thu=("Z2", 60), fri=("REST", 0), sat=("LONG", 120), sun=("Z2", 75),
+       notes="Wygaszenie przed testem 3.12: objętość ok. 40 % niżej, we wtorek krótkie otwarcie 2×12 sweet spot, od środy bez akcentów. Przed zimą: pełne błotniki SKS Bluemels 45, odzież (merino, rękawice trójpalczaste, ochraniacze na buty), ciśnienie w oponach −0,3 bara."),
  12: W(phase="I", type="test", tue=("Z2", 60), wed=("REST", 0), thu=("FTP_TEST", None), fri=("REST", 0), sat=("LONG", 180), sun=("REST", 0),
-       notes="Test FTP w czwartek zamiast akcentu (środa wolna – świeże nogi). Wtorek naprawdę lekko."),
+       notes="Test FTP w czwartek 3.12 – ta sama pętla Dell, ten sam rower (Roubaix) i miernik 4iiii co 28.10. Środa wolna, wtorek naprawdę lekko. Od tego tygodnia rytm zimowy: trzy jazdy, akcent w czwartek."),
  13: W(phase="I", type="build", tue=("Z2", 90), wed=("REST", 0), thu=("SS_3x20", None), fri=("REST", 0), sat=("LONG", 210), sun=("REST", 0),
        notes="Największy tydzień fazy. Jeśli pogoda go zabierze, przenieś 3:30 na tydzień wcześniej i potraktuj ten jako rozładowanie. Nie odrabiaj straconych godzin."),
  14: W(phase="I", type="build", tue=("Z2", 75), wed=("REST", 0), thu=("SS_3x15", None), fri=("REST", 0), sat=("LONG", 180), sun=("REST", 0),
@@ -553,13 +573,14 @@ def build_calendar(settings=DEFAULT_SETTINGS):
             if wid in ("B2B_DAY", "BLOCK_DAY1"): flags.append("back_to_back")
             if wk["type"] == "deload": flags.append("deload")
             if wid == "Z2_HEAT": flags.append("heat")
+            if wk.get("full_fuel") and day_type in ("key", "long"): flags.append("no_deficit")
             day = {
                 "date": date.isoformat(), "weekday": dn, "week": wno, "phase": wk["phase"], "week_type": wk["type"],
                 "day_type": day_type,
                 "bike": None if wid in ("REST",) else {"workout_id": wid, "name": w["name"], "duration_min": dur,
                                                        "bike": bike_suggestion(BIKES, wk["phase"], wid), "fallback_workout_id": fallback},
                 "nutrition": nutrition_for(NUTRITION, wk["phase"], day_type, dur if wid not in ("REST", "TRAVEL_REST", "TRIP") else 0, key,
-                                           any(f in flags for f in ("test", "mountain_weekend", "back_to_back"))),
+                                           any(f in flags for f in ("test", "mountain_weekend", "back_to_back", "no_deficit"))),
                 "flags": flags,
             }
             if dn == "mon" and wk.get("notes"): day["week_notes"] = wk["notes"]
@@ -567,7 +588,8 @@ def build_calendar(settings=DEFAULT_SETTINGS):
             days.append(day)
     return days
 
-def week_table(days):
+def week_table(days, week_templates=None):
+    """Podsumowanie tygodni; notatki i wydarzenia z szablonów TEGO programu (domyślnie alpejskiego)."""
     weeks = {}
     for d in days:
         w = weeks.setdefault(d["week"], {"week": d["week"], "phase": d["phase"], "type": d["week_type"], "start": d["date"], "bike_min": 0, "key": [], "sat": None, "sun": None})
@@ -577,7 +599,7 @@ def week_table(days):
         if d["weekday"] == "sun" and d["bike"]: w["sun"] = f'{d["bike"]["workout_id"]} {d["bike"]["duration_min"]}′'
         if d["weekday"] == "fri" and d["bike"] and d["bike"]["workout_id"] == "BLOCK_DAY1": w["key"].append("BLOCK_DAY1(pt)")
         w["end"] = d["date"]
-    for wno, wk in WEEKS.items():
+    for wno, wk in (WEEKS if week_templates is None else week_templates).items():
         if wno in weeks:
             weeks[wno]["event"] = wk.get("event"); weeks[wno]["notes"] = wk.get("notes")
     return [weeks[k] for k in sorted(weeks)]
@@ -640,6 +662,7 @@ def main():
     Z2_NOTE = "Kadencja naturalna (80–95) – nie wymuszaj szybszego kręcenia."
     TEST_NOTE = " Kadencja naturalna – nie wymuszaj szybszego kręcenia, bo kosztuje waty."
     build_library()
+    add_block_workouts()
 
     days = build_calendar()
     # średnia suma udziałów w tygodniach faz z deficytem – mianownik podziału puli tygodniowej

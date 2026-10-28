@@ -42,6 +42,13 @@ describe('plan.json dla Wahoo', () => {
     expect(rep.exit_trigger_value).toBe(2) // 3 bloki tempa
   })
 
+  it('LONG_TEMPO_END ma blok tempa na końcu – ostatnia godzina, suma = czas dnia', () => {
+    const plan = buildWahooPlan(program.bike_workouts.LONG_TEMPO_END!, { durationMin: 180, lthr: 164, programVersion: V })
+    expect(planMinutes(plan)).toBe(180)
+    expect(plan.intervals.at(-1)!.exit_trigger_type).toBe('repeat')
+    expect(plan.intervals[0]!.exit_trigger_value).toBe(120 * 60)
+  })
+
   it('bez LTHR cele idą jako RPE', () => {
     const plan = buildWahooPlan(program.bike_workouts.SS_2x20!, { durationMin: 0, lthr: null, programVersion: V })
     expect(plan.header.threshold_hr).toBeUndefined()

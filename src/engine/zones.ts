@@ -85,6 +85,19 @@ function flatten(blocks: StepBlock[], o: FlattenOpts, depth: number, out: Resolv
 }
 
 /** Kroki treningu z czasem z kalendarza (jazdy parametryczne) i celami w bpm (gdy jest LTHR). */
+/**
+ * Jazda parametryczna (Z2, LONG…) jako bloki o czasie dnia. `insert` (np. blok tempa) trafia w środek jazdy,
+ * a przy `insert_at: 'end'` na jej koniec – „ostatnia godzina w tempie”.
+ */
+export function parametricBlocks(workout: BikeWorkout, base: Step, totalSec: number): StepBlock[] {
+  if (!workout.insert) return [{ ...base, duration_s: totalSec }]
+  const rest = Math.max(0, totalSec - totalSeconds([workout.insert]))
+  if (workout.insert_at === 'end') return [{ ...base, duration_s: rest }, workout.insert]
+  const before = Math.round(rest / 2 / 60) * 60
+  const after = Math.max(0, rest - before)
+  return [{ ...base, duration_s: before }, workout.insert, { ...base, name: t().engine.plan.continued(base.name), duration_s: after }]
+}
+
 export function resolveWorkout(
   workout: BikeWorkout,
   durationMin: number,
@@ -96,15 +109,7 @@ export function resolveWorkout(
   if (workout.parametric_duration && workout.steps.length === 1 && !isRepeat(workout.steps[0]!)) {
     const base = workout.steps[0]!
     const total = durationMin * 60
-    if (workout.insert) {
-      const insertSec = totalSeconds([workout.insert])
-      const rest = Math.max(0, total - insertSec)
-      const before = Math.round(rest / 2 / 60) * 60
-      const after = Math.max(0, rest - before)
-      blocks = [{ ...base, duration_s: before }, workout.insert, { ...base, name: t().engine.plan.continued(base.name), duration_s: after }]
-    } else {
-      blocks = [{ ...base, duration_s: total }]
-    }
+    blocks = parametricBlocks(workout, base, total)
   }
   const steps: ResolvedStep[] = []
   flatten(blocks, { lthr, heatOffset: heat, ftp: opts.ftp ?? null, powerZones: opts.powerZones ?? [] }, 0, steps)

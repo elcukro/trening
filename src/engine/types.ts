@@ -4,7 +4,7 @@ import type { ISODate, Weekday } from './dates'
 export type PhaseId = 'PREP' | 'I' | 'II' | 'III' | 'IV' | 'V' | 'TAPER'
 export type WeekType = 'prep' | 'build' | 'deload' | 'test' | 'taper'
 export type DayType = 'rest' | 'easy' | 'long' | 'key' | 'trip'
-export type DayFlag = 'test' | 'deload' | 'mountain_weekend' | 'back_to_back' | 'heat'
+export type DayFlag = 'test' | 'deload' | 'mountain_weekend' | 'back_to_back' | 'heat' | 'no_deficit'
 export type EnergyKind =
   | 'maintenance'
   | 'maintenance_plus'

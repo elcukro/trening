@@ -1,6 +1,6 @@
 import { t } from '../i18n'
 import type { BikeWorkout, PowerZone, StepBlock } from './schema'
-import { powerFraction, totalSeconds } from './zones'
+import { parametricBlocks, powerFraction } from './zones'
 
 /**
  * Generator pliku `plan.json` dla Wahoo Cloud API (ELEMNT Bolt).
@@ -124,20 +124,12 @@ function convert(blocks: StepBlock[], lthr: number | null, heatOffset: number, p
 
 /**
  * Bloki treningu z czasem dnia. Jazdy parametryczne (Z2, LONG…) to jeden interwał o czasie z kalendarza;
- * LONG_TEMPO dostaje blok tempa w środku, tak samo jak w aplikacji.
+ * LONG_TEMPO dostaje blok tempa w środku (LONG_TEMPO_END na końcu), tak samo jak w aplikacji.
  */
 export function planBlocks(workout: BikeWorkout, durationMin: number): StepBlock[] {
   const first = workout.steps[0]
   if (workout.parametric_duration && workout.steps.length === 1 && first && !isRepeat(first)) {
-    const total = durationMin * 60
-    if (workout.insert) {
-      const insertSec = totalSeconds([workout.insert])
-      const rest = Math.max(0, total - insertSec)
-      const before = Math.round(rest / 2 / 60) * 60
-      const after = Math.max(0, rest - before)
-      return [{ ...first, duration_s: before }, workout.insert, { ...first, name: t().engine.plan.continued(first.name), duration_s: after }]
-    }
-    return [{ ...first, duration_s: total }]
+    return parametricBlocks(workout, first, durationMin * 60)
   }
   return workout.steps
 }

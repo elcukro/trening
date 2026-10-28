@@ -60,7 +60,7 @@ export interface RuleContext {
 
 const PROTECTED_FLAGS: DayFlag[] = ['test', 'mountain_weekend', 'back_to_back']
 /** Znaczniki opisujące trening, nie tydzień – wędrują razem z treningiem przy zamianie i przeniesieniu. */
-const SESSION_FLAGS: DayFlag[] = ['test', 'mountain_weekend', 'back_to_back', 'heat']
+const SESSION_FLAGS: DayFlag[] = ['test', 'mountain_weekend', 'back_to_back', 'heat', 'no_deficit']
 
 function sessionFlags(day: CalendarDay): DayFlag[] {
   return day.flags.filter((f) => SESSION_FLAGS.includes(f))

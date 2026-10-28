@@ -41,6 +41,8 @@ export const BikeWorkoutSchema = z.object({
   description: z.string(),
   parametric_duration: z.boolean().optional(),
   insert: StepBlockSchema.optional(),
+  /** gdzie wstawić `insert` w jeździe parametrycznej: w środku (domyślnie) albo na końcu */
+  insert_at: z.enum(['middle', 'end']).optional(),
 })
 
 
@@ -59,6 +61,8 @@ export const WeekTemplateSchema = z.object({
   sun: daySlot,
   notes: z.string().optional(),
   event: z.string().optional(),
+  /** dni ciężkie tygodnia (akcent, długa) bez deficytu także w fazach z `heavy_deficit_phases` */
+  full_fuel: z.boolean().optional(),
 })
 
 export const PhaseSchema = z.object({

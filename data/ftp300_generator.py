@@ -306,7 +306,7 @@ def main():
         "phases": PHASES,
         "bike_workouts": BIKE_WORKOUTS,
         "weeks": {str(k): v for k, v in WEEKS.items()},
-        "week_summary": gen.week_table(days),
+        "week_summary": gen.week_table(days, WEEKS),
         "layout": {"mode": "fixed"},
     }
     gen.add_translations(program, f"program-{PROGRAM_ID}.json")

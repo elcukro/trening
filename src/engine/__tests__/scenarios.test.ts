@@ -42,10 +42,21 @@ describe('scenariusze ze specyfikacji §10', () => {
     expect(ids[0]!.week_notes).toContain('Start bloku 5 jazd')
   })
 
-  it('1c. Od tygodnia 10 (16.11) plan schodzi do 3 jazd, środa i piątek wolne', () => {
-    const ids = ['2026-11-17', '2026-11-18', '2026-11-19', '2026-11-20'].map((x) => getDayPlan(x, base)!)
-    expect(ids.map((d) => d.bike?.workout_id ?? null)).toEqual(['Z2', null, 'Z2', null])
-    expect(ids.map((d) => d.day_type)).toEqual(['easy', 'rest', 'easy', 'rest'])
+  it('1c. Blok mocny 2.11–22.11 (tyg. 8–10): śr sweet spot, pt tempo, sb długa z tempem na końcu – akcenty i długa bez deficytu', () => {
+    const days = ['2026-11-17', '2026-11-18', '2026-11-19', '2026-11-20', '2026-11-21'].map((x) => getDayPlan(x, base)!)
+    expect(days.map((d) => d.bike?.workout_id ?? null)).toEqual(['Z2', 'SS_3x20', null, 'TEMPO_2x20', 'LONG_TEMPO_END'])
+    expect(days.map((d) => d.day_type)).toEqual(['easy', 'key', 'rest', 'key', 'long'])
+    expect([days[1], days[3], days[4]].map((d) => d!.nutrition.energy)).toEqual(['maintenance', 'maintenance', 'maintenance'])
+    expect(days[0]!.nutrition.energy).toMatch(/^deficit/)
+    expect(days[1]!.flags).toContain('no_deficit')
+  })
+
+  it('1d. Tydzień 11 wygasza przed testem 3.12: otwarcie we wtorek, od środy bez akcentów; od tyg. 12 trzy jazdy', () => {
+    const wk11 = ['2026-11-24', '2026-11-25', '2026-11-26', '2026-11-27', '2026-11-28', '2026-11-29'].map((x) => getDayPlan(x, base)!)
+    expect(wk11.map((d) => d.bike?.workout_id ?? null)).toEqual(['SS_2x12', null, 'Z2', null, 'LONG', 'Z2'])
+    expect(wk11.slice(1).some((d) => d.day_type === 'key')).toBe(false)
+    expect(getDayPlan('2026-12-03', base)!.bike?.workout_id).toBe('FTP_TEST')
+    expect(getDayPlan('2026-12-06', base)!.bike).toBeNull()
   })
 
   it('2. 18.09.2026: brak jazdy, deficyt 500', () => {
