@@ -20,6 +20,7 @@ export function Screen({ title, subtitle, back, lead, action, day, children }: {
   const navigate = useNavigate()
   const sentinel = useRef<HTMLDivElement>(null)
   const root = useRef<HTMLDivElement>(null)
+  const nav = useRef<HTMLDivElement>(null)
   /**
    * Wstecz = poprzedni ekran z historii (z Ja, „Jutro” czy innego tygodnia wraca tam, skąd przyszliśmy – docs/27 § 3.1).
    * Adres w `back` tylko wtedy, gdy historii nie ma (wejście z powiadomienia, odświeżenie) – bez dokładania wpisu.
@@ -36,11 +37,15 @@ export function Screen({ title, subtitle, back, lead, action, day, children }: {
 
   useEffect(() => {
     const el = sentinel.current
-    if (!el) return
-    // przewija wewnętrzny kontener `.m-scroll`, więc obserwujemy względem niego (root), nie względem okna
-    const io = new IntersectionObserver(([e]) => setScrolled(!e?.isIntersecting), { root: el.closest('.m-scroll'), rootMargin: '-1px 0px 0px 0px', threshold: 1 })
-    io.observe(el)
-    return () => io.disconnect()
+    const bar = nav.current
+    const scroller = el?.closest('.m-scroll')
+    if (!el || !bar || !scroller) return
+    // pasek dostaje tło, gdy tylko treść wchodzi pod niego (znacznik przechodzi pod jego dolną krawędź), a nie dopiero
+    // gdy znacznik wyjedzie poza kontener – inaczej treść przewijała się pod przezroczystym paskiem i pod tytułem
+    const check = () => setScrolled(el.getBoundingClientRect().top < bar.getBoundingClientRect().bottom - 0.5)
+    check()
+    scroller.addEventListener('scroll', check, { passive: true })
+    return () => scroller.removeEventListener('scroll', check)
   }, [])
 
   // ekran główny (Dziś, Plan): duży tytuł w jednym wierszu z dzwonkiem i zdjęciem – bez pustego paska nad tytułem;
@@ -48,7 +53,7 @@ export function Screen({ title, subtitle, back, lead, action, day, children }: {
   const inline = !!lead && !back
   return (
     <div ref={root} className="m-pb-tab m-screen" style={day ? ({ '--day': day.color, '--day-soft': day.soft, '--day-fill': day.fill ?? day.color } as React.CSSProperties) : undefined}>
-      <div className="m-nav" data-scrolled={scrolled}>
+      <div ref={nav} className="m-nav" data-scrolled={scrolled}>
         {inline ? (
           <div className="m-nav-inner m-nav-inline">
             <h1 className="m-display m-nav-display min-w-0 flex-1 truncate">{title}</h1>
@@ -72,6 +77,8 @@ export function Screen({ title, subtitle, back, lead, action, day, children }: {
           </div>
         )}
       </div>
+      {/* na ekranie głównym znacznik stoi tuż pod paskiem: pierwszy przewinięty piksel daje tło paska */}
+      {inline && <div ref={sentinel} className="h-px" />}
       {inline ? (
         subtitle && <p className="m-sub m-dim px-5 pb-3">{subtitle}</p>
       ) : (
@@ -80,7 +87,7 @@ export function Screen({ title, subtitle, back, lead, action, day, children }: {
           {subtitle && <p className="m-sub m-dim mt-1">{subtitle}</p>}
         </header>
       )}
-      <div ref={sentinel} className="h-px" />
+      {!inline && <div ref={sentinel} className="h-px" />}
       <div className="flex flex-col gap-4 px-4">{children}</div>
     </div>
   )
